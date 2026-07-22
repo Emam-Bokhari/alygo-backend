@@ -46,7 +46,11 @@ const getTransactionsByUser = async (
   if (userRole === "driver") {
     const driverProfile = await Driver.findOne({ userId: userObjectId });
     if (driverProfile) {
-      query.$or = [{ userId: userObjectId }, { driverId: driverProfile._id }];
+      query.$or = [
+        { userId: userObjectId },
+        { driverId: driverProfile._id },
+        { driverId: userObjectId },
+      ];
     } else {
       query.userId = userObjectId;
     }
@@ -81,6 +85,7 @@ const getTransactionsByUser = async (
           TRANSACTION_TYPE.DRIVER_APPRECIATION,
           TRANSACTION_TYPE.WALLET_TOPUP,
           TRANSACTION_TYPE.REFUND,
+          TRANSACTION_TYPE.LOST_FOUND_DELIVERY,
         ],
       };
     } else if (normalizedFilter === "spend") {
@@ -97,6 +102,7 @@ const getTransactionsByUser = async (
           TRANSACTION_TYPE.WALLET_TOPUP,
           TRANSACTION_TYPE.REFUND,
           TRANSACTION_TYPE.PAYOUT,
+          TRANSACTION_TYPE.LOST_FOUND_DELIVERY,
         ],
       };
     }
@@ -110,6 +116,7 @@ const getTransactionsByUser = async (
           TRANSACTION_TYPE.BOOKING_PAYMENT,
           TRANSACTION_TYPE.CANCELLATION_FEE,
           TRANSACTION_TYPE.DRIVER_APPRECIATION,
+          TRANSACTION_TYPE.LOST_FOUND_DELIVERY,
         ],
       };
     } else {
@@ -120,6 +127,7 @@ const getTransactionsByUser = async (
           TRANSACTION_TYPE.BOOKING_PAYMENT,
           TRANSACTION_TYPE.CANCELLATION_FEE,
           TRANSACTION_TYPE.DRIVER_APPRECIATION,
+          TRANSACTION_TYPE.LOST_FOUND_DELIVERY,
         ],
       };
     }
@@ -146,7 +154,8 @@ const getTransactionsByUser = async (
     } else if (
       txType === TRANSACTION_TYPE.BOOKING_PAYMENT ||
       txType === TRANSACTION_TYPE.DRIVER_APPRECIATION ||
-      txType === TRANSACTION_TYPE.CANCELLATION_FEE
+      txType === TRANSACTION_TYPE.CANCELLATION_FEE ||
+      txType === TRANSACTION_TYPE.LOST_FOUND_DELIVERY
     ) {
       if (userRole === "driver") {
         flowType = "add_money";
@@ -187,6 +196,7 @@ const getTransactions = async (
       matchQuery.$or = [
         { userId: userObjectId },
         { driverId: driverProfile._id },
+        { driverId: userObjectId },
       ];
     } else {
       matchQuery.userId = userObjectId;
@@ -220,6 +230,8 @@ const getTransactions = async (
       matchQuery.transactionType = TRANSACTION_TYPE.DRIVER_APPRECIATION;
     } else if (filter === "adjustment") {
       matchQuery.transactionType = TRANSACTION_TYPE.CANCELLATION_COMPENSATION;
+    } else if (filter === "lost_found" || filter === "lost_found_delivery") {
+      matchQuery.transactionType = TRANSACTION_TYPE.LOST_FOUND_DELIVERY;
     } else {
       // 'all'
       matchQuery.transactionType = {
@@ -230,6 +242,7 @@ const getTransactions = async (
           TRANSACTION_TYPE.WALLET_TOPUP,
           TRANSACTION_TYPE.REFUND,
           TRANSACTION_TYPE.PAYOUT,
+          TRANSACTION_TYPE.LOST_FOUND_DELIVERY,
         ],
       };
     }
@@ -241,6 +254,7 @@ const getTransactions = async (
           TRANSACTION_TYPE.BOOKING_PAYMENT,
           TRANSACTION_TYPE.CANCELLATION_FEE,
           TRANSACTION_TYPE.DRIVER_APPRECIATION,
+          TRANSACTION_TYPE.LOST_FOUND_DELIVERY,
         ],
       };
     } else if (filter === "add_money") {
@@ -256,6 +270,7 @@ const getTransactions = async (
           TRANSACTION_TYPE.CANCELLATION_FEE,
           TRANSACTION_TYPE.DRIVER_APPRECIATION,
           TRANSACTION_TYPE.REFUND,
+          TRANSACTION_TYPE.LOST_FOUND_DELIVERY,
         ],
       };
     }
@@ -437,6 +452,12 @@ const getTransactions = async (
         icon = "plus";
         displayColor = "green";
         amount = txObj.amount;
+      } else if (txType === TRANSACTION_TYPE.LOST_FOUND_DELIVERY) {
+        transactionType = "LOST_FOUND_DELIVERY";
+        title = `Lost & Found Delivery from ${passengerName}`;
+        icon = "package";
+        displayColor = "green";
+        amount = txObj.amount;
       } else {
         transactionType = "RIDE_PAYMENT";
         title = txObj.description || "Ride Payment";
@@ -500,6 +521,12 @@ const getTransactions = async (
         icon = "plus";
         displayColor = "green";
         amount = txObj.amount;
+      } else if (txType === TRANSACTION_TYPE.LOST_FOUND_DELIVERY) {
+        type = "SPEND";
+        title = "Lost & Found Delivery";
+        icon = "package";
+        displayColor = "red";
+        amount = -txObj.amount;
       } else if (txType === TRANSACTION_TYPE.BOOKING_PAYMENT) {
         type = "SPEND";
         title = ridePopulated?.destination?.address

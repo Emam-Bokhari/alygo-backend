@@ -716,6 +716,11 @@ const completeLostFoundPayment = async (
       return;
     }
 
+    const driverProfile = await Driver.findOne({ userId: report.driverId }).session(dbSession);
+    if (!driverProfile) {
+      throw new ApiError(StatusCodes.NOT_FOUND, "Driver profile not found.");
+    }
+
     // 1. Create Transaction
     const transactionId = `TXN-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${Math.floor(1000 + Math.random() * 9000)}`;
 
@@ -723,7 +728,7 @@ const completeLostFoundPayment = async (
       {
         transactionId,
         userId: report.passengerId,
-        driverId: report.driverId,
+        driverId: driverProfile._id,
         bookingId: report.rideId,
         rideId: report.rideId,
         amount: report.deliveryFee,

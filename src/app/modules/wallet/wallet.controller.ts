@@ -90,6 +90,7 @@ const getDriverWalletSummary = catchAsync(
           TRANSACTION_TYPE.BOOKING_PAYMENT,
           TRANSACTION_TYPE.CANCELLATION_COMPENSATION,
           TRANSACTION_TYPE.DRIVER_APPRECIATION,
+          TRANSACTION_TYPE.LOST_FOUND_DELIVERY,
         ],
       },
     };
@@ -115,6 +116,7 @@ const getDriverWalletSummary = catchAsync(
           TRANSACTION_TYPE.BOOKING_PAYMENT,
           TRANSACTION_TYPE.CANCELLATION_COMPENSATION,
           TRANSACTION_TYPE.DRIVER_APPRECIATION,
+          TRANSACTION_TYPE.LOST_FOUND_DELIVERY,
         ],
       },
     };

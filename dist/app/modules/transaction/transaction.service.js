@@ -43,7 +43,11 @@ const getTransactionsByUser = (userId_1, role_1, ...args_1) => __awaiter(void 0,
     if (userRole === "driver") {
         const driverProfile = yield driver_model_1.Driver.findOne({ userId: userObjectId });
         if (driverProfile) {
-            query.$or = [{ userId: userObjectId }, { driverId: driverProfile._id }];
+            query.$or = [
+                { userId: userObjectId },
+                { driverId: driverProfile._id },
+                { driverId: userObjectId },
+            ];
         }
         else {
             query.userId = userObjectId;
@@ -77,6 +81,7 @@ const getTransactionsByUser = (userId_1, role_1, ...args_1) => __awaiter(void 0,
                     transaction_constant_1.TRANSACTION_TYPE.DRIVER_APPRECIATION,
                     transaction_constant_1.TRANSACTION_TYPE.WALLET_TOPUP,
                     transaction_constant_1.TRANSACTION_TYPE.REFUND,
+                    transaction_constant_1.TRANSACTION_TYPE.LOST_FOUND_DELIVERY,
                 ],
             };
         }
@@ -95,6 +100,7 @@ const getTransactionsByUser = (userId_1, role_1, ...args_1) => __awaiter(void 0,
                     transaction_constant_1.TRANSACTION_TYPE.WALLET_TOPUP,
                     transaction_constant_1.TRANSACTION_TYPE.REFUND,
                     transaction_constant_1.TRANSACTION_TYPE.PAYOUT,
+                    transaction_constant_1.TRANSACTION_TYPE.LOST_FOUND_DELIVERY,
                 ],
             };
         }
@@ -110,6 +116,7 @@ const getTransactionsByUser = (userId_1, role_1, ...args_1) => __awaiter(void 0,
                     transaction_constant_1.TRANSACTION_TYPE.BOOKING_PAYMENT,
                     transaction_constant_1.TRANSACTION_TYPE.CANCELLATION_FEE,
                     transaction_constant_1.TRANSACTION_TYPE.DRIVER_APPRECIATION,
+                    transaction_constant_1.TRANSACTION_TYPE.LOST_FOUND_DELIVERY,
                 ],
             };
         }
@@ -121,6 +128,7 @@ const getTransactionsByUser = (userId_1, role_1, ...args_1) => __awaiter(void 0,
                     transaction_constant_1.TRANSACTION_TYPE.BOOKING_PAYMENT,
                     transaction_constant_1.TRANSACTION_TYPE.CANCELLATION_FEE,
                     transaction_constant_1.TRANSACTION_TYPE.DRIVER_APPRECIATION,
+                    transaction_constant_1.TRANSACTION_TYPE.LOST_FOUND_DELIVERY,
                 ],
             };
         }
@@ -142,7 +150,8 @@ const getTransactionsByUser = (userId_1, role_1, ...args_1) => __awaiter(void 0,
         }
         else if (txType === transaction_constant_1.TRANSACTION_TYPE.BOOKING_PAYMENT ||
             txType === transaction_constant_1.TRANSACTION_TYPE.DRIVER_APPRECIATION ||
-            txType === transaction_constant_1.TRANSACTION_TYPE.CANCELLATION_FEE) {
+            txType === transaction_constant_1.TRANSACTION_TYPE.CANCELLATION_FEE ||
+            txType === transaction_constant_1.TRANSACTION_TYPE.LOST_FOUND_DELIVERY) {
             if (userRole === "driver") {
                 flowType = "add_money";
             }
@@ -164,6 +173,7 @@ const getTransactions = (userId, role, queryOptions) => __awaiter(void 0, void 0
             matchQuery.$or = [
                 { userId: userObjectId },
                 { driverId: driverProfile._id },
+                { driverId: userObjectId },
             ];
         }
         else {
@@ -202,6 +212,9 @@ const getTransactions = (userId, role, queryOptions) => __awaiter(void 0, void 0
         else if (filter === "adjustment") {
             matchQuery.transactionType = transaction_constant_1.TRANSACTION_TYPE.CANCELLATION_COMPENSATION;
         }
+        else if (filter === "lost_found" || filter === "lost_found_delivery") {
+            matchQuery.transactionType = transaction_constant_1.TRANSACTION_TYPE.LOST_FOUND_DELIVERY;
+        }
         else {
             // 'all'
             matchQuery.transactionType = {
@@ -212,6 +225,7 @@ const getTransactions = (userId, role, queryOptions) => __awaiter(void 0, void 0
                     transaction_constant_1.TRANSACTION_TYPE.WALLET_TOPUP,
                     transaction_constant_1.TRANSACTION_TYPE.REFUND,
                     transaction_constant_1.TRANSACTION_TYPE.PAYOUT,
+                    transaction_constant_1.TRANSACTION_TYPE.LOST_FOUND_DELIVERY,
                 ],
             };
         }
@@ -224,6 +238,7 @@ const getTransactions = (userId, role, queryOptions) => __awaiter(void 0, void 0
                     transaction_constant_1.TRANSACTION_TYPE.BOOKING_PAYMENT,
                     transaction_constant_1.TRANSACTION_TYPE.CANCELLATION_FEE,
                     transaction_constant_1.TRANSACTION_TYPE.DRIVER_APPRECIATION,
+                    transaction_constant_1.TRANSACTION_TYPE.LOST_FOUND_DELIVERY,
                 ],
             };
         }
@@ -241,6 +256,7 @@ const getTransactions = (userId, role, queryOptions) => __awaiter(void 0, void 0
                     transaction_constant_1.TRANSACTION_TYPE.CANCELLATION_FEE,
                     transaction_constant_1.TRANSACTION_TYPE.DRIVER_APPRECIATION,
                     transaction_constant_1.TRANSACTION_TYPE.REFUND,
+                    transaction_constant_1.TRANSACTION_TYPE.LOST_FOUND_DELIVERY,
                 ],
             };
         }
@@ -405,6 +421,13 @@ const getTransactions = (userId, role, queryOptions) => __awaiter(void 0, void 0
                 displayColor = "green";
                 amount = txObj.amount;
             }
+            else if (txType === transaction_constant_1.TRANSACTION_TYPE.LOST_FOUND_DELIVERY) {
+                transactionType = "LOST_FOUND_DELIVERY";
+                title = `Lost & Found Delivery from ${passengerName}`;
+                icon = "package";
+                displayColor = "green";
+                amount = txObj.amount;
+            }
             else {
                 transactionType = "RIDE_PAYMENT";
                 title = txObj.description || "Ride Payment";
@@ -467,6 +490,13 @@ const getTransactions = (userId, role, queryOptions) => __awaiter(void 0, void 0
                 icon = "plus";
                 displayColor = "green";
                 amount = txObj.amount;
+            }
+            else if (txType === transaction_constant_1.TRANSACTION_TYPE.LOST_FOUND_DELIVERY) {
+                type = "SPEND";
+                title = "Lost & Found Delivery";
+                icon = "package";
+                displayColor = "red";
+                amount = -txObj.amount;
             }
             else if (txType === transaction_constant_1.TRANSACTION_TYPE.BOOKING_PAYMENT) {
                 type = "SPEND";
