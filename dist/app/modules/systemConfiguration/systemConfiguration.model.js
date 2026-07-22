@@ -137,29 +137,17 @@ const lostFoundConfigSchema = new mongoose_1.Schema({
         min: 1,
         default: 7,
     },
-    maxImages: {
+    maxFiles: {
         type: Number,
         required: true,
         min: 1,
         default: 5,
     },
-    maxVideos: {
-        type: Number,
-        required: true,
-        min: 1,
-        default: 2,
-    },
-    maxImageSizeMb: {
+    maxFileSizeMb: {
         type: Number,
         required: true,
         min: 1,
         default: 10,
-    },
-    maxVideoSizeMb: {
-        type: Number,
-        required: true,
-        min: 1,
-        default: 50,
     },
     defaultDeliveryFee: {
         type: Number,

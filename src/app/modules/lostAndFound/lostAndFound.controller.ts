@@ -202,6 +202,20 @@ const adminUpdateReport = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const trackReportStatus = catchAsync(async (req: Request, res: Response) => {
+  const passengerId = req.user.id;
+  const { id } = req.params;
+
+  const result = await LostAndFoundService.trackReportStatus(id, passengerId);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Report tracking status retrieved successfully",
+    data: result,
+  });
+});
+
 export const LostAndFoundController = {
   reportLostItem,
   getMyReports,
@@ -216,4 +230,5 @@ export const LostAndFoundController = {
   markReturned,
   getAllReports,
   adminUpdateReport,
+  trackReportStatus,
 };

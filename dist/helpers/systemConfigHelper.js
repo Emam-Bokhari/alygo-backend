@@ -23,7 +23,7 @@ const CACHE_DURATION_MS = 5 * 60 * 1000; // 5 minutes
  * Falls back to .env values if database is unavailable
  */
 const getSystemConfig = () => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31;
     const now = Date.now();
     // Return cached config if still valid
     if (cachedConfig && now < cacheExpiry) {
@@ -63,13 +63,11 @@ const getSystemConfig = () => __awaiter(void 0, void 0, void 0, function* () {
                 lostFound: {
                     enabled: (_19 = (_18 = dbConfig.lostFound) === null || _18 === void 0 ? void 0 : _18.enabled) !== null && _19 !== void 0 ? _19 : config_1.default.lostFound.enabled,
                     reportWindowDays: (_21 = (_20 = dbConfig.lostFound) === null || _20 === void 0 ? void 0 : _20.reportWindowDays) !== null && _21 !== void 0 ? _21 : config_1.default.lostFound.reportWindowDays,
-                    maxImages: (_23 = (_22 = dbConfig.lostFound) === null || _22 === void 0 ? void 0 : _22.maxImages) !== null && _23 !== void 0 ? _23 : config_1.default.lostFound.maxImages,
-                    maxVideos: (_25 = (_24 = dbConfig.lostFound) === null || _24 === void 0 ? void 0 : _24.maxVideos) !== null && _25 !== void 0 ? _25 : config_1.default.lostFound.maxVideos,
-                    maxImageSizeMb: (_27 = (_26 = dbConfig.lostFound) === null || _26 === void 0 ? void 0 : _26.maxImageSizeMb) !== null && _27 !== void 0 ? _27 : config_1.default.lostFound.maxImageSizeMb,
-                    maxVideoSizeMb: (_29 = (_28 = dbConfig.lostFound) === null || _28 === void 0 ? void 0 : _28.maxVideoSizeMb) !== null && _29 !== void 0 ? _29 : config_1.default.lostFound.maxVideoSizeMb,
-                    defaultDeliveryFee: (_31 = (_30 = dbConfig.lostFound) === null || _30 === void 0 ? void 0 : _30.defaultDeliveryFee) !== null && _31 !== void 0 ? _31 : config_1.default.lostFound.defaultDeliveryFee,
-                    returnConfirmationHours: (_33 = (_32 = dbConfig.lostFound) === null || _32 === void 0 ? void 0 : _32.returnConfirmationHours) !== null && _33 !== void 0 ? _33 : config_1.default.lostFound.returnConfirmationHours,
-                    autoCloseDays: (_35 = (_34 = dbConfig.lostFound) === null || _34 === void 0 ? void 0 : _34.autoCloseDays) !== null && _35 !== void 0 ? _35 : config_1.default.lostFound.autoCloseDays,
+                    maxFiles: (_23 = (_22 = dbConfig.lostFound) === null || _22 === void 0 ? void 0 : _22.maxFiles) !== null && _23 !== void 0 ? _23 : config_1.default.lostFound.maxFiles,
+                    maxFileSizeMb: (_25 = (_24 = dbConfig.lostFound) === null || _24 === void 0 ? void 0 : _24.maxFileSizeMb) !== null && _25 !== void 0 ? _25 : config_1.default.lostFound.maxFileSizeMb,
+                    defaultDeliveryFee: (_27 = (_26 = dbConfig.lostFound) === null || _26 === void 0 ? void 0 : _26.defaultDeliveryFee) !== null && _27 !== void 0 ? _27 : config_1.default.lostFound.defaultDeliveryFee,
+                    returnConfirmationHours: (_29 = (_28 = dbConfig.lostFound) === null || _28 === void 0 ? void 0 : _28.returnConfirmationHours) !== null && _29 !== void 0 ? _29 : config_1.default.lostFound.returnConfirmationHours,
+                    autoCloseDays: (_31 = (_30 = dbConfig.lostFound) === null || _30 === void 0 ? void 0 : _30.autoCloseDays) !== null && _31 !== void 0 ? _31 : config_1.default.lostFound.autoCloseDays,
                 },
             };
             cacheExpiry = now + CACHE_DURATION_MS;

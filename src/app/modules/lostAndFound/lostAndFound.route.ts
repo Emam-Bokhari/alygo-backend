@@ -29,6 +29,13 @@ router.get(
   LostAndFoundController.getMyReports,
 );
 
+// Track lost item report status/timeline
+router.get(
+  "/:id/track",
+  isUser,
+  LostAndFoundController.trackReportStatus,
+);
+
 // Confirm item receipt
 router.patch(
   "/:id/confirm",

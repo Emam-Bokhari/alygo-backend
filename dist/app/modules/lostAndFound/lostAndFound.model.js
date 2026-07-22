@@ -33,11 +33,6 @@ const lostFoundSchema = new mongoose_1.Schema({
         required: true,
         index: true,
     },
-    bookingReference: {
-        type: String,
-        required: true,
-        index: true,
-    },
     passengerId: {
         type: mongoose_1.Schema.Types.ObjectId,
         ref: "User",

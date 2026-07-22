@@ -48,10 +48,8 @@ const getDefaultSystemConfig = () => ({
     lostFound: {
         enabled: true,
         reportWindowDays: 7,
-        maxImages: 5,
-        maxVideos: 2,
-        maxImageSizeMb: 10,
-        maxVideoSizeMb: 50,
+        maxFiles: 5,
+        maxFileSizeMb: 10,
         defaultDeliveryFee: 0,
         returnConfirmationHours: 48,
         autoCloseDays: 30,

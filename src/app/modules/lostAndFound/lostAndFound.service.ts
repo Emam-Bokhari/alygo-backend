@@ -4,6 +4,8 @@ import { LostFound } from "./lostAndFound.model";
 import { Ride } from "../ride/ride.model";
 import { User } from "../user/user.model";
 import { LostAndFoundItemCategory } from "../lostAndFoundItemCategory/lostAndFoundItemCategory.model";
+import { Driver } from "../driver/driver.model";
+import { Car } from "../car/car.model";
 import { STATUS } from "../../../constants/status";
 import { TransactionService } from "../transaction/transaction.service";
 import { WalletService } from "../wallet/wallet.service";
@@ -240,7 +242,37 @@ const getReportDetails = async (
     throw new ApiError(StatusCodes.FORBIDDEN, "You are not authorized to view this report.");
   }
 
-  return report;
+  // Fetch driver profile
+  const driverProfile = await Driver.findOne({ userId: report.driverId._id });
+
+  // Fetch driver car
+  let car = null;
+  if (report.rideId && (report.rideId as any).carId) {
+    car = await Car.findById((report.rideId as any).carId);
+  }
+  if (!car) {
+    car = await Car.findOne({ driverId: report.driverId._id });
+  }
+
+  // Count completed rides
+  const completedRidesCount = await Ride.countDocuments({
+    driverId: report.driverId._id,
+    status: "completed",
+  });
+
+  const driverInfo = {
+    name: (report.driverId as any).name,
+    profileImage: (report.driverId as any).profileImage,
+    rating: driverProfile?.averageRating ?? 0,
+    trips: `${completedRidesCount} Trips`,
+    licenseNumber: car?.licensePlate ?? "N/A",
+    vehicle: car ? `${car.brand} ${car.model}`.trim() : "N/A",
+  };
+
+  return {
+    ...report.toObject(),
+    driverInfo,
+  };
 };
 
 const confirmItemReceived = async (
@@ -847,6 +879,178 @@ const adminUpdateReport = async (
   return updatedReport;
 };
 
+const trackReportStatus = async (
+  reportId: string,
+  passengerId: string,
+): Promise<any> => {
+  const report = await LostFound.findById(reportId)
+    .populate({ path: "rideId" })
+    .populate({ path: "passengerId", select: "name email phone profileImage" })
+    .populate({ path: "driverId", select: "name email phone profileImage" })
+    .populate({ path: "itemCategory" });
+
+  if (!report) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "Report not found.");
+  }
+
+  if (report.passengerId._id.toString() !== passengerId) {
+    throw new ApiError(StatusCodes.FORBIDDEN, "You are not authorized to track this report.");
+  }
+
+  // Fetch driver profile
+  const driverProfile = await Driver.findOne({ userId: report.driverId._id });
+  // Fetch driver car
+  let car = null;
+  if (report.rideId && (report.rideId as any).carId) {
+    car = await Car.findById((report.rideId as any).carId);
+  }
+  if (!car) {
+    car = await Car.findOne({ driverId: report.driverId._id });
+  }
+
+  // Count completed rides
+  const completedRidesCount = await Ride.countDocuments({
+    driverId: report.driverId._id,
+    status: "completed",
+  });
+
+  const driverInfo = {
+    name: (report.driverId as any).name,
+    profileImage: (report.driverId as any).profileImage,
+    rating: driverProfile?.averageRating ?? 0,
+    trips: `${completedRidesCount} Trips`,
+    licenseNumber: car?.licensePlate ?? "N/A",
+    vehicle: car ? `${car.brand} ${car.model}`.trim() : "N/A",
+  };
+
+  // Determine current display status text based on reportStatus
+  let currentStatusText = "Pending Driver Review";
+  switch (report.reportStatus) {
+    case REPORT_STATUS.REPORTED:
+      currentStatusText = "Pending Driver Review";
+      break;
+    case REPORT_STATUS.UNDER_REVIEW:
+      currentStatusText = "Driver Reviewing";
+      break;
+    case REPORT_STATUS.FOUND:
+      currentStatusText = "Item Found";
+      break;
+    case REPORT_STATUS.NOT_FOUND:
+      currentStatusText = "Item Not Found";
+      break;
+    case REPORT_STATUS.WAITING_PAYMENT:
+      currentStatusText = "Waiting for Payment";
+      break;
+    case REPORT_STATUS.PAYMENT_COMPLETED:
+      currentStatusText = "Payment Completed";
+      break;
+    case REPORT_STATUS.RETURN_SCHEDULED:
+      currentStatusText = "Return Scheduled";
+      break;
+    case REPORT_STATUS.RETURN_IN_PROGRESS:
+      currentStatusText = "Return In Progress";
+      break;
+    case REPORT_STATUS.RETURN_COMPLETED:
+      currentStatusText = "Return Completed";
+      break;
+    case REPORT_STATUS.RECEIVED:
+      currentStatusText = "Item Received";
+      break;
+    case REPORT_STATUS.CLOSED:
+      currentStatusText = "Report Closed";
+      break;
+    case REPORT_STATUS.CANCELLED:
+      currentStatusText = "Report Cancelled";
+      break;
+  }
+
+  // Build the recovery timeline checkpoints
+  // Let's find timestamps from auditLogs if available
+  const getTimestampForAction = (action: string): Date | null => {
+    const log = report.auditLogs.find((l) => l.action === action);
+    return log ? log.timestamp : null;
+  };
+
+  const timeline = [
+    {
+      title: "Report Submitted",
+      description: `Item: ${report.itemName} logged on system.`,
+      status: "completed", // Always completed if the report exists
+      timestamp: getTimestampForAction("REPORT_CREATED") || report.createdAt,
+    },
+    {
+      title: "Driver Reviewing",
+      description: `${driverInfo.name} is checking their vehicle coordinates.`,
+      status:
+        report.reportStatus === REPORT_STATUS.REPORTED
+          ? "pending"
+          : report.reportStatus === REPORT_STATUS.UNDER_REVIEW
+          ? "active"
+          : "completed",
+      timestamp: getTimestampForAction("ADMIN_ACTION") || getTimestampForAction("DRIVER_FOUND") || getTimestampForAction("DRIVER_NOT_FOUND") || null,
+    },
+    {
+      title: "Item Found / Not Found",
+      description:
+        report.foundStatus === FOUND_STATUS.FOUND
+          ? "Item has been located by the driver."
+          : report.foundStatus === FOUND_STATUS.NOT_FOUND
+          ? "Driver was unable to find the item."
+          : "Waiting for confirmation from driver.",
+      status:
+        report.foundStatus === FOUND_STATUS.PENDING
+          ? "pending"
+          : "completed",
+      timestamp: getTimestampForAction("DRIVER_FOUND") || getTimestampForAction("DRIVER_NOT_FOUND"),
+    },
+    {
+      title: "Return Method Selected",
+      description: report.recoveryMethod
+        ? `Chosen Recovery: ${report.recoveryMethod === RECOVERY_METHOD.PASSENGER_PICKUP ? "Passenger Pickup" : "Driver Delivery"}`
+        : "Chosen Recovery: Pending selection",
+      status: report.recoveryMethod
+        ? "completed"
+        : report.foundStatus === FOUND_STATUS.FOUND
+        ? "active"
+        : "pending",
+      timestamp: getTimestampForAction("RECOVERY_SELECTED") || getTimestampForAction("PAYMENT_COMPLETED") || null,
+    },
+    {
+      title: "Return Scheduled",
+      description: report.scheduledAt
+        ? `Scheduled for: ${report.scheduledAt.toLocaleString()}`
+        : "Delivery or Passenger Meet schedule set.",
+      status:
+        [REPORT_STATUS.RETURN_SCHEDULED, REPORT_STATUS.RETURN_IN_PROGRESS, REPORT_STATUS.RETURN_COMPLETED, REPORT_STATUS.RECEIVED, REPORT_STATUS.CLOSED].includes(report.reportStatus)
+          ? "completed"
+          : report.recoveryMethod
+          ? "active"
+          : "pending",
+      timestamp: report.scheduledAt || null,
+    },
+    {
+      title: "Returned Successfully",
+      description: "Safety checklist finalized and confirmed.",
+      status:
+        [REPORT_STATUS.RECEIVED, REPORT_STATUS.CLOSED].includes(report.reportStatus)
+          ? "completed"
+          : report.reportStatus === REPORT_STATUS.RETURN_COMPLETED
+          ? "active"
+          : "pending",
+      timestamp: getTimestampForAction("PASSENGER_CONFIRMED") || null,
+    },
+  ];
+
+  return {
+    reportId: report._id,
+    reportNumber: report.reportNumber,
+    currentStatus: report.reportStatus,
+    currentStatusText,
+    driverInfo,
+    timeline,
+  };
+};
+
 export const LostAndFoundService = {
   reportLostItem,
   getMyReports,
@@ -863,4 +1067,5 @@ export const LostAndFoundService = {
   handleLostFoundPaymentFailed,
   getAllReports,
   adminUpdateReport,
+  trackReportStatus,
 };

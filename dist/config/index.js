@@ -98,10 +98,8 @@ exports.default = {
     lostFound: {
         enabled: process.env.LOST_FOUND_ENABLED !== "false",
         reportWindowDays: parseInt(process.env.LOST_FOUND_REPORT_WINDOW_DAYS || "7"),
-        maxImages: parseInt(process.env.LOST_FOUND_MAX_IMAGES || "5"),
-        maxVideos: parseInt(process.env.LOST_FOUND_MAX_VIDEOS || "2"),
-        maxImageSizeMb: parseInt(process.env.LOST_FOUND_MAX_IMAGE_SIZE_MB || "10"),
-        maxVideoSizeMb: parseInt(process.env.LOST_FOUND_MAX_VIDEO_SIZE_MB || "50"),
+        maxFiles: parseInt(process.env.LOST_FOUND_MAX_FILES || "5"),
+        maxFileSizeMb: parseInt(process.env.LOST_FOUND_MAX_FILE_SIZE_MB || "10"),
         defaultDeliveryFee: parseFloat(process.env.LOST_FOUND_DEFAULT_DELIVERY_FEE || "0"),
         returnConfirmationHours: parseInt(process.env.LOST_FOUND_RETURN_CONFIRMATION_HOURS || "48"),
         autoCloseDays: parseInt(process.env.LOST_FOUND_AUTO_CLOSE_DAYS || "30"),
