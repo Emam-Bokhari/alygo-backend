@@ -1,0 +1,196 @@
+"use strict";
+var __awaiter =
+  (this && this.__awaiter) ||
+  function (thisArg, _arguments, P, generator) {
+    function adopt(value) {
+      return value instanceof P
+        ? value
+        : new P(function (resolve) {
+            resolve(value);
+          });
+    }
+    return new (P || (P = Promise))(function (resolve, reject) {
+      function fulfilled(value) {
+        try {
+          step(generator.next(value));
+        } catch (e) {
+          reject(e);
+        }
+      }
+      function rejected(value) {
+        try {
+          step(generator["throw"](value));
+        } catch (e) {
+          reject(e);
+        }
+      }
+      function step(result) {
+        result.done
+          ? resolve(result.value)
+          : adopt(result.value).then(fulfilled, rejected);
+      }
+      step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+  };
+var __importDefault =
+  (this && this.__importDefault) ||
+  function (mod) {
+    return mod && mod.__esModule ? mod : { default: mod };
+  };
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.SystemConfigurationService = void 0;
+const http_status_codes_1 = require("http-status-codes");
+const systemConfiguration_model_1 = require("./systemConfiguration.model");
+const ApiErrors_1 = __importDefault(require("../../../errors/ApiErrors"));
+const systemConfigHelper_1 = require("../../../helpers/systemConfigHelper");
+const getDefaultSystemConfig = () => ({
+  driverMatching: {
+    initialSearchRadiusKm: 5,
+    radiusExpansionDistanceKm: 3,
+    driverVisibilityDurationSeconds: 60,
+    rideRequestLifetimeSeconds: 300,
+    maxSearchRadiusKm: 50,
+  },
+  tracking: {
+    minLocationUpdateIntervalSeconds: 2,
+    minMovementDistanceMeters: 10,
+    maxGpsAccuracyToleranceMeters: 50,
+    arrivalRadiusMeters: 30,
+    etaRefreshIntervalSeconds: 10,
+    averageSpeedKmh: 40,
+    enableSocketOptimization: true,
+  },
+  reservation: {
+    enabled: true,
+    minAdvanceMinutes: 30,
+    maxAdvanceDays: 30,
+    driverVisibleBeforeMinutes: 60,
+    driverAssignmentTimeoutMinutes: 5,
+    reminder24h: true,
+    reminder1h: true,
+    reminder30m: true,
+    reminder15m: true,
+  },
+});
+const getSystemConfig = (session) =>
+  __awaiter(void 0, void 0, void 0, function* () {
+    let config =
+      yield systemConfiguration_model_1.SystemConfiguration.findOne().session(
+        session,
+      );
+    if (!config) {
+      const [newConfig] =
+        yield systemConfiguration_model_1.SystemConfiguration.create(
+          [getDefaultSystemConfig()],
+          { session },
+        );
+      config = newConfig;
+    }
+    return config;
+  });
+const createSystemConfigurationToDB = (payload) =>
+  __awaiter(void 0, void 0, void 0, function* () {
+    const config =
+      yield systemConfiguration_model_1.SystemConfiguration.findOne();
+    if (config) {
+      const updated =
+        yield systemConfiguration_model_1.SystemConfiguration.findByIdAndUpdate(
+          config._id,
+          payload,
+          { new: true },
+        );
+      if (!updated) {
+        throw new ApiErrors_1.default(
+          http_status_codes_1.StatusCodes.BAD_REQUEST,
+          "Failed to update system configuration",
+        );
+      }
+      return updated;
+    }
+    const createSystemConfiguration =
+      yield systemConfiguration_model_1.SystemConfiguration.create(payload);
+    if (!createSystemConfiguration) {
+      throw new ApiErrors_1.default(
+        http_status_codes_1.StatusCodes.BAD_REQUEST,
+        "Failed to create system configuration",
+      );
+    }
+    return createSystemConfiguration;
+  });
+const getSystemConfigurationFromDB = (_systemConfigurationId) =>
+  __awaiter(void 0, void 0, void 0, function* () {
+    return yield getSystemConfig();
+  });
+const getAllSystemConfigurationFromDB = (...args_1) =>
+  __awaiter(void 0, [...args_1], void 0, function* (_query = {}) {
+    const config = yield getSystemConfig();
+    const result = config ? [config] : [];
+    return {
+      meta: {
+        page: 1,
+        limit: 10,
+        total: result.length,
+        totalPage: 1,
+      },
+      result,
+    };
+  });
+const getActiveSystemConfigurationFromDB = (...args_1) =>
+  __awaiter(void 0, [...args_1], void 0, function* (_query = {}) {
+    const config = yield getSystemConfig();
+    const result = config ? [config] : [];
+    return {
+      meta: {
+        page: 1,
+        limit: 10,
+        total: result.length,
+        totalPage: 1,
+      },
+      result,
+    };
+  });
+const updateSystemConfigurationToDB = (_systemConfigurationId, payload) =>
+  __awaiter(void 0, void 0, void 0, function* () {
+    let config = yield getSystemConfig();
+    if (!config) {
+      // If config doesn't exist (after deletion), create it with default values first
+      const [newConfig] =
+        yield systemConfiguration_model_1.SystemConfiguration.create([
+          getDefaultSystemConfig(),
+        ]);
+      config = newConfig;
+    }
+    const updated =
+      yield systemConfiguration_model_1.SystemConfiguration.findByIdAndUpdate(
+        config._id,
+        payload,
+        { new: true },
+      );
+    if (!updated) {
+      throw new ApiErrors_1.default(
+        http_status_codes_1.StatusCodes.NOT_FOUND,
+        "System configuration not found",
+      );
+    }
+    // Clear cache so new values are used immediately
+    (0, systemConfigHelper_1.clearSystemConfigCache)();
+    return updated;
+  });
+const deleteSystemConfigurationToDB = (_systemConfigurationId) =>
+  __awaiter(void 0, void 0, void 0, function* () {
+    const config = yield getSystemConfig();
+    const result =
+      yield systemConfiguration_model_1.SystemConfiguration.softDeleteById(
+        config._id.toString(),
+      );
+    return result;
+  });
+exports.SystemConfigurationService = {
+  getSystemConfig,
+  createSystemConfigurationToDB,
+  getSystemConfigurationFromDB,
+  getAllSystemConfigurationFromDB,
+  getActiveSystemConfigurationFromDB,
+  updateSystemConfigurationToDB,
+  deleteSystemConfigurationToDB,
+};

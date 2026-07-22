@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.CANCELLATION_REASON_USER_TYPE = void 0;
+var CANCELLATION_REASON_USER_TYPE;
+(function (CANCELLATION_REASON_USER_TYPE) {
+  CANCELLATION_REASON_USER_TYPE["USER"] = "user";
+  CANCELLATION_REASON_USER_TYPE["DRIVER"] = "driver";
+})(
+  CANCELLATION_REASON_USER_TYPE ||
+    (exports.CANCELLATION_REASON_USER_TYPE = CANCELLATION_REASON_USER_TYPE =
+      {}),
+);

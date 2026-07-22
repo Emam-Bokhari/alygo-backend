@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Alygo Socket Diagnostics</title>
+    <!-- Standard google fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Include Socket.io client from CDN -->
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <style>
+      :root {
+        --bg-dark: #0f172a;
+        --bg-card: #1e293b;
+        --primary: #3b82f6;
+        --success: #10b981;
+        --danger: #ef4444;
+        --text: #f8fafc;
+        --text-muted: #94a3b8;
+      }
+
+      body {
+        font-family: "Outfit", sans-serif;
+        background-color: var(--bg-dark);
+        color: var(--text);
+        margin: 0;
+        padding: 2rem;
+      }
+
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+      }
+
+      h1 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, #60a5fa, #3b82f6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      p.subtitle {
+        color: var(--text-muted);
+        margin-bottom: 2rem;
+      }
+
+      .card {
+        background-color: var(--bg-card);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        margin-bottom: 1.5rem;
+      }
+
+      .form-group {
+        margin-bottom: 1rem;
+      }
+
+      label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: var(--text-muted);
+      }
+
+      input {
+        width: 100%;
+        background-color: #0f172a;
+        border: 1px solid #334155;
+        border-radius: 0.5rem;
+        padding: 0.75rem;
+        color: var(--text);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.9rem;
+        box-sizing: border-box;
+      }
+
+      input:focus {
+        outline: none;
+        border-color: var(--primary);
+      }
+
+      .btn {
+        background-color: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .btn:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+      }
+
+      .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-weight: 600;
+        font-size: 0.85rem;
+      }
+
+      .status-disconnected {
+        background-color: rgba(239, 68, 68, 0.2);
+        color: var(--danger);
+      }
+
+      .status-connected {
+        background-color: rgba(16, 185, 129, 0.2);
+        color: var(--success);
+      }
+
+      .log-container {
+        background-color: #020617;
+        border-radius: 0.75rem;
+        padding: 1rem;
+        height: 400px;
+        overflow-y: auto;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.85rem;
+        border: 1px solid #1e293b;
+      }
+
+      .log-entry {
+        margin-bottom: 0.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #0f172a;
+        line-height: 1.4;
+      }
+
+      .log-time {
+        color: #64748b;
+        margin-right: 0.5rem;
+      }
+
+      .log-info {
+        color: var(--primary);
+      }
+
+      .log-success {
+        color: var(--success);
+      }
+
+      .log-danger {
+        color: var(--danger);
+      }
+
+      .log-payload {
+        display: block;
+        margin-top: 0.25rem;
+        padding: 0.5rem;
+        background-color: #0f172a;
+        border-radius: 0.25rem;
+        white-space: pre-wrap;
+        color: #cbd5e1;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <h1>Alygo Socket Diagnostics</h1>
+      <p class="subtitle">
+        Real-time Socket.IO Event Monitor for Passenger/User namespace.
+      </p>
+
+      <div class="card"> 
+        <div class="form-group">
+          <label for="serverUrl">Socket.IO Server URL</label>
+          <input type="text" id="serverUrl" value="http://10.10.7.10:5007" />
+        </div>
+        <div class="form-group">
+          <label for="token"
+            >User JWT Token (Passenger: 6a4dcdd78168c6bef650c0be)</label
+          >
+          <input
+            type="text"
+            id="token"
+            value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhNTlhZjE1NWQyOTRjMmM0MTExNTg1ZCIsInJvbGUiOiJkcml2ZXIiLCJlbWFpbCI6InN0dWRlbnRlbWFtQGdtYWlsLmNvbSIsImlhdCI6MTc4NDYyOTg2MywiZXhwIjoxNzg3MjIxODYzfQ.9-GJKirYZT0YTx4F0aZ2c7Qc9ygzCwG6j0JdH-w3dAQ"
+          />
+        </div>
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 1.5rem;
+          "
+        >
+          <button id="connectBtn" class="btn">Connect Socket</button>
+          <div>
+            Status:
+            <span id="statusBadge" class="status-badge status-disconnected"
+              >Disconnected</span
+            >
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+          "
+        >
+          <h2 style="margin: 0; font-size: 1.25rem; font-weight: 600">
+            Incoming Events Log
+          </h2>
+          <button
+            id="clearBtn"
+            style="
+              background: none;
+              border: none;
+              color: var(--text-muted);
+              cursor: pointer;
+              text-decoration: underline;
+              font-family: inherit;
+            "
+          >
+            Clear logs
+          </button>
+        </div>
+        <div id="logs" class="log-container">
+          <div class="log-entry">
+            <span class="log-time">[System]</span> Click "Connect Socket" above
+            to initialize diagnostic monitor.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let socket = null;
+      const serverUrlInput = document.getElementById("serverUrl");
+      const tokenInput = document.getElementById("token");
+      const connectBtn = document.getElementById("connectBtn");
+      const statusBadge = document.getElementById("statusBadge");
+      const logsDiv = document.getElementById("logs");
+      const clearBtn = document.getElementById("clearBtn");
+
+      function log(message, type = "info", payload = null) {
+        const entry = document.createElement("div");
+        entry.className = "log-entry";
+
+        const timeSpan = document.createElement("span");
+        timeSpan.className = "log-time";
+        timeSpan.textContent = new Date().toLocaleTimeString();
+        entry.appendChild(timeSpan);
+
+        const msgSpan = document.createElement("span");
+        msgSpan.className = `log-${type}`;
+        msgSpan.textContent = message;
+        entry.appendChild(msgSpan);
+
+        if (payload) {
+          const payloadCode = document.createElement("code");
+          payloadCode.className = "log-payload";
+          payloadCode.textContent = JSON.stringify(payload, null, 2);
+          entry.appendChild(payloadCode);
+        }
+
+        logsDiv.appendChild(entry);
+        logsDiv.scrollTop = logsDiv.scrollHeight;
+      }
+
+      clearBtn.addEventListener("click", () => {
+        logsDiv.innerHTML = "";
+        log("Logs cleared.", "info");
+      });
+
+      connectBtn.addEventListener("click", () => {
+        if (socket) {
+          log("Disconnecting current socket...", "info");
+          socket.disconnect();
+        }
+
+        const url = serverUrlInput.value.trim();
+        const token = tokenInput.value.trim();
+
+        log(`Connecting to Socket.IO server at ${url}...`, "info");
+
+        socket = io(url, {
+          query: { token },
+          transports: ["websocket", "polling"],
+        });
+
+        socket.on("connect", () => {
+          statusBadge.textContent = "Connected";
+          statusBadge.className = "status-badge status-connected";
+          log("Socket connected successfully! ID: " + socket.id, "success");
+        });
+
+        socket.on("disconnect", (reason) => {
+          statusBadge.textContent = "Disconnected";
+          statusBadge.className = "status-badge status-disconnected";
+          log(`Socket disconnected. Reason: ${reason}`, "danger");
+        });
+
+        socket.on("connect_error", (error) => {
+          log(`Connection Error: ${error.message}`, "danger");
+        });
+
+        // Register listener for driver-location-updated
+        socket.on("driver-location-updated", (data) => {
+          log("RECEIVED EVENT: driver-location-updated", "success", data);
+        });
+
+        // Register listener for other events
+        const events = [
+          "ride-accepted",
+          "driver-on-the-way",
+          "driver-arrived",
+          "start-otp-generated",
+          "ride-started",
+          "ride-completed",
+          "payment-completed",
+          "ride-cancelled",
+        ];
+
+        events.forEach((eventName) => {
+          socket.on(eventName, (data) => {
+            log(`RECEIVED EVENT: ${eventName}`, "success", data);
+          });
+        });
+
+        log(
+          "Registered listeners for: driver-location-updated, " +
+            events.join(", "),
+          "info",
+        );
+      });
+    </script>
+  </body>
+</html>

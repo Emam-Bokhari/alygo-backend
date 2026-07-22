@@ -1,0 +1,91 @@
+import { StatusCodes } from "http-status-codes";
+import { SystemConfiguration } from "./systemConfiguration.model";
+import { ISystemConfiguration } from "./systemConfiguration.interface";
+import ApiError from "../../../errors/ApiErrors";
+import { clearSystemConfigCache } from "../../../helpers/systemConfigHelper";
+
+const getDefaultSystemConfig = (): ISystemConfiguration => ({
+  driverMatching: {
+    initialSearchRadiusKm: 5,
+    radiusExpansionDistanceKm: 3,
+    driverVisibilityDurationSeconds: 60,
+    rideRequestLifetimeSeconds: 300,
+    maxSearchRadiusKm: 50,
+  },
+  tracking: {
+    minLocationUpdateIntervalSeconds: 2,
+    minMovementDistanceMeters: 10,
+    maxGpsAccuracyToleranceMeters: 50,
+    arrivalRadiusMeters: 30,
+    etaRefreshIntervalSeconds: 10,
+    averageSpeedKmh: 40,
+    enableSocketOptimization: true,
+  },
+  reservation: {
+    enabled: true,
+    minAdvanceMinutes: 30,
+    maxAdvanceDays: 30,
+    driverVisibleBeforeMinutes: 60,
+    driverAssignmentTimeoutMinutes: 5,
+    reminder24h: true,
+    reminder1h: true,
+    reminder30m: true,
+    reminder15m: true,
+  },
+});
+
+const getSystemConfig = async (
+  session?: any,
+): Promise<ISystemConfiguration> => {
+  let config = await SystemConfiguration.findOne().session(session);
+  if (!config) {
+    const [newConfig] = await SystemConfiguration.create(
+      [getDefaultSystemConfig()],
+      { session },
+    );
+    config = newConfig;
+  }
+  return config;
+};
+
+const getSystemConfigurationFromDB =
+  async (): Promise<ISystemConfiguration> => {
+    return await getSystemConfig();
+  };
+
+const createOrUpdateSystemConfigurationToDB = async (
+  payload: Partial<ISystemConfiguration>,
+): Promise<ISystemConfiguration> => {
+  const existingConfig = await SystemConfiguration.findOne();
+
+  if (existingConfig) {
+    const updated = await SystemConfiguration.findOneAndUpdate({}, payload, {
+      new: true,
+      runValidators: true,
+    });
+    if (!updated) {
+      throw new ApiError(
+        StatusCodes.BAD_REQUEST,
+        "Failed to update system configuration",
+      );
+    }
+    clearSystemConfigCache();
+    return updated;
+  } else {
+    const newConfig = await SystemConfiguration.create(payload);
+    if (!newConfig) {
+      throw new ApiError(
+        StatusCodes.BAD_REQUEST,
+        "Failed to create system configuration",
+      );
+    }
+    clearSystemConfigCache();
+    return newConfig;
+  }
+};
+
+export const SystemConfigurationService = {
+  getSystemConfig,
+  getSystemConfigurationFromDB,
+  createOrUpdateSystemConfigurationToDB,
+};
