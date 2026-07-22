@@ -1,86 +1,59 @@
 "use strict";
-var __createBinding =
-  (this && this.__createBinding) ||
-  (Object.create
-    ? function (o, m, k, k2) {
-        if (k2 === undefined) k2 = k;
-        var desc = Object.getOwnPropertyDescriptor(m, k);
-        if (
-          !desc ||
-          ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)
-        ) {
-          desc = {
-            enumerable: true,
-            get: function () {
-              return m[k];
-            },
-          };
-        }
-        Object.defineProperty(o, k2, desc);
-      }
-    : function (o, m, k, k2) {
-        if (k2 === undefined) k2 = k;
-        o[k2] = m[k];
-      });
-var __setModuleDefault =
-  (this && this.__setModuleDefault) ||
-  (Object.create
-    ? function (o, v) {
-        Object.defineProperty(o, "default", { enumerable: true, value: v });
-      }
-    : function (o, v) {
-        o["default"] = v;
-      });
-var __importStar =
-  (this && this.__importStar) ||
-  function (mod) {
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null)
-      for (var k in mod)
-        if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k))
-          __createBinding(result, mod, k);
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
     __setModuleDefault(result, mod);
     return result;
-  };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DeviceToken = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
-const deviceTokenSchema = new mongoose_1.Schema(
-  {
+const deviceTokenSchema = new mongoose_1.Schema({
     userId: {
-      type: mongoose_1.default.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
+        type: mongoose_1.default.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
     },
     fcmToken: {
-      type: String,
-      required: true,
-      trim: true,
+        type: String,
+        required: true,
+        trim: true,
     },
     deviceType: {
-      type: String,
-      enum: ["ios", "android", "web"],
-      default: "android",
+        type: String,
+        enum: ["ios", "android", "web"],
+        default: "android",
     },
     deviceId: {
-      type: String,
-      required: true,
-      trim: true,
+        type: String,
+        required: true,
+        trim: true,
     },
-  },
-  {
+}, {
     timestamps: true,
     versionKey: false,
-  },
-);
+});
 // 2. Compound Index: Ensures a User + Device combo is unique
 // (Prevents User A from having 5 entries for the same "iPhone 13")
 deviceTokenSchema.index({ userId: 1, deviceId: 1 }, { unique: true });
 // 15552000 seconds = 180 days
 deviceTokenSchema.index({ updatedAt: 1 }, { expireAfterSeconds: 15552000 });
 deviceTokenSchema.index({ fcmToken: 1 });
-exports.DeviceToken = mongoose_1.default.model(
-  "DeviceToken",
-  deviceTokenSchema,
-);
+exports.DeviceToken = mongoose_1.default.model("DeviceToken", deviceTokenSchema);

@@ -1,110 +1,68 @@
 "use strict";
-var __awaiter =
-  (this && this.__awaiter) ||
-  function (thisArg, _arguments, P, generator) {
-    function adopt(value) {
-      return value instanceof P
-        ? value
-        : new P(function (resolve) {
-            resolve(value);
-          });
-    }
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
-      function fulfilled(value) {
-        try {
-          step(generator.next(value));
-        } catch (e) {
-          reject(e);
-        }
-      }
-      function rejected(value) {
-        try {
-          step(generator["throw"](value));
-        } catch (e) {
-          reject(e);
-        }
-      }
-      function step(result) {
-        result.done
-          ? resolve(result.value)
-          : adopt(result.value).then(fulfilled, rejected);
-      }
-      step((generator = generator.apply(thisArg, _arguments || [])).next());
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
-  };
-var __importDefault =
-  (this && this.__importDefault) ||
-  function (mod) {
-    return mod && mod.__esModule ? mod : { default: mod };
-  };
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SupportControllers = void 0;
 const ApiErrors_1 = __importDefault(require("../../../errors/ApiErrors"));
 const catchAsync_1 = __importDefault(require("../../../shared/catchAsync"));
 const sendResponse_1 = __importDefault(require("../../../shared/sendResponse"));
 const support_service_1 = require("./support.service");
-const submitSupportRequest = (0, catchAsync_1.default)((req, res) =>
-  __awaiter(void 0, void 0, void 0, function* () {
+const submitSupportRequest = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const supportData = req.body;
     if (!req.user) {
-      throw new ApiErrors_1.default(401, "User not authenticated");
+        throw new ApiErrors_1.default(401, "User not authenticated");
     }
     const { id } = req.user;
-    const result = yield support_service_1.SupportServices.support(
-      id,
-      supportData,
-    );
+    const result = yield support_service_1.SupportServices.support(id, supportData);
     (0, sendResponse_1.default)(res, {
-      statusCode: 200,
-      success: true,
-      message:
-        "Support request submitted successfully and email sent to admin.",
-      data: result,
+        statusCode: 200,
+        success: true,
+        message: "Support request submitted successfully and email sent to admin.",
+        data: result,
     });
-  }),
-);
-const getAllSupports = (0, catchAsync_1.default)((req, res) =>
-  __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield support_service_1.SupportServices.getAllSupportsFromDB(
-      req.query,
-    );
+}));
+const getAllSupports = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield support_service_1.SupportServices.getAllSupportsFromDB(req.query);
     (0, sendResponse_1.default)(res, {
-      success: true,
-      statusCode: 200,
-      message: "Supports data are retrieve successfully",
-      data: result,
+        success: true,
+        statusCode: 200,
+        message: "Supports data are retrieve successfully",
+        data: result,
     });
-  }),
-);
-const getSupportById = (0, catchAsync_1.default)((req, res) =>
-  __awaiter(void 0, void 0, void 0, function* () {
+}));
+const getSupportById = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
-    const result =
-      yield support_service_1.SupportServices.getSupportByIdFromDB(id);
+    const result = yield support_service_1.SupportServices.getSupportByIdFromDB(id);
     (0, sendResponse_1.default)(res, {
-      success: true,
-      statusCode: 200,
-      message: "Support data is retrieve successfully by this ID",
-      data: result,
+        success: true,
+        statusCode: 200,
+        message: "Support data is retrieve successfully by this ID",
+        data: result,
     });
-  }),
-);
-const deleteSupportById = (0, catchAsync_1.default)((req, res) =>
-  __awaiter(void 0, void 0, void 0, function* () {
+}));
+const deleteSupportById = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
-    const result =
-      yield support_service_1.SupportServices.deleteSupportByIdFromDB(id);
+    const result = yield support_service_1.SupportServices.deleteSupportByIdFromDB(id);
     (0, sendResponse_1.default)(res, {
-      success: true,
-      statusCode: 200,
-      message: "Support data is deleted successfully",
-      data: result,
+        success: true,
+        statusCode: 200,
+        message: "Support data is deleted successfully",
+        data: result,
     });
-  }),
-);
+}));
 exports.SupportControllers = {
-  submitSupportRequest,
-  getAllSupports,
-  getSupportById,
-  deleteSupportById,
+    submitSupportRequest,
+    getAllSupports,
+    getSupportById,
+    deleteSupportById,
 };

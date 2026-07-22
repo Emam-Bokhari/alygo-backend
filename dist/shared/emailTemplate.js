@@ -2,15 +2,14 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.emailTemplate = void 0;
 const COLORS = {
-  background: "#0A0A0F",
-  surface: "#16161D",
-  border: "#27272A",
-  primary: "#EA580C",
-  text: "#FEFEFE",
-  secondary: "#A1A1AA",
+    background: "#0A0A0F",
+    surface: "#16161D",
+    border: "#27272A",
+    primary: "#EA580C",
+    text: "#FEFEFE",
+    secondary: "#A1A1AA",
 };
-const LOGO =
-  "https://res.cloudinary.com/dphkhbunv/image/upload/v1783484451/Group_1707478169_toeljh.png";
+const LOGO = "https://res.cloudinary.com/dphkhbunv/image/upload/v1783484451/Group_1707478169_toeljh.png";
 const baseLayout = (title, content) => `
 <!DOCTYPE html>
 <html lang="en">
@@ -259,7 +258,7 @@ Security Tips
 </table>
 `;
 const createAccount = (values) => {
-  const content = `
+    const content = `
 <h2
 style="
 margin:0 0 18px;
@@ -303,14 +302,14 @@ If you didn't create an Alygo account, you can safely ignore this email.
 No further action is required.
 </p>
 `;
-  return {
-    to: values.email,
-    subject: "Verify your Alygo account",
-    html: baseLayout("Verify your Alygo account", content),
-  };
+    return {
+        to: values.email,
+        subject: "Verify your Alygo account",
+        html: baseLayout("Verify your Alygo account", content),
+    };
 };
 const resetPassword = (values) => {
-  const content = `
+    const content = `
 <h2
 style="
 margin:0 0 18px;
@@ -353,14 +352,14 @@ If you didn't request a password reset, you can safely ignore this email.
 Your account remains secure.
 </p>
 `;
-  return {
-    to: values.email,
-    subject: "Reset your Alygo password",
-    html: baseLayout("Reset your Alygo password", content),
-  };
+    return {
+        to: values.email,
+        subject: "Reset your Alygo password",
+        html: baseLayout("Reset your Alygo password", content),
+    };
 };
 const supportNotification = (values) => {
-  const content = `
+    const content = `
 <h2
 style="
 margin:0 0 18px;
@@ -588,14 +587,14 @@ Please review the request and respond as soon as possible.
 
 </table>
 `;
-  return {
-    to: values.to,
-    subject: `Alygo Support Request: ${values.subject}`,
-    html: baseLayout("Support Request", content),
-  };
+    return {
+        to: values.to,
+        subject: `Alygo Support Request: ${values.subject}`,
+        html: baseLayout("Support Request", content),
+    };
 };
 exports.emailTemplate = {
-  createAccount,
-  resetPassword,
-  supportNotification,
+    createAccount,
+    resetPassword,
+    supportNotification,
 };

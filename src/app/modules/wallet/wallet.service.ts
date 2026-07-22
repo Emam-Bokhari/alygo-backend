@@ -49,9 +49,13 @@ const getWalletBalance = async (userId: string): Promise<any> => {
 /**
  * Get wallet transaction history
  */
-const getWalletHistory = async (userId: string): Promise<any> => {
+const getWalletHistory = async (
+  userId: string,
+  role?: string,
+  filter: string = "all",
+): Promise<any> => {
   await getOrCreateWallet(userId);
-  return await TransactionService.getTransactionsByUser(userId);
+  return await TransactionService.getTransactionsByUser(userId, role, filter);
 };
 
 /**

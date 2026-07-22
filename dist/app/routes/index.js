@@ -1,9 +1,7 @@
 "use strict";
-var __importDefault =
-  (this && this.__importDefault) ||
-  function (mod) {
-    return mod && mod.__esModule ? mod : { default: mod };
-  };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const user_routes_1 = require("../modules/user/user.routes");
@@ -50,174 +48,174 @@ const systemConfiguration_route_1 = require("../modules/systemConfiguration/syst
 const tripReport_route_1 = require("../modules/tripReport/tripReport.route");
 const router = express_1.default.Router();
 const apiRoutes = [
-  {
-    path: "/users",
-    route: user_routes_1.UserRoutes,
-  },
-  {
-    path: "/auth",
-    route: auth_routes_1.AuthRoutes,
-  },
-  {
-    path: "/rules",
-    route: rule_route_1.RuleRoutes,
-  },
-  {
-    path: "/faqs",
-    route: faq_route_1.FaqRoutes,
-  },
-  {
-    path: "/reviews",
-    route: review_route_1.ReviewRoutes,
-  },
-  {
-    path: "/chats",
-    route: chat_routes_1.ChatRoutes,
-  },
-  {
-    path: "/messages",
-    route: message_routes_1.MessageRoutes,
-  },
-  {
-    path: "/supports",
-    route: support_route_1.SupportRoutes,
-  },
-  {
-    path: "/banners",
-    route: banner_route_1.BannerRoutes,
-  },
-  {
-    path: "/stripe",
-    route: stripe_route_1.StripeRoutes,
-  },
-  {
-    path: "/notifications",
-    route: notification_routes_1.NotificationRoutes,
-  },
-  {
-    path: "/fcmTokens",
-    route: fcmToken_route_1.FcmTokenRoutes,
-  },
-  {
-    path: "/referrals",
-    route: referral_route_1.ReferralRoutes,
-  },
-  {
-    path: "/drivers",
-    route: driver_route_1.DriverRoutes,
-  },
-  {
-    path: "/cars",
-    route: car_routes_1.CarRoutes,
-  },
-  {
-    path: "/service-areas",
-    route: serviceArea_route_1.ServiceAreaRoutes,
-  },
-  {
-    path: "/cancellation-reasons",
-    route: cancellationReason_route_1.CancellationReasonRoutes,
-  },
-  {
-    path: "/driver-duty-policies",
-    route: driverDutyPolicy_route_1.DriverDutyPolicyRoutes,
-  },
-  {
-    path: "/emergency-helplines",
-    route: emergencyHelpline_route_1.EmergencyHelplineRoutes,
-  },
-  {
-    path: "/emergency-contacts",
-    route: emergencyContact_route_1.EmergencyContactRoutes,
-  },
-  {
-    path: "/report-issue-categories",
-    route: reportIssueCategory_route_1.ReportIssueCategoryRoutes,
-  },
-  {
-    path: "/platform-settings",
-    route: platformSettings_route_1.PlatformSettingsRoutes,
-  },
-  {
-    path: "/service-categories",
-    route: serviceCategory_route_1.ServiceCategoryRoutes,
-  },
-  {
-    path: "/tiers",
-    route: tier_route_1.TierRoutes,
-  },
-  {
-    path: "/notification-preferences",
-    route: notificationPreference_route_1.NotificationPreferenceRoutes,
-  },
-  {
-    path: "/ride-categories",
-    route: rideCategory_route_1.RideCategoryRoutes,
-  },
-  {
-    path: "/surge-rules",
-    route: surgeRule_route_1.SurgeRuleRoutes,
-  },
-  {
-    path: "/peak-hours",
-    route: peakHour_route_1.PeakHourRoutes,
-  },
-  {
-    path: "/holidays",
-    route: holiday_route_1.HolidayRoutes,
-  },
-  {
-    path: "/events",
-    route: event_route_1.EventRoutes,
-  },
-  {
-    path: "/fare-configurations",
-    route: fareConfiguration_route_1.FareConfigurationRoutes,
-  },
-  {
-    path: "/cancellation-policies",
-    route: cancellationPolicy_route_1.CancellationPolicyRoutes,
-  },
-  {
-    path: "/lost-and-found-item-categories",
-    route: lostAndFoundItemCategory_route_1.LostAndFoundItemCategoryRoutes,
-  },
-  {
-    path: "/rides",
-    route: ride_route_1.RideRoutes,
-  },
-  {
-    path: "/tracking",
-    route: tracking_route_1.TrackingRoutes,
-  },
-  {
-    path: "/recent-destinations",
-    route: recentDestination_route_1.RecentDestinationRoutes,
-  },
-  {
-    path: "/wallet",
-    route: wallet_route_1.WalletRoutes,
-  },
-  {
-    path: "/transaction",
-    route: transaction_route_1.TransactionRoutes,
-  },
-  {
-    path: "/payout",
-    route: payout_route_1.PayoutRoutes,
-  },
-  {
-    path: "/pending-payments",
-    route: pendingPayment_route_1.PendingPaymentRoutes,
-  },
-  {
-    path: "/system-configurations",
-    route: systemConfiguration_route_1.SystemConfigurationRoutes,
-  },
-  {
-    path: "/trip-reports",
-    route: tripReport_route_1.TripReportRoutes,
-  },
+    {
+        path: "/users",
+        route: user_routes_1.UserRoutes,
+    },
+    {
+        path: "/auth",
+        route: auth_routes_1.AuthRoutes,
+    },
+    {
+        path: "/rules",
+        route: rule_route_1.RuleRoutes,
+    },
+    {
+        path: "/faqs",
+        route: faq_route_1.FaqRoutes,
+    },
+    {
+        path: "/reviews",
+        route: review_route_1.ReviewRoutes,
+    },
+    {
+        path: "/chats",
+        route: chat_routes_1.ChatRoutes,
+    },
+    {
+        path: "/messages",
+        route: message_routes_1.MessageRoutes,
+    },
+    {
+        path: "/supports",
+        route: support_route_1.SupportRoutes,
+    },
+    {
+        path: "/banners",
+        route: banner_route_1.BannerRoutes,
+    },
+    {
+        path: "/stripe",
+        route: stripe_route_1.StripeRoutes,
+    },
+    {
+        path: "/notifications",
+        route: notification_routes_1.NotificationRoutes,
+    },
+    {
+        path: "/fcmTokens",
+        route: fcmToken_route_1.FcmTokenRoutes,
+    },
+    {
+        path: "/referrals",
+        route: referral_route_1.ReferralRoutes,
+    },
+    {
+        path: "/drivers",
+        route: driver_route_1.DriverRoutes,
+    },
+    {
+        path: "/cars",
+        route: car_routes_1.CarRoutes,
+    },
+    {
+        path: "/service-areas",
+        route: serviceArea_route_1.ServiceAreaRoutes,
+    },
+    {
+        path: "/cancellation-reasons",
+        route: cancellationReason_route_1.CancellationReasonRoutes,
+    },
+    {
+        path: "/driver-duty-policies",
+        route: driverDutyPolicy_route_1.DriverDutyPolicyRoutes,
+    },
+    {
+        path: "/emergency-helplines",
+        route: emergencyHelpline_route_1.EmergencyHelplineRoutes,
+    },
+    {
+        path: "/emergency-contacts",
+        route: emergencyContact_route_1.EmergencyContactRoutes,
+    },
+    {
+        path: "/report-issue-categories",
+        route: reportIssueCategory_route_1.ReportIssueCategoryRoutes,
+    },
+    {
+        path: "/platform-settings",
+        route: platformSettings_route_1.PlatformSettingsRoutes,
+    },
+    {
+        path: "/service-categories",
+        route: serviceCategory_route_1.ServiceCategoryRoutes,
+    },
+    {
+        path: "/tiers",
+        route: tier_route_1.TierRoutes,
+    },
+    {
+        path: "/notification-preferences",
+        route: notificationPreference_route_1.NotificationPreferenceRoutes,
+    },
+    {
+        path: "/ride-categories",
+        route: rideCategory_route_1.RideCategoryRoutes,
+    },
+    {
+        path: "/surge-rules",
+        route: surgeRule_route_1.SurgeRuleRoutes,
+    },
+    {
+        path: "/peak-hours",
+        route: peakHour_route_1.PeakHourRoutes,
+    },
+    {
+        path: "/holidays",
+        route: holiday_route_1.HolidayRoutes,
+    },
+    {
+        path: "/events",
+        route: event_route_1.EventRoutes,
+    },
+    {
+        path: "/fare-configurations",
+        route: fareConfiguration_route_1.FareConfigurationRoutes,
+    },
+    {
+        path: "/cancellation-policies",
+        route: cancellationPolicy_route_1.CancellationPolicyRoutes,
+    },
+    {
+        path: "/lost-and-found-item-categories",
+        route: lostAndFoundItemCategory_route_1.LostAndFoundItemCategoryRoutes,
+    },
+    {
+        path: "/rides",
+        route: ride_route_1.RideRoutes,
+    },
+    {
+        path: "/tracking",
+        route: tracking_route_1.TrackingRoutes,
+    },
+    {
+        path: "/recent-destinations",
+        route: recentDestination_route_1.RecentDestinationRoutes,
+    },
+    {
+        path: "/wallet",
+        route: wallet_route_1.WalletRoutes,
+    },
+    {
+        path: "/transaction",
+        route: transaction_route_1.TransactionRoutes,
+    },
+    {
+        path: "/payout",
+        route: payout_route_1.PayoutRoutes,
+    },
+    {
+        path: "/pending-payments",
+        route: pendingPayment_route_1.PendingPaymentRoutes,
+    },
+    {
+        path: "/system-configurations",
+        route: systemConfiguration_route_1.SystemConfigurationRoutes,
+    },
+    {
+        path: "/trip-reports",
+        route: tripReport_route_1.TripReportRoutes,
+    },
 ];
 apiRoutes.forEach((route) => router.use(route.path, route.route));
 exports.default = router;

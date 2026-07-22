@@ -3,173 +3,158 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SystemConfiguration = void 0;
 const mongoose_1 = require("mongoose");
 const softDeletePlugin_1 = require("../../../DB/plugins/softDeletePlugin");
-const driverMatchingSchema = new mongoose_1.Schema(
-  {
+const driverMatchingSchema = new mongoose_1.Schema({
     initialSearchRadiusKm: {
-      type: Number,
-      required: true,
-      min: 0.1,
-      default: 5,
+        type: Number,
+        required: true,
+        min: 0.1,
+        default: 5,
     },
     radiusExpansionDistanceKm: {
-      type: Number,
-      required: true,
-      min: 0.1,
-      default: 3,
+        type: Number,
+        required: true,
+        min: 0.1,
+        default: 3,
     },
     driverVisibilityDurationSeconds: {
-      type: Number,
-      required: true,
-      min: 10,
-      default: 60,
+        type: Number,
+        required: true,
+        min: 10,
+        default: 60,
     },
     rideRequestLifetimeSeconds: {
-      type: Number,
-      required: true,
-      min: 60,
-      default: 300,
+        type: Number,
+        required: true,
+        min: 60,
+        default: 300,
     },
     maxSearchRadiusKm: {
-      type: Number,
-      required: true,
-      min: 1,
-      default: 50,
+        type: Number,
+        required: true,
+        min: 1,
+        default: 50,
     },
-  },
-  { _id: false },
-);
-const trackingSchema = new mongoose_1.Schema(
-  {
+}, { _id: false });
+const trackingSchema = new mongoose_1.Schema({
     minLocationUpdateIntervalSeconds: {
-      type: Number,
-      required: true,
-      min: 1,
-      default: 2,
+        type: Number,
+        required: true,
+        min: 1,
+        default: 2,
     },
     minMovementDistanceMeters: {
-      type: Number,
-      required: true,
-      min: 1,
-      default: 10,
+        type: Number,
+        required: true,
+        min: 1,
+        default: 10,
     },
     maxGpsAccuracyToleranceMeters: {
-      type: Number,
-      required: true,
-      min: 1,
-      default: 50,
+        type: Number,
+        required: true,
+        min: 1,
+        default: 50,
     },
     arrivalRadiusMeters: {
-      type: Number,
-      required: true,
-      min: 5,
-      default: 30,
+        type: Number,
+        required: true,
+        min: 5,
+        default: 30,
     },
     etaRefreshIntervalSeconds: {
-      type: Number,
-      required: true,
-      min: 1,
-      default: 10,
+        type: Number,
+        required: true,
+        min: 1,
+        default: 10,
     },
     averageSpeedKmh: {
-      type: Number,
-      required: true,
-      min: 1,
-      default: 40,
+        type: Number,
+        required: true,
+        min: 1,
+        default: 40,
     },
     enableSocketOptimization: {
-      type: Boolean,
-      required: true,
-      default: true,
+        type: Boolean,
+        required: true,
+        default: true,
     },
-  },
-  { _id: false },
-);
-const reservationConfigSchema = new mongoose_1.Schema(
-  {
+}, { _id: false });
+const reservationConfigSchema = new mongoose_1.Schema({
     enabled: {
-      type: Boolean,
-      required: true,
-      default: true,
+        type: Boolean,
+        required: true,
+        default: true,
     },
     minAdvanceMinutes: {
-      type: Number,
-      required: true,
-      min: 0,
-      default: 30,
+        type: Number,
+        required: true,
+        min: 0,
+        default: 30,
     },
     maxAdvanceDays: {
-      type: Number,
-      required: true,
-      min: 1,
-      default: 30,
+        type: Number,
+        required: true,
+        min: 1,
+        default: 30,
     },
     driverVisibleBeforeMinutes: {
-      type: Number,
-      required: true,
-      min: 0,
-      default: 60,
+        type: Number,
+        required: true,
+        min: 0,
+        default: 60,
     },
     driverAssignmentTimeoutMinutes: {
-      type: Number,
-      required: true,
-      min: 1,
-      default: 5,
+        type: Number,
+        required: true,
+        min: 1,
+        default: 5,
     },
     reminder24h: {
-      type: Boolean,
-      default: true,
+        type: Boolean,
+        default: true,
     },
     reminder1h: {
-      type: Boolean,
-      default: true,
+        type: Boolean,
+        default: true,
     },
     reminder30m: {
-      type: Boolean,
-      default: true,
+        type: Boolean,
+        default: true,
     },
     reminder15m: {
-      type: Boolean,
-      default: true,
+        type: Boolean,
+        default: true,
     },
-  },
-  { _id: false },
-);
-const systemConfigurationSchema = new mongoose_1.Schema(
-  {
+}, { _id: false });
+const systemConfigurationSchema = new mongoose_1.Schema({
     driverMatching: {
-      type: driverMatchingSchema,
-      required: true,
+        type: driverMatchingSchema,
+        required: true,
     },
     tracking: {
-      type: trackingSchema,
-      required: true,
+        type: trackingSchema,
+        required: true,
     },
     reservation: {
-      type: reservationConfigSchema,
-      required: false,
+        type: reservationConfigSchema,
+        required: false,
     },
-  },
-  {
+}, {
     timestamps: true,
     versionKey: false,
     toJSON: {
-      virtuals: true,
-      transform: (_doc, ret) => {
-        delete ret.id;
-        return ret;
-      },
+        virtuals: true,
+        transform: (_doc, ret) => {
+            delete ret.id;
+            return ret;
+        },
     },
     toObject: {
-      virtuals: true,
-      transform: (_doc, ret) => {
-        delete ret.id;
-        return ret;
-      },
+        virtuals: true,
+        transform: (_doc, ret) => {
+            delete ret.id;
+            return ret;
+        },
     },
-  },
-);
+});
 systemConfigurationSchema.plugin(softDeletePlugin_1.softDeletePlugin);
-exports.SystemConfiguration = (0, mongoose_1.model)(
-  "SystemConfiguration",
-  systemConfigurationSchema,
-);
+exports.SystemConfiguration = (0, mongoose_1.model)("SystemConfiguration", systemConfigurationSchema);

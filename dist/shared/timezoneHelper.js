@@ -1,14 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getCommonTimezones =
-  exports.isValidTimezone =
-  exports.isEventActive =
-  exports.isHolidayActive =
-  exports.isPeakHourActive =
-  exports.timezoneToUtc =
-  exports.getCurrentTimeInTimezone =
-  exports.utcToTimezone =
-    void 0;
+exports.getCommonTimezones = exports.isValidTimezone = exports.isEventActive = exports.isHolidayActive = exports.isPeakHourActive = exports.timezoneToUtc = exports.getCurrentTimeInTimezone = exports.getRideScheduleInfo = exports.utcToTimezone = void 0;
 const luxon_1 = require("luxon");
 /**
  * Timezone Helper Utility
@@ -22,16 +14,35 @@ const luxon_1 = require("luxon");
  * @returns DateTime in the specified timezone
  */
 const utcToTimezone = (utcDate, timezone) => {
-  return luxon_1.DateTime.fromJSDate(new Date(utcDate)).setZone(timezone);
+    return luxon_1.DateTime.fromJSDate(new Date(utcDate)).setZone(timezone);
 };
 exports.utcToTimezone = utcToTimezone;
+/**
+ * Format ride schedule info (rideType, scheduledAt, scheduledAtUtc, timezone) for socket events and responses
+ * @param ride - Ride document or object containing rideType, scheduledAt, timezone
+ * @returns Object with ride schedule fields
+ */
+const getRideScheduleInfo = (ride) => {
+    if (!ride)
+        return {};
+    const scheduledAtDisplay = ride.timezone && ride.scheduledAt
+        ? (0, exports.utcToTimezone)(ride.scheduledAt, ride.timezone).toISO()
+        : ride.scheduledAt || null;
+    return {
+        rideType: ride.rideType || "instant",
+        scheduledAt: scheduledAtDisplay,
+        scheduledAtUtc: ride.scheduledAt || null,
+        timezone: ride.timezone || null,
+    };
+};
+exports.getRideScheduleInfo = getRideScheduleInfo;
 /**
  * Get current time in a specific timezone
  * @param timezone - IANA timezone identifier (e.g., "Asia/Dhaka")
  * @returns Current DateTime in the specified timezone
  */
 const getCurrentTimeInTimezone = (timezone) => {
-  return luxon_1.DateTime.now().setZone(timezone);
+    return luxon_1.DateTime.now().setZone(timezone);
 };
 exports.getCurrentTimeInTimezone = getCurrentTimeInTimezone;
 /**
@@ -41,9 +52,7 @@ exports.getCurrentTimeInTimezone = getCurrentTimeInTimezone;
  * @returns DateTime in UTC
  */
 const timezoneToUtc = (localDate, timezone) => {
-  return luxon_1.DateTime.fromJSDate(new Date(localDate), {
-    zone: timezone,
-  }).setZone("UTC");
+    return luxon_1.DateTime.fromJSDate(new Date(localDate), { zone: timezone }).setZone("UTC");
 };
 exports.timezoneToUtc = timezoneToUtc;
 /**
@@ -56,21 +65,22 @@ exports.timezoneToUtc = timezoneToUtc;
  * @returns true if current time is within the peak hour window
  */
 const isPeakHourActive = (startTime, endTime, timezone, applicableDays) => {
-  const nowInTimezone = (0, exports.getCurrentTimeInTimezone)(timezone);
-  const currentDayName = nowInTimezone.toFormat("EEEE").toLowerCase(); // Full day name in lowercase (e.g., "monday")
-  const currentTimeStr = nowInTimezone.toFormat("HH:mm");
-  // Check if current day is applicable
-  if (!applicableDays.includes(currentDayName)) {
-    return false;
-  }
-  // Handle overnight time ranges (e.g., 22:00 - 02:00)
-  if (startTime > endTime) {
-    // Time range crosses midnight
-    return currentTimeStr >= startTime || currentTimeStr <= endTime;
-  } else {
-    // Normal time range within same day
-    return currentTimeStr >= startTime && currentTimeStr <= endTime;
-  }
+    const nowInTimezone = (0, exports.getCurrentTimeInTimezone)(timezone);
+    const currentDayName = nowInTimezone.toFormat("EEEE").toLowerCase(); // Full day name in lowercase (e.g., "monday")
+    const currentTimeStr = nowInTimezone.toFormat("HH:mm");
+    // Check if current day is applicable
+    if (!applicableDays.includes(currentDayName)) {
+        return false;
+    }
+    // Handle overnight time ranges (e.g., 22:00 - 02:00)
+    if (startTime > endTime) {
+        // Time range crosses midnight
+        return currentTimeStr >= startTime || currentTimeStr <= endTime;
+    }
+    else {
+        // Normal time range within same day
+        return currentTimeStr >= startTime && currentTimeStr <= endTime;
+    }
 };
 exports.isPeakHourActive = isPeakHourActive;
 /**
@@ -81,16 +91,11 @@ exports.isPeakHourActive = isPeakHourActive;
  * @returns true if current date is within the holiday range
  */
 const isHolidayActive = (startDateTime, endDateTime, timezone) => {
-  const nowInTimezone = (0, exports.getCurrentTimeInTimezone)(timezone);
-  const startInTimezone = (0, exports.utcToTimezone)(
-    startDateTime,
-    timezone,
-  ).startOf("day");
-  const endInTimezone = (0, exports.utcToTimezone)(endDateTime, timezone).endOf(
-    "day",
-  );
-  const nowStartOfDay = nowInTimezone.startOf("day");
-  return nowStartOfDay >= startInTimezone && nowStartOfDay <= endInTimezone;
+    const nowInTimezone = (0, exports.getCurrentTimeInTimezone)(timezone);
+    const startInTimezone = (0, exports.utcToTimezone)(startDateTime, timezone).startOf("day");
+    const endInTimezone = (0, exports.utcToTimezone)(endDateTime, timezone).endOf("day");
+    const nowStartOfDay = nowInTimezone.startOf("day");
+    return nowStartOfDay >= startInTimezone && nowStartOfDay <= endInTimezone;
 };
 exports.isHolidayActive = isHolidayActive;
 /**
@@ -101,10 +106,10 @@ exports.isHolidayActive = isHolidayActive;
  * @returns true if current datetime is within the event range
  */
 const isEventActive = (startDateTime, endDateTime, timezone) => {
-  const nowInTimezone = (0, exports.getCurrentTimeInTimezone)(timezone);
-  const startInTimezone = (0, exports.utcToTimezone)(startDateTime, timezone);
-  const endInTimezone = (0, exports.utcToTimezone)(endDateTime, timezone);
-  return nowInTimezone >= startInTimezone && nowInTimezone <= endInTimezone;
+    const nowInTimezone = (0, exports.getCurrentTimeInTimezone)(timezone);
+    const startInTimezone = (0, exports.utcToTimezone)(startDateTime, timezone);
+    const endInTimezone = (0, exports.utcToTimezone)(endDateTime, timezone);
+    return nowInTimezone >= startInTimezone && nowInTimezone <= endInTimezone;
 };
 exports.isEventActive = isEventActive;
 /**
@@ -113,11 +118,12 @@ exports.isEventActive = isEventActive;
  * @returns true if valid IANA timezone
  */
 const isValidTimezone = (timezone) => {
-  try {
-    return luxon_1.DateTime.now().setZone(timezone).isValid;
-  } catch (_a) {
-    return false;
-  }
+    try {
+        return luxon_1.DateTime.now().setZone(timezone).isValid;
+    }
+    catch (_a) {
+        return false;
+    }
 };
 exports.isValidTimezone = isValidTimezone;
 /**
@@ -125,24 +131,24 @@ exports.isValidTimezone = isValidTimezone;
  * @returns Array of common timezone identifiers
  */
 const getCommonTimezones = () => {
-  return [
-    "UTC",
-    "America/New_York",
-    "America/Chicago",
-    "America/Denver",
-    "America/Los_Angeles",
-    "Europe/London",
-    "Europe/Paris",
-    "Europe/Berlin",
-    "Asia/Dubai",
-    "Asia/Kolkata",
-    "Asia/Dhaka",
-    "Asia/Singapore",
-    "Asia/Hong_Kong",
-    "Asia/Tokyo",
-    "Asia/Seoul",
-    "Australia/Sydney",
-    "Australia/Melbourne",
-  ];
+    return [
+        "UTC",
+        "America/New_York",
+        "America/Chicago",
+        "America/Denver",
+        "America/Los_Angeles",
+        "Europe/London",
+        "Europe/Paris",
+        "Europe/Berlin",
+        "Asia/Dubai",
+        "Asia/Kolkata",
+        "Asia/Dhaka",
+        "Asia/Singapore",
+        "Asia/Hong_Kong",
+        "Asia/Tokyo",
+        "Asia/Seoul",
+        "Australia/Sydney",
+        "Australia/Melbourne",
+    ];
 };
 exports.getCommonTimezones = getCommonTimezones;

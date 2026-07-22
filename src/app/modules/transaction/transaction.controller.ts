@@ -6,7 +6,9 @@ import { TransactionService } from "./transaction.service";
 
 const getMyTransactions = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user.id;
-  const result = await TransactionService.getTransactionsByUser(userId);
+  const role = req.user.role;
+  const filter = (req.query.filter as string) || "all";
+  const result = await TransactionService.getTransactionsByUser(userId, role, filter);
 
   sendResponse(res, {
     statusCode: StatusCodes.OK,
