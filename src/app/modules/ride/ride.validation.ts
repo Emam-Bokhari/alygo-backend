@@ -201,6 +201,15 @@ const userRideHistoryQuerySchema = z.object({
   }),
 });
 
+const getMyReservationsQuerySchema = z.object({
+  query: z.object({
+    status: z.string().optional(),
+    reservationStatus: z.string().optional(),
+    page: z.string().optional(),
+    limit: z.string().optional(),
+  }),
+});
+
 export const RideValidations = {
   estimateRideZodSchema,
   requestRideZodSchema,
@@ -209,4 +218,5 @@ export const RideValidations = {
   addStopsZodSchema,
   driverRideHistoryQuerySchema,
   userRideHistoryQuerySchema,
+  getMyReservationsQuerySchema,
 };

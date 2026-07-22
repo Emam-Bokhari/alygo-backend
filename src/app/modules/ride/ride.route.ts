@@ -49,6 +49,21 @@ router.get(
   RideController.getUserRideHistoryDetails,
 );
 
+// Get user reservation list (Passenger/User only)
+router.get(
+  "/user/reservations",
+  isUser,
+  validateRequest(RideValidations.getMyReservationsQuerySchema),
+  RideController.getMyReservations,
+);
+
+// Get user reservation details by ID (Passenger/User only)
+router.get(
+  "/user/reservations/:id",
+  isUser,
+  RideController.getReservationDetails,
+);
+
 // Request ride (Passenger only)
 router.post(
   "/",
