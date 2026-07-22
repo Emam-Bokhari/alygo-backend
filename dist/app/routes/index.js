@@ -37,6 +37,7 @@ const event_route_1 = require("../modules/event/event.route");
 const fareConfiguration_route_1 = require("../modules/fareConfiguration/fareConfiguration.route");
 const cancellationPolicy_route_1 = require("../modules/cancellationPolicy/cancellationPolicy.route");
 const lostAndFoundItemCategory_route_1 = require("../modules/lostAndFoundItemCategory/lostAndFoundItemCategory.route");
+const lostAndFound_route_1 = require("../modules/lostAndFound/lostAndFound.route");
 const ride_route_1 = require("../modules/ride/ride.route");
 const tracking_route_1 = require("../modules/tracking/tracking.route");
 const recentDestination_route_1 = require("../modules/recentDestination/recentDestination.route");
@@ -178,6 +179,10 @@ const apiRoutes = [
     {
         path: "/lost-and-found-item-categories",
         route: lostAndFoundItemCategory_route_1.LostAndFoundItemCategoryRoutes,
+    },
+    {
+        path: "/lost-found",
+        route: lostAndFound_route_1.LostAndFoundRoutes,
     },
     {
         path: "/rides",

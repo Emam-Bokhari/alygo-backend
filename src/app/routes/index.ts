@@ -32,6 +32,7 @@ import { EventRoutes } from "../modules/event/event.route";
 import { FareConfigurationRoutes } from "../modules/fareConfiguration/fareConfiguration.route";
 import { CancellationPolicyRoutes } from "../modules/cancellationPolicy/cancellationPolicy.route";
 import { LostAndFoundItemCategoryRoutes } from "../modules/lostAndFoundItemCategory/lostAndFoundItemCategory.route";
+import { LostAndFoundRoutes } from "../modules/lostAndFound/lostAndFound.route";
 import { RideRoutes } from "../modules/ride/ride.route";
 import { TrackingRoutes } from "../modules/tracking/tracking.route";
 import { RecentDestinationRoutes } from "../modules/recentDestination/recentDestination.route";
@@ -178,6 +179,10 @@ const apiRoutes = [
   {
     path: "/lost-and-found-item-categories",
     route: LostAndFoundItemCategoryRoutes,
+  },
+  {
+    path: "/lost-found",
+    route: LostAndFoundRoutes,
   },
   {
     path: "/rides",

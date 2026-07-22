@@ -129,6 +129,11 @@ const handleStripeWebhook = (event) => __awaiter(void 0, void 0, void 0, functio
             else if (metadata.type === "driver_appreciation") {
                 yield pendingPayment_service_1.PendingPaymentService.processDriverAppreciationPayment(session.id);
             }
+            else if (metadata.type === "lost_found_payment") {
+                const paymentIntentId = session.payment_intent;
+                const { LostAndFoundService } = require("../../app/modules/lostFound/lostAndFound.service");
+                yield LostAndFoundService.completeLostFoundPayment(metadata.reportId, paymentIntentId, session);
+            }
             break;
         }
         case "checkout.session.expired": {
@@ -147,6 +152,10 @@ const handleStripeWebhook = (event) => __awaiter(void 0, void 0, void 0, functio
                 yield ride_model_1.Ride.findByIdAndUpdate(metadata.rideId, {
                     "payment.status": ride_constant_1.PAYMENT_STATUS.FAILED,
                 });
+            }
+            else if (metadata.type === "lost_found_payment" && metadata.reportId) {
+                const { LostAndFoundService } = require("../../app/modules/lostFound/lostAndFound.service");
+                yield LostAndFoundService.handleLostFoundPaymentFailed(metadata.reportId, session);
             }
             break;
         }
@@ -168,6 +177,10 @@ const handleStripeWebhook = (event) => __awaiter(void 0, void 0, void 0, functio
                 yield ride_model_1.Ride.findByIdAndUpdate(metadata.rideId, {
                     "payment.status": ride_constant_1.PAYMENT_STATUS.FAILED,
                 });
+            }
+            else if (metadata.type === "lost_found_payment" && metadata.reportId) {
+                const { LostAndFoundService } = require("../../app/modules/lostFound/lostAndFound.service");
+                yield LostAndFoundService.handleLostFoundPaymentFailed(metadata.reportId, paymentIntent);
             }
             break;
         }

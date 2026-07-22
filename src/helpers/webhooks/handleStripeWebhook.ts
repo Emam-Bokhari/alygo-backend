@@ -113,6 +113,14 @@ export const handleStripeWebhook = async (event: any): Promise<void> => {
         await PendingPaymentService.processDriverAppreciationPayment(
           session.id,
         );
+      } else if (metadata.type === "lost_found_payment") {
+        const paymentIntentId = session.payment_intent as string;
+        const { LostAndFoundService } = require("../../app/modules/lostAndFound/lostAndFound.service");
+        await LostAndFoundService.completeLostFoundPayment(
+          metadata.reportId,
+          paymentIntentId,
+          session,
+        );
       }
       break;
     }
@@ -138,6 +146,9 @@ export const handleStripeWebhook = async (event: any): Promise<void> => {
         await Ride.findByIdAndUpdate(metadata.rideId, {
           "payment.status": PAYMENT_STATUS.FAILED,
         });
+      } else if (metadata.type === "lost_found_payment" && metadata.reportId) {
+        const { LostAndFoundService } = require("../../app/modules/lostAndFound/lostAndFound.service");
+        await LostAndFoundService.handleLostFoundPaymentFailed(metadata.reportId, session);
       }
       break;
     }
@@ -168,6 +179,9 @@ export const handleStripeWebhook = async (event: any): Promise<void> => {
         await Ride.findByIdAndUpdate(metadata.rideId, {
           "payment.status": PAYMENT_STATUS.FAILED,
         });
+      } else if (metadata.type === "lost_found_payment" && metadata.reportId) {
+        const { LostAndFoundService } = require("../../app/modules/lostAndFound/lostAndFound.service");
+        await LostAndFoundService.handleLostFoundPaymentFailed(metadata.reportId, paymentIntent);
       }
       break;
     }

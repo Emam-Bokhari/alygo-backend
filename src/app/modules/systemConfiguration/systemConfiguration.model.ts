@@ -139,6 +139,53 @@ const reservationConfigSchema = new Schema(
   { _id: false },
 );
 
+const lostFoundConfigSchema = new Schema(
+  {
+    enabled: {
+      type: Boolean,
+      required: true,
+      default: true,
+    },
+    reportWindowDays: {
+      type: Number,
+      required: true,
+      min: 1,
+      default: 7,
+    },
+    maxFiles: {
+      type: Number,
+      required: true,
+      min: 1,
+      default: 5,
+    },
+    maxFileSizeMb: {
+      type: Number,
+      required: true,
+      min: 1,
+      default: 10,
+    },
+    defaultDeliveryFee: {
+      type: Number,
+      required: true,
+      min: 0,
+      default: 0,
+    },
+    returnConfirmationHours: {
+      type: Number,
+      required: true,
+      min: 1,
+      default: 48,
+    },
+    autoCloseDays: {
+      type: Number,
+      required: true,
+      min: 1,
+      default: 30,
+    },
+  },
+  { _id: false },
+);
+
 const systemConfigurationSchema = new Schema<
   ISystemConfiguration,
   SystemConfigurationModel
@@ -154,6 +201,10 @@ const systemConfigurationSchema = new Schema<
     },
     reservation: {
       type: reservationConfigSchema,
+      required: false,
+    },
+    lostFound: {
+      type: lostFoundConfigSchema,
       required: false,
     },
   },

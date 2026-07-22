@@ -29,7 +29,7 @@ const ApiErrors_1 = __importDefault(require("../../../errors/ApiErrors"));
 const getWalletSummary = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.user.id;
     const wallet = yield wallet_service_1.WalletService.getOrCreateWallet(userId);
-    const user = yield user_model_1.User.findById(userId);
+    const user = (yield user_model_1.User.findById(userId));
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_codes_1.StatusCodes.OK,
         success: true,
@@ -45,7 +45,7 @@ const getWalletSummary = (0, catchAsync_1.default)((req, res) => __awaiter(void 
 const getTransactionHistory = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.user.id;
     const role = req.user.role || "user";
-    const { filter, search, page, limit, sortBy, sortOrder, status, startDate, endDate } = req.query;
+    const { filter, search, page, limit, sortBy, sortOrder, status, startDate, endDate, } = req.query;
     const result = yield transaction_service_1.TransactionService.getTransactions(userId, role, {
         filter: filter,
         search: search,
@@ -83,12 +83,17 @@ const getDriverWalletSummary = (0, catchAsync_1.default)((req, res) => __awaiter
             ],
         },
     };
-    totalEarningsQuery.$or = [{ userId: new mongoose_1.Types.ObjectId(userId) }, { driverId: driver._id }];
+    totalEarningsQuery.$or = [
+        { userId: new mongoose_1.Types.ObjectId(userId) },
+        { driverId: driver._id },
+    ];
     const totalEarningsResult = yield transaction_model_1.Transaction.aggregate([
         { $match: totalEarningsQuery },
         { $group: { _id: null, total: { $sum: "$amount" } } },
     ]);
-    const totalEarnings = totalEarningsResult.length > 0 ? parseFloat(totalEarningsResult[0].total.toFixed(2)) : 0;
+    const totalEarnings = totalEarningsResult.length > 0
+        ? parseFloat(totalEarningsResult[0].total.toFixed(2))
+        : 0;
     // Calculate pending balance (sum of pending credits)
     const pendingQuery = {
         paymentStatus: ride_constant_1.PAYMENT_STATUS.PENDING,
@@ -100,12 +105,17 @@ const getDriverWalletSummary = (0, catchAsync_1.default)((req, res) => __awaiter
             ],
         },
     };
-    pendingQuery.$or = [{ userId: new mongoose_1.Types.ObjectId(userId) }, { driverId: driver._id }];
+    pendingQuery.$or = [
+        { userId: new mongoose_1.Types.ObjectId(userId) },
+        { driverId: driver._id },
+    ];
     const pendingResult = yield transaction_model_1.Transaction.aggregate([
         { $match: pendingQuery },
         { $group: { _id: null, total: { $sum: "$amount" } } },
     ]);
-    const pendingBalance = pendingResult.length > 0 ? parseFloat(pendingResult[0].total.toFixed(2)) : 0;
+    const pendingBalance = pendingResult.length > 0
+        ? parseFloat(pendingResult[0].total.toFixed(2))
+        : 0;
     const stripeConnected = !!(driver.stripeConnectedAccountId && driver.isStripeOnboarded);
     const canWithdraw = wallet.balance > 0 && stripeConnected;
     (0, sendResponse_1.default)(res, {
@@ -126,7 +136,7 @@ const getDriverWalletSummary = (0, catchAsync_1.default)((req, res) => __awaiter
 const getDriverTransactionHistory = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.user.id;
     const role = "driver";
-    const { filter, search, page, limit, sortBy, sortOrder, status, startDate, endDate } = req.query;
+    const { filter, search, page, limit, sortBy, sortOrder, status, startDate, endDate, } = req.query;
     const result = yield transaction_service_1.TransactionService.getTransactions(userId, role, {
         filter: filter,
         search: search,

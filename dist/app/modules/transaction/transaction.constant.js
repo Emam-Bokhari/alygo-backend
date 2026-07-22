@@ -10,4 +10,5 @@ var TRANSACTION_TYPE;
     TRANSACTION_TYPE["CANCELLATION_COMPENSATION"] = "cancellation_compensation";
     TRANSACTION_TYPE["PAYOUT"] = "payout";
     TRANSACTION_TYPE["DRIVER_APPRECIATION"] = "driver_appreciation";
+    TRANSACTION_TYPE["LOST_FOUND_DELIVERY"] = "lost_found_delivery";
 })(TRANSACTION_TYPE || (exports.TRANSACTION_TYPE = TRANSACTION_TYPE = {}));

@@ -1,53 +1,81 @@
 import { Model, Types } from "mongoose";
 import {
-  ITEM_NOT_FOUND_REASON,
-  LOST_AND_FOUND_STATUS,
-  RETURN_METHOD,
+  REPORT_STATUS,
+  RECOVERY_METHOD,
+  FOUND_STATUS,
+  PAYMENT_STATUS,
 } from "./lostAndFound.constant";
 
-export interface ILostAndFound {
+export interface ILostFoundAuditLog {
+  action: string;
+  actor: Types.ObjectId;
+  actorRole: string;
+  details?: Record<string, any>;
+  timestamp: Date;
+}
+
+export interface ILostFound {
+  _id?: Types.ObjectId;
   rideId: Types.ObjectId;
-  reporterId: Types.ObjectId; // Passenger who reported losing the item
-  driverId: Types.ObjectId; // Driver who operated the ride
+  passengerId: Types.ObjectId;
+  driverId: Types.ObjectId;
+
+  reportNumber: string;
 
   itemName: string;
-  category: string; // Phone, Wallet, Keys, etc.
-  description: string;
+  itemCategory: Types.ObjectId;
+  itemDescription: string;
 
-  status: LOST_AND_FOUND_STATUS;
+  uploadedFiles?: {
+    fileUrl: string;
+    fileName?: string;
+    uploadedAt?: Date;
+  }[];
 
-  driverResolution?: {
-    isFound: boolean;
-    notFoundReason?: ITEM_NOT_FOUND_REASON;
-    notes?: string;
-    resolvedAt?: Date;
+  lastSeenLocation: string;
+
+  reportStatus: REPORT_STATUS;
+  foundStatus: FOUND_STATUS;
+  recoveryMethod?: RECOVERY_METHOD;
+
+  pickupLocation?: {
+    type: "Point";
+    coordinates: [number, number]; // [longitude, latitude]
+    address: string;
   };
 
-  returnArrangement?: {
-    method: RETURN_METHOD;
-    location?: {
-      type: "Point";
-      coordinates: [number, number]; // [longitude, latitude]
-      address: string;
-    };
-    date: string;
-    time: string;
-    deliveryFee?: number;
-    estimatedArrival?: string;
-
-    // Status trackers for schedule & handover confirmation
-    isPassengerConfirmed: boolean;
-    passengerConfirmedAt?: Date;
-
-    isDriverHandoverCompleted: boolean;
-    driverHandoverCompletedAt?: Date;
-
-    isPassengerHandoverCompleted: boolean;
-    passengerHandoverCompletedAt?: Date;
+  deliveryLocation?: {
+    type: "Point";
+    coordinates: [number, number]; // [longitude, latitude]
+    address: string;
   };
+
+  scheduledAt?: Date;
+
+  deliveryFee: number;
+  paymentStatus: PAYMENT_STATUS;
+
+  paymentIntentId?: string;
+  paymentTransactionId?: Types.ObjectId | string;
+  paymentReference?: string;
+  paymentAmount?: number;
+  paymentCurrency?: string;
+
+  passengerConfirmed: boolean;
+  driverConfirmed: boolean;
+
+  passengerRated: boolean;
+  passengerRating?: number;
+  passengerReview?: string;
+
+  adminNotes?: string;
+  driverNotes?: string;
+  createdBy: Types.ObjectId;
+
+  auditLogs: ILostFoundAuditLog[];
 
   createdAt: Date;
   updatedAt: Date;
 }
 
-export type LostAndFoundModel = Model<ILostAndFound>;
+export type LostFoundModel = Model<ILostFound>;

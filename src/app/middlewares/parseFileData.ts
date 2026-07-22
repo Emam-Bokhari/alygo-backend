@@ -63,8 +63,12 @@ export const parseFileData = (...fields: FieldInput[]) => {
 
         const resolvedMode = resolveMode(mode, fieldFiles);
 
-        if (fieldName === "taxDocuments" || fieldName === "insuranceHub") {
-          // Special handling for taxDocuments and insuranceHub: create array of objects with fileUrl and fileName
+        if (
+          fieldName === "taxDocuments" ||
+          fieldName === "insuranceHub" ||
+          fieldName === "uploadedFiles"
+        ) {
+          // Special handling for taxDocuments, insuranceHub and uploadedFiles: create array of objects with fileUrl and fileName
           fileData[fieldName] = fieldFiles.map((file) => ({
             fileUrl: mapFileToUrl(file, fieldName),
             fileName: file.originalname,
@@ -111,6 +115,21 @@ export const parseFileData = (...fields: FieldInput[]) => {
         );
         // Remove insuranceHub from parsedBody to avoid duplication
         delete parsedBody.insuranceHub;
+      }
+
+      // Merge uploadedFiles data from parsedBody with file data
+      if (fileData.uploadedFiles && parsedBody.uploadedFiles) {
+        const uploadedFilesFromBody = Array.isArray(parsedBody.uploadedFiles)
+          ? parsedBody.uploadedFiles
+          : [];
+        fileData.uploadedFiles = fileData.uploadedFiles.map(
+          (doc: any, index: number) => ({
+            ...doc,
+            ...(uploadedFilesFromBody[index] || {}),
+          }),
+        );
+        // Remove uploadedFiles from parsedBody to avoid duplication
+        delete parsedBody.uploadedFiles;
       }
 
       req.body = {

@@ -141,6 +141,19 @@ export const FILE_CONFIG = {
       "application/pdf",
     ]),
   },
+  uploadedFiles: {
+    dir: "uploadedFiles",
+    maxCount: 15,
+    mimeTypes: new Set([
+      "image/png",
+      "image/jpeg",
+      "image/jpg",
+      "image/webp",
+      "image/svg+xml",
+      "video/mp4",
+      "video/webm",
+    ]),
+  },
 } satisfies Record<string, FileConfig>;
 
 export type IFolderName = keyof typeof FILE_CONFIG;

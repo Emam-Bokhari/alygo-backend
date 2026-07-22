@@ -125,6 +125,61 @@ const reservationConfigSchema = new mongoose_1.Schema({
         default: true,
     },
 }, { _id: false });
+const lostFoundConfigSchema = new mongoose_1.Schema({
+    enabled: {
+        type: Boolean,
+        required: true,
+        default: true,
+    },
+    reportWindowDays: {
+        type: Number,
+        required: true,
+        min: 1,
+        default: 7,
+    },
+    maxImages: {
+        type: Number,
+        required: true,
+        min: 1,
+        default: 5,
+    },
+    maxVideos: {
+        type: Number,
+        required: true,
+        min: 1,
+        default: 2,
+    },
+    maxImageSizeMb: {
+        type: Number,
+        required: true,
+        min: 1,
+        default: 10,
+    },
+    maxVideoSizeMb: {
+        type: Number,
+        required: true,
+        min: 1,
+        default: 50,
+    },
+    defaultDeliveryFee: {
+        type: Number,
+        required: true,
+        min: 0,
+        default: 0,
+    },
+    returnConfirmationHours: {
+        type: Number,
+        required: true,
+        min: 1,
+        default: 48,
+    },
+    autoCloseDays: {
+        type: Number,
+        required: true,
+        min: 1,
+        default: 30,
+    },
+}, { _id: false });
 const systemConfigurationSchema = new mongoose_1.Schema({
     driverMatching: {
         type: driverMatchingSchema,
@@ -136,6 +191,10 @@ const systemConfigurationSchema = new mongoose_1.Schema({
     },
     reservation: {
         type: reservationConfigSchema,
+        required: false,
+    },
+    lostFound: {
+        type: lostFoundConfigSchema,
         required: false,
     },
 }, {

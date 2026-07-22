@@ -137,6 +137,19 @@ exports.FILE_CONFIG = {
             "application/pdf",
         ]),
     },
+    uploadedFiles: {
+        dir: "uploadedFiles",
+        maxCount: 15,
+        mimeTypes: new Set([
+            "image/png",
+            "image/jpeg",
+            "image/jpg",
+            "image/webp",
+            "image/svg+xml",
+            "video/mp4",
+            "video/webm",
+        ]),
+    },
 };
 // utils
 const ensureDir = (dir) => {

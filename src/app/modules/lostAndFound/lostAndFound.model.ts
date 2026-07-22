@@ -1,12 +1,40 @@
 import { model, Schema } from "mongoose";
-import { ILostAndFound, LostAndFoundModel } from "./lostAndFound.interface";
+import { ILostFound, LostFoundModel } from "./lostAndFound.interface";
 import {
-  ITEM_NOT_FOUND_REASON,
-  LOST_AND_FOUND_STATUS,
-  RETURN_METHOD,
+  REPORT_STATUS,
+  RECOVERY_METHOD,
+  FOUND_STATUS,
+  PAYMENT_STATUS,
 } from "./lostAndFound.constant";
 
-const lostAndFoundSchema = new Schema<ILostAndFound, LostAndFoundModel>(
+const auditLogSchema = new Schema(
+  {
+    action: {
+      type: String,
+      required: true,
+    },
+    actor: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    actorRole: {
+      type: String,
+      required: true,
+    },
+    details: {
+      type: Schema.Types.Mixed,
+      required: false,
+    },
+    timestamp: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  { _id: false },
+);
+
+const lostFoundSchema = new Schema<ILostFound, LostFoundModel>(
   {
     rideId: {
       type: Schema.Types.ObjectId,
@@ -14,7 +42,7 @@ const lostAndFoundSchema = new Schema<ILostAndFound, LostAndFoundModel>(
       required: true,
       index: true,
     },
-    reporterId: {
+    passengerId: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
@@ -26,106 +54,174 @@ const lostAndFoundSchema = new Schema<ILostAndFound, LostAndFoundModel>(
       required: true,
       index: true,
     },
+    reportNumber: {
+      type: String,
+      required: true,
+      unique: true,
+      index: true,
+    },
     itemName: {
       type: String,
       required: true,
       trim: true,
     },
-    category: {
+    itemCategory: {
+      type: Schema.Types.ObjectId,
+      ref: "LostAndFoundItemCategory",
+      required: true,
+    },
+    itemDescription: {
       type: String,
       required: true,
       trim: true,
     },
-    description: {
+    uploadedFiles: {
+      type: [
+        {
+          fileUrl: {
+            type: String,
+            required: true,
+          },
+          fileName: {
+            type: String,
+          },
+          uploadedAt: {
+            type: Date,
+            default: Date.now,
+          },
+        },
+      ],
+      default: [],
+    },
+    lastSeenLocation: {
       type: String,
       required: true,
       trim: true,
     },
-    status: {
+    reportStatus: {
       type: String,
-      enum: Object.values(LOST_AND_FOUND_STATUS),
-      default: LOST_AND_FOUND_STATUS.REPORTED,
+      enum: Object.values(REPORT_STATUS),
+      default: REPORT_STATUS.REPORTED,
       index: true,
     },
-    driverResolution: {
-      isFound: {
-        type: Boolean,
-        required: false,
-      },
-      notFoundReason: {
+    foundStatus: {
+      type: String,
+      enum: Object.values(FOUND_STATUS),
+      default: FOUND_STATUS.PENDING,
+      index: true,
+    },
+    recoveryMethod: {
+      type: String,
+      enum: Object.values(RECOVERY_METHOD),
+      required: false,
+    },
+    pickupLocation: {
+      type: {
         type: String,
-        enum: Object.values(ITEM_NOT_FOUND_REASON),
+        enum: ["Point"],
+        default: "Point",
+      },
+      coordinates: {
+        type: [Number],
         required: false,
       },
-      notes: {
+      address: {
         type: String,
         trim: true,
-        default: "",
-      },
-      resolvedAt: {
-        type: Date,
-        required: false,
       },
     },
-    returnArrangement: {
-      method: {
+    deliveryLocation: {
+      type: {
         type: String,
-        enum: Object.values(RETURN_METHOD),
+        enum: ["Point"],
+        default: "Point",
+      },
+      coordinates: {
+        type: [Number],
         required: false,
       },
-      location: {
-        type: {
-          type: String,
-          enum: ["Point"],
-          default: "Point",
-        },
-        coordinates: {
-          type: [Number],
-          required: false,
-        },
-        address: {
-          type: String,
-          trim: true,
-        },
-      },
-      date: {
+      address: {
         type: String,
         trim: true,
       },
-      time: {
-        type: String,
-        trim: true,
-      },
-      deliveryFee: {
-        type: Number,
-        min: 0,
-        default: 0,
-      },
-      estimatedArrival: {
-        type: String,
-        trim: true,
-      },
-      isPassengerConfirmed: {
-        type: Boolean,
-        default: false,
-      },
-      passengerConfirmedAt: {
-        type: Date,
-      },
-      isDriverHandoverCompleted: {
-        type: Boolean,
-        default: false,
-      },
-      driverHandoverCompletedAt: {
-        type: Date,
-      },
-      isPassengerHandoverCompleted: {
-        type: Boolean,
-        default: false,
-      },
-      passengerHandoverCompletedAt: {
-        type: Date,
-      },
+    },
+    scheduledAt: {
+      type: Date,
+      required: false,
+    },
+    deliveryFee: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    paymentStatus: {
+      type: String,
+      enum: Object.values(PAYMENT_STATUS),
+      default: PAYMENT_STATUS.NOT_REQUIRED,
+      index: true,
+    },
+    paymentIntentId: {
+      type: String,
+      required: false,
+    },
+    paymentTransactionId: {
+      type: Schema.Types.ObjectId,
+      ref: "Transaction",
+      required: false,
+    },
+    paymentReference: {
+      type: String,
+      required: false,
+    },
+    paymentAmount: {
+      type: Number,
+      required: false,
+    },
+    paymentCurrency: {
+      type: String,
+      required: false,
+    },
+    passengerConfirmed: {
+      type: Boolean,
+      default: false,
+    },
+    driverConfirmed: {
+      type: Boolean,
+      default: false,
+    },
+    passengerRated: {
+      type: Boolean,
+      default: false,
+    },
+    passengerRating: {
+      type: Number,
+      min: 1,
+      max: 5,
+      required: false,
+    },
+    passengerReview: {
+      type: String,
+      trim: true,
+      required: false,
+    },
+    adminNotes: {
+      type: String,
+      trim: true,
+      required: false,
+    },
+    driverNotes: {
+      type: String,
+      trim: true,
+      required: false,
+    },
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    auditLogs: {
+      type: [auditLogSchema],
+      default: [],
     },
   },
   {
@@ -148,7 +244,7 @@ const lostAndFoundSchema = new Schema<ILostAndFound, LostAndFoundModel>(
   },
 );
 
-export const LostAndFound = model<ILostAndFound, LostAndFoundModel>(
-  "LostAndFound",
-  lostAndFoundSchema,
+export const LostFound = model<ILostFound, LostFoundModel>(
+  "LostFound",
+  lostFoundSchema,
 );

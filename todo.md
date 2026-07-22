@@ -17,10 +17,8 @@
 
 <!--
 # Wednesday Work:
-1. Postman ar folder structure ta thik kore felte hobe
-2. poro flow ta soho data properly populate hoitse kina shaita check dite hobe
-3. Reservation ta complete kora hoise akhon agamikal ashe aita check korte hobe
-4. waitingtime ar bisoy ta dekhte hobe
+1. poro flow ta soho data properly populate hoitse kina shaita check dite hobe
+2. Reservation ta complete kora hoise akhon agamikal ashe aita check korte hobe
 -->
 
 <!-- ======================================================= -->

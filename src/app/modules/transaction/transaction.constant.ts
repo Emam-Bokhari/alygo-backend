@@ -6,4 +6,5 @@ export enum TRANSACTION_TYPE {
   CANCELLATION_COMPENSATION = "cancellation_compensation",
   PAYOUT = "payout",
   DRIVER_APPRECIATION = "driver_appreciation",
+  LOST_FOUND_DELIVERY = "lost_found_delivery",
 }

@@ -32,6 +32,15 @@ const getDefaultSystemConfig = (): ISystemConfiguration => ({
     reminder30m: true,
     reminder15m: true,
   },
+  lostFound: {
+    enabled: true,
+    reportWindowDays: 7,
+    maxFiles: 5,
+    maxFileSizeMb: 10,
+    defaultDeliveryFee: 0,
+    returnConfirmationHours: 48,
+    autoCloseDays: 30,
+  },
 });
 
 const getSystemConfig = async (

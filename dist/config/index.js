@@ -95,4 +95,15 @@ exports.default = {
         reminder30m: process.env.RESERVATION_REMINDER_30M !== "false",
         reminder15m: process.env.RESERVATION_REMINDER_15M !== "false",
     },
+    lostFound: {
+        enabled: process.env.LOST_FOUND_ENABLED !== "false",
+        reportWindowDays: parseInt(process.env.LOST_FOUND_REPORT_WINDOW_DAYS || "7"),
+        maxImages: parseInt(process.env.LOST_FOUND_MAX_IMAGES || "5"),
+        maxVideos: parseInt(process.env.LOST_FOUND_MAX_VIDEOS || "2"),
+        maxImageSizeMb: parseInt(process.env.LOST_FOUND_MAX_IMAGE_SIZE_MB || "10"),
+        maxVideoSizeMb: parseInt(process.env.LOST_FOUND_MAX_VIDEO_SIZE_MB || "50"),
+        defaultDeliveryFee: parseFloat(process.env.LOST_FOUND_DEFAULT_DELIVERY_FEE || "0"),
+        returnConfirmationHours: parseInt(process.env.LOST_FOUND_RETURN_CONFIRMATION_HOURS || "48"),
+        autoCloseDays: parseInt(process.env.LOST_FOUND_AUTO_CLOSE_DAYS || "30"),
+    },
 };

@@ -45,6 +45,17 @@ const getDefaultSystemConfig = () => ({
         reminder30m: true,
         reminder15m: true,
     },
+    lostFound: {
+        enabled: true,
+        reportWindowDays: 7,
+        maxImages: 5,
+        maxVideos: 2,
+        maxImageSizeMb: 10,
+        maxVideoSizeMb: 50,
+        defaultDeliveryFee: 0,
+        returnConfirmationHours: 48,
+        autoCloseDays: 30,
+    },
 });
 const getSystemConfig = (session) => __awaiter(void 0, void 0, void 0, function* () {
     let config = yield systemConfiguration_model_1.SystemConfiguration.findOne().session(session);

@@ -31,11 +31,22 @@ export interface IReservationConfig {
   reminder15m: boolean;
 }
 
+export interface ILostFoundConfig {
+  enabled: boolean;
+  reportWindowDays: number;
+  maxFiles: number;
+  maxFileSizeMb: number;
+  defaultDeliveryFee: number;
+  returnConfirmationHours: number;
+  autoCloseDays: number;
+}
+
 export interface ISystemConfiguration {
   _id?: Types.ObjectId;
   driverMatching: IDriverMatchingConfig;
   tracking: ITrackingConfig;
   reservation?: IReservationConfig;
+  lostFound?: ILostFoundConfig;
   createdAt?: Date;
   updatedAt?: Date;
 }

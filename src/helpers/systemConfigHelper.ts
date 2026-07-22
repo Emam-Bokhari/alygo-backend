@@ -85,6 +85,15 @@ export const getSystemConfig = async () => {
           reminder15m:
             dbConfig.reservation?.reminder15m ?? config.reservation.reminder15m,
         },
+        lostFound: {
+          enabled: dbConfig.lostFound?.enabled ?? config.lostFound.enabled,
+          reportWindowDays: dbConfig.lostFound?.reportWindowDays ?? config.lostFound.reportWindowDays,
+          maxFiles: dbConfig.lostFound?.maxFiles ?? config.lostFound.maxFiles,
+          maxFileSizeMb: dbConfig.lostFound?.maxFileSizeMb ?? config.lostFound.maxFileSizeMb,
+          defaultDeliveryFee: dbConfig.lostFound?.defaultDeliveryFee ?? config.lostFound.defaultDeliveryFee,
+          returnConfirmationHours: dbConfig.lostFound?.returnConfirmationHours ?? config.lostFound.returnConfirmationHours,
+          autoCloseDays: dbConfig.lostFound?.autoCloseDays ?? config.lostFound.autoCloseDays,
+        },
       };
       cacheExpiry = now + CACHE_DURATION_MS;
       return cachedConfig;
@@ -101,6 +110,7 @@ export const getSystemConfig = async () => {
     driverMatching: config.driverMatching,
     tracking: config.tracking,
     reservation: config.reservation,
+    lostFound: config.lostFound,
   };
   cacheExpiry = now + CACHE_DURATION_MS;
   return cachedConfig;

@@ -47,8 +47,10 @@ const parseFileData = (...fields) => {
                 if (!fieldFiles || fieldFiles.length === 0)
                     continue;
                 const resolvedMode = resolveMode(mode, fieldFiles);
-                if (fieldName === "taxDocuments" || fieldName === "insuranceHub") {
-                    // Special handling for taxDocuments and insuranceHub: create array of objects with fileUrl and fileName
+                if (fieldName === "taxDocuments" ||
+                    fieldName === "insuranceHub" ||
+                    fieldName === "uploadedFiles") {
+                    // Special handling for taxDocuments, insuranceHub and uploadedFiles: create array of objects with fileUrl and fileName
                     fileData[fieldName] = fieldFiles.map((file) => ({
                         fileUrl: (0, fileMapper_1.mapFileToUrl)(file, fieldName),
                         fileName: file.originalname,
@@ -83,6 +85,15 @@ const parseFileData = (...fields) => {
                 fileData.insuranceHub = fileData.insuranceHub.map((doc, index) => (Object.assign(Object.assign({}, doc), (insuranceHubFromBody[index] || {}))));
                 // Remove insuranceHub from parsedBody to avoid duplication
                 delete parsedBody.insuranceHub;
+            }
+            // Merge uploadedFiles data from parsedBody with file data
+            if (fileData.uploadedFiles && parsedBody.uploadedFiles) {
+                const uploadedFilesFromBody = Array.isArray(parsedBody.uploadedFiles)
+                    ? parsedBody.uploadedFiles
+                    : [];
+                fileData.uploadedFiles = fileData.uploadedFiles.map((doc, index) => (Object.assign(Object.assign({}, doc), (uploadedFilesFromBody[index] || {}))));
+                // Remove uploadedFiles from parsedBody to avoid duplication
+                delete parsedBody.uploadedFiles;
             }
             req.body = Object.assign(Object.assign(Object.assign({}, req.body), parsedBody), fileData);
             if (req.body.data) {

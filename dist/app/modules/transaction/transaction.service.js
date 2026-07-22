@@ -161,7 +161,10 @@ const getTransactions = (userId, role, queryOptions) => __awaiter(void 0, void 0
     if (role === "driver") {
         const driverProfile = yield driver_model_1.Driver.findOne({ userId: userObjectId });
         if (driverProfile) {
-            matchQuery.$or = [{ userId: userObjectId }, { driverId: driverProfile._id }];
+            matchQuery.$or = [
+                { userId: userObjectId },
+                { driverId: driverProfile._id },
+            ];
         }
         else {
             matchQuery.userId = userObjectId;
@@ -176,7 +179,9 @@ const getTransactions = (userId, role, queryOptions) => __awaiter(void 0, void 0
         matchQuery.paymentStatus = queryOptions.status.toLowerCase();
     }
     else {
-        matchQuery.paymentStatus = { $in: [ride_constant_1.PAYMENT_STATUS.PAID, ride_constant_1.PAYMENT_STATUS.REFUNDED] };
+        matchQuery.paymentStatus = {
+            $in: [ride_constant_1.PAYMENT_STATUS.PAID, ride_constant_1.PAYMENT_STATUS.REFUNDED],
+        };
     }
     // 3. Filter mapping
     const rawFilter = queryOptions.filter || "all";
@@ -253,21 +258,21 @@ const getTransactions = (userId, role, queryOptions) => __awaiter(void 0, void 0
     // 5. Search
     if (queryOptions.search) {
         const searchRegex = new RegExp(queryOptions.search, "i");
-        const orConditions = [
-            { transactionId: searchRegex }
-        ];
+        const orConditions = [{ transactionId: searchRegex }];
         if (mongoose_1.Types.ObjectId.isValid(queryOptions.search)) {
             const searchObjectId = new mongoose_1.Types.ObjectId(queryOptions.search);
             orConditions.push({ _id: searchObjectId }, { rideId: searchObjectId }, { bookingId: searchObjectId });
         }
         // Search by User/Passenger Name or Driver Name
         const matchingUsers = yield user_model_1.User.find({ name: searchRegex }).select("_id");
-        const matchingUserIds = matchingUsers.map(u => u._id);
+        const matchingUserIds = matchingUsers.map((u) => u._id);
         if (matchingUserIds.length > 0) {
             orConditions.push({ userId: { $in: matchingUserIds } });
         }
-        const matchingDrivers = yield driver_model_1.Driver.find({ userId: { $in: matchingUserIds } }).select("_id");
-        const matchingDriverIds = matchingDrivers.map(d => d._id);
+        const matchingDrivers = yield driver_model_1.Driver.find({
+            userId: { $in: matchingUserIds },
+        }).select("_id");
+        const matchingDriverIds = matchingDrivers.map((d) => d._id);
         if (matchingDriverIds.length > 0) {
             orConditions.push({ driverId: { $in: matchingDriverIds } });
         }
@@ -294,18 +299,18 @@ const getTransactions = (userId, role, queryOptions) => __awaiter(void 0, void 0
         path: "rideId",
         populate: {
             path: "userId",
-            select: "name"
-        }
+            select: "name",
+        },
     })
         .populate({
         path: "bookingId",
         populate: {
             path: "userId",
-            select: "name"
-        }
+            select: "name",
+        },
     });
     // Map transactions to standardized structure
-    const data = transactions.map(tx => {
+    const data = transactions.map((tx) => {
         var _a, _b;
         const txObj = tx.toObject ? tx.toObject() : tx;
         const ridePopulated = txObj.rideId;
@@ -316,8 +321,16 @@ const getTransactions = (userId, role, queryOptions) => __awaiter(void 0, void 0
         const currency = txObj.currency || "USD";
         // Subtitle formatting
         const dateObj = new Date(createdAt);
-        const optionsDate = { month: "short", day: "numeric", year: "numeric" };
-        const optionsTime = { hour: "numeric", minute: "2-digit", hour12: true };
+        const optionsDate = {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+        };
+        const optionsTime = {
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+        };
         const dStr = dateObj.toLocaleDateString("en-US", optionsDate);
         const tStr = dateObj.toLocaleTimeString("en-US", optionsTime);
         const subtitle = `${dStr} • ${tStr}`;
@@ -340,10 +353,14 @@ const getTransactions = (userId, role, queryOptions) => __awaiter(void 0, void 0
             let displayColor = "green";
             const txType = txObj.transactionType;
             let passengerName = "Passenger";
-            if (ridePopulated && ridePopulated.userId && typeof ridePopulated.userId === "object") {
+            if (ridePopulated &&
+                ridePopulated.userId &&
+                typeof ridePopulated.userId === "object") {
                 passengerName = ridePopulated.userId.name || "Passenger";
             }
-            else if (bookingPopulated && bookingPopulated.userId && typeof bookingPopulated.userId === "object") {
+            else if (bookingPopulated &&
+                bookingPopulated.userId &&
+                typeof bookingPopulated.userId === "object") {
                 passengerName = bookingPopulated.userId.name || "Passenger";
             }
             if (txType === transaction_constant_1.TRANSACTION_TYPE.BOOKING_PAYMENT) {
@@ -395,8 +412,14 @@ const getTransactions = (userId, role, queryOptions) => __awaiter(void 0, void 0
                 displayColor = "green";
                 amount = txObj.amount;
             }
-            const rideIdStr = ridePopulated ? ridePopulated._id.toString() : (bookingPopulated ? bookingPopulated._id.toString() : null);
-            const rideCode = rideIdStr ? `Ride #${rideIdStr.slice(-6).toUpperCase()}` : subtitle;
+            const rideIdStr = ridePopulated
+                ? ridePopulated._id.toString()
+                : bookingPopulated
+                    ? bookingPopulated._id.toString()
+                    : null;
+            const rideCode = rideIdStr
+                ? `Ride #${rideIdStr.slice(-6).toUpperCase()}`
+                : subtitle;
             return {
                 id,
                 transactionId,
@@ -412,8 +435,8 @@ const getTransactions = (userId, role, queryOptions) => __awaiter(void 0, void 0
                 createdAt,
                 actions: {
                     canView: true,
-                    canDelete: false
-                }
+                    canDelete: false,
+                },
             };
         }
         else {
@@ -447,7 +470,11 @@ const getTransactions = (userId, role, queryOptions) => __awaiter(void 0, void 0
             }
             else if (txType === transaction_constant_1.TRANSACTION_TYPE.BOOKING_PAYMENT) {
                 type = "SPEND";
-                title = ((_a = ridePopulated === null || ridePopulated === void 0 ? void 0 : ridePopulated.destination) === null || _a === void 0 ? void 0 : _a.address) ? `Ride to ${ridePopulated.destination.address}` : (((_b = bookingPopulated === null || bookingPopulated === void 0 ? void 0 : bookingPopulated.destination) === null || _b === void 0 ? void 0 : _b.address) ? `Ride to ${bookingPopulated.destination.address}` : "Ride Payment");
+                title = ((_a = ridePopulated === null || ridePopulated === void 0 ? void 0 : ridePopulated.destination) === null || _a === void 0 ? void 0 : _a.address)
+                    ? `Ride to ${ridePopulated.destination.address}`
+                    : ((_b = bookingPopulated === null || bookingPopulated === void 0 ? void 0 : bookingPopulated.destination) === null || _b === void 0 ? void 0 : _b.address)
+                        ? `Ride to ${bookingPopulated.destination.address}`
+                        : "Ride Payment";
                 icon = "minus";
                 displayColor = "red";
                 amount = -txObj.amount;
@@ -491,7 +518,7 @@ const getTransactions = (userId, role, queryOptions) => __awaiter(void 0, void 0
                 currency,
                 icon,
                 displayColor,
-                createdAt
+                createdAt,
             };
         }
     });
@@ -502,9 +529,9 @@ const getTransactions = (userId, role, queryOptions) => __awaiter(void 0, void 0
             total,
             totalPages,
             hasNextPage,
-            hasPrevPage
+            hasPrevPage,
         },
-        data
+        data,
     };
 });
 exports.TransactionService = {
