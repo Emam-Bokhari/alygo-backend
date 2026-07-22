@@ -1,11 +1,18 @@
 import express from "express";
 import { WalletController } from "./wallet.controller";
-import { isAuthenticated } from "../../../helpers/authHelper";
+import { isUser, isDriver } from "../../../helpers/authHelper";
 
 const router = express.Router();
 
-router.get("/balance", isAuthenticated, WalletController.getWalletBalance);
-router.get("/history", isAuthenticated, WalletController.getWalletHistory);
-router.post("/top-up", isAuthenticated, WalletController.topUpWallet);
+// Passenger (User) Wallet Routes
+router.get("/", isUser, WalletController.getWalletSummary);
+router.get("/transactions", isUser, WalletController.getTransactionHistory);
+router.post("/top-up", isUser, WalletController.topUpWallet);
+
+// Driver Wallet Routes
+const driverRouter = express.Router();
+driverRouter.get("/", isDriver, WalletController.getDriverWalletSummary);
+driverRouter.get("/transactions", isDriver, WalletController.getDriverTransactionHistory);
 
 export const WalletRoutes = router;
+export const DriverWalletRoutes = driverRouter;

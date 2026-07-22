@@ -162,8 +162,381 @@ const getTransactionsByUser = async (
   });
 };
 
+const getTransactions = async (
+  userId: string,
+  role: string,
+  queryOptions: {
+    filter?: string;
+    search?: string;
+    page?: number;
+    limit?: number;
+    sortBy?: string;
+    sortOrder?: "asc" | "desc";
+    status?: string;
+    startDate?: string;
+    endDate?: string;
+  }
+): Promise<any> => {
+  const userObjectId = new Types.ObjectId(userId);
+  const matchQuery: any = {};
+
+  // 1. Role-based matching logic
+  if (role === "driver") {
+    const driverProfile = await Driver.findOne({ userId: userObjectId });
+    if (driverProfile) {
+      matchQuery.$or = [{ userId: userObjectId }, { driverId: driverProfile._id }];
+    } else {
+      matchQuery.userId = userObjectId;
+    }
+  } else {
+    // Default to user/passenger
+    matchQuery.userId = userObjectId;
+  }
+
+  // 2. Status filter
+  if (queryOptions.status) {
+    matchQuery.paymentStatus = queryOptions.status.toLowerCase();
+  } else {
+    matchQuery.paymentStatus = { $in: [PAYMENT_STATUS.PAID, PAYMENT_STATUS.REFUNDED] };
+  }
+
+  // 3. Filter mapping
+  const rawFilter = queryOptions.filter || "all";
+  const filter = rawFilter.toLowerCase();
+
+  if (role === "driver") {
+    if (filter === "ride_payment") {
+      matchQuery.transactionType = TRANSACTION_TYPE.BOOKING_PAYMENT;
+    } else if (filter === "withdrawal") {
+      matchQuery.transactionType = TRANSACTION_TYPE.PAYOUT;
+    } else if (filter === "refund") {
+      matchQuery.transactionType = TRANSACTION_TYPE.REFUND;
+    } else if (filter === "bonus") {
+      matchQuery.transactionType = TRANSACTION_TYPE.DRIVER_APPRECIATION;
+    } else if (filter === "adjustment") {
+      matchQuery.transactionType = TRANSACTION_TYPE.CANCELLATION_COMPENSATION;
+    } else {
+      // 'all'
+      matchQuery.transactionType = {
+        $in: [
+          TRANSACTION_TYPE.BOOKING_PAYMENT,
+          TRANSACTION_TYPE.CANCELLATION_COMPENSATION,
+          TRANSACTION_TYPE.DRIVER_APPRECIATION,
+          TRANSACTION_TYPE.WALLET_TOPUP,
+          TRANSACTION_TYPE.REFUND,
+          TRANSACTION_TYPE.PAYOUT,
+        ],
+      };
+    }
+  } else {
+    // Passenger (User)
+    if (filter === "spend") {
+      matchQuery.transactionType = {
+        $in: [
+          TRANSACTION_TYPE.BOOKING_PAYMENT,
+          TRANSACTION_TYPE.CANCELLATION_FEE,
+          TRANSACTION_TYPE.DRIVER_APPRECIATION,
+        ],
+      };
+    } else if (filter === "add_money") {
+      matchQuery.transactionType = {
+        $in: [TRANSACTION_TYPE.WALLET_TOPUP, TRANSACTION_TYPE.REFUND],
+      };
+    } else {
+      // 'all'
+      matchQuery.transactionType = {
+        $in: [
+          TRANSACTION_TYPE.WALLET_TOPUP,
+          TRANSACTION_TYPE.BOOKING_PAYMENT,
+          TRANSACTION_TYPE.CANCELLATION_FEE,
+          TRANSACTION_TYPE.DRIVER_APPRECIATION,
+          TRANSACTION_TYPE.REFUND,
+        ],
+      };
+    }
+  }
+
+  // 4. Date Range
+  if (queryOptions.startDate || queryOptions.endDate) {
+    matchQuery.createdAt = {};
+    if (queryOptions.startDate) {
+      matchQuery.createdAt.$gte = new Date(queryOptions.startDate);
+    }
+    if (queryOptions.endDate) {
+      matchQuery.createdAt.$lte = new Date(queryOptions.endDate);
+    }
+  }
+
+  // 5. Search
+  if (queryOptions.search) {
+    const searchRegex = new RegExp(queryOptions.search, "i");
+    const orConditions: any[] = [
+      { transactionId: searchRegex }
+    ];
+
+    if (Types.ObjectId.isValid(queryOptions.search)) {
+      const searchObjectId = new Types.ObjectId(queryOptions.search);
+      orConditions.push(
+        { _id: searchObjectId },
+        { rideId: searchObjectId },
+        { bookingId: searchObjectId }
+      );
+    }
+
+    // Search by User/Passenger Name or Driver Name
+    const matchingUsers = await User.find({ name: searchRegex }).select("_id");
+    const matchingUserIds = matchingUsers.map(u => u._id);
+
+    if (matchingUserIds.length > 0) {
+      orConditions.push({ userId: { $in: matchingUserIds } });
+    }
+
+    const matchingDrivers = await Driver.find({ userId: { $in: matchingUserIds } }).select("_id");
+    const matchingDriverIds = matchingDrivers.map(d => d._id);
+
+    if (matchingDriverIds.length > 0) {
+      orConditions.push({ driverId: { $in: matchingDriverIds } });
+    }
+
+    matchQuery.$and = matchQuery.$and || [];
+    matchQuery.$and.push({ $or: orConditions });
+  }
+
+  // 6. Pagination & Sorting setup
+  const page = Number(queryOptions.page) || 1;
+  const limit = Number(queryOptions.limit) || 10;
+  const skip = (page - 1) * limit;
+
+  const sortBy = queryOptions.sortBy || "createdAt";
+  const sortOrder = queryOptions.sortOrder?.toLowerCase() === "asc" ? 1 : -1;
+  const sort: any = { [sortBy]: sortOrder };
+
+  const total = await Transaction.countDocuments(matchQuery);
+  const totalPages = Math.ceil(total / limit);
+  const hasNextPage = page < totalPages;
+  const hasPrevPage = page > 1;
+
+  // Execute query with nested population
+  const transactions = await Transaction.find(matchQuery)
+    .sort(sort)
+    .skip(skip)
+    .limit(limit)
+    .populate({
+      path: "rideId",
+      populate: {
+        path: "userId",
+        select: "name"
+      }
+    })
+    .populate({
+      path: "bookingId",
+      populate: {
+        path: "userId",
+        select: "name"
+      }
+    });
+
+  // Map transactions to standardized structure
+  const data = transactions.map(tx => {
+    const txObj = tx.toObject ? tx.toObject() : tx;
+    const ridePopulated = txObj.rideId as any;
+    const bookingPopulated = txObj.bookingId as any;
+    const id = txObj._id;
+    const transactionId = txObj.transactionId;
+    const createdAt = txObj.createdAt;
+    const currency = txObj.currency || "USD";
+    
+    // Subtitle formatting
+    const dateObj = new Date(createdAt);
+    const optionsDate: Intl.DateTimeFormatOptions = { month: "short", day: "numeric", year: "numeric" };
+    const optionsTime: Intl.DateTimeFormatOptions = { hour: "numeric", minute: "2-digit", hour12: true };
+    const dStr = dateObj.toLocaleDateString("en-US", optionsDate);
+    const tStr = dateObj.toLocaleTimeString("en-US", optionsTime);
+    const subtitle = `${dStr} • ${tStr}`;
+
+    // Status mapping
+    let status = "success";
+    if (txObj.paymentStatus === PAYMENT_STATUS.PENDING) {
+      status = "pending";
+    } else if (txObj.paymentStatus === PAYMENT_STATUS.FAILED) {
+      status = "failed";
+    } else if (txObj.paymentStatus === PAYMENT_STATUS.REFUNDED) {
+      status = "refunded";
+    }
+
+    if (role === "driver") {
+      let amount = txObj.amount;
+      let transactionType = "RIDE_PAYMENT";
+      let title = "Ride Payment";
+      let icon = "car";
+      let displayColor = "green";
+
+      const txType = txObj.transactionType;
+
+      let passengerName = "Passenger";
+      if (ridePopulated && ridePopulated.userId && typeof ridePopulated.userId === "object") {
+        passengerName = ridePopulated.userId.name || "Passenger";
+      } else if (bookingPopulated && bookingPopulated.userId && typeof bookingPopulated.userId === "object") {
+        passengerName = bookingPopulated.userId.name || "Passenger";
+      }
+
+      if (txType === TRANSACTION_TYPE.BOOKING_PAYMENT) {
+        transactionType = "RIDE_PAYMENT";
+        title = `Payment from ${passengerName}`;
+        icon = "car";
+        displayColor = "green";
+        amount = txObj.amount;
+      } else if (txType === TRANSACTION_TYPE.PAYOUT) {
+        transactionType = "WITHDRAWAL";
+        title = "Stripe Payout";
+        icon = "arrow-up-right";
+        displayColor = "red";
+        amount = -txObj.amount;
+      } else if (txType === TRANSACTION_TYPE.REFUND) {
+        transactionType = "REFUND";
+        title = `Refund to ${passengerName}`;
+        icon = "arrow-down-left";
+        displayColor = "green";
+        amount = txObj.amount;
+      } else if (txType === TRANSACTION_TYPE.DRIVER_APPRECIATION) {
+        transactionType = "BONUS";
+        title = `Bonus Tip from ${passengerName}`;
+        icon = "gift";
+        displayColor = "green";
+        amount = txObj.amount;
+      } else if (txType === TRANSACTION_TYPE.CANCELLATION_COMPENSATION) {
+        transactionType = "ADJUSTMENT";
+        title = "Cancellation Compensation";
+        icon = "shield-alert";
+        displayColor = "green";
+        amount = txObj.amount;
+      } else if (txType === TRANSACTION_TYPE.WALLET_TOPUP) {
+        transactionType = "TOPUP";
+        title = "Wallet Top-up";
+        icon = "plus";
+        displayColor = "green";
+        amount = txObj.amount;
+      } else {
+        transactionType = "RIDE_PAYMENT";
+        title = txObj.description || "Ride Payment";
+        icon = "car";
+        displayColor = "green";
+        amount = txObj.amount;
+      }
+
+      const rideIdStr = ridePopulated ? ridePopulated._id.toString() : (bookingPopulated ? bookingPopulated._id.toString() : null);
+      const rideCode = rideIdStr ? `Ride #${rideIdStr.slice(-6).toUpperCase()}` : subtitle;
+
+      return {
+        id,
+        transactionId,
+        type: amount < 0 ? "SPEND" : "ADD_MONEY",
+        title,
+        subtitle: rideCode,
+        amount,
+        currency,
+        status,
+        transactionType,
+        icon,
+        displayColor,
+        createdAt,
+        actions: {
+          canView: true,
+          canDelete: false
+        }
+      };
+    } else {
+      // Passenger mapping
+      let amount = txObj.amount;
+      let type = "SPEND";
+      let title = "Ride Payment";
+      let icon = "minus";
+      let displayColor = "red";
+
+      const txType = txObj.transactionType;
+
+      if (txType === TRANSACTION_TYPE.WALLET_TOPUP) {
+        type = "ADD_MONEY";
+        title = "Added to Wallet";
+        icon = "plus";
+        displayColor = "green";
+        amount = txObj.amount;
+      } else if (txType === TRANSACTION_TYPE.REFUND) {
+        type = "ADD_MONEY";
+        title = "Refund Credited";
+        icon = "plus";
+        displayColor = "green";
+        amount = txObj.amount;
+      } else if (txType === TRANSACTION_TYPE.CANCELLATION_COMPENSATION) {
+        type = "ADD_MONEY";
+        title = "Cancellation Compensation";
+        icon = "plus";
+        displayColor = "green";
+        amount = txObj.amount;
+      } else if (txType === TRANSACTION_TYPE.BOOKING_PAYMENT) {
+        type = "SPEND";
+        title = ridePopulated?.destination?.address ? `Ride to ${ridePopulated.destination.address}` : (bookingPopulated?.destination?.address ? `Ride to ${bookingPopulated.destination.address}` : "Ride Payment");
+        icon = "minus";
+        displayColor = "red";
+        amount = -txObj.amount;
+      } else if (txType === TRANSACTION_TYPE.CANCELLATION_FEE) {
+        type = "SPEND";
+        title = "Cancellation Fee";
+        icon = "minus";
+        displayColor = "red";
+        amount = -txObj.amount;
+      } else if (txType === TRANSACTION_TYPE.DRIVER_APPRECIATION) {
+        type = "SPEND";
+        title = "Driver Tip";
+        icon = "minus";
+        displayColor = "red";
+        amount = -txObj.amount;
+      } else if (txType === TRANSACTION_TYPE.PAYOUT) {
+        type = "SPEND";
+        title = "Withdrawal";
+        icon = "minus";
+        displayColor = "red";
+        amount = -txObj.amount;
+      } else {
+        type = "SPEND";
+        title = txObj.description || "Ride Payment";
+        icon = "minus";
+        displayColor = "red";
+        amount = -txObj.amount;
+      }
+
+      return {
+        id,
+        transactionId,
+        type,
+        title,
+        subtitle,
+        status,
+        amount,
+        currency,
+        icon,
+        displayColor,
+        createdAt
+      };
+    }
+  });
+
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+      totalPages,
+      hasNextPage,
+      hasPrevPage
+    },
+    data
+  };
+};
+
 export const TransactionService = {
   createTransaction,
   getTransactionsByUser,
+  getTransactions,
 };
 

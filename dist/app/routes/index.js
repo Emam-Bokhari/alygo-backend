@@ -41,7 +41,6 @@ const ride_route_1 = require("../modules/ride/ride.route");
 const tracking_route_1 = require("../modules/tracking/tracking.route");
 const recentDestination_route_1 = require("../modules/recentDestination/recentDestination.route");
 const wallet_route_1 = require("../modules/wallet/wallet.route");
-const transaction_route_1 = require("../modules/transaction/transaction.route");
 const payout_route_1 = require("../modules/payout/payout.route");
 const pendingPayment_route_1 = require("../modules/pendingPayment/pendingPayment.route");
 const systemConfiguration_route_1 = require("../modules/systemConfiguration/systemConfiguration.route");
@@ -197,8 +196,8 @@ const apiRoutes = [
         route: wallet_route_1.WalletRoutes,
     },
     {
-        path: "/transaction",
-        route: transaction_route_1.TransactionRoutes,
+        path: "/driver/wallet",
+        route: wallet_route_1.DriverWalletRoutes,
     },
     {
         path: "/payout",
