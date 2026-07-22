@@ -30,7 +30,7 @@ const getTransactionsByUser = async (
   filter: string = "all",
 ): Promise<any[]> => {
   const userObjectId = new Types.ObjectId(userId);
-  
+
   // If role is not passed, attempt to retrieve it from User collection
   let userRole = role;
   if (!userRole) {
@@ -175,7 +175,7 @@ const getTransactions = async (
     status?: string;
     startDate?: string;
     endDate?: string;
-  }
+  },
 ): Promise<any> => {
   const userObjectId = new Types.ObjectId(userId);
   const matchQuery: any = {};
@@ -184,7 +184,10 @@ const getTransactions = async (
   if (role === "driver") {
     const driverProfile = await Driver.findOne({ userId: userObjectId });
     if (driverProfile) {
-      matchQuery.$or = [{ userId: userObjectId }, { driverId: driverProfile._id }];
+      matchQuery.$or = [
+        { userId: userObjectId },
+        { driverId: driverProfile._id },
+      ];
     } else {
       matchQuery.userId = userObjectId;
     }
@@ -197,7 +200,9 @@ const getTransactions = async (
   if (queryOptions.status) {
     matchQuery.paymentStatus = queryOptions.status.toLowerCase();
   } else {
-    matchQuery.paymentStatus = { $in: [PAYMENT_STATUS.PAID, PAYMENT_STATUS.REFUNDED] };
+    matchQuery.paymentStatus = {
+      $in: [PAYMENT_STATUS.PAID, PAYMENT_STATUS.REFUNDED],
+    };
   }
 
   // 3. Filter mapping
@@ -270,29 +275,29 @@ const getTransactions = async (
   // 5. Search
   if (queryOptions.search) {
     const searchRegex = new RegExp(queryOptions.search, "i");
-    const orConditions: any[] = [
-      { transactionId: searchRegex }
-    ];
+    const orConditions: any[] = [{ transactionId: searchRegex }];
 
     if (Types.ObjectId.isValid(queryOptions.search)) {
       const searchObjectId = new Types.ObjectId(queryOptions.search);
       orConditions.push(
         { _id: searchObjectId },
         { rideId: searchObjectId },
-        { bookingId: searchObjectId }
+        { bookingId: searchObjectId },
       );
     }
 
     // Search by User/Passenger Name or Driver Name
     const matchingUsers = await User.find({ name: searchRegex }).select("_id");
-    const matchingUserIds = matchingUsers.map(u => u._id);
+    const matchingUserIds = matchingUsers.map((u) => u._id);
 
     if (matchingUserIds.length > 0) {
       orConditions.push({ userId: { $in: matchingUserIds } });
     }
 
-    const matchingDrivers = await Driver.find({ userId: { $in: matchingUserIds } }).select("_id");
-    const matchingDriverIds = matchingDrivers.map(d => d._id);
+    const matchingDrivers = await Driver.find({
+      userId: { $in: matchingUserIds },
+    }).select("_id");
+    const matchingDriverIds = matchingDrivers.map((d) => d._id);
 
     if (matchingDriverIds.length > 0) {
       orConditions.push({ driverId: { $in: matchingDriverIds } });
@@ -325,19 +330,19 @@ const getTransactions = async (
       path: "rideId",
       populate: {
         path: "userId",
-        select: "name"
-      }
+        select: "name",
+      },
     })
     .populate({
       path: "bookingId",
       populate: {
         path: "userId",
-        select: "name"
-      }
+        select: "name",
+      },
     });
 
   // Map transactions to standardized structure
-  const data = transactions.map(tx => {
+  const data = transactions.map((tx) => {
     const txObj = tx.toObject ? tx.toObject() : tx;
     const ridePopulated = txObj.rideId as any;
     const bookingPopulated = txObj.bookingId as any;
@@ -345,11 +350,19 @@ const getTransactions = async (
     const transactionId = txObj.transactionId;
     const createdAt = txObj.createdAt;
     const currency = txObj.currency || "USD";
-    
+
     // Subtitle formatting
     const dateObj = new Date(createdAt);
-    const optionsDate: Intl.DateTimeFormatOptions = { month: "short", day: "numeric", year: "numeric" };
-    const optionsTime: Intl.DateTimeFormatOptions = { hour: "numeric", minute: "2-digit", hour12: true };
+    const optionsDate: Intl.DateTimeFormatOptions = {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    };
+    const optionsTime: Intl.DateTimeFormatOptions = {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    };
     const dStr = dateObj.toLocaleDateString("en-US", optionsDate);
     const tStr = dateObj.toLocaleTimeString("en-US", optionsTime);
     const subtitle = `${dStr} • ${tStr}`;
@@ -374,9 +387,17 @@ const getTransactions = async (
       const txType = txObj.transactionType;
 
       let passengerName = "Passenger";
-      if (ridePopulated && ridePopulated.userId && typeof ridePopulated.userId === "object") {
+      if (
+        ridePopulated &&
+        ridePopulated.userId &&
+        typeof ridePopulated.userId === "object"
+      ) {
         passengerName = ridePopulated.userId.name || "Passenger";
-      } else if (bookingPopulated && bookingPopulated.userId && typeof bookingPopulated.userId === "object") {
+      } else if (
+        bookingPopulated &&
+        bookingPopulated.userId &&
+        typeof bookingPopulated.userId === "object"
+      ) {
         passengerName = bookingPopulated.userId.name || "Passenger";
       }
 
@@ -424,8 +445,14 @@ const getTransactions = async (
         amount = txObj.amount;
       }
 
-      const rideIdStr = ridePopulated ? ridePopulated._id.toString() : (bookingPopulated ? bookingPopulated._id.toString() : null);
-      const rideCode = rideIdStr ? `Ride #${rideIdStr.slice(-6).toUpperCase()}` : subtitle;
+      const rideIdStr = ridePopulated
+        ? ridePopulated._id.toString()
+        : bookingPopulated
+          ? bookingPopulated._id.toString()
+          : null;
+      const rideCode = rideIdStr
+        ? `Ride #${rideIdStr.slice(-6).toUpperCase()}`
+        : subtitle;
 
       return {
         id,
@@ -442,8 +469,8 @@ const getTransactions = async (
         createdAt,
         actions: {
           canView: true,
-          canDelete: false
-        }
+          canDelete: false,
+        },
       };
     } else {
       // Passenger mapping
@@ -475,7 +502,11 @@ const getTransactions = async (
         amount = txObj.amount;
       } else if (txType === TRANSACTION_TYPE.BOOKING_PAYMENT) {
         type = "SPEND";
-        title = ridePopulated?.destination?.address ? `Ride to ${ridePopulated.destination.address}` : (bookingPopulated?.destination?.address ? `Ride to ${bookingPopulated.destination.address}` : "Ride Payment");
+        title = ridePopulated?.destination?.address
+          ? `Ride to ${ridePopulated.destination.address}`
+          : bookingPopulated?.destination?.address
+            ? `Ride to ${bookingPopulated.destination.address}`
+            : "Ride Payment";
         icon = "minus";
         displayColor = "red";
         amount = -txObj.amount;
@@ -516,7 +547,7 @@ const getTransactions = async (
         currency,
         icon,
         displayColor,
-        createdAt
+        createdAt,
       };
     }
   });
@@ -528,9 +559,9 @@ const getTransactions = async (
       total,
       totalPages,
       hasNextPage,
-      hasPrevPage
+      hasPrevPage,
     },
-    data
+    data,
   };
 };
 
@@ -539,4 +570,3 @@ export const TransactionService = {
   getTransactionsByUser,
   getTransactions,
 };
-

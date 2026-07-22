@@ -12,7 +12,11 @@ router.post("/top-up", isUser, WalletController.topUpWallet);
 // Driver Wallet Routes
 const driverRouter = express.Router();
 driverRouter.get("/", isDriver, WalletController.getDriverWalletSummary);
-driverRouter.get("/transactions", isDriver, WalletController.getDriverTransactionHistory);
+driverRouter.get(
+  "/transactions",
+  isDriver,
+  WalletController.getDriverTransactionHistory,
+);
 
 export const WalletRoutes = router;
 export const DriverWalletRoutes = driverRouter;

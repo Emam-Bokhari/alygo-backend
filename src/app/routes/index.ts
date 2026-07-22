@@ -35,7 +35,10 @@ import { LostAndFoundItemCategoryRoutes } from "../modules/lostAndFoundItemCateg
 import { RideRoutes } from "../modules/ride/ride.route";
 import { TrackingRoutes } from "../modules/tracking/tracking.route";
 import { RecentDestinationRoutes } from "../modules/recentDestination/recentDestination.route";
-import { WalletRoutes, DriverWalletRoutes } from "../modules/wallet/wallet.route";
+import {
+  WalletRoutes,
+  DriverWalletRoutes,
+} from "../modules/wallet/wallet.route";
 import { PayoutRoutes } from "../modules/payout/payout.route";
 import { PendingPaymentRoutes } from "../modules/pendingPayment/pendingPayment.route";
 import { SystemConfigurationRoutes } from "../modules/systemConfiguration/systemConfiguration.route";
