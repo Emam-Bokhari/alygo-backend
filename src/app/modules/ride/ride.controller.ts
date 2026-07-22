@@ -305,18 +305,20 @@ const getMyReservations = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const getReservationDetails = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user.id;
-  const { id: rideId } = req.params;
-  const result = await RideServices.getReservationDetails(userId, rideId);
+const getReservationDetails = catchAsync(
+  async (req: Request, res: Response) => {
+    const userId = req.user.id;
+    const { id: rideId } = req.params;
+    const result = await RideServices.getReservationDetails(userId, rideId);
 
-  sendResponse(res, {
-    statusCode: StatusCodes.OK,
-    success: true,
-    message: "Reservation details retrieved successfully",
-    data: result,
-  });
-});
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "Reservation details retrieved successfully",
+      data: result,
+    });
+  },
+);
 
 export const RideController = {
   estimateFareAndRoute,

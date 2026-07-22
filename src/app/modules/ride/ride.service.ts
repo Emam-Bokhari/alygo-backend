@@ -4169,7 +4169,9 @@ const getMyReservations = async (
 
   // Optional: filters for reservation status if passed in query
   if (query.reservationStatus) {
-    baseConditions.push({ reservationStatus: query.reservationStatus as string });
+    baseConditions.push({
+      reservationStatus: query.reservationStatus as string,
+    });
   }
 
   // Optional: filters for status if passed in query
@@ -4203,8 +4205,12 @@ const getMyReservations = async (
 
   const driverUserIds = rides
     .map((ride: any) => {
-      const activeDriver = ride.driverId?._id ? ride.driverId._id : ride.driverId;
-      const assignedDriver = ride.assignedDriverId?._id ? ride.assignedDriverId._id : ride.assignedDriverId;
+      const activeDriver = ride.driverId?._id
+        ? ride.driverId._id
+        : ride.driverId;
+      const assignedDriver = ride.assignedDriverId?._id
+        ? ride.assignedDriverId._id
+        : ride.assignedDriverId;
       return activeDriver || assignedDriver;
     })
     .filter(Boolean);
@@ -4353,10 +4359,7 @@ const getReservationDetails = async (userId: string, rideId: string) => {
     .lean();
 
   if (!ride) {
-    throw new ApiError(
-      StatusCodes.NOT_FOUND,
-      "Reservation details not found",
-    );
+    throw new ApiError(StatusCodes.NOT_FOUND, "Reservation details not found");
   }
 
   const driverUser: any = ride.driverId || ride.assignedDriverId;
