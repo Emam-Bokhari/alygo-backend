@@ -7,7 +7,11 @@ import { User } from "../user/user.model";
 import { Referral } from "./referral.model";
 import { REFERRAL_STATUS, REWARD_STATUS } from "./referral.interface";
 import { Ride } from "../ride/ride.model";
-import { RIDE_STATUS, PAYMENT_STATUS, PAYMENT_METHOD } from "../ride/ride.constant";
+import {
+  RIDE_STATUS,
+  PAYMENT_STATUS,
+  PAYMENT_METHOD,
+} from "../ride/ride.constant";
 import { getSystemConfig } from "../../../helpers/systemConfigHelper";
 import { sendNotifications } from "../../../helpers/notificationsHelper";
 import { NOTIFICATION_TYPE } from "../notification/notification.constant";
@@ -90,10 +94,17 @@ const handleReferralSignup = async (
   if (referrer._id.toString() === refereeId.toString()) return;
 
   // Circular referral check
-  if (referrer.referredById && referrer.referredById.toString() === refereeId.toString()) return;
+  if (
+    referrer.referredById &&
+    referrer.referredById.toString() === refereeId.toString()
+  )
+    return;
 
   // Enforce program matching
-  if (referrer.role === USER_ROLES.DRIVER && referee.role === USER_ROLES.DRIVER) {
+  if (
+    referrer.role === USER_ROLES.DRIVER &&
+    referee.role === USER_ROLES.DRIVER
+  ) {
     const config = await getSystemConfig();
     if (!config.referral?.driver?.enabled) return;
 
@@ -132,7 +143,10 @@ const handleReferralSignup = async (
         target: referral.qualificationTarget,
         status: REFERRAL_STATUS.ACTIVE,
       });
-      socketIo.emit("referral-updated", { referralId: referral._id, type: "DRIVER" });
+      socketIo.emit("referral-updated", {
+        referralId: referral._id,
+        type: "DRIVER",
+      });
     }
 
     // Push notification to Referrer Driver
@@ -144,8 +158,10 @@ const handleReferralSignup = async (
       referenceId: referral._id,
       referenceModel: "Referral" as any,
     });
-
-  } else if (referrer.role === USER_ROLES.USER && referee.role === USER_ROLES.USER) {
+  } else if (
+    referrer.role === USER_ROLES.USER &&
+    referee.role === USER_ROLES.USER
+  ) {
     const config = await getSystemConfig();
     if (!config.referral?.passenger?.enabled) return;
 
@@ -161,7 +177,8 @@ const handleReferralSignup = async (
       referralType: "USER",
       status: REFERRAL_STATUS.PENDING,
       qualificationProgress: 0,
-      qualificationTarget: config.referral.passenger.requiredCompletedTrips || 1,
+      qualificationTarget:
+        config.referral.passenger.requiredCompletedTrips || 1,
       rewardAmount: config.referral.passenger.rewardAmount || 20,
       rewardCurrency: config.referral.passenger.rewardCurrency || "USD",
       rewardStatus: REWARD_STATUS.PENDING,
@@ -184,7 +201,10 @@ const handleReferralSignup = async (
         target: referral.qualificationTarget,
         status: REFERRAL_STATUS.PENDING,
       });
-      socketIo.emit("referral-updated", { referralId: referral._id, type: "USER" });
+      socketIo.emit("referral-updated", {
+        referralId: referral._id,
+        type: "USER",
+      });
     }
 
     // Push notification to Referrer Passenger
@@ -241,7 +261,9 @@ const handleDriverRideCompletion = async (driverUserId: string) => {
 
   referral.auditLogs.push({
     action: "RIDE_COMPLETED",
-    details: { message: `Referee driver completed ride. Progress: ${ridesCompleted}/${referral.qualificationTarget}` },
+    details: {
+      message: `Referee driver completed ride. Progress: ${ridesCompleted}/${referral.qualificationTarget}`,
+    },
     timestamp: new Date(),
   });
 
@@ -278,7 +300,10 @@ const handleDriverRideCompletion = async (driverUserId: string) => {
         refereeId: referral.refereeId,
         rewardAmount: referral.rewardAmount,
       });
-      socketIo.emit("referral-updated", { referralId: referral._id, type: "DRIVER" });
+      socketIo.emit("referral-updated", {
+        referralId: referral._id,
+        type: "DRIVER",
+      });
     }
 
     await sendNotifications({
@@ -300,12 +325,17 @@ const handleDriverRideCompletion = async (driverUserId: string) => {
         const session = await mongoose.startSession();
         session.startTransaction();
         try {
-          const wallet = await WalletService.getOrCreateWallet(referral.referrerId, session);
-          wallet.balance = parseFloat((wallet.balance + referral.rewardAmount).toFixed(2));
+          const wallet = await WalletService.getOrCreateWallet(
+            referral.referrerId,
+            session,
+          );
+          wallet.balance = parseFloat(
+            (wallet.balance + referral.rewardAmount).toFixed(2),
+          );
           await wallet.save({ session });
 
           const uniqueTxnRef = `TXN-REF-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${Math.floor(1000 + Math.random() * 9000)}`;
-          
+
           const [transaction] = await Transaction.create(
             [
               {
@@ -331,7 +361,10 @@ const handleDriverRideCompletion = async (driverUserId: string) => {
             action: "REWARD_PAID",
             actor: referral.referrerId,
             actorRole: "driver",
-            details: { transactionId: transaction._id, amount: referral.rewardAmount },
+            details: {
+              transactionId: transaction._id,
+              amount: referral.rewardAmount,
+            },
             timestamp: new Date(),
           });
 
@@ -341,7 +374,9 @@ const handleDriverRideCompletion = async (driverUserId: string) => {
 
           // Sockets & notifications
           if (socketIo) {
-            socketIo.emit(`wallet-updated::${referral.referrerId}`, { balance: wallet.balance });
+            socketIo.emit(`wallet-updated::${referral.referrerId}`, {
+              balance: wallet.balance,
+            });
             socketIo.emit(`driver-referral-paid::${referral.referrerId}`, {
               amount: referral.rewardAmount,
               transactionId: transaction._id,
@@ -361,16 +396,20 @@ const handleDriverRideCompletion = async (driverUserId: string) => {
             text: `Driver referral reward of ${referral.rewardAmount} paid to referrer ${referral.referrerId}.`,
             type: NOTIFICATION_TYPE.ADMIN,
           });
-
         } catch (error) {
           await session.abortTransaction();
           session.endSession();
-          console.error("Failed to process driver referral wallet credit:", error);
+          console.error(
+            "Failed to process driver referral wallet credit:",
+            error,
+          );
         }
       } else {
         referral.auditLogs.push({
           action: "LIMIT_EXCEEDED",
-          details: { message: "Referrer driver has reached maximum reward payout cap." },
+          details: {
+            message: "Referrer driver has reached maximum reward payout cap.",
+          },
           timestamp: new Date(),
         });
       }
@@ -436,7 +475,9 @@ const checkAndProcessPassengerReferral = async (passengerUserId: string) => {
     ]);
     const totalTopup = topupsResult[0]?.total || 0;
     referral.qualificationProgress = totalTopup;
-    qualified = totalTopup >= (config.referral.passenger.minimumWalletTopup || referral.rewardAmount);
+    qualified =
+      totalTopup >=
+      (config.referral.passenger.minimumWalletTopup || referral.rewardAmount);
   } else if (qType === "booking") {
     const bookingsResult = await Transaction.aggregate([
       {
@@ -451,12 +492,15 @@ const checkAndProcessPassengerReferral = async (passengerUserId: string) => {
     ]);
     const totalBooking = bookingsResult[0]?.total || 0;
     referral.qualificationProgress = totalBooking;
-    qualified = totalBooking >= (config.referral.passenger.minimumBookingAmount || 1);
+    qualified =
+      totalBooking >= (config.referral.passenger.minimumBookingAmount || 1);
   }
 
   referral.auditLogs.push({
     action: "QUALIFICATION_EVALUATED",
-    details: { message: `Evaluated Passenger conditions. Progress: ${referral.qualificationProgress}/${referral.qualificationTarget}` },
+    details: {
+      message: `Evaluated Passenger conditions. Progress: ${referral.qualificationProgress}/${referral.qualificationTarget}`,
+    },
     timestamp: new Date(),
   });
 
@@ -484,7 +528,9 @@ const checkAndProcessPassengerReferral = async (passengerUserId: string) => {
     referral.qualificationCompletedAt = new Date();
     referral.auditLogs.push({
       action: "QUALIFICATION_COMPLETED",
-      details: { message: "Passenger satisfied referral conditions successfully." },
+      details: {
+        message: "Passenger satisfied referral conditions successfully.",
+      },
       timestamp: new Date(),
     });
 
@@ -493,7 +539,10 @@ const checkAndProcessPassengerReferral = async (passengerUserId: string) => {
         refereeId: referral.refereeId,
         rewardAmount: referral.rewardAmount,
       });
-      socketIo.emit("referral-updated", { referralId: referral._id, type: "USER" });
+      socketIo.emit("referral-updated", {
+        referralId: referral._id,
+        type: "USER",
+      });
     }
 
     await sendNotifications({
@@ -511,14 +560,23 @@ const checkAndProcessPassengerReferral = async (passengerUserId: string) => {
         rewardPaid: true,
       });
 
-      const allowed = config.referral.passenger.allowMultipleRewards || paidCount === 0;
+      const allowed =
+        config.referral.passenger.allowMultipleRewards || paidCount === 0;
 
-      if (allowed && paidCount < config.referral.passenger.maximumRewardsPerUser) {
+      if (
+        allowed &&
+        paidCount < config.referral.passenger.maximumRewardsPerUser
+      ) {
         const session = await mongoose.startSession();
         session.startTransaction();
         try {
-          const wallet = await WalletService.getOrCreateWallet(referral.referrerId, session);
-          wallet.balance = parseFloat((wallet.balance + referral.rewardAmount).toFixed(2));
+          const wallet = await WalletService.getOrCreateWallet(
+            referral.referrerId,
+            session,
+          );
+          wallet.balance = parseFloat(
+            (wallet.balance + referral.rewardAmount).toFixed(2),
+          );
           await wallet.save({ session });
 
           const uniqueTxnRef = `TXN-REF-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${Math.floor(1000 + Math.random() * 9000)}`;
@@ -548,7 +606,10 @@ const checkAndProcessPassengerReferral = async (passengerUserId: string) => {
             action: "REWARD_PAID",
             actor: referral.referrerId,
             actorRole: "user",
-            details: { transactionId: transaction._id, amount: referral.rewardAmount },
+            details: {
+              transactionId: transaction._id,
+              amount: referral.rewardAmount,
+            },
             timestamp: new Date(),
           });
 
@@ -558,7 +619,9 @@ const checkAndProcessPassengerReferral = async (passengerUserId: string) => {
 
           // Sockets & notifications
           if (socketIo) {
-            socketIo.emit(`wallet-updated::${referral.referrerId}`, { balance: wallet.balance });
+            socketIo.emit(`wallet-updated::${referral.referrerId}`, {
+              balance: wallet.balance,
+            });
             socketIo.emit(`referral-reward::${referral.referrerId}`, {
               amount: referral.rewardAmount,
               transactionId: transaction._id,
@@ -578,16 +641,20 @@ const checkAndProcessPassengerReferral = async (passengerUserId: string) => {
             text: `Passenger referral reward of ${referral.rewardAmount} paid to referrer ${referral.referrerId}.`,
             type: NOTIFICATION_TYPE.ADMIN,
           });
-
         } catch (error) {
           await session.abortTransaction();
           session.endSession();
-          console.error("Failed to process passenger referral wallet credit:", error);
+          console.error(
+            "Failed to process passenger referral wallet credit:",
+            error,
+          );
         }
       } else {
         referral.auditLogs.push({
           action: "LIMIT_EXCEEDED",
-          details: { message: "Referrer user has reached passenger payout limits." },
+          details: {
+            message: "Referrer user has reached passenger payout limits.",
+          },
           timestamp: new Date(),
         });
       }
@@ -613,10 +680,17 @@ const getRules = async (role: string) => {
       requiredCompletedRides: dConf?.requiredCompletedTrips ?? 10,
       qualificationPeriod: `${dConf?.qualificationDays ?? 30} days`,
       payoutDelay: `${dConf?.payoutDelayHours ?? 0} hours`,
-      rewardPayoutInformation: "Payout is directly processed into your connected Stripe wallet account.",
-      shareInstructions: dConf?.shareInstructions || "Send your unique referral code or link to experienced drivers in your community.",
-      termsAndConditions: dConf?.termsAndConditions || "The referred driver must register with your code and complete the trips within validity period.",
-      generalNotes: dConf?.generalNotes || "Referred drivers must satisfy standard verification protocols.",
+      rewardPayoutInformation:
+        "Payout is directly processed into your connected Stripe wallet account.",
+      shareInstructions:
+        dConf?.shareInstructions ||
+        "Send your unique referral code or link to experienced drivers in your community.",
+      termsAndConditions:
+        dConf?.termsAndConditions ||
+        "The referred driver must register with your code and complete the trips within validity period.",
+      generalNotes:
+        dConf?.generalNotes ||
+        "Referred drivers must satisfy standard verification protocols.",
     };
   } else {
     // default to user rules
@@ -629,9 +703,15 @@ const getRules = async (role: string) => {
       requiredCompletedTrips: pConf?.requiredCompletedTrips ?? 1,
       qualificationPeriod: `${pConf?.qualificationDays ?? 30} days`,
       maximumRewards: `${pConf?.maximumRewardsPerUser ?? 5} rewards`,
-      shareInstructions: pConf?.shareInstructions || "Share your unique referral code or link with friends who aren't on the platform yet.",
-      rewardTerms: pConf?.rewardTerms || "Once they sign up and complete their qualification rules, you receive the balance.",
-      generalNotes: pConf?.generalNotes || "Referral credits can be spent on ride bookings.",
+      shareInstructions:
+        pConf?.shareInstructions ||
+        "Share your unique referral code or link with friends who aren't on the platform yet.",
+      rewardTerms:
+        pConf?.rewardTerms ||
+        "Once they sign up and complete their qualification rules, you receive the balance.",
+      generalNotes:
+        pConf?.generalNotes ||
+        "Referral credits can be spent on ride bookings.",
     };
   }
 };
@@ -651,9 +731,13 @@ const getUserReferralDashboard = async (userId: string) => {
 
   const totalInvited = referrals.length;
   const active = referrals.filter(
-    (r) => r.status === REFERRAL_STATUS.PENDING || r.status === REFERRAL_STATUS.ACTIVE,
+    (r) =>
+      r.status === REFERRAL_STATUS.PENDING ||
+      r.status === REFERRAL_STATUS.ACTIVE,
   ).length;
-  const completed = referrals.filter((r) => r.status === REFERRAL_STATUS.COMPLETED).length;
+  const completed = referrals.filter(
+    (r) => r.status === REFERRAL_STATUS.COMPLETED,
+  ).length;
 
   const totalEarned = referrals
     .filter((r) => r.rewardPaid)
@@ -691,9 +775,13 @@ const getDriverReferralDashboard = async (userId: string) => {
 
   const totalInvited = referrals.length;
   const active = referrals.filter(
-    (r) => r.status === REFERRAL_STATUS.ACTIVE || r.status === REFERRAL_STATUS.PENDING,
+    (r) =>
+      r.status === REFERRAL_STATUS.ACTIVE ||
+      r.status === REFERRAL_STATUS.PENDING,
   ).length;
-  const completed = referrals.filter((r) => r.status === REFERRAL_STATUS.COMPLETED).length;
+  const completed = referrals.filter(
+    (r) => r.status === REFERRAL_STATUS.COMPLETED,
+  ).length;
 
   const pendingRewards = referrals
     .filter((r) => r.status === REFERRAL_STATUS.COMPLETED && !r.rewardPaid)
@@ -724,7 +812,10 @@ const getDriverReferralDashboard = async (userId: string) => {
 /**
  * Get referred friends history for Passenger.
  */
-const getUserHistory = async (userId: string, query: Record<string, unknown>) => {
+const getUserHistory = async (
+  userId: string,
+  query: Record<string, unknown>,
+) => {
   const baseQuery = Referral.find({
     referrerId: userId,
     referralType: "USER",
@@ -756,7 +847,10 @@ const getUserHistory = async (userId: string, query: Record<string, unknown>) =>
 /**
  * Get referred drivers progress list.
  */
-const getDriverProgressList = async (userId: string, query: Record<string, unknown>) => {
+const getDriverProgressList = async (
+  userId: string,
+  query: Record<string, unknown>,
+) => {
   const baseQuery = Referral.find({
     referrerId: userId,
     referralType: "DRIVER",
@@ -780,7 +874,8 @@ const getDriverProgressList = async (userId: string, query: Record<string, unkno
     joinedDate: ref.refereeId?.createdAt || ref.joinedAt,
     rideProgress: ref.qualificationProgress,
     requiredRideCount: ref.qualificationTarget,
-    earnedReward: ref.status === REFERRAL_STATUS.COMPLETED ? ref.rewardAmount : 0,
+    earnedReward:
+      ref.status === REFERRAL_STATUS.COMPLETED ? ref.rewardAmount : 0,
     status: ref.status,
   }));
 
@@ -795,7 +890,8 @@ const getRewardPayoutHistory = async (
   role: string,
   query: Record<string, unknown>,
 ) => {
-  const referralType = role.toUpperCase() === USER_ROLES.DRIVER ? "DRIVER" : "USER";
+  const referralType =
+    role.toUpperCase() === USER_ROLES.DRIVER ? "DRIVER" : "USER";
 
   const baseQuery = Referral.find({
     referrerId: userId,

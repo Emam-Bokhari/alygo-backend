@@ -146,4 +146,3 @@ export const Referral = model<IReferral, ReferralModel>(
   "Referral",
   referralSchema,
 );
-

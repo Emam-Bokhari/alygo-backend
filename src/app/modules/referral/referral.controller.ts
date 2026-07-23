@@ -17,22 +17,28 @@ const getUserDashboard = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const getReferredUsersHistory = catchAsync(async (req: Request, res: Response) => {
-  const userId = (req.user as any).id;
-  const result = await ReferralService.getUserHistory(userId, req.query);
+const getReferredUsersHistory = catchAsync(
+  async (req: Request, res: Response) => {
+    const userId = (req.user as any).id;
+    const result = await ReferralService.getUserHistory(userId, req.query);
 
-  sendResponse(res, {
-    statusCode: StatusCodes.OK,
-    success: true,
-    message: "Referred users history retrieved successfully",
-    data: result.data,
-    meta: result.meta,
-  });
-});
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "Referred users history retrieved successfully",
+      data: result.data,
+      meta: result.meta,
+    });
+  },
+);
 
 const getUserRewardHistory = catchAsync(async (req: Request, res: Response) => {
   const userId = (req.user as any).id;
-  const result = await ReferralService.getRewardPayoutHistory(userId, "user", req.query);
+  const result = await ReferralService.getRewardPayoutHistory(
+    userId,
+    "user",
+    req.query,
+  );
 
   sendResponse(res, {
     statusCode: StatusCodes.OK,
@@ -56,31 +62,42 @@ const getDriverDashboard = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const getDriverReferralProgress = catchAsync(async (req: Request, res: Response) => {
-  const userId = (req.user as any).id;
-  const result = await ReferralService.getDriverProgressList(userId, req.query);
+const getDriverReferralProgress = catchAsync(
+  async (req: Request, res: Response) => {
+    const userId = (req.user as any).id;
+    const result = await ReferralService.getDriverProgressList(
+      userId,
+      req.query,
+    );
 
-  sendResponse(res, {
-    statusCode: StatusCodes.OK,
-    success: true,
-    message: "Driver referral progress list retrieved successfully",
-    data: result.data,
-    meta: result.meta,
-  });
-});
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "Driver referral progress list retrieved successfully",
+      data: result.data,
+      meta: result.meta,
+    });
+  },
+);
 
-const getDriverRewardHistory = catchAsync(async (req: Request, res: Response) => {
-  const userId = (req.user as any).id;
-  const result = await ReferralService.getRewardPayoutHistory(userId, "driver", req.query);
+const getDriverRewardHistory = catchAsync(
+  async (req: Request, res: Response) => {
+    const userId = (req.user as any).id;
+    const result = await ReferralService.getRewardPayoutHistory(
+      userId,
+      "driver",
+      req.query,
+    );
 
-  sendResponse(res, {
-    statusCode: StatusCodes.OK,
-    success: true,
-    message: "Driver referral reward history retrieved successfully",
-    data: result.data,
-    meta: result.meta,
-  });
-});
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "Driver referral reward history retrieved successfully",
+      data: result.data,
+      meta: result.meta,
+    });
+  },
+);
 
 // --- RULES API ---
 const getRules = catchAsync(async (req: Request, res: Response) => {

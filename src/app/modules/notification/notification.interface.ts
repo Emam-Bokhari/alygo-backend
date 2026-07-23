@@ -7,7 +7,14 @@ export type INotification = {
   sender?: Types.ObjectId | string;
   read: boolean;
   referenceId?: Types.ObjectId | string;
-  referenceModel?: "Car" | "Review" | "User" | "Ride" | "Wallet" | "Payout" | "LostFound";
+  referenceModel?:
+    | "Car"
+    | "Review"
+    | "User"
+    | "Ride"
+    | "Wallet"
+    | "Payout"
+    | "LostFound";
   type?: string;
 };
 

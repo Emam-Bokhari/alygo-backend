@@ -29,10 +29,9 @@
 
 <!--
 1. Ai Support
-2. Referrels
-3. Tier & Points
-4. Broadcast
-5. Pdf extract (veryfi aita use kore parse ar kaj ta complete korbo)
+2. Tier & Points
+3. Broadcast
+4. Pdf extract (veryfi aita use kore parse ar kaj ta complete korbo)
 -->
 
 <!--
@@ -43,9 +42,10 @@
 
  -->
 
- <!-- 
- App
- 1. signup ar time a refferal code dile shaita verify korar jonno api ase, signup pagae ar maje e api ta integrate korte hobe
+<!--
+ App:
+ 1.
+
   -->
 
  <!-- 

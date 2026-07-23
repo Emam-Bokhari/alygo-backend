@@ -87,4 +87,3 @@ export interface ISystemConfiguration {
 }
 
 export type SystemConfigurationModel = ISoftDeleteModel<ISystemConfiguration>;
-

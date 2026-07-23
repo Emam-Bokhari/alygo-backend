@@ -75,7 +75,11 @@ const submitDriverRating = catchAsync(async (req: Request, res: Response) => {
   const passengerId = req.user.id;
   const { id } = req.params;
 
-  const result = await LostAndFoundService.submitDriverRating(id, passengerId, req.body);
+  const result = await LostAndFoundService.submitDriverRating(
+    id,
+    passengerId,
+    req.body,
+  );
 
   sendResponse(res, {
     statusCode: StatusCodes.OK,
@@ -89,7 +93,10 @@ const createPaymentSession = catchAsync(async (req: Request, res: Response) => {
   const passengerId = req.user.id;
   const { id } = req.params;
 
-  const result = await LostAndFoundService.createPaymentSession(id, passengerId);
+  const result = await LostAndFoundService.createPaymentSession(
+    id,
+    passengerId,
+  );
 
   sendResponse(res, {
     statusCode: StatusCodes.OK,
@@ -105,7 +112,10 @@ const createPaymentSession = catchAsync(async (req: Request, res: Response) => {
 
 const getDriverReports = catchAsync(async (req: Request, res: Response) => {
   const driverId = req.user.id;
-  const result = await LostAndFoundService.getDriverReports(driverId, req.query);
+  const result = await LostAndFoundService.getDriverReports(
+    driverId,
+    req.query,
+  );
 
   sendResponse(res, {
     statusCode: StatusCodes.OK,
@@ -148,7 +158,11 @@ const configureRecovery = catchAsync(async (req: Request, res: Response) => {
   const driverId = req.user.id;
   const { id } = req.params;
 
-  const result = await LostAndFoundService.configureRecovery(id, driverId, req.body);
+  const result = await LostAndFoundService.configureRecovery(
+    id,
+    driverId,
+    req.body,
+  );
 
   sendResponse(res, {
     statusCode: StatusCodes.OK,
@@ -192,7 +206,11 @@ const adminUpdateReport = catchAsync(async (req: Request, res: Response) => {
   const adminId = req.user.id;
   const { id } = req.params;
 
-  const result = await LostAndFoundService.adminUpdateReport(id, adminId, req.body);
+  const result = await LostAndFoundService.adminUpdateReport(
+    id,
+    adminId,
+    req.body,
+  );
 
   sendResponse(res, {
     statusCode: StatusCodes.OK,

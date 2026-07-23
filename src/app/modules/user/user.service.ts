@@ -98,8 +98,6 @@ const deleteAdminFromDB = async (id: any) => {
   return isExistAdmin;
 };
 
-
-
 // --- USER SERVICES ---
 const createUserToDB = async (payload: any) => {
   const isExistUser = await User.findOne({ email: payload.email });
@@ -201,7 +199,6 @@ const updateProfileToDB = async (
   });
   return updateDoc;
 };
-
 
 const getUserByIdFromDB = async (id: string) => {
   const result = await User.findOne({

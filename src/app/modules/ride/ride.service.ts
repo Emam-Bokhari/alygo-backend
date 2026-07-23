@@ -1887,7 +1887,9 @@ const completeRide = async (
       logger.error("Driver referral completed ride progress error:", err);
     });
 
-    ReferralService.checkAndProcessPassengerReferral(ride.userId.toString()).catch((err) => {
+    ReferralService.checkAndProcessPassengerReferral(
+      ride.userId.toString(),
+    ).catch((err) => {
       logger.error("Passenger referral completed ride check error:", err);
     });
 
@@ -2166,7 +2168,9 @@ const completeRidePayment = async (
     session.endSession();
 
     // Trigger Passenger referral check upon payment completion
-    ReferralService.checkAndProcessPassengerReferral(ride.userId.toString()).catch((err) => {
+    ReferralService.checkAndProcessPassengerReferral(
+      ride.userId.toString(),
+    ).catch((err) => {
       logger.error("Passenger referral payment check error:", err);
     });
 

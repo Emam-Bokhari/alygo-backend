@@ -18,7 +18,10 @@ import { sendNotifications } from "../../../helpers/notificationsHelper";
 import { getSystemConfig } from "../../../helpers/systemConfigHelper";
 import { NOTIFICATION_TYPE } from "../notification/notification.constant";
 import { TRANSACTION_TYPE } from "../transaction/transaction.constant";
-import { PAYMENT_METHOD, PAYMENT_STATUS as RidePaymentStatus } from "../ride/ride.constant";
+import {
+  PAYMENT_METHOD,
+  PAYMENT_STATUS as RidePaymentStatus,
+} from "../ride/ride.constant";
 import {
   REPORT_STATUS,
   RECOVERY_METHOD,
@@ -77,7 +80,10 @@ const reportLostItem = async (
 ): Promise<any> => {
   const systemConfig = await getSystemConfig();
   if (systemConfig.lostFound && !systemConfig.lostFound.enabled) {
-    throw new ApiError(StatusCodes.FORBIDDEN, "Lost & Found service is currently disabled.");
+    throw new ApiError(
+      StatusCodes.FORBIDDEN,
+      "Lost & Found service is currently disabled.",
+    );
   }
 
   // File limit validation
@@ -97,17 +103,25 @@ const reportLostItem = async (
 
   // Only ride owner (passenger)
   if (ride.userId.toString() !== passengerId) {
-    throw new ApiError(StatusCodes.FORBIDDEN, "You are not authorized to report lost items for this ride.");
+    throw new ApiError(
+      StatusCodes.FORBIDDEN,
+      "You are not authorized to report lost items for this ride.",
+    );
   }
 
   // Ride must be COMPLETED
   if (ride.status !== "completed") {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "Lost items can only be reported for completed rides.");
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      "Lost items can only be reported for completed rides.",
+    );
   }
 
   // Ride too old validation (default 7 days)
   const windowDays = systemConfig.lostFound?.reportWindowDays ?? 7;
-  const completedTime = ride.completedAt ? new Date(ride.completedAt).getTime() : new Date(ride.updatedAt).getTime();
+  const completedTime = ride.completedAt
+    ? new Date(ride.completedAt).getTime()
+    : new Date(ride.updatedAt).getTime();
   const timeLimit = completedTime + windowDays * 24 * 60 * 60 * 1000;
   if (Date.now() > timeLimit) {
     throw new ApiError(
@@ -122,7 +136,10 @@ const reportLostItem = async (
     reportStatus: { $nin: [REPORT_STATUS.CLOSED, REPORT_STATUS.CANCELLED] },
   });
   if (existingReport) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "An active report already exists for this ride.");
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      "An active report already exists for this ride.",
+    );
   }
 
   // 3. Category Validation
@@ -131,12 +148,18 @@ const reportLostItem = async (
     status: STATUS.ACTIVE,
   });
   if (!categoryExists) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid or inactive item category.");
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      "Invalid or inactive item category.",
+    );
   }
 
   // 4. Resolve Driver ID
   if (!ride.driverId) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "No driver is associated with this ride.");
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      "No driver is associated with this ride.",
+    );
   }
 
   const reportNumber = await generateReportNumber();
@@ -159,21 +182,19 @@ const reportLostItem = async (
   });
 
   // Log Audit
-  await logAudit(
-    newReport._id,
-    "REPORT_CREATED",
-    passengerId,
-    "USER",
-    {
-      reportNumber,
-      itemName: payload.itemName,
-      category: categoryExists.name,
-    },
-  );
+  await logAudit(newReport._id, "REPORT_CREATED", passengerId, "USER", {
+    reportNumber,
+    itemName: payload.itemName,
+    category: categoryExists.name,
+  });
 
   // Sockets
   socketHelper.sendToUser(passengerId, "lost-found-created", newReport);
-  socketHelper.sendToUser(ride.driverId.toString(), "new-lost-item-request", newReport);
+  socketHelper.sendToUser(
+    ride.driverId.toString(),
+    "new-lost-item-request",
+    newReport,
+  );
   // Admin socket broadcast
   const io = (global as any).io;
   if (io) {
@@ -198,7 +219,9 @@ const getMyReports = async (
   query: Record<string, unknown>,
 ): Promise<{ data: any[]; meta: any }> => {
   const searchableFields = ["itemName", "reportNumber", "itemDescription"];
-  const baseQuery = LostFound.find({ passengerId: new Types.ObjectId(passengerId) }).populate({ path: "itemCategory" });
+  const baseQuery = LostFound.find({
+    passengerId: new Types.ObjectId(passengerId),
+  }).populate({ path: "itemCategory" });
 
   const queryBuilder = new QueryBuilder(baseQuery, query)
     .search(searchableFields)
@@ -239,7 +262,10 @@ const getReportDetails = async (
     report.passengerId._id.toString() !== userId &&
     report.driverId._id.toString() !== userId
   ) {
-    throw new ApiError(StatusCodes.FORBIDDEN, "You are not authorized to view this report.");
+    throw new ApiError(
+      StatusCodes.FORBIDDEN,
+      "You are not authorized to view this report.",
+    );
   }
 
   // Fetch driver profile
@@ -285,15 +311,24 @@ const confirmItemReceived = async (
   }
 
   if (report.passengerId.toString() !== passengerId) {
-    throw new ApiError(StatusCodes.FORBIDDEN, "Only the passenger who reported the item can confirm receipt.");
+    throw new ApiError(
+      StatusCodes.FORBIDDEN,
+      "Only the passenger who reported the item can confirm receipt.",
+    );
   }
 
   if (report.reportStatus !== REPORT_STATUS.RETURN_COMPLETED) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "Return must be completed by the driver first.");
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      "Return must be completed by the driver first.",
+    );
   }
 
   if (report.passengerConfirmed) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "Receipt has already been confirmed.");
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      "Receipt has already been confirmed.",
+    );
   }
 
   report.passengerConfirmed = true;
@@ -309,7 +344,11 @@ const confirmItemReceived = async (
 
   // Sockets
   socketHelper.sendToUser(passengerId, "lost-found-confirmed", report);
-  socketHelper.sendToUser(report.driverId.toString(), "return-confirmed", report);
+  socketHelper.sendToUser(
+    report.driverId.toString(),
+    "return-confirmed",
+    report,
+  );
 
   // Push notification
   await sendNotifications({
@@ -335,15 +374,24 @@ const submitDriverRating = async (
   }
 
   if (report.passengerId.toString() !== passengerId) {
-    throw new ApiError(StatusCodes.FORBIDDEN, "Only the passenger can submit a rating.");
+    throw new ApiError(
+      StatusCodes.FORBIDDEN,
+      "Only the passenger can submit a rating.",
+    );
   }
 
   if (!report.passengerConfirmed) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "Receipt must be confirmed before rating.");
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      "Receipt must be confirmed before rating.",
+    );
   }
 
   if (report.passengerRated) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "You have already rated this return.");
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      "You have already rated this return.",
+    );
   }
 
   report.passengerRated = true;
@@ -368,7 +416,9 @@ const getDriverReports = async (
   query: Record<string, unknown>,
 ): Promise<{ data: any[]; meta: any }> => {
   const searchableFields = ["itemName", "reportNumber", "itemDescription"];
-  const baseQuery = LostFound.find({ driverId: new Types.ObjectId(driverId) }).populate({ path: "itemCategory" });
+  const baseQuery = LostFound.find({
+    driverId: new Types.ObjectId(driverId),
+  }).populate({ path: "itemCategory" });
 
   const queryBuilder = new QueryBuilder(baseQuery, query)
     .search(searchableFields)
@@ -394,15 +444,27 @@ const markFound = async (
   }
 
   if (report.driverId.toString() !== driverId) {
-    throw new ApiError(StatusCodes.FORBIDDEN, "Only the assigned driver can resolve this report.");
+    throw new ApiError(
+      StatusCodes.FORBIDDEN,
+      "Only the assigned driver can resolve this report.",
+    );
   }
 
-  if (report.reportStatus === REPORT_STATUS.CLOSED || report.reportStatus === REPORT_STATUS.CANCELLED) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "Cannot update a closed or cancelled report.");
+  if (
+    report.reportStatus === REPORT_STATUS.CLOSED ||
+    report.reportStatus === REPORT_STATUS.CANCELLED
+  ) {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      "Cannot update a closed or cancelled report.",
+    );
   }
 
   if (report.foundStatus === FOUND_STATUS.FOUND) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "Item has already been marked as found.");
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      "Item has already been marked as found.",
+    );
   }
 
   report.foundStatus = FOUND_STATUS.FOUND;
@@ -416,7 +478,11 @@ const markFound = async (
   });
 
   // Sockets
-  socketHelper.sendToUser(report.passengerId.toString(), "lost-found-found", report);
+  socketHelper.sendToUser(
+    report.passengerId.toString(),
+    "lost-found-found",
+    report,
+  );
 
   // Push notification
   await sendNotifications({
@@ -442,15 +508,27 @@ const markNotFound = async (
   }
 
   if (report.driverId.toString() !== driverId) {
-    throw new ApiError(StatusCodes.FORBIDDEN, "Only the assigned driver can resolve this report.");
+    throw new ApiError(
+      StatusCodes.FORBIDDEN,
+      "Only the assigned driver can resolve this report.",
+    );
   }
 
-  if (report.reportStatus === REPORT_STATUS.CLOSED || report.reportStatus === REPORT_STATUS.CANCELLED) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "Cannot update a closed or cancelled report.");
+  if (
+    report.reportStatus === REPORT_STATUS.CLOSED ||
+    report.reportStatus === REPORT_STATUS.CANCELLED
+  ) {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      "Cannot update a closed or cancelled report.",
+    );
   }
 
   if (report.foundStatus === FOUND_STATUS.FOUND) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "Item has already been marked as found.");
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      "Item has already been marked as found.",
+    );
   }
 
   report.foundStatus = FOUND_STATUS.NOT_FOUND;
@@ -465,7 +543,11 @@ const markNotFound = async (
   });
 
   // Sockets
-  socketHelper.sendToUser(report.passengerId.toString(), "lost-found-not-found", report);
+  socketHelper.sendToUser(
+    report.passengerId.toString(),
+    "lost-found-not-found",
+    report,
+  );
 
   // Push notification
   await sendNotifications({
@@ -497,11 +579,17 @@ const configureRecovery = async (
   }
 
   if (report.driverId.toString() !== driverId) {
-    throw new ApiError(StatusCodes.FORBIDDEN, "Only the assigned driver can configure recovery.");
+    throw new ApiError(
+      StatusCodes.FORBIDDEN,
+      "Only the assigned driver can configure recovery.",
+    );
   }
 
   if (report.foundStatus !== FOUND_STATUS.FOUND) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "Recovery can only be configured for items that have been found.");
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      "Recovery can only be configured for items that have been found.",
+    );
   }
 
   report.recoveryMethod = payload.recoveryMethod;
@@ -524,7 +612,11 @@ const configureRecovery = async (
     await report.save();
 
     // Sockets
-    socketHelper.sendToUser(report.passengerId.toString(), "lost-found-return-scheduled", report);
+    socketHelper.sendToUser(
+      report.passengerId.toString(),
+      "lost-found-return-scheduled",
+      report,
+    );
 
     // Push notification
     await sendNotifications({
@@ -556,7 +648,11 @@ const configureRecovery = async (
       await report.save();
 
       // Sockets
-      socketHelper.sendToUser(report.passengerId.toString(), "lost-found-payment-required", report);
+      socketHelper.sendToUser(
+        report.passengerId.toString(),
+        "lost-found-payment-required",
+        report,
+      );
 
       // Push notification
       await sendNotifications({
@@ -573,7 +669,11 @@ const configureRecovery = async (
       await report.save();
 
       // Sockets
-      socketHelper.sendToUser(report.passengerId.toString(), "lost-found-return-scheduled", report);
+      socketHelper.sendToUser(
+        report.passengerId.toString(),
+        "lost-found-return-scheduled",
+        report,
+      );
 
       // Push notification
       await sendNotifications({
@@ -596,18 +696,27 @@ const configureRecovery = async (
   return report;
 };
 
-const markReturned = async (reportId: string, driverId: string): Promise<any> => {
+const markReturned = async (
+  reportId: string,
+  driverId: string,
+): Promise<any> => {
   const report = await LostFound.findById(reportId);
   if (!report) {
     throw new ApiError(StatusCodes.NOT_FOUND, "Report not found.");
   }
 
   if (report.driverId.toString() !== driverId) {
-    throw new ApiError(StatusCodes.FORBIDDEN, "Only the assigned driver can mark return completed.");
+    throw new ApiError(
+      StatusCodes.FORBIDDEN,
+      "Only the assigned driver can mark return completed.",
+    );
   }
 
   if (report.paymentStatus === PAYMENT_STATUS.PENDING) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "Payment is required before returning the item.");
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      "Payment is required before returning the item.",
+    );
   }
 
   report.driverConfirmed = true;
@@ -618,7 +727,11 @@ const markReturned = async (reportId: string, driverId: string): Promise<any> =>
   await logAudit(report._id, "RETURN_COMPLETED", driverId, "DRIVER");
 
   // Sockets
-  socketHelper.sendToUser(report.passengerId.toString(), "lost-found-return-completed", report);
+  socketHelper.sendToUser(
+    report.passengerId.toString(),
+    "lost-found-return-completed",
+    report,
+  );
 
   // Push notification
   await sendNotifications({
@@ -647,16 +760,25 @@ const createPaymentSession = async (
   }
 
   if (report.passengerId.toString() !== passengerId) {
-    throw new ApiError(StatusCodes.FORBIDDEN, "Only the report owner can process payment.");
+    throw new ApiError(
+      StatusCodes.FORBIDDEN,
+      "Only the report owner can process payment.",
+    );
   }
 
   if (report.reportStatus !== REPORT_STATUS.WAITING_PAYMENT) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "Payment is not required or already completed.");
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      "Payment is not required or already completed.",
+    );
   }
 
   const user = await User.findById(passengerId);
   if (!user) {
-    throw new ApiError(StatusCodes.NOT_FOUND, "Passenger user profile not found.");
+    throw new ApiError(
+      StatusCodes.NOT_FOUND,
+      "Passenger user profile not found.",
+    );
   }
 
   const stripeCustomerId = await stripeService.getOrCreateCustomer(
@@ -716,7 +838,9 @@ const completeLostFoundPayment = async (
       return;
     }
 
-    const driverProfile = await Driver.findOne({ userId: report.driverId }).session(dbSession);
+    const driverProfile = await Driver.findOne({
+      userId: report.driverId,
+    }).session(dbSession);
     if (!driverProfile) {
       throw new ApiError(StatusCodes.NOT_FOUND, "Driver profile not found.");
     }
@@ -744,8 +868,13 @@ const completeLostFoundPayment = async (
     );
 
     // 2. Add delivery fee to driver's wallet
-    const driverWallet = await WalletService.getOrCreateWallet(report.driverId, dbSession);
-    driverWallet.balance = parseFloat((driverWallet.balance + report.deliveryFee).toFixed(2));
+    const driverWallet = await WalletService.getOrCreateWallet(
+      report.driverId,
+      dbSession,
+    );
+    driverWallet.balance = parseFloat(
+      (driverWallet.balance + report.deliveryFee).toFixed(2),
+    );
     await driverWallet.save({ session: dbSession });
 
     // 3. Update report statuses
@@ -755,7 +884,8 @@ const completeLostFoundPayment = async (
     report.paymentTransactionId = newTx._id;
     report.paymentReference = paymentIntentId;
     report.paymentAmount = report.deliveryFee;
-    report.paymentCurrency = stripeSession.currency || config.stripe.currency || "usd";
+    report.paymentCurrency =
+      stripeSession.currency || config.stripe.currency || "usd";
 
     // Also automatically transition to RETURN_SCHEDULED
     report.reportStatus = REPORT_STATUS.RETURN_SCHEDULED;
@@ -775,8 +905,16 @@ const completeLostFoundPayment = async (
     dbSession.endSession();
 
     // Sockets & Notifications (outside transaction block)
-    socketHelper.sendToUser(report.passengerId.toString(), "lost-found-payment-success", report);
-    socketHelper.sendToUser(report.driverId.toString(), "passenger-confirmed-payment", report);
+    socketHelper.sendToUser(
+      report.passengerId.toString(),
+      "lost-found-payment-success",
+      report,
+    );
+    socketHelper.sendToUser(
+      report.driverId.toString(),
+      "passenger-confirmed-payment",
+      report,
+    );
     socketHelper.sendToUser(report.driverId.toString(), "wallet-updated", {
       balance: driverWallet.balance,
     });
@@ -810,7 +948,11 @@ const handleLostFoundPaymentFailed = async (
     });
 
     // Notify passenger
-    socketHelper.sendToUser(report.passengerId.toString(), "lost-found-payment-failed", report);
+    socketHelper.sendToUser(
+      report.passengerId.toString(),
+      "lost-found-payment-failed",
+      report,
+    );
   }
 };
 
@@ -818,7 +960,9 @@ const handleLostFoundPaymentFailed = async (
 // Admin Flows
 // ----------------------------------------------------
 
-const getAllReports = async (query: Record<string, unknown>): Promise<{ data: any[]; meta: any }> => {
+const getAllReports = async (
+  query: Record<string, unknown>,
+): Promise<{ data: any[]; meta: any }> => {
   const searchableFields = ["itemName", "reportNumber", "itemDescription"];
   const baseQuery = LostFound.find()
     .populate({ path: "rideId" })
@@ -858,7 +1002,8 @@ const adminUpdateReport = async (
   const updates: any = {};
   if (payload.reportStatus) updates.reportStatus = payload.reportStatus;
   if (payload.foundStatus) updates.foundStatus = payload.foundStatus;
-  if (payload.deliveryFee !== undefined) updates.deliveryFee = payload.deliveryFee;
+  if (payload.deliveryFee !== undefined)
+    updates.deliveryFee = payload.deliveryFee;
   if (payload.adminNotes) updates.adminNotes = payload.adminNotes;
   if (payload.recoveryMethod) updates.recoveryMethod = payload.recoveryMethod;
 
@@ -878,8 +1023,16 @@ const adminUpdateReport = async (
   }
 
   // Sync sockets to both driver & passenger on admin overrides
-  socketHelper.sendToUser(report.passengerId.toString(), "lost-found-driver-reviewing", updatedReport);
-  socketHelper.sendToUser(report.driverId.toString(), "new-lost-item-request", updatedReport);
+  socketHelper.sendToUser(
+    report.passengerId.toString(),
+    "lost-found-driver-reviewing",
+    updatedReport,
+  );
+  socketHelper.sendToUser(
+    report.driverId.toString(),
+    "new-lost-item-request",
+    updatedReport,
+  );
 
   return updatedReport;
 };
@@ -899,7 +1052,10 @@ const trackReportStatus = async (
   }
 
   if (report.passengerId._id.toString() !== passengerId) {
-    throw new ApiError(StatusCodes.FORBIDDEN, "You are not authorized to track this report.");
+    throw new ApiError(
+      StatusCodes.FORBIDDEN,
+      "You are not authorized to track this report.",
+    );
   }
 
   // Fetch driver profile
@@ -990,9 +1146,13 @@ const trackReportStatus = async (
         report.reportStatus === REPORT_STATUS.REPORTED
           ? "pending"
           : report.reportStatus === REPORT_STATUS.UNDER_REVIEW
-          ? "active"
-          : "completed",
-      timestamp: getTimestampForAction("ADMIN_ACTION") || getTimestampForAction("DRIVER_FOUND") || getTimestampForAction("DRIVER_NOT_FOUND") || null,
+            ? "active"
+            : "completed",
+      timestamp:
+        getTimestampForAction("ADMIN_ACTION") ||
+        getTimestampForAction("DRIVER_FOUND") ||
+        getTimestampForAction("DRIVER_NOT_FOUND") ||
+        null,
     },
     {
       title: "Item Found / Not Found",
@@ -1000,13 +1160,13 @@ const trackReportStatus = async (
         report.foundStatus === FOUND_STATUS.FOUND
           ? "Item has been located by the driver."
           : report.foundStatus === FOUND_STATUS.NOT_FOUND
-          ? "Driver was unable to find the item."
-          : "Waiting for confirmation from driver.",
+            ? "Driver was unable to find the item."
+            : "Waiting for confirmation from driver.",
       status:
-        report.foundStatus === FOUND_STATUS.PENDING
-          ? "pending"
-          : "completed",
-      timestamp: getTimestampForAction("DRIVER_FOUND") || getTimestampForAction("DRIVER_NOT_FOUND"),
+        report.foundStatus === FOUND_STATUS.PENDING ? "pending" : "completed",
+      timestamp:
+        getTimestampForAction("DRIVER_FOUND") ||
+        getTimestampForAction("DRIVER_NOT_FOUND"),
     },
     {
       title: "Return Method Selected",
@@ -1016,19 +1176,27 @@ const trackReportStatus = async (
       status: report.recoveryMethod
         ? "completed"
         : report.foundStatus === FOUND_STATUS.FOUND
-        ? "active"
-        : "pending",
-      timestamp: getTimestampForAction("RECOVERY_SELECTED") || getTimestampForAction("PAYMENT_COMPLETED") || null,
+          ? "active"
+          : "pending",
+      timestamp:
+        getTimestampForAction("RECOVERY_SELECTED") ||
+        getTimestampForAction("PAYMENT_COMPLETED") ||
+        null,
     },
     {
       title: "Return Scheduled",
       description: report.scheduledAt
         ? `Scheduled for: ${report.scheduledAt.toLocaleString()}`
         : "Delivery or Passenger Meet schedule set.",
-      status:
-        [REPORT_STATUS.RETURN_SCHEDULED, REPORT_STATUS.RETURN_IN_PROGRESS, REPORT_STATUS.RETURN_COMPLETED, REPORT_STATUS.RECEIVED, REPORT_STATUS.CLOSED].includes(report.reportStatus)
-          ? "completed"
-          : report.recoveryMethod
+      status: [
+        REPORT_STATUS.RETURN_SCHEDULED,
+        REPORT_STATUS.RETURN_IN_PROGRESS,
+        REPORT_STATUS.RETURN_COMPLETED,
+        REPORT_STATUS.RECEIVED,
+        REPORT_STATUS.CLOSED,
+      ].includes(report.reportStatus)
+        ? "completed"
+        : report.recoveryMethod
           ? "active"
           : "pending",
       timestamp: report.scheduledAt || null,
@@ -1036,10 +1204,11 @@ const trackReportStatus = async (
     {
       title: "Returned Successfully",
       description: "Safety checklist finalized and confirmed.",
-      status:
-        [REPORT_STATUS.RECEIVED, REPORT_STATUS.CLOSED].includes(report.reportStatus)
-          ? "completed"
-          : report.reportStatus === REPORT_STATUS.RETURN_COMPLETED
+      status: [REPORT_STATUS.RECEIVED, REPORT_STATUS.CLOSED].includes(
+        report.reportStatus,
+      )
+        ? "completed"
+        : report.reportStatus === REPORT_STATUS.RETURN_COMPLETED
           ? "active"
           : "pending",
       timestamp: getTimestampForAction("PASSENGER_CONFIRMED") || null,

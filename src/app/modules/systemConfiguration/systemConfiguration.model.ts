@@ -324,7 +324,7 @@ const referralConfigSchema = new Schema(
 const systemConfigurationSchema = new Schema<
   ISystemConfiguration,
   SystemConfigurationModel
- >(
+>(
   {
     driverMatching: {
       type: driverMatchingSchema,

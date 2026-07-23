@@ -50,4 +50,3 @@ export interface IReferral {
 }
 
 export type ReferralModel = Model<IReferral>;
-

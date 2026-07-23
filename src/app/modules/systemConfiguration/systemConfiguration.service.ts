@@ -53,7 +53,8 @@ const getDefaultSystemConfig = (): ISystemConfiguration => ({
       maximumRewardsPerUser: 5,
       autoRewardEnabled: true,
       shareInstructions: "Send your unique referral code or link to friends.",
-      rewardTerms: "Reward is granted once the referred passenger completes 1 trip.",
+      rewardTerms:
+        "Reward is granted once the referred passenger completes 1 trip.",
       generalNotes: "Referrals are subject to verification.",
     },
     driver: {
@@ -66,7 +67,8 @@ const getDefaultSystemConfig = (): ISystemConfiguration => ({
       autoRewardEnabled: true,
       maximumRewardsPerDriver: 10,
       shareInstructions: "Send your unique referral code or link to drivers.",
-      termsAndConditions: "The referee driver must complete 10 rides within 30 days.",
+      termsAndConditions:
+        "The referee driver must complete 10 rides within 30 days.",
       generalNotes: "Payouts are processed within 24 hours.",
     },
   },

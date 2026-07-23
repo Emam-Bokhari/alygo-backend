@@ -2,7 +2,12 @@ import express from "express";
 import { LostAndFoundController } from "./lostAndFound.controller";
 import { LostAndFoundValidation } from "./lostAndFound.validation";
 import validateRequest from "../../middlewares/validateRequest";
-import { isUser, isDriver, isAdmin, isAuthenticated } from "../../../helpers/authHelper";
+import {
+  isUser,
+  isDriver,
+  isAdmin,
+  isAuthenticated,
+} from "../../../helpers/authHelper";
 import fileUploadHandler from "../../middlewares/flieUploadHandler";
 import { parseFileData } from "../../middlewares/parseFileData";
 
@@ -23,18 +28,10 @@ router.post(
 );
 
 // View passenger's reported items
-router.get(
-  "/my",
-  isUser,
-  LostAndFoundController.getMyReports,
-);
+router.get("/my", isUser, LostAndFoundController.getMyReports);
 
 // Track lost item report status/timeline
-router.get(
-  "/:id/track",
-  isUser,
-  LostAndFoundController.trackReportStatus,
-);
+router.get("/:id/track", isUser, LostAndFoundController.trackReportStatus);
 
 // Confirm item receipt
 router.patch(
@@ -52,22 +49,14 @@ router.post(
 );
 
 // Create checkout session for return delivery fee
-router.post(
-  "/:id/pay",
-  isUser,
-  LostAndFoundController.createPaymentSession,
-);
+router.post("/:id/pay", isUser, LostAndFoundController.createPaymentSession);
 
 // ----------------------------------------------------
 // Driver Routes
 // ----------------------------------------------------
 
 // View lost item requests assigned to the driver
-router.get(
-  "/driver",
-  isDriver,
-  LostAndFoundController.getDriverReports,
-);
+router.get("/driver", isDriver, LostAndFoundController.getDriverReports);
 
 // Mark item as found
 router.patch(
@@ -94,22 +83,14 @@ router.patch(
 );
 
 // Mark item return completed (handover finished)
-router.patch(
-  "/:id/returned",
-  isDriver,
-  LostAndFoundController.markReturned,
-);
+router.patch("/:id/returned", isDriver, LostAndFoundController.markReturned);
 
 // ----------------------------------------------------
 // Admin Routes
 // ----------------------------------------------------
 
 // Retrieve all reports in the system
-router.get(
-  "/admin/reports",
-  isAdmin,
-  LostAndFoundController.getAllReports,
-);
+router.get("/admin/reports", isAdmin, LostAndFoundController.getAllReports);
 
 // Admin overrides / updates on reports
 router.patch(
@@ -124,10 +105,6 @@ router.patch(
 // ----------------------------------------------------
 
 // Retrieve specific report details (accessible to passenger, driver, or admin)
-router.get(
-  "/:id",
-  isAuthenticated,
-  LostAndFoundController.getReportDetails,
-);
+router.get("/:id", isAuthenticated, LostAndFoundController.getReportDetails);
 
 export const LostAndFoundRoutes = router;
