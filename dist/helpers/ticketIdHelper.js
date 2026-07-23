@@ -11,17 +11,19 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.generateTicketId = void 0;
 const tripReport_model_1 = require("../app/modules/tripReport/tripReport.model");
+const systemConfigHelper_1 = require("./systemConfigHelper");
+const luxon_1 = require("luxon");
 /**
  * Generate a unique ticket ID for trip reports
  * Format: TRP-YYYYMMDD-XXXXXX (6-digit sequential number)
  * Example: TRP-20260719-000001
  */
 const generateTicketId = () => __awaiter(void 0, void 0, void 0, function* () {
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, "0");
-    const dd = String(today.getDate()).padStart(2, "0");
-    const datePrefix = `${yyyy}${mm}${dd}`;
+    var _a;
+    const systemConfig = yield (0, systemConfigHelper_1.getSystemConfig)();
+    const timezone = ((_a = systemConfig.driverRewards) === null || _a === void 0 ? void 0 : _a.timezone) || "Asia/Dhaka";
+    const today = luxon_1.DateTime.now().setZone(timezone);
+    const datePrefix = today.toFormat("yyyyMMdd");
     // Find the last ticket ID for today
     const lastReport = yield tripReport_model_1.TripReport.findOne({
         ticketId: new RegExp(`^TRP-${datePrefix}-`),

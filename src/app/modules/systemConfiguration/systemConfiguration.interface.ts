@@ -80,6 +80,7 @@ export interface IDriverRewardsConfig {
   tierPromotion: boolean;
   autoDowngrade: boolean;
   dailyQuotaResetTime: string; // e.g. "00:00"
+  timezone: string; // e.g. "Asia/Dhaka"
   destinationFilterRadiusDefault: number;
 }
 

@@ -217,6 +217,10 @@ export const getSystemConfig = async () => {
             dbConfig.driverRewards?.dailyQuotaResetTime ??
             config.driverRewards?.dailyQuotaResetTime ??
             "00:00",
+          timezone:
+            dbConfig.driverRewards?.timezone ??
+            config.driverRewards?.timezone ??
+            "Asia/Dhaka",
           destinationFilterRadiusDefault:
             dbConfig.driverRewards?.destinationFilterRadiusDefault ??
             config.driverRewards?.destinationFilterRadiusDefault ??
@@ -245,6 +249,7 @@ export const getSystemConfig = async () => {
       tierPromotion: true,
       autoDowngrade: true,
       dailyQuotaResetTime: "00:00",
+      timezone: "Asia/Dhaka",
       destinationFilterRadiusDefault: 5,
     },
   };

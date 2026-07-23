@@ -88,6 +88,7 @@ const getDefaultSystemConfig = () => ({
         tierPromotion: true,
         autoDowngrade: true,
         dailyQuotaResetTime: "00:00",
+        timezone: "Asia/Dhaka",
         destinationFilterRadiusDefault: 5,
     },
 });

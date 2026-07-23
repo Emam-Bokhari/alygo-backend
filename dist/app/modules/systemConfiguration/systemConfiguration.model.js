@@ -312,6 +312,11 @@ const driverRewardsConfigSchema = new mongoose_1.Schema({
         required: true,
         default: "00:00",
     },
+    timezone: {
+        type: String,
+        required: true,
+        default: "Asia/Dhaka",
+    },
     destinationFilterRadiusDefault: {
         type: Number,
         required: true,

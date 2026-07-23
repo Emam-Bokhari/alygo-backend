@@ -120,16 +120,38 @@ const socket = (io) => {
                     coords = [coords[1], coords[0]];
                 }
                 // Check if user has an active ride
+                const now = new Date();
+                const imminentWindowEnd = new Date(now.getTime() + 30 * 60 * 1000);
                 const activeRide = yield ride_model_1.Ride.findOne({
                     userId,
-                    status: {
-                        $in: [
-                            ride_constant_1.RIDE_STATUS.DRIVER_ACCEPTED,
-                            ride_constant_1.RIDE_STATUS.DRIVER_ON_THE_WAY,
-                            ride_constant_1.RIDE_STATUS.DRIVER_ARRIVED,
-                            ride_constant_1.RIDE_STATUS.STARTED,
-                        ],
-                    },
+                    $or: [
+                        {
+                            rideType: { $ne: ride_constant_1.RIDE_TYPE.SCHEDULED },
+                            status: {
+                                $in: [
+                                    ride_constant_1.RIDE_STATUS.DRIVER_ACCEPTED,
+                                    ride_constant_1.RIDE_STATUS.DRIVER_ON_THE_WAY,
+                                    ride_constant_1.RIDE_STATUS.DRIVER_ARRIVED,
+                                    ride_constant_1.RIDE_STATUS.STARTED,
+                                ],
+                            },
+                        },
+                        {
+                            rideType: ride_constant_1.RIDE_TYPE.SCHEDULED,
+                            status: {
+                                $in: [
+                                    ride_constant_1.RIDE_STATUS.DRIVER_ON_THE_WAY,
+                                    ride_constant_1.RIDE_STATUS.DRIVER_ARRIVED,
+                                    ride_constant_1.RIDE_STATUS.STARTED,
+                                ],
+                            },
+                        },
+                        {
+                            rideType: ride_constant_1.RIDE_TYPE.SCHEDULED,
+                            status: ride_constant_1.RIDE_STATUS.DRIVER_ACCEPTED,
+                            scheduledAt: { $lte: imminentWindowEnd },
+                        },
+                    ],
                 });
                 if (activeRide) {
                     // Update tracking table

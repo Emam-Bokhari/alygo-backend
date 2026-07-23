@@ -23,6 +23,8 @@ interface FindEligibleDriversParams {
   excludeDriverIds?: string[];
   rideServiceAreaId?: string;
   rideDestination?: { type: string; coordinates: [number, number] };
+  rideType?: string;
+  scheduledAt?: Date | string;
 }
 
 const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
@@ -49,8 +51,21 @@ export const findEligibleDriversInRadius = async ({
   excludeDriverIds = [],
   rideServiceAreaId,
   rideDestination,
+  rideType,
+  scheduledAt,
 }: FindEligibleDriversParams) => {
   const searchRadiusMeters = radiusKm * 1000;
+
+  const tierCache = new Map<string, any>();
+  const getTier = async (tierId: string | Types.ObjectId | undefined) => {
+    if (!tierId) return null;
+    const key = tierId.toString();
+    if (!tierCache.has(key)) {
+      const tierDoc = await Tier.findById(tierId);
+      tierCache.set(key, tierDoc);
+    }
+    return tierCache.get(key);
+  };
 
   // Resolve the ride's Service Area ID
   let resolvedRideServiceAreaId = rideServiceAreaId;
@@ -264,7 +279,7 @@ export const findEligibleDriversInRadius = async ({
     };
 
     if (isPremiumCategory(category.name)) {
-      const activeTier = await Tier.findById(driverDoc.currentTier);
+      const activeTier = await getTier(driverDoc.currentTier);
       if (!activeTier || !activeTier.benefits?.premiumRideAccess?.enabled) {
         logger.info(
           `Driver ${driverDoc.userId} excluded: does not have premium ride access.`,
@@ -283,6 +298,29 @@ export const findEligibleDriversInRadius = async ({
           `Driver ${driverDoc.userId} excluded: category ${category.name} is not in allowed premium categories for tier ${activeTier.name}.`,
         );
         continue;
+      }
+    }
+
+    // Check Scheduled Reservation Access
+    if (rideType === RIDE_TYPE.SCHEDULED) {
+      const activeTier = await getTier(driverDoc.currentTier);
+      if (!activeTier || !activeTier.benefits?.reservationAccess?.enabled) {
+        logger.info(
+          `Driver ${driverDoc.userId} excluded: current tier does not support accepting scheduled reservations.`,
+        );
+        continue;
+      }
+      const maxAdvanceHours =
+        activeTier.benefits.reservationAccess.maxAdvanceHours || 0;
+      if (maxAdvanceHours > 0 && scheduledAt) {
+        const scheduledTime = new Date(scheduledAt).getTime();
+        const advanceHours = (scheduledTime - Date.now()) / (1000 * 60 * 60);
+        if (advanceHours > maxAdvanceHours) {
+          logger.info(
+            `Driver ${driverDoc.userId} excluded: tier only supports reservation bookings up to ${maxAdvanceHours} hours in advance.`,
+          );
+          continue;
+        }
       }
     }
 
@@ -439,7 +477,7 @@ export const findEligibleDriversInRadius = async ({
 
           // Tier priority & Priority Dispatch
           let tierPriorityScore = 0;
-          const activeTier = await Tier.findById(driverDoc.currentTier);
+          const activeTier = await getTier(driverDoc.currentTier);
           if (activeTier) {
             tierPriorityScore += activeTier.level * 15;
             if (activeTier.benefits?.priorityDispatch?.enabled) {

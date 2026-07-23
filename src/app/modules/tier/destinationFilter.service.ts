@@ -4,6 +4,7 @@ import { Driver } from "../driver/driver.model";
 import { Tier } from "./tier.model";
 import { getSystemConfig } from "../../../helpers/systemConfigHelper";
 import { getDailyResetThreshold } from "./points.controller";
+import { ServiceArea } from "../serviceArea/serviceArea.model";
 import ApiError from "../../../errors/ApiErrors";
 import { StatusCodes } from "http-status-codes";
 import { socketHelper } from "../../../helpers/socketHelper";
@@ -87,8 +88,17 @@ const activateFilter = async (
     );
   }
 
+  // Get driver's service area for timezone-aware date calculations
+  const systemConfig = await getSystemConfig();
+  const defaultTimezone = systemConfig.driverRewards?.timezone || "Asia/Dhaka";
+  let driverTimezone = defaultTimezone;
+  if (driver.serviceAreaId) {
+    const serviceArea = await ServiceArea.findById(driver.serviceAreaId);
+    driverTimezone = serviceArea?.timezone || defaultTimezone;
+  }
+
   // 7. Validate Daily Quota
-  const resetThreshold = await getDailyResetThreshold();
+  const resetThreshold = await getDailyResetThreshold(driverTimezone);
   const activatedTodayCount = await DestinationFilter.countDocuments({
     driverId,
     activatedAt: { $gte: resetThreshold },
@@ -198,12 +208,22 @@ const getFilterStatus = async (
   driverUserId: string | Types.ObjectId,
 ): Promise<any> => {
   const driverId = new Types.ObjectId(driverUserId);
-  const resetThreshold = await getDailyResetThreshold();
 
   const driver = await Driver.findOne({ userId: driverId }).populate("currentTier");
   if (!driver) {
     throw new ApiError(StatusCodes.NOT_FOUND, "Driver profile not found");
   }
+
+  // Get driver's service area for timezone-aware date calculations
+  const systemConfig = await getSystemConfig();
+  const defaultTimezone = systemConfig.driverRewards?.timezone || "Asia/Dhaka";
+  let driverTimezone = defaultTimezone;
+  if (driver.serviceAreaId) {
+    const serviceArea = await ServiceArea.findById(driver.serviceAreaId);
+    driverTimezone = serviceArea?.timezone || defaultTimezone;
+  }
+
+  const resetThreshold = await getDailyResetThreshold(driverTimezone);
 
   const currentTier: any = driver.currentTier;
   let dailyLimit = 0;

@@ -6,7 +6,7 @@ import config from "../config";
 import { Driver } from "../app/modules/driver/driver.model";
 import { User } from "../app/modules/user/user.model";
 import { Ride } from "../app/modules/ride/ride.model";
-import { RIDE_STATUS } from "../app/modules/ride/ride.constant";
+import { RIDE_STATUS, RIDE_TYPE } from "../app/modules/ride/ride.constant";
 import { Tracking } from "../app/modules/tracking/tracking.model";
 import { Secret } from "jsonwebtoken";
 
@@ -168,16 +168,38 @@ const socket = (io: Server) => {
           }
 
           // Check if user has an active ride
+          const now = new Date();
+          const imminentWindowEnd = new Date(now.getTime() + 30 * 60 * 1000);
           const activeRide = await Ride.findOne({
             userId,
-            status: {
-              $in: [
-                RIDE_STATUS.DRIVER_ACCEPTED,
-                RIDE_STATUS.DRIVER_ON_THE_WAY,
-                RIDE_STATUS.DRIVER_ARRIVED,
-                RIDE_STATUS.STARTED,
-              ],
-            },
+            $or: [
+              {
+                rideType: { $ne: RIDE_TYPE.SCHEDULED },
+                status: {
+                  $in: [
+                    RIDE_STATUS.DRIVER_ACCEPTED,
+                    RIDE_STATUS.DRIVER_ON_THE_WAY,
+                    RIDE_STATUS.DRIVER_ARRIVED,
+                    RIDE_STATUS.STARTED,
+                  ],
+                },
+              },
+              {
+                rideType: RIDE_TYPE.SCHEDULED,
+                status: {
+                  $in: [
+                    RIDE_STATUS.DRIVER_ON_THE_WAY,
+                    RIDE_STATUS.DRIVER_ARRIVED,
+                    RIDE_STATUS.STARTED,
+                  ],
+                },
+              },
+              {
+                rideType: RIDE_TYPE.SCHEDULED,
+                status: RIDE_STATUS.DRIVER_ACCEPTED,
+                scheduledAt: { $lte: imminentWindowEnd },
+              },
+            ],
           });
 
           if (activeRide) {

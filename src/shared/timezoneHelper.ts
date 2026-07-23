@@ -175,3 +175,31 @@ export const getCommonTimezones = (): string[] => {
     "Australia/Melbourne",
   ];
 };
+
+/**
+ * Get start and end of day in a specific timezone, returned as UTC Date objects
+ * @param dateStr - Optional date query (e.g. "today", "yesterday", or a specific date/ISO string)
+ * @param timezone - IANA timezone identifier
+ */
+export const getDayRangeInTimezone = (
+  dateStr: "today" | "yesterday" | string | Date,
+  timezone: string
+): { start: Date; end: Date } => {
+  let targetDateTime = DateTime.now().setZone(timezone);
+
+  if (dateStr === "yesterday") {
+    targetDateTime = targetDateTime.minus({ days: 1 });
+  } else if (dateStr !== "today") {
+    // Avoid double instantiation if already a Date object
+    const jsDate = dateStr instanceof Date ? dateStr : new Date(dateStr);
+    const parsed = DateTime.fromJSDate(jsDate).setZone(timezone);
+    if (parsed.isValid) {
+      targetDateTime = parsed;
+    }
+  }
+
+  const start = targetDateTime.startOf("day").toUTC().toJSDate();
+  const end = targetDateTime.endOf("day").toUTC().toJSDate();
+  
+  return { start, end };
+};

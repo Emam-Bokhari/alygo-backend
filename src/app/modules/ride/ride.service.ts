@@ -65,6 +65,7 @@ import {
   timezoneToUtc,
   utcToTimezone,
   getRideScheduleInfo,
+  getDayRangeInTimezone,
 } from "../../../shared/timezoneHelper";
 import { PointsService } from "../tier/points.service";
 import { PeakHour } from "../peakHour/peakHour.model";
@@ -467,24 +468,41 @@ const requestRide = async (
   }
 
   // 1. Prevent duplicate active booking for the user
-  const activeRide = await Ride.findOne({
-    userId,
-    status: {
-      $in: [
-        RIDE_STATUS.SEARCHING_DRIVER,
-        RIDE_STATUS.DRIVER_ACCEPTED,
-        RIDE_STATUS.DRIVER_ON_THE_WAY,
-        RIDE_STATUS.DRIVER_ARRIVED,
-        RIDE_STATUS.STARTED,
+  if (payload.rideType === RIDE_TYPE.INSTANT) {
+    const activeRide = await Ride.findOne({
+      userId,
+      $or: [
+        {
+          rideType: RIDE_TYPE.INSTANT,
+          status: {
+            $in: [
+              RIDE_STATUS.SEARCHING_DRIVER,
+              RIDE_STATUS.DRIVER_ACCEPTED,
+              RIDE_STATUS.DRIVER_ON_THE_WAY,
+              RIDE_STATUS.DRIVER_ARRIVED,
+              RIDE_STATUS.STARTED,
+            ],
+          },
+        },
+        {
+          rideType: RIDE_TYPE.SCHEDULED,
+          status: {
+            $in: [
+              RIDE_STATUS.DRIVER_ON_THE_WAY,
+              RIDE_STATUS.DRIVER_ARRIVED,
+              RIDE_STATUS.STARTED,
+            ],
+          },
+        },
       ],
-    },
-  });
+    });
 
-  if (activeRide) {
-    throw new ApiError(
-      400,
-      "You already have an active ride request or booking.",
-    );
+    if (activeRide) {
+      throw new ApiError(
+        400,
+        "You already have an active ride request or booking.",
+      );
+    }
   }
 
   const user = await User.findById(userId);
@@ -638,6 +656,8 @@ const requestRide = async (
     serviceCategoryId: payload.serviceCategoryId,
     rideServiceAreaId: routeEstimation.serviceArea?._id?.toString(),
     rideDestination: payload.destination.location,
+    rideType: payload.rideType,
+    scheduledAt: scheduledAtUtc,
   });
 
   const selectedDrivers = eligibleDrivers.slice(0, 10); // Limit to nearest 10 drivers
@@ -2964,6 +2984,8 @@ const cancelRide = async (
           ),
           rideServiceAreaId: ride.serviceAreaId?.toString(),
           rideDestination: ride.destination.location,
+          rideType: ride.rideType,
+          scheduledAt: ride.scheduledAt,
         });
 
         const newDrivers = eligibleDrivers.slice(0, 10);
@@ -3551,46 +3573,24 @@ const getDriverRideHistory = async (
 
   const now = new Date();
 
+  // Get driver's service area timezone dynamically, fallback to system configuration
+  const driver = await Driver.findOne({ userId: driverObjectId });
+  const systemConfig = await getSystemConfig();
+  const defaultTimezone = systemConfig.driverRewards?.timezone || "Asia/Dhaka";
+  let driverTimezone = defaultTimezone;
+  if (driver?.serviceAreaId) {
+    const serviceArea = await ServiceArea.findById(driver.serviceAreaId);
+    driverTimezone = serviceArea?.timezone || defaultTimezone;
+  }
+
   if (fromDateStr === "today") {
-    startDate = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate(),
-      0,
-      0,
-      0,
-      0,
-    );
-    endDate = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate(),
-      23,
-      59,
-      59,
-      999,
-    );
+    const range = getDayRangeInTimezone("today", driverTimezone);
+    startDate = range.start;
+    endDate = range.end;
   } else if (fromDateStr === "yesterday") {
-    const yesterday = new Date(now);
-    yesterday.setDate(now.getDate() - 1);
-    startDate = new Date(
-      yesterday.getFullYear(),
-      yesterday.getMonth(),
-      yesterday.getDate(),
-      0,
-      0,
-      0,
-      0,
-    );
-    endDate = new Date(
-      yesterday.getFullYear(),
-      yesterday.getMonth(),
-      yesterday.getDate(),
-      23,
-      59,
-      59,
-      999,
-    );
+    const range = getDayRangeInTimezone("yesterday", driverTimezone);
+    startDate = range.start;
+    endDate = range.end;
   } else if (
     fromDateStr === "last 7 days" ||
     fromDateStr === "last_7_days" ||
@@ -3607,14 +3607,12 @@ const getDriverRideHistory = async (
     endDate = now;
   } else {
     if (query.fromDate && !isNaN(Date.parse(String(query.fromDate)))) {
-      startDate = new Date(String(query.fromDate));
+      const { start } = getDayRangeInTimezone(String(query.fromDate), driverTimezone);
+      startDate = start;
     }
     if (query.toDate && !isNaN(Date.parse(String(query.toDate)))) {
-      const parsedTo = new Date(String(query.toDate));
-      if (String(query.toDate).trim().length === 10) {
-        parsedTo.setHours(23, 59, 59, 999);
-      }
-      endDate = parsedTo;
+      const { end } = getDayRangeInTimezone(String(query.toDate), driverTimezone);
+      endDate = end;
     }
   }
 
@@ -3896,46 +3894,18 @@ const getUserRideHistory = async (
 
   const now = new Date();
 
+  // Get system config default timezone dynamically
+  const systemConfig = await getSystemConfig();
+  const riderTimezone = systemConfig.driverRewards?.timezone || "Asia/Dhaka";
+
   if (fromDateStr === "today") {
-    startDate = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate(),
-      0,
-      0,
-      0,
-      0,
-    );
-    endDate = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate(),
-      23,
-      59,
-      59,
-      999,
-    );
+    const range = getDayRangeInTimezone("today", riderTimezone);
+    startDate = range.start;
+    endDate = range.end;
   } else if (fromDateStr === "yesterday") {
-    const yesterday = new Date(now);
-    yesterday.setDate(now.getDate() - 1);
-    startDate = new Date(
-      yesterday.getFullYear(),
-      yesterday.getMonth(),
-      yesterday.getDate(),
-      0,
-      0,
-      0,
-      0,
-    );
-    endDate = new Date(
-      yesterday.getFullYear(),
-      yesterday.getMonth(),
-      yesterday.getDate(),
-      23,
-      59,
-      59,
-      999,
-    );
+    const range = getDayRangeInTimezone("yesterday", riderTimezone);
+    startDate = range.start;
+    endDate = range.end;
   } else if (
     fromDateStr === "last 7 days" ||
     fromDateStr === "last_7_days" ||
@@ -3952,14 +3922,12 @@ const getUserRideHistory = async (
     endDate = now;
   } else {
     if (query.fromDate && !isNaN(Date.parse(String(query.fromDate)))) {
-      startDate = new Date(String(query.fromDate));
+      const { start } = getDayRangeInTimezone(String(query.fromDate), riderTimezone);
+      startDate = start;
     }
     if (query.toDate && !isNaN(Date.parse(String(query.toDate)))) {
-      const parsedTo = new Date(String(query.toDate));
-      if (String(query.toDate).trim().length === 10) {
-        parsedTo.setHours(23, 59, 59, 999);
-      }
-      endDate = parsedTo;
+      const { end } = getDayRangeInTimezone(String(query.toDate), riderTimezone);
+      endDate = end;
     }
   }
 

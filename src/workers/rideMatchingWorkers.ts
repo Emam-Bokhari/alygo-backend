@@ -1,4 +1,5 @@
 import { Worker, Job } from "bullmq";
+import { DateTime } from "luxon";
 import { Ride } from "../app/modules/ride/ride.model";
 import { RIDE_STATUS, CANCELLED_BY } from "../app/modules/ride/ride.constant";
 import { socketHelper } from "../helpers/socketHelper";
@@ -226,6 +227,8 @@ const radiusExpansionWorker = new Worker(
         ),
         rideServiceAreaId: ride.serviceAreaId?.toString(),
         rideDestination: ride.destination.location,
+        rideType: ride.rideType,
+        scheduledAt: ride.scheduledAt,
       });
 
       if (newDrivers.length === 0) {
@@ -431,9 +434,14 @@ const driverRewardsWorker = new Worker(
     // 1. Run filter expiration check
     await DestinationFilterService.expireFilters();
 
-    // 2. Run daily downgrade checks & quota resets at midnight (00:00)
-    const now = new Date();
-    if (now.getHours() === 0 && now.getMinutes() === 0) {
+    // 2. Run daily downgrade checks & quota resets at configured dailyQuotaResetTime and timezone
+    const config = await getSystemConfig();
+    const resetTimeStr = config.driverRewards?.dailyQuotaResetTime || "00:00";
+    const [hours, minutes] = resetTimeStr.split(":").map(Number);
+    const configuredTimezone = config.driverRewards?.timezone || "Asia/Dhaka";
+
+    const nowInZone = DateTime.now().setZone(configuredTimezone);
+    if (nowInZone.hour === hours && nowInZone.minute === minutes) {
       await PointsService.processScheduledDowngrades();
 
       // Send daily reset push notification to all online drivers

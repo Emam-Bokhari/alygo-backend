@@ -10,26 +10,37 @@ import { DestinationFilter } from "./destinationFilter.model";
 import QueryBuilder from "../../../app/builder/queryBuilder";
 import { getSystemConfig } from "../../../helpers/systemConfigHelper";
 import { Types } from "mongoose";
+import { ServiceArea } from "../serviceArea/serviceArea.model";
+import { DateTime } from "luxon";
 
 /**
  * Helper to get the daily reset threshold date based on configuration
  */
 export const getDailyResetThreshold = async (
-  timezone: string = "UTC",
+  timezone?: string,
 ): Promise<Date> => {
   const config = await getSystemConfig();
   const resetTimeStr = config.driverRewards?.dailyQuotaResetTime || "00:00";
+  const configuredTimezone = timezone || config.driverRewards?.timezone || "Asia/Dhaka";
   const [hours, minutes] = resetTimeStr.split(":").map(Number);
 
-  const now = new Date();
-  // Simple reset date calculation (fallback to UTC midnight check)
-  const resetTime = new Date();
-  resetTime.setHours(hours, minutes, 0, 0);
-
-  if (now.getTime() < resetTime.getTime()) {
-    resetTime.setDate(resetTime.getDate() - 1);
+  let nowInZone = DateTime.now().setZone(configuredTimezone);
+  if (!nowInZone.isValid) {
+    nowInZone = DateTime.now().setZone("Asia/Dhaka");
   }
-  return resetTime;
+
+  let resetTimeInZone = nowInZone.set({
+    hour: hours,
+    minute: minutes,
+    second: 0,
+    millisecond: 0,
+  });
+
+  if (nowInZone < resetTimeInZone) {
+    resetTimeInZone = resetTimeInZone.minus({ days: 1 });
+  }
+
+  return resetTimeInZone.toJSDate();
 };
 
 /**
@@ -84,8 +95,17 @@ const getDriverTierDashboard = catchAsync(async (req: Request, res: Response) =>
   // 3. Calculate remaining points for next tier
   const remainingPoints = nextTier ? Math.max(0, nextTier.requirements.pointsRequired - currentPoints) : 0;
 
+  // Get driver's service area for timezone-aware date calculations
+  const systemConfig = await getSystemConfig();
+  const defaultTimezone = systemConfig.driverRewards?.timezone || "Asia/Dhaka";
+  let driverTimezone = defaultTimezone;
+  if (driver?.serviceAreaId) {
+    const serviceArea = await ServiceArea.findById(driver.serviceAreaId);
+    driverTimezone = serviceArea?.timezone || defaultTimezone;
+  }
+
   // 4. Calculate today's points
-  const todayStart = await getDailyResetThreshold();
+  const todayStart = await getDailyResetThreshold(driverTimezone);
   const todaysPointsHistory = await DriverPointHistory.find({
     driverId: driverUserId,
     createdAt: { $gte: todayStart },

@@ -211,7 +211,7 @@ const apiRoutes = [
         route: driverRewards_route_1.DriverRewardsRoutes,
     },
     {
-        path: "/admin/rewards",
+        path: "/rewards",
         route: adminRewards_route_1.AdminRewardsRoutes,
     },
     {

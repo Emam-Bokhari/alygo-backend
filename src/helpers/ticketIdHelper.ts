@@ -1,4 +1,6 @@
 import { TripReport } from "../app/modules/tripReport/tripReport.model";
+import { getSystemConfig } from "./systemConfigHelper";
+import { DateTime } from "luxon";
 
 /**
  * Generate a unique ticket ID for trip reports
@@ -6,11 +8,10 @@ import { TripReport } from "../app/modules/tripReport/tripReport.model";
  * Example: TRP-20260719-000001
  */
 export const generateTicketId = async (): Promise<string> => {
-  const today = new Date();
-  const yyyy = today.getFullYear();
-  const mm = String(today.getMonth() + 1).padStart(2, "0");
-  const dd = String(today.getDate()).padStart(2, "0");
-  const datePrefix = `${yyyy}${mm}${dd}`;
+  const systemConfig = await getSystemConfig();
+  const timezone = systemConfig.driverRewards?.timezone || "Asia/Dhaka";
+  const today = DateTime.now().setZone(timezone);
+  const datePrefix = today.toFormat("yyyyMMdd");
 
   // Find the last ticket ID for today
   const lastReport = await TripReport.findOne({

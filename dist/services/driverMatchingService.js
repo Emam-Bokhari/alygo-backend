@@ -40,9 +40,20 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
  * Find eligible drivers within a specific radius
  * This function extracts the driver matching logic from the ride service
  */
-const findEligibleDriversInRadius = (_a) => __awaiter(void 0, [_a], void 0, function* ({ pickupLocation, radiusKm, rideCategoryId, serviceCategoryId, excludeDriverIds = [], rideServiceAreaId, rideDestination, }) {
-    var _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
+const findEligibleDriversInRadius = (_a) => __awaiter(void 0, [_a], void 0, function* ({ pickupLocation, radiusKm, rideCategoryId, serviceCategoryId, excludeDriverIds = [], rideServiceAreaId, rideDestination, rideType, scheduledAt, }) {
+    var _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o;
     const searchRadiusMeters = radiusKm * 1000;
+    const tierCache = new Map();
+    const getTier = (tierId) => __awaiter(void 0, void 0, void 0, function* () {
+        if (!tierId)
+            return null;
+        const key = tierId.toString();
+        if (!tierCache.has(key)) {
+            const tierDoc = yield tier_model_1.Tier.findById(tierId);
+            tierCache.set(key, tierDoc);
+        }
+        return tierCache.get(key);
+    });
     // Resolve the ride's Service Area ID
     let resolvedRideServiceAreaId = rideServiceAreaId;
     if (!resolvedRideServiceAreaId) {
@@ -205,7 +216,7 @@ const findEligibleDriversInRadius = (_a) => __awaiter(void 0, [_a], void 0, func
                 name.includes("business"));
         };
         if (isPremiumCategory(category.name)) {
-            const activeTier = yield tier_model_1.Tier.findById(driverDoc.currentTier);
+            const activeTier = yield getTier(driverDoc.currentTier);
             if (!activeTier || !((_e = (_d = activeTier.benefits) === null || _d === void 0 ? void 0 : _d.premiumRideAccess) === null || _e === void 0 ? void 0 : _e.enabled)) {
                 logger_1.logger.info(`Driver ${driverDoc.userId} excluded: does not have premium ride access.`);
                 continue;
@@ -216,6 +227,23 @@ const findEligibleDriversInRadius = (_a) => __awaiter(void 0, [_a], void 0, func
             if (!isAllowed) {
                 logger_1.logger.info(`Driver ${driverDoc.userId} excluded: category ${category.name} is not in allowed premium categories for tier ${activeTier.name}.`);
                 continue;
+            }
+        }
+        // Check Scheduled Reservation Access
+        if (rideType === ride_constant_1.RIDE_TYPE.SCHEDULED) {
+            const activeTier = yield getTier(driverDoc.currentTier);
+            if (!activeTier || !((_g = (_f = activeTier.benefits) === null || _f === void 0 ? void 0 : _f.reservationAccess) === null || _g === void 0 ? void 0 : _g.enabled)) {
+                logger_1.logger.info(`Driver ${driverDoc.userId} excluded: current tier does not support accepting scheduled reservations.`);
+                continue;
+            }
+            const maxAdvanceHours = activeTier.benefits.reservationAccess.maxAdvanceHours || 0;
+            if (maxAdvanceHours > 0 && scheduledAt) {
+                const scheduledTime = new Date(scheduledAt).getTime();
+                const advanceHours = (scheduledTime - Date.now()) / (1000 * 60 * 60);
+                if (advanceHours > maxAdvanceHours) {
+                    logger_1.logger.info(`Driver ${driverDoc.userId} excluded: tier only supports reservation bookings up to ${maxAdvanceHours} hours in advance.`);
+                    continue;
+                }
             }
         }
         // C. Check driver duty policy limits based on driver's current location
@@ -304,8 +332,8 @@ const findEligibleDriversInRadius = (_a) => __awaiter(void 0, [_a], void 0, func
             const matrix = yield googleRouteService_1.GoogleRouteService.calculateDistanceMatrix(origins, destinations);
             for (let i = 0; i < candidates.length; i++) {
                 const driverDoc = candidates[i];
-                const pickupResult = (_f = matrix[i]) === null || _f === void 0 ? void 0 : _f[0];
-                const serviceAreaCenterResult = (_g = matrix[i]) === null || _g === void 0 ? void 0 : _g[1];
+                const pickupResult = (_h = matrix[i]) === null || _h === void 0 ? void 0 : _h[0];
+                const serviceAreaCenterResult = (_j = matrix[i]) === null || _j === void 0 ? void 0 : _j[1];
                 if (pickupResult &&
                     pickupResult.status === "OK" &&
                     serviceAreaCenterResult &&
@@ -328,10 +356,10 @@ const findEligibleDriversInRadius = (_a) => __awaiter(void 0, [_a], void 0, func
                     const acceptanceScore = acceptanceRate * 0.5;
                     // Tier priority & Priority Dispatch
                     let tierPriorityScore = 0;
-                    const activeTier = yield tier_model_1.Tier.findById(driverDoc.currentTier);
+                    const activeTier = yield getTier(driverDoc.currentTier);
                     if (activeTier) {
                         tierPriorityScore += activeTier.level * 15;
-                        if ((_j = (_h = activeTier.benefits) === null || _h === void 0 ? void 0 : _h.priorityDispatch) === null || _j === void 0 ? void 0 : _j.enabled) {
+                        if ((_l = (_k = activeTier.benefits) === null || _k === void 0 ? void 0 : _k.priorityDispatch) === null || _l === void 0 ? void 0 : _l.enabled) {
                             tierPriorityScore += (activeTier.benefits.priorityDispatch.boostMultiplier || 1.0) * 20;
                         }
                     }
@@ -368,7 +396,7 @@ const findEligibleDriversInRadius = (_a) => __awaiter(void 0, [_a], void 0, func
                     }
                     // Airport Queue Priority
                     let airportPriorityScore = 0;
-                    if (rideServiceArea.type === "airport" && ((_l = (_k = activeTier === null || activeTier === void 0 ? void 0 : activeTier.benefits) === null || _k === void 0 ? void 0 : _k.airportQueuePriority) === null || _l === void 0 ? void 0 : _l.enabled)) {
+                    if (rideServiceArea.type === "airport" && ((_o = (_m = activeTier === null || activeTier === void 0 ? void 0 : activeTier.benefits) === null || _m === void 0 ? void 0 : _m.airportQueuePriority) === null || _o === void 0 ? void 0 : _o.enabled)) {
                         airportPriorityScore = 50;
                     }
                     const dispatchScore = distanceScore + ratingScore + acceptanceScore + tierPriorityScore + destMatchScore + airportPriorityScore;

@@ -16,6 +16,10 @@ const transaction_constant_1 = require("./transaction.constant");
 const user_model_1 = require("../user/user.model");
 const ride_constant_1 = require("../ride/ride.constant");
 const driver_model_1 = require("../driver/driver.model");
+const serviceArea_model_1 = require("../serviceArea/serviceArea.model");
+const systemConfigHelper_1 = require("../../../helpers/systemConfigHelper");
+const timezoneHelper_1 = require("../../../shared/timezoneHelper");
+const luxon_1 = require("luxon");
 const generateTransactionId = () => {
     const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
@@ -175,9 +179,13 @@ const getTransactionsByUser = (userId_1, role_1, ...args_1) => __awaiter(void 0,
     });
 });
 const getTransactions = (userId, role, queryOptions) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _a, _b;
     const userObjectId = new mongoose_1.Types.ObjectId(userId);
     const matchQuery = {};
+    // Resolve timezone dynamically
+    const systemConfig = yield (0, systemConfigHelper_1.getSystemConfig)();
+    const defaultTimezone = ((_a = systemConfig.driverRewards) === null || _a === void 0 ? void 0 : _a.timezone) || "Asia/Dhaka";
+    let userTimezone = defaultTimezone;
     // 1. Role-based matching logic
     if (role === "driver") {
         const driverProfile = yield driver_model_1.Driver.findOne({ userId: userObjectId });
@@ -187,6 +195,10 @@ const getTransactions = (userId, role, queryOptions) => __awaiter(void 0, void 0
                 { driverId: driverProfile._id },
                 { driverId: userObjectId },
             ];
+            if (driverProfile.serviceAreaId) {
+                const serviceArea = yield serviceArea_model_1.ServiceArea.findById(driverProfile.serviceAreaId);
+                userTimezone = (serviceArea === null || serviceArea === void 0 ? void 0 : serviceArea.timezone) || defaultTimezone;
+            }
         }
         else {
             matchQuery.userId = userObjectId;
@@ -277,10 +289,12 @@ const getTransactions = (userId, role, queryOptions) => __awaiter(void 0, void 0
     if (queryOptions.startDate || queryOptions.endDate) {
         matchQuery.createdAt = {};
         if (queryOptions.startDate) {
-            matchQuery.createdAt.$gte = new Date(queryOptions.startDate);
+            const { start } = (0, timezoneHelper_1.getDayRangeInTimezone)(queryOptions.startDate, userTimezone);
+            matchQuery.createdAt.$gte = start;
         }
         if (queryOptions.endDate) {
-            matchQuery.createdAt.$lte = new Date(queryOptions.endDate);
+            const { end } = (0, timezoneHelper_1.getDayRangeInTimezone)(queryOptions.endDate, userTimezone);
+            matchQuery.createdAt.$lte = end;
         }
     }
     // 5. Search
@@ -312,7 +326,7 @@ const getTransactions = (userId, role, queryOptions) => __awaiter(void 0, void 0
     const limit = Number(queryOptions.limit) || 10;
     const skip = (page - 1) * limit;
     const sortBy = queryOptions.sortBy || "createdAt";
-    const sortOrder = ((_a = queryOptions.sortOrder) === null || _a === void 0 ? void 0 : _a.toLowerCase()) === "asc" ? 1 : -1;
+    const sortOrder = ((_b = queryOptions.sortOrder) === null || _b === void 0 ? void 0 : _b.toLowerCase()) === "asc" ? 1 : -1;
     const sort = { [sortBy]: sortOrder };
     const total = yield transaction_model_1.Transaction.countDocuments(matchQuery);
     const totalPages = Math.ceil(total / limit);
@@ -347,20 +361,10 @@ const getTransactions = (userId, role, queryOptions) => __awaiter(void 0, void 0
         const transactionId = txObj.transactionId;
         const createdAt = txObj.createdAt;
         const currency = txObj.currency || "USD";
-        // Subtitle formatting
-        const dateObj = new Date(createdAt);
-        const optionsDate = {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-        };
-        const optionsTime = {
-            hour: "numeric",
-            minute: "2-digit",
-            hour12: true,
-        };
-        const dStr = dateObj.toLocaleDateString("en-US", optionsDate);
-        const tStr = dateObj.toLocaleTimeString("en-US", optionsTime);
+        // Subtitle formatting using resolved user's timezone
+        const dt = luxon_1.DateTime.fromJSDate(createdAt).setZone(userTimezone);
+        const dStr = dt.toFormat("LLL d, yyyy");
+        const tStr = dt.toFormat("h:mm a");
         const subtitle = `${dStr} • ${tStr}`;
         // Status mapping
         let status = "success";

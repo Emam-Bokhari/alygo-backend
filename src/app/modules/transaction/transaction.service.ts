@@ -5,6 +5,10 @@ import { TRANSACTION_TYPE } from "./transaction.constant";
 import { User } from "../user/user.model";
 import { PAYMENT_STATUS } from "../ride/ride.constant";
 import { Driver } from "../driver/driver.model";
+import { ServiceArea } from "../serviceArea/serviceArea.model";
+import { getSystemConfig } from "../../../helpers/systemConfigHelper";
+import { getDayRangeInTimezone } from "../../../shared/timezoneHelper";
+import { DateTime } from "luxon";
 
 const generateTransactionId = (): string => {
   const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
@@ -201,6 +205,11 @@ const getTransactions = async (
   const userObjectId = new Types.ObjectId(userId);
   const matchQuery: any = {};
 
+  // Resolve timezone dynamically
+  const systemConfig = await getSystemConfig();
+  const defaultTimezone = systemConfig.driverRewards?.timezone || "Asia/Dhaka";
+  let userTimezone = defaultTimezone;
+
   // 1. Role-based matching logic
   if (role === "driver") {
     const driverProfile = await Driver.findOne({ userId: userObjectId });
@@ -210,6 +219,10 @@ const getTransactions = async (
         { driverId: driverProfile._id },
         { driverId: userObjectId },
       ];
+      if (driverProfile.serviceAreaId) {
+        const serviceArea = await ServiceArea.findById(driverProfile.serviceAreaId);
+        userTimezone = serviceArea?.timezone || defaultTimezone;
+      }
     } else {
       matchQuery.userId = userObjectId;
     }
@@ -292,10 +305,12 @@ const getTransactions = async (
   if (queryOptions.startDate || queryOptions.endDate) {
     matchQuery.createdAt = {};
     if (queryOptions.startDate) {
-      matchQuery.createdAt.$gte = new Date(queryOptions.startDate);
+      const { start } = getDayRangeInTimezone(queryOptions.startDate, userTimezone);
+      matchQuery.createdAt.$gte = start;
     }
     if (queryOptions.endDate) {
-      matchQuery.createdAt.$lte = new Date(queryOptions.endDate);
+      const { end } = getDayRangeInTimezone(queryOptions.endDate, userTimezone);
+      matchQuery.createdAt.$lte = end;
     }
   }
 
@@ -378,20 +393,10 @@ const getTransactions = async (
     const createdAt = txObj.createdAt;
     const currency = txObj.currency || "USD";
 
-    // Subtitle formatting
-    const dateObj = new Date(createdAt);
-    const optionsDate: Intl.DateTimeFormatOptions = {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    };
-    const optionsTime: Intl.DateTimeFormatOptions = {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    };
-    const dStr = dateObj.toLocaleDateString("en-US", optionsDate);
-    const tStr = dateObj.toLocaleTimeString("en-US", optionsTime);
+    // Subtitle formatting using resolved user's timezone
+    const dt = DateTime.fromJSDate(createdAt).setZone(userTimezone);
+    const dStr = dt.toFormat("LLL d, yyyy");
+    const tStr = dt.toFormat("h:mm a");
     const subtitle = `${dStr} • ${tStr}`;
 
     // Status mapping
