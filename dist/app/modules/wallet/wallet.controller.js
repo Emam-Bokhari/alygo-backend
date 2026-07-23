@@ -81,6 +81,7 @@ const getDriverWalletSummary = (0, catchAsync_1.default)((req, res) => __awaiter
                 transaction_constant_1.TRANSACTION_TYPE.CANCELLATION_COMPENSATION,
                 transaction_constant_1.TRANSACTION_TYPE.DRIVER_APPRECIATION,
                 transaction_constant_1.TRANSACTION_TYPE.LOST_FOUND_DELIVERY,
+                transaction_constant_1.TRANSACTION_TYPE.DRIVER_REFERRAL_REWARD,
             ],
         },
     };
@@ -104,6 +105,7 @@ const getDriverWalletSummary = (0, catchAsync_1.default)((req, res) => __awaiter
                 transaction_constant_1.TRANSACTION_TYPE.CANCELLATION_COMPENSATION,
                 transaction_constant_1.TRANSACTION_TYPE.DRIVER_APPRECIATION,
                 transaction_constant_1.TRANSACTION_TYPE.LOST_FOUND_DELIVERY,
+                transaction_constant_1.TRANSACTION_TYPE.DRIVER_REFERRAL_REWARD,
             ],
         },
     };

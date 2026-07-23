@@ -86,6 +86,8 @@ const getTransactionsByUser = async (
           TRANSACTION_TYPE.WALLET_TOPUP,
           TRANSACTION_TYPE.REFUND,
           TRANSACTION_TYPE.LOST_FOUND_DELIVERY,
+          TRANSACTION_TYPE.DRIVER_REFERRAL_REWARD,
+          TRANSACTION_TYPE.USER_REFERRAL_REWARD,
         ],
       };
     } else if (normalizedFilter === "spend") {
@@ -103,13 +105,20 @@ const getTransactionsByUser = async (
           TRANSACTION_TYPE.REFUND,
           TRANSACTION_TYPE.PAYOUT,
           TRANSACTION_TYPE.LOST_FOUND_DELIVERY,
+          TRANSACTION_TYPE.DRIVER_REFERRAL_REWARD,
+          TRANSACTION_TYPE.USER_REFERRAL_REWARD,
         ],
       };
     }
   } else {
     // Default to "user" (passenger) logic
     if (normalizedFilter === "add_money") {
-      query.transactionType = TRANSACTION_TYPE.WALLET_TOPUP;
+      query.transactionType = {
+        $in: [
+          TRANSACTION_TYPE.WALLET_TOPUP,
+          TRANSACTION_TYPE.USER_REFERRAL_REWARD,
+        ],
+      };
     } else if (normalizedFilter === "spend") {
       query.transactionType = {
         $in: [
@@ -128,6 +137,7 @@ const getTransactionsByUser = async (
           TRANSACTION_TYPE.CANCELLATION_FEE,
           TRANSACTION_TYPE.DRIVER_APPRECIATION,
           TRANSACTION_TYPE.LOST_FOUND_DELIVERY,
+          TRANSACTION_TYPE.USER_REFERRAL_REWARD,
         ],
       };
     }
@@ -146,7 +156,9 @@ const getTransactionsByUser = async (
     if (
       txType === TRANSACTION_TYPE.WALLET_TOPUP ||
       txType === TRANSACTION_TYPE.REFUND ||
-      txType === TRANSACTION_TYPE.CANCELLATION_COMPENSATION
+      txType === TRANSACTION_TYPE.CANCELLATION_COMPENSATION ||
+      txType === TRANSACTION_TYPE.USER_REFERRAL_REWARD ||
+      txType === TRANSACTION_TYPE.DRIVER_REFERRAL_REWARD
     ) {
       flowType = "add_money";
     } else if (txType === TRANSACTION_TYPE.PAYOUT) {

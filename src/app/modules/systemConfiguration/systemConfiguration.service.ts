@@ -41,6 +41,35 @@ const getDefaultSystemConfig = (): ISystemConfiguration => ({
     returnConfirmationHours: 48,
     autoCloseDays: 30,
   },
+  referral: {
+    passenger: {
+      enabled: true,
+      rewardAmount: 20,
+      rewardCurrency: "USD",
+      qualificationType: "rides",
+      requiredCompletedTrips: 1,
+      qualificationDays: 30,
+      allowMultipleRewards: false,
+      maximumRewardsPerUser: 5,
+      autoRewardEnabled: true,
+      shareInstructions: "Send your unique referral code or link to friends.",
+      rewardTerms: "Reward is granted once the referred passenger completes 1 trip.",
+      generalNotes: "Referrals are subject to verification.",
+    },
+    driver: {
+      enabled: true,
+      rewardAmount: 100,
+      rewardCurrency: "USD",
+      requiredCompletedTrips: 10,
+      qualificationDays: 30,
+      payoutDelayHours: 0,
+      autoRewardEnabled: true,
+      maximumRewardsPerDriver: 10,
+      shareInstructions: "Send your unique referral code or link to drivers.",
+      termsAndConditions: "The referee driver must complete 10 rides within 30 days.",
+      generalNotes: "Payouts are processed within 24 hours.",
+    },
+  },
 });
 
 const getSystemConfig = async (

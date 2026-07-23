@@ -9,6 +9,7 @@ import { WalletService } from "../../app/modules/wallet/wallet.service";
 import { TransactionService } from "../../app/modules/transaction/transaction.service";
 import { RideServices } from "../../app/modules/ride/ride.service";
 import { PendingPaymentService } from "../../app/modules/pendingPayment/pendingPayment.service";
+import { ReferralService } from "../../app/modules/referral/referral.service";
 import {
   PAYMENT_METHOD,
   PAYMENT_STATUS,
@@ -77,6 +78,11 @@ export const handleStripeWebhook = async (event: any): Promise<void> => {
               type: NOTIFICATION_TYPE.USER,
               referenceId: wallet._id,
               referenceModel: "Wallet" as any,
+            });
+
+            // Trigger Passenger referral check
+            ReferralService.checkAndProcessPassengerReferral(userId).catch((err) => {
+              console.error("Passenger referral check error during top-up webhook:", err);
             });
           } catch (error) {
             await dbSession.abortTransaction();

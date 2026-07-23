@@ -16,12 +16,101 @@ exports.ReferralController = void 0;
 const catchAsync_1 = __importDefault(require("../../../shared/catchAsync"));
 const sendResponse_1 = __importDefault(require("../../../shared/sendResponse"));
 const referral_service_1 = require("./referral.service");
-const referral_constant_1 = require("./referral.constant");
+const http_status_codes_1 = require("http-status-codes");
+// --- NEW PASSENGER APIS ---
+const getUserDashboard = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.user.id;
+    const result = yield referral_service_1.ReferralService.getUserReferralDashboard(userId);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        success: true,
+        message: "Passenger referral dashboard retrieved successfully",
+        data: result,
+    });
+}));
+const getReferredUsersHistory = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.user.id;
+    const result = yield referral_service_1.ReferralService.getUserHistory(userId, req.query);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        success: true,
+        message: "Referred users history retrieved successfully",
+        data: result.data,
+        meta: result.meta,
+    });
+}));
+const getUserRewardHistory = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.user.id;
+    const result = yield referral_service_1.ReferralService.getRewardPayoutHistory(userId, "user", req.query);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        success: true,
+        message: "Passenger referral reward history retrieved successfully",
+        data: result.data,
+        meta: result.meta,
+    });
+}));
+// --- NEW DRIVER APIS ---
+const getDriverDashboard = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.user.id;
+    const result = yield referral_service_1.ReferralService.getDriverReferralDashboard(userId);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        success: true,
+        message: "Driver referral dashboard retrieved successfully",
+        data: result,
+    });
+}));
+const getDriverReferralProgress = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.user.id;
+    const result = yield referral_service_1.ReferralService.getDriverProgressList(userId, req.query);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        success: true,
+        message: "Driver referral progress list retrieved successfully",
+        data: result.data,
+        meta: result.meta,
+    });
+}));
+const getDriverRewardHistory = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.user.id;
+    const result = yield referral_service_1.ReferralService.getRewardPayoutHistory(userId, "driver", req.query);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        success: true,
+        message: "Driver referral reward history retrieved successfully",
+        data: result.data,
+        meta: result.meta,
+    });
+}));
+// --- RULES API ---
+const getRules = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const role = req.query.role || "user";
+    const result = yield referral_service_1.ReferralService.getRules(role);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        success: true,
+        message: "Referral rules retrieved successfully",
+        data: result,
+    });
+}));
+// --- VERIFY CODE ---
+const verifyCode = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { code } = req.body;
+    const result = yield referral_service_1.ReferralService.verifyReferralCode(code);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        success: true,
+        message: "Referral code verified successfully",
+        data: result,
+    });
+}));
+// --- BACKWARD COMPATIBLE WRAPPERS ---
 const getUserInfo = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.user.id;
-    const result = yield referral_service_1.ReferralService.getUserReferralInfo(userId);
+    const result = yield referral_service_1.ReferralService.getUserReferralDashboard(userId);
     (0, sendResponse_1.default)(res, {
-        statusCode: 200,
+        statusCode: http_status_codes_1.StatusCodes.OK,
         success: true,
         message: "User referral information retrieved successfully",
         data: result,
@@ -29,9 +118,9 @@ const getUserInfo = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, vo
 }));
 const getDriverInfo = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.user.id;
-    const result = yield referral_service_1.ReferralService.getDriverReferralInfo(userId);
+    const result = yield referral_service_1.ReferralService.getDriverReferralDashboard(userId);
     (0, sendResponse_1.default)(res, {
-        statusCode: 200,
+        statusCode: http_status_codes_1.StatusCodes.OK,
         success: true,
         message: "Driver referral information retrieved successfully",
         data: result,
@@ -39,47 +128,37 @@ const getDriverInfo = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, 
 }));
 const getDriverProgress = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.user.id;
-    const result = yield referral_service_1.ReferralService.getDriverReferralProgress(userId);
+    const result = yield referral_service_1.ReferralService.getDriverProgressList(userId, req.query);
     (0, sendResponse_1.default)(res, {
-        statusCode: 200,
+        statusCode: http_status_codes_1.StatusCodes.OK,
         success: true,
         message: "Driver referral progress retrieved successfully",
-        data: result,
+        data: result.data,
+        meta: result.meta,
     });
 }));
 const getDriverPayouts = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.user.id;
-    const result = yield referral_service_1.ReferralService.getDriverPayoutHistory(userId);
+    const result = yield referral_service_1.ReferralService.getRewardPayoutHistory(userId, "driver", req.query);
     (0, sendResponse_1.default)(res, {
-        statusCode: 200,
+        statusCode: http_status_codes_1.StatusCodes.OK,
         success: true,
         message: "Driver referral payout history retrieved successfully",
-        data: result,
-    });
-}));
-const verifyCode = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { code } = req.body;
-    const result = yield referral_service_1.ReferralService.verifyReferralCode(code);
-    (0, sendResponse_1.default)(res, {
-        statusCode: 200,
-        success: true,
-        message: "Referral code verified successfully",
-        data: result,
-    });
-}));
-const getRules = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    (0, sendResponse_1.default)(res, {
-        statusCode: 200,
-        success: true,
-        message: "Referral rules retrieved successfully",
-        data: referral_constant_1.REFERRAL_RULES,
+        data: result.data,
+        meta: result.meta,
     });
 }));
 exports.ReferralController = {
+    getUserDashboard,
+    getReferredUsersHistory,
+    getUserRewardHistory,
+    getDriverDashboard,
+    getDriverReferralProgress,
+    getDriverRewardHistory,
+    getRules,
+    verifyCode,
     getUserInfo,
     getDriverInfo,
     getDriverProgress,
     getDriverPayouts,
-    verifyCode,
-    getRules,
 };

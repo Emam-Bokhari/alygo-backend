@@ -45,6 +45,7 @@ const transaction_model_1 = require("../../app/modules/transaction/transaction.m
 const wallet_service_1 = require("../../app/modules/wallet/wallet.service");
 const ride_service_1 = require("../../app/modules/ride/ride.service");
 const pendingPayment_service_1 = require("../../app/modules/pendingPayment/pendingPayment.service");
+const referral_service_1 = require("../../app/modules/referral/referral.service");
 const ride_constant_1 = require("../../app/modules/ride/ride.constant");
 const socketHelper_1 = require("../socketHelper");
 const notificationsHelper_1 = require("../notificationsHelper");
@@ -99,6 +100,10 @@ const handleStripeWebhook = (event) => __awaiter(void 0, void 0, void 0, functio
                             type: notification_constant_1.NOTIFICATION_TYPE.USER,
                             referenceId: wallet._id,
                             referenceModel: "Wallet",
+                        });
+                        // Trigger Passenger referral check
+                        referral_service_1.ReferralService.checkAndProcessPassengerReferral(userId).catch((err) => {
+                            console.error("Passenger referral check error during top-up webhook:", err);
                         });
                     }
                     catch (error) {

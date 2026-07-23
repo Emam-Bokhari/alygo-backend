@@ -16,9 +16,8 @@
 <!-- ========================================================================= -->
 
 <!--
-# Wednesday Work:
-1. poro flow ta soho data properly populate hoitse kina shaita check dite hobe
-2. Reservation ta complete kora hoise akhon agamikal ashe aita check korte hobe
+# Thursday Work:
+1. referrels ta poro ta check korte hobe
 -->
 
 <!-- ======================================================= -->
@@ -30,19 +29,24 @@
 
 <!--
 1. Ai Support
-2. Lost & Found Items
-3. Referrels
-4. Tier & Points
-5. Broadcast
-6. Pdf extract (veryfi aita use kore parse ar kaj ta complete korbo)
+2. Referrels
+3. Tier & Points
+4. Broadcast
+5. Pdf extract (veryfi aita use kore parse ar kaj ta complete korbo)
 -->
 
 <!--
 1. id bananor jonno sob kiso ak jaiga theke use hobe
 2. sobgular khetre e custom Id make korbe but mongodb query ar jnno sobsomai e _id use korbe
 3. somosto jaigai soft delete use korte hobe, ak e sathe kono data jadi delete orthat soft delete e kora hoi ta o jeno agaer data te ba id te null show na kore, ager existing data jeno sothin vabe e populate hoi
+4. jaigai jaigai curerncy alada kore rakhar/config korar dorakr nai, sob ak jaiga theke currency config hobe, r shaita e poro project a use hobe
 
  -->
+
+ <!-- 
+ App
+ 1. signup ar time a refferal code dile shaita verify korar jonno api ase, signup pagae ar maje e api ta integrate korte hobe
+  -->
 
  <!-- 
  App-Dashboard

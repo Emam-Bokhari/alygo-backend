@@ -30,6 +30,7 @@ const fareConfiguration_model_1 = require("../fareConfiguration/fareConfiguratio
 const driverDutyPolicy_service_1 = require("../driverDutyPolicy/driverDutyPolicy.service");
 const transaction_model_1 = require("../transaction/transaction.model");
 const wallet_service_1 = require("../wallet/wallet.service");
+const referral_service_1 = require("../referral/referral.service");
 const tracking_model_1 = require("../tracking/tracking.model");
 const googleMapsHelper_1 = require("../../../helpers/googleMapsHelper");
 const socketHelper_1 = require("../../../helpers/socketHelper");
@@ -1297,6 +1298,13 @@ const completeRide = (driverUserId, rideId, verification, ipAddress) => __awaite
         session.endSession();
         // Update driver availability after completing ride (outside transaction to prevent blocking)
         yield driverDutyPolicy_service_1.DriverDutyPolicyServices.updateDriverAvailability(driverUserId);
+        // Trigger referral checks
+        referral_service_1.ReferralService.handleDriverRideCompletion(driverUserId).catch((err) => {
+            logger_1.logger.error("Driver referral completed ride progress error:", err);
+        });
+        referral_service_1.ReferralService.checkAndProcessPassengerReferral(ride.userId.toString()).catch((err) => {
+            logger_1.logger.error("Passenger referral completed ride check error:", err);
+        });
         // Save destination to recent destinations (fire and forget, don't block the flow)
         // Only for passengers, not drivers
         recentDestination_service_1.RecentDestinationServices.saveOrUpdateRecentDestination(ride.userId.toString(), ride.destination.address, undefined, // placeName can be extracted from address if needed
@@ -1490,6 +1498,10 @@ stripeCheckoutSessionId) => __awaiter(void 0, void 0, void 0, function* () {
         }
         yield session.commitTransaction();
         session.endSession();
+        // Trigger Passenger referral check upon payment completion
+        referral_service_1.ReferralService.checkAndProcessPassengerReferral(ride.userId.toString()).catch((err) => {
+            logger_1.logger.error("Passenger referral payment check error:", err);
+        });
         // Build enriched summaries for both passenger and driver
         let driverSummary;
         let passengerSummary;

@@ -98,125 +98,7 @@ const deleteAdminFromDB = async (id: any) => {
   return isExistAdmin;
 };
 
-// --- HOST SERVICES ---
-const createHostToDB = async (payload: any) => {
-  const isExistHost = await User.findOne({ email: payload.email });
-  if (isExistHost) {
-    throw new ApiError(StatusCodes.CONFLICT, "This Email already taken");
-  }
 
-  const hostPayload = {
-    ...payload,
-    verified: true,
-    status: STATUS.ACTIVE,
-    role: USER_ROLES.DRIVER,
-  };
-
-  const createHost = await User.create(hostPayload);
-
-  // notify admin
-  const admin = await User.findOne({ role: USER_ROLES.SUPER_ADMIN }).select(
-    "_id name",
-  );
-
-  if (admin) {
-    await sendNotifications({
-      title: "New Host Created",
-      text: `New host account created successfully by admin (${admin.name || admin._id})`,
-      receiver: admin._id.toString(),
-      type: NOTIFICATION_TYPE.ADMIN,
-      referenceId: createHost._id.toString(),
-      referenceModel: "User",
-    });
-  }
-
-  return createHost;
-};
-
-// host revenue
-const ghostLoginAsHost = async (superAdmin: JwtPayload, hostId: string) => {
-  if (superAdmin.role !== USER_ROLES.SUPER_ADMIN) {
-    throw new ApiError(403, "Unauthorized: Only SuperAdmin can use ghost mode");
-  }
-
-  const host = await User.findById(hostId);
-
-  if (!host || host.role !== USER_ROLES.DRIVER) {
-    throw new ApiError(404, "Host not found");
-  }
-
-  // Generate JWT as host
-  const token = jwtHelper.createToken(
-    {
-      id: host._id,
-      email: host.email,
-      role: USER_ROLES.DRIVER,
-    },
-    config.jwt.jwt_secret as Secret,
-    config.jwt.jwt_expire_in as string,
-  );
-
-  return {
-    accessToken: token,
-    host: {
-      id: host._id,
-      name: host.name,
-      email: host.email,
-    },
-  };
-};
-
-const deleteHostByIdFromD = async (id: string) => {
-  const user = await User.findOne({
-    _id: id,
-    role: USER_ROLES.DRIVER,
-  });
-
-  if (!user) {
-    throw new ApiError(404, "Host doest not exist in the database");
-  }
-
-  const result = await User.softDeleteById(id);
-
-  if (!result) {
-    throw new ApiError(400, "Failed to delete user by this ID");
-  }
-
-  // notify admin
-  const admin = await User.findOne({ role: USER_ROLES.SUPER_ADMIN }).select(
-    "_id name",
-  );
-
-  if (admin) {
-    await sendNotifications({
-      title: "Host Account Deleted",
-      text: `Host deleted successfully by admin (${admin.name || admin._id})`,
-      receiver: admin._id.toString(),
-      type: NOTIFICATION_TYPE.ADMIN,
-      referenceId: (result as any)._id.toString(),
-      referenceModel: "User",
-    });
-  }
-
-  return result;
-};
-
-const getTotalUsersAndHostsFromDB = async () => {
-  const [totalUsers, totalHosts] = await Promise.all([
-    User.countDocuments({
-      role: USER_ROLES.USER,
-      status: STATUS.ACTIVE,
-      verified: true,
-    }),
-    User.countDocuments({
-      role: USER_ROLES.DRIVER,
-      status: STATUS.ACTIVE,
-      verified: true,
-    }),
-  ]);
-
-  return { totalUsers, totalHosts };
-};
 
 // --- USER SERVICES ---
 const createUserToDB = async (payload: any) => {
@@ -320,42 +202,6 @@ const updateProfileToDB = async (
   return updateDoc;
 };
 
-const switchProfileToDB = async (
-  userId: string,
-  role: USER_ROLES.USER | USER_ROLES.DRIVER,
-) => {
-  const user = await User.findById(userId);
-
-  if (!user) throw new ApiError(404, "This user is not found in the database");
-
-  if (![USER_ROLES.USER, USER_ROLES.DRIVER].includes(role))
-    throw new ApiError(400, "Role is must be either 'USER' or 'DRIVER'");
-
-  const updatedUser = await User.findByIdAndUpdate(
-    userId,
-    { role },
-    { new: true },
-  );
-
-  if (!updatedUser) throw new ApiError(400, "Failed to update role");
-
-  const createToken = jwtHelper.createToken(
-    {
-      id: updatedUser._id,
-      email: updatedUser.email,
-      role: updatedUser.role,
-    },
-    config.jwt.jwt_secret as Secret,
-    config.jwt.jwt_expire_in as string,
-  );
-
-  const result = {
-    token: createToken,
-    user: updatedUser,
-  };
-
-  return result;
-};
 
 const getUserByIdFromDB = async (id: string) => {
   const result = await User.findOne({
@@ -440,12 +286,7 @@ export const UserService = {
   deleteAdminFromDB,
   getUserByIdFromDB,
   updateProfileToDB,
-  createHostToDB,
-  ghostLoginAsHost,
-  deleteHostByIdFromD,
-  getTotalUsersAndHostsFromDB,
   createAdminToDB,
-  switchProfileToDB,
   updateUserStatusByIdToDB,
   updateAdminStatusByIdToDB,
   deleteUserByIdFromD,

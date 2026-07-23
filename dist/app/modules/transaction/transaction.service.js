@@ -82,6 +82,8 @@ const getTransactionsByUser = (userId_1, role_1, ...args_1) => __awaiter(void 0,
                     transaction_constant_1.TRANSACTION_TYPE.WALLET_TOPUP,
                     transaction_constant_1.TRANSACTION_TYPE.REFUND,
                     transaction_constant_1.TRANSACTION_TYPE.LOST_FOUND_DELIVERY,
+                    transaction_constant_1.TRANSACTION_TYPE.DRIVER_REFERRAL_REWARD,
+                    transaction_constant_1.TRANSACTION_TYPE.USER_REFERRAL_REWARD,
                 ],
             };
         }
@@ -101,6 +103,8 @@ const getTransactionsByUser = (userId_1, role_1, ...args_1) => __awaiter(void 0,
                     transaction_constant_1.TRANSACTION_TYPE.REFUND,
                     transaction_constant_1.TRANSACTION_TYPE.PAYOUT,
                     transaction_constant_1.TRANSACTION_TYPE.LOST_FOUND_DELIVERY,
+                    transaction_constant_1.TRANSACTION_TYPE.DRIVER_REFERRAL_REWARD,
+                    transaction_constant_1.TRANSACTION_TYPE.USER_REFERRAL_REWARD,
                 ],
             };
         }
@@ -108,7 +112,12 @@ const getTransactionsByUser = (userId_1, role_1, ...args_1) => __awaiter(void 0,
     else {
         // Default to "user" (passenger) logic
         if (normalizedFilter === "add_money") {
-            query.transactionType = transaction_constant_1.TRANSACTION_TYPE.WALLET_TOPUP;
+            query.transactionType = {
+                $in: [
+                    transaction_constant_1.TRANSACTION_TYPE.WALLET_TOPUP,
+                    transaction_constant_1.TRANSACTION_TYPE.USER_REFERRAL_REWARD,
+                ],
+            };
         }
         else if (normalizedFilter === "spend") {
             query.transactionType = {
@@ -129,6 +138,7 @@ const getTransactionsByUser = (userId_1, role_1, ...args_1) => __awaiter(void 0,
                     transaction_constant_1.TRANSACTION_TYPE.CANCELLATION_FEE,
                     transaction_constant_1.TRANSACTION_TYPE.DRIVER_APPRECIATION,
                     transaction_constant_1.TRANSACTION_TYPE.LOST_FOUND_DELIVERY,
+                    transaction_constant_1.TRANSACTION_TYPE.USER_REFERRAL_REWARD,
                 ],
             };
         }
@@ -142,7 +152,9 @@ const getTransactionsByUser = (userId_1, role_1, ...args_1) => __awaiter(void 0,
         const txType = txObj.transactionType;
         if (txType === transaction_constant_1.TRANSACTION_TYPE.WALLET_TOPUP ||
             txType === transaction_constant_1.TRANSACTION_TYPE.REFUND ||
-            txType === transaction_constant_1.TRANSACTION_TYPE.CANCELLATION_COMPENSATION) {
+            txType === transaction_constant_1.TRANSACTION_TYPE.CANCELLATION_COMPENSATION ||
+            txType === transaction_constant_1.TRANSACTION_TYPE.USER_REFERRAL_REWARD ||
+            txType === transaction_constant_1.TRANSACTION_TYPE.DRIVER_REFERRAL_REWARD) {
             flowType = "add_money";
         }
         else if (txType === transaction_constant_1.TRANSACTION_TYPE.PAYOUT) {

@@ -41,14 +41,50 @@ export interface ILostFoundConfig {
   autoCloseDays: number;
 }
 
+export interface IPassengerReferralConfig {
+  enabled: boolean;
+  rewardAmount: number;
+  rewardCurrency: string;
+  qualificationType: string;
+  requiredCompletedTrips: number;
+  qualificationDays: number;
+  allowMultipleRewards: boolean;
+  maximumRewardsPerUser: number;
+  autoRewardEnabled: boolean;
+  shareInstructions?: string;
+  rewardTerms?: string;
+  generalNotes?: string;
+}
+
+export interface IDriverReferralConfig {
+  enabled: boolean;
+  rewardAmount: number;
+  rewardCurrency: string;
+  requiredCompletedTrips: number;
+  qualificationDays: number;
+  payoutDelayHours: number;
+  autoRewardEnabled: boolean;
+  maximumRewardsPerDriver: number;
+  shareInstructions?: string;
+  termsAndConditions?: string;
+  generalNotes?: string;
+}
+
+export interface IReferralConfig {
+  passenger: IPassengerReferralConfig;
+  driver: IDriverReferralConfig;
+}
+
 export interface ISystemConfiguration {
   _id?: Types.ObjectId;
   driverMatching: IDriverMatchingConfig;
   tracking: ITrackingConfig;
   reservation?: IReservationConfig;
   lostFound?: ILostFoundConfig;
+  referral?: IReferralConfig;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
 export type SystemConfigurationModel = ISoftDeleteModel<ISystemConfiguration>;
+

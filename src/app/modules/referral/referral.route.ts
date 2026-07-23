@@ -5,32 +5,46 @@ import { ReferralController } from "./referral.controller";
 
 const router = express.Router();
 
+// --- NEW PASSENGER ROUTES ---
 router.get(
-  "/user-info",
+  "/user/dashboard",
   auth(USER_ROLES.USER, USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
-  ReferralController.getUserInfo,
+  ReferralController.getUserDashboard,
 );
 
 router.get(
-  "/driver-info",
-  auth(USER_ROLES.DRIVER, USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
-  ReferralController.getDriverInfo,
+  "/user/history",
+  auth(USER_ROLES.USER, USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+  ReferralController.getReferredUsersHistory,
 );
 
 router.get(
-  "/driver-progress",
+  "/user/reward-history",
+  auth(USER_ROLES.USER, USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+  ReferralController.getUserRewardHistory,
+);
+
+// --- NEW DRIVER ROUTES ---
+router.get(
+  "/driver/dashboard",
   auth(USER_ROLES.DRIVER, USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
-  ReferralController.getDriverProgress,
+  ReferralController.getDriverDashboard,
 );
 
 router.get(
-  "/driver-payouts",
+  "/driver/progress",
   auth(USER_ROLES.DRIVER, USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
-  ReferralController.getDriverPayouts,
+  ReferralController.getDriverReferralProgress,
 );
 
+router.get(
+  "/driver/reward-history",
+  auth(USER_ROLES.DRIVER, USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+  ReferralController.getDriverRewardHistory,
+);
+
+// --- OTHER ROUTES ---
 router.get("/rules", ReferralController.getRules);
-
 router.post("/verify", ReferralController.verifyCode);
 
 export const ReferralRoutes = router;

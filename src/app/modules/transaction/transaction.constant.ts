@@ -7,4 +7,6 @@ export enum TRANSACTION_TYPE {
   PAYOUT = "payout",
   DRIVER_APPRECIATION = "driver_appreciation",
   LOST_FOUND_DELIVERY = "lost_found_delivery",
+  USER_REFERRAL_REWARD = "user_referral_reward",
+  DRIVER_REFERRAL_REWARD = "driver_referral_reward",
 }

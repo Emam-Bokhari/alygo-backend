@@ -18,6 +18,7 @@ import { DriverDutyPolicyServices } from "../driverDutyPolicy/driverDutyPolicy.s
 import { Transaction } from "../transaction/transaction.model";
 import { Wallet } from "../wallet/wallet.model";
 import { WalletService } from "../wallet/wallet.service";
+import { ReferralService } from "../referral/referral.service";
 import { Tracking } from "../tracking/tracking.model";
 import { googleMapsHelper } from "../../../helpers/googleMapsHelper";
 import { socketHelper } from "../../../helpers/socketHelper";
@@ -1881,6 +1882,15 @@ const completeRide = async (
     // Update driver availability after completing ride (outside transaction to prevent blocking)
     await DriverDutyPolicyServices.updateDriverAvailability(driverUserId);
 
+    // Trigger referral checks
+    ReferralService.handleDriverRideCompletion(driverUserId).catch((err) => {
+      logger.error("Driver referral completed ride progress error:", err);
+    });
+
+    ReferralService.checkAndProcessPassengerReferral(ride.userId.toString()).catch((err) => {
+      logger.error("Passenger referral completed ride check error:", err);
+    });
+
     // Save destination to recent destinations (fire and forget, don't block the flow)
     // Only for passengers, not drivers
     RecentDestinationServices.saveOrUpdateRecentDestination(
@@ -2154,6 +2164,11 @@ const completeRidePayment = async (
 
     await session.commitTransaction();
     session.endSession();
+
+    // Trigger Passenger referral check upon payment completion
+    ReferralService.checkAndProcessPassengerReferral(ride.userId.toString()).catch((err) => {
+      logger.error("Passenger referral payment check error:", err);
+    });
 
     // Build enriched summaries for both passenger and driver
     let driverSummary;

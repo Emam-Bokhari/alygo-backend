@@ -94,6 +94,35 @@ export const getSystemConfig = async () => {
           returnConfirmationHours: dbConfig.lostFound?.returnConfirmationHours ?? config.lostFound.returnConfirmationHours,
           autoCloseDays: dbConfig.lostFound?.autoCloseDays ?? config.lostFound.autoCloseDays,
         },
+        referral: {
+          passenger: {
+            enabled: dbConfig.referral?.passenger?.enabled ?? config.referral?.passenger?.enabled ?? true,
+            rewardAmount: dbConfig.referral?.passenger?.rewardAmount ?? config.referral?.passenger?.rewardAmount ?? 20,
+            rewardCurrency: dbConfig.referral?.passenger?.rewardCurrency ?? config.referral?.passenger?.rewardCurrency ?? "USD",
+            qualificationType: dbConfig.referral?.passenger?.qualificationType ?? config.referral?.passenger?.qualificationType ?? "rides",
+            requiredCompletedTrips: dbConfig.referral?.passenger?.requiredCompletedTrips ?? config.referral?.passenger?.requiredCompletedTrips ?? 1,
+            qualificationDays: dbConfig.referral?.passenger?.qualificationDays ?? config.referral?.passenger?.qualificationDays ?? 30,
+            allowMultipleRewards: dbConfig.referral?.passenger?.allowMultipleRewards ?? config.referral?.passenger?.allowMultipleRewards ?? false,
+            maximumRewardsPerUser: dbConfig.referral?.passenger?.maximumRewardsPerUser ?? config.referral?.passenger?.maximumRewardsPerUser ?? 5,
+            autoRewardEnabled: dbConfig.referral?.passenger?.autoRewardEnabled ?? config.referral?.passenger?.autoRewardEnabled ?? true,
+            shareInstructions: dbConfig.referral?.passenger?.shareInstructions ?? config.referral?.passenger?.shareInstructions ?? "",
+            rewardTerms: dbConfig.referral?.passenger?.rewardTerms ?? config.referral?.passenger?.rewardTerms ?? "",
+            generalNotes: dbConfig.referral?.passenger?.generalNotes ?? config.referral?.passenger?.generalNotes ?? "",
+          },
+          driver: {
+            enabled: dbConfig.referral?.driver?.enabled ?? config.referral?.driver?.enabled ?? true,
+            rewardAmount: dbConfig.referral?.driver?.rewardAmount ?? config.referral?.driver?.rewardAmount ?? 100,
+            rewardCurrency: dbConfig.referral?.driver?.rewardCurrency ?? config.referral?.driver?.rewardCurrency ?? "USD",
+            requiredCompletedTrips: dbConfig.referral?.driver?.requiredCompletedTrips ?? config.referral?.driver?.requiredCompletedTrips ?? 10,
+            qualificationDays: dbConfig.referral?.driver?.qualificationDays ?? config.referral?.driver?.qualificationDays ?? 30,
+            payoutDelayHours: dbConfig.referral?.driver?.payoutDelayHours ?? config.referral?.driver?.payoutDelayHours ?? 0,
+            autoRewardEnabled: dbConfig.referral?.driver?.autoRewardEnabled ?? config.referral?.driver?.autoRewardEnabled ?? true,
+            maximumRewardsPerDriver: dbConfig.referral?.driver?.maximumRewardsPerDriver ?? config.referral?.driver?.maximumRewardsPerDriver ?? 10,
+            shareInstructions: dbConfig.referral?.driver?.shareInstructions ?? config.referral?.driver?.shareInstructions ?? "",
+            termsAndConditions: dbConfig.referral?.driver?.termsAndConditions ?? config.referral?.driver?.termsAndConditions ?? "",
+            generalNotes: dbConfig.referral?.driver?.generalNotes ?? config.referral?.driver?.generalNotes ?? "",
+          }
+        }
       };
       cacheExpiry = now + CACHE_DURATION_MS;
       return cachedConfig;
@@ -111,6 +140,7 @@ export const getSystemConfig = async () => {
     tracking: config.tracking,
     reservation: config.reservation,
     lostFound: config.lostFound,
+    referral: config.referral,
   };
   cacheExpiry = now + CACHE_DURATION_MS;
   return cachedConfig;

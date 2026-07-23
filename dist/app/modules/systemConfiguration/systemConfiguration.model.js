@@ -168,6 +168,129 @@ const lostFoundConfigSchema = new mongoose_1.Schema({
         default: 30,
     },
 }, { _id: false });
+const passengerReferralConfigSchema = new mongoose_1.Schema({
+    enabled: {
+        type: Boolean,
+        required: true,
+        default: true,
+    },
+    rewardAmount: {
+        type: Number,
+        required: true,
+        default: 20,
+    },
+    rewardCurrency: {
+        type: String,
+        required: true,
+        default: "USD",
+    },
+    qualificationType: {
+        type: String,
+        required: true,
+        default: "rides",
+    },
+    requiredCompletedTrips: {
+        type: Number,
+        required: true,
+        default: 1,
+    },
+    qualificationDays: {
+        type: Number,
+        required: true,
+        default: 30,
+    },
+    allowMultipleRewards: {
+        type: Boolean,
+        required: true,
+        default: false,
+    },
+    maximumRewardsPerUser: {
+        type: Number,
+        required: true,
+        default: 5,
+    },
+    autoRewardEnabled: {
+        type: Boolean,
+        required: true,
+        default: true,
+    },
+    shareInstructions: {
+        type: String,
+        required: false,
+    },
+    rewardTerms: {
+        type: String,
+        required: false,
+    },
+    generalNotes: {
+        type: String,
+        required: false,
+    },
+}, { _id: false });
+const driverReferralConfigSchema = new mongoose_1.Schema({
+    enabled: {
+        type: Boolean,
+        required: true,
+        default: true,
+    },
+    rewardAmount: {
+        type: Number,
+        required: true,
+        default: 100,
+    },
+    rewardCurrency: {
+        type: String,
+        required: true,
+        default: "USD",
+    },
+    requiredCompletedTrips: {
+        type: Number,
+        required: true,
+        default: 10,
+    },
+    qualificationDays: {
+        type: Number,
+        required: true,
+        default: 30,
+    },
+    payoutDelayHours: {
+        type: Number,
+        required: true,
+        default: 0,
+    },
+    autoRewardEnabled: {
+        type: Boolean,
+        required: true,
+        default: true,
+    },
+    maximumRewardsPerDriver: {
+        type: Number,
+        required: true,
+        default: 10,
+    },
+    shareInstructions: {
+        type: String,
+        required: false,
+    },
+    termsAndConditions: {
+        type: String,
+        required: false,
+    },
+    generalNotes: {
+        type: String,
+        required: false,
+    },
+}, { _id: false });
+const referralConfigSchema = new mongoose_1.Schema({
+    passenger: {
+        type: passengerReferralConfigSchema,
+        required: true,
+    },
+    driver: {
+        type: driverReferralConfigSchema,
+        required: true,
+    },
+}, { _id: false });
 const systemConfigurationSchema = new mongoose_1.Schema({
     driverMatching: {
         type: driverMatchingSchema,
@@ -183,6 +306,10 @@ const systemConfigurationSchema = new mongoose_1.Schema({
     },
     lostFound: {
         type: lostFoundConfigSchema,
+        required: false,
+    },
+    referral: {
+        type: referralConfigSchema,
         required: false,
     },
 }, {
