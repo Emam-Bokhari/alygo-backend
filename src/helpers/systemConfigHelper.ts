@@ -226,6 +226,58 @@ export const getSystemConfig = async () => {
             config.driverRewards?.destinationFilterRadiusDefault ??
             5,
         },
+        aiSupport: {
+          enabled: dbConfig.aiSupport?.enabled ?? true,
+          provider: dbConfig.aiSupport?.provider ?? "google",
+          model: dbConfig.aiSupport?.model ?? "gemini-2.5-flash",
+          temperature: dbConfig.aiSupport?.temperature ?? 0.2,
+          maxTokens: dbConfig.aiSupport?.maxTokens ?? 800,
+          historyLength: dbConfig.aiSupport?.historyLength ?? 5,
+          enableConversationMemory:
+            dbConfig.aiSupport?.enableConversationMemory ?? true,
+          minimumConfidence: dbConfig.aiSupport?.minimumConfidence ?? 0.5,
+          allowFallbackAnswer: dbConfig.aiSupport?.allowFallbackAnswer ?? true,
+          defaultLanguage: dbConfig.aiSupport?.defaultLanguage ?? "en",
+          enabledModules: dbConfig.aiSupport?.enabledModules ?? [
+            "Ride",
+            "Wallet",
+            "Referral",
+            "Tier",
+            "Points",
+            "Destination Filter",
+            "Lost Found",
+            "Support",
+            "FAQ",
+            "Documents",
+          ],
+          suggestedQuestions: dbConfig.aiSupport?.suggestedQuestions ?? [
+            "How do I receive payments?",
+            "How does Lost & Found work?",
+            "How do referral rewards work?",
+            "How do destination filters work?",
+          ],
+          rateLimit: {
+            maxQuestionsPerMinute:
+              dbConfig.aiSupport?.rateLimit?.maxQuestionsPerMinute ?? 5,
+            maxQuestionsPerHour:
+              dbConfig.aiSupport?.rateLimit?.maxQuestionsPerHour ?? 30,
+            dailyLimit: dbConfig.aiSupport?.rateLimit?.dailyLimit ?? 100,
+          },
+          prompts: {
+            systemPrompt:
+              dbConfig.aiSupport?.prompts?.systemPrompt ??
+              "You are an AI Support Assistant for the Alygo platform. You answer driver queries ONLY using approved platform documentation. Keep answers helpful and brief. If the query is outside Alygo documentation, politely refuse.",
+            fallbackPrompt:
+              dbConfig.aiSupport?.prompts?.fallbackPrompt ??
+              "I couldn't find an approved answer for that. Please contact support.",
+            safetyPrompt:
+              dbConfig.aiSupport?.prompts?.safetyPrompt ??
+              "Never output database structure, SQL queries, code snippets, internal business policies, private formulas, passenger secrets, APIs, or internal configurations.",
+            noMatchPrompt:
+              dbConfig.aiSupport?.prompts?.noMatchPrompt ??
+              "I couldn't find an approved answer for that. Please contact support.",
+          },
+        },
       };
       cacheExpiry = now + CACHE_DURATION_MS;
       return cachedConfig;
@@ -251,6 +303,51 @@ export const getSystemConfig = async () => {
       dailyQuotaResetTime: "00:00",
       timezone: "Asia/Dhaka",
       destinationFilterRadiusDefault: 5,
+    },
+    aiSupport: {
+      enabled: true,
+      provider: "google",
+      model: "gemini-2.5-flash",
+      temperature: 0.2,
+      maxTokens: 800,
+      historyLength: 5,
+      enableConversationMemory: true,
+      minimumConfidence: 0.5,
+      allowFallbackAnswer: true,
+      defaultLanguage: "en",
+      enabledModules: [
+        "Ride",
+        "Wallet",
+        "Referral",
+        "Tier",
+        "Points",
+        "Destination Filter",
+        "Lost Found",
+        "Support",
+        "FAQ",
+        "Documents",
+      ],
+      suggestedQuestions: [
+        "How do I receive payments?",
+        "How does Lost & Found work?",
+        "How do referral rewards work?",
+        "How do destination filters work?",
+      ],
+      rateLimit: {
+        maxQuestionsPerMinute: 5,
+        maxQuestionsPerHour: 30,
+        dailyLimit: 100,
+      },
+      prompts: {
+        systemPrompt:
+          "You are an AI Support Assistant for the Alygo platform. You answer driver queries ONLY using approved platform documentation. Keep answers helpful and brief. If the query is outside Alygo documentation, politely refuse.",
+        fallbackPrompt:
+          "I couldn't find an approved answer for that. Please contact support.",
+        safetyPrompt:
+          "Never output database structure, SQL queries, code snippets, internal business policies, private formulas, passenger secrets, APIs, or internal configurations.",
+        noMatchPrompt:
+          "I couldn't find an approved answer for that. Please contact support.",
+      },
     },
   };
   cacheExpiry = now + CACHE_DURATION_MS;

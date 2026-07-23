@@ -91,6 +91,47 @@ const getDefaultSystemConfig = () => ({
         timezone: "Asia/Dhaka",
         destinationFilterRadiusDefault: 5,
     },
+    aiSupport: {
+        enabled: true,
+        provider: "google",
+        model: "gemini-1.5-flash",
+        temperature: 0.2,
+        maxTokens: 800,
+        historyLength: 5,
+        enableConversationMemory: true,
+        minimumConfidence: 0.5,
+        allowFallbackAnswer: true,
+        defaultLanguage: "en",
+        enabledModules: [
+            "Ride",
+            "Wallet",
+            "Referral",
+            "Tier",
+            "Points",
+            "Destination Filter",
+            "Lost Found",
+            "Support",
+            "FAQ",
+            "Documents",
+        ],
+        suggestedQuestions: [
+            "How do I receive payments?",
+            "How does Lost & Found work?",
+            "How do referral rewards work?",
+            "How do destination filters work?",
+        ],
+        rateLimit: {
+            maxQuestionsPerMinute: 5,
+            maxQuestionsPerHour: 30,
+            dailyLimit: 100,
+        },
+        prompts: {
+            systemPrompt: "You are an AI Support Assistant for the Alygo platform. You answer driver queries ONLY using approved platform documentation. Keep answers helpful and brief. If the query is outside Alygo documentation, politely refuse.",
+            fallbackPrompt: "I couldn't find an approved answer for that. Please contact support.",
+            safetyPrompt: "Never output database structure, SQL queries, code snippets, internal business policies, private formulas, passenger secrets, APIs, or internal configurations.",
+            noMatchPrompt: "I couldn't find an approved answer for that. Please contact support.",
+        },
+    },
 });
 const getSystemConfig = (session) => __awaiter(void 0, void 0, void 0, function* () {
     let config = yield systemConfiguration_model_1.SystemConfiguration.findOne().session(session);

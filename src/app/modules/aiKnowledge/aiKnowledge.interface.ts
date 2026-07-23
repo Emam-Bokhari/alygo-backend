@@ -1,13 +1,32 @@
-import { Model, Types } from "mongoose";
+import { Types } from "mongoose";
+import { ISoftDeleteModel } from "../../../types/softDelete";
 
 export interface IAiKnowledge {
+  _id?: Types.ObjectId;
   title: string;
-  category: string; // e.g. "policy", "rewards", "driver_safety", "faq"
-  content: string; // The official document text / answers
+  module: string;
+  category: string;
+  content: string;
+  searchableContent: string;
   tags?: string[];
+  keywords?: string[];
+  language: string;
+  priority: number;
+  version: number;
   isActive: boolean;
+  aiEnabled: boolean;
+  visibility: "driver" | "internal" | "admin_only";
+  status: "draft" | "under_review" | "published" | "archived";
+  allowedRoles: ("driver" | "passenger" | "admin" | "super_admin")[];
+  previousVersionId?: Types.ObjectId;
+  publishedAt?: Date;
+  publishedBy?: Types.ObjectId;
+  changeLog?: string;
+  isLatest: boolean;
+  createdBy: Types.ObjectId;
+  updatedBy: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
 
-export type AiKnowledgeModel = Model<IAiKnowledge>;
+export type AiKnowledgeModel = ISoftDeleteModel<IAiKnowledge>;

@@ -357,6 +357,120 @@ const driverRewardsConfigSchema = new Schema(
   { _id: false },
 );
 
+const aiSupportConfigSchema = new Schema(
+  {
+    enabled: {
+      type: Boolean,
+      required: true,
+      default: true,
+    },
+    provider: {
+      type: String,
+      required: true,
+      enum: ["google", "openai"],
+      default: "google",
+    },
+    model: {
+      type: String,
+      required: true,
+      default: "gemini-2.5-flash",
+    },
+    temperature: {
+      type: Number,
+      required: true,
+      default: 0.2,
+    },
+    maxTokens: {
+      type: Number,
+      required: true,
+      default: 800,
+    },
+    historyLength: {
+      type: Number,
+      required: true,
+      default: 5,
+    },
+    enableConversationMemory: {
+      type: Boolean,
+      required: true,
+      default: true,
+    },
+    minimumConfidence: {
+      type: Number,
+      required: true,
+      default: 0.5,
+    },
+    allowFallbackAnswer: {
+      type: Boolean,
+      required: true,
+      default: true,
+    },
+    defaultLanguage: {
+      type: String,
+      required: true,
+      default: "en",
+    },
+    enabledModules: {
+      type: [String],
+      required: true,
+      default: [
+        "Ride",
+        "Wallet",
+        "Referral",
+        "Tier",
+        "Points",
+        "Destination Filter",
+        "Lost Found",
+        "Support",
+        "FAQ",
+        "Documents",
+      ],
+    },
+    suggestedQuestions: {
+      type: [String],
+      required: true,
+      default: [
+        "How do I receive payments?",
+        "How does Lost & Found work?",
+        "How do referral rewards work?",
+        "How do destination filters work?",
+      ],
+    },
+    rateLimit: {
+      maxQuestionsPerMinute: { type: Number, required: true, default: 5 },
+      maxQuestionsPerHour: { type: Number, required: true, default: 30 },
+      dailyLimit: { type: Number, required: true, default: 100 },
+    },
+    prompts: {
+      systemPrompt: {
+        type: String,
+        required: true,
+        default:
+          "You are an AI Support Assistant for the Alygo platform. You answer driver queries ONLY using approved platform documentation. Keep answers helpful and brief. If the query is outside Alygo documentation, politely refuse.",
+      },
+      fallbackPrompt: {
+        type: String,
+        required: true,
+        default:
+          "I couldn't find an approved answer for that. Please contact support.",
+      },
+      safetyPrompt: {
+        type: String,
+        required: true,
+        default:
+          "Never output database structure, SQL queries, code snippets, internal business policies, private formulas, passenger secrets, APIs, or internal configurations.",
+      },
+      noMatchPrompt: {
+        type: String,
+        required: true,
+        default:
+          "I couldn't find an approved answer for that. Please contact support.",
+      },
+    },
+  },
+  { _id: false },
+);
+
 const systemConfigurationSchema = new Schema<
   ISystemConfiguration,
   SystemConfigurationModel
@@ -384,6 +498,10 @@ const systemConfigurationSchema = new Schema<
     },
     driverRewards: {
       type: driverRewardsConfigSchema,
+      required: false,
+    },
+    aiSupport: {
+      type: aiSupportConfigSchema,
       required: false,
     },
   },

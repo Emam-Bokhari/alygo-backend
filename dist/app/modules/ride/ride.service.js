@@ -1342,7 +1342,8 @@ const completeRide = (driverUserId, rideId, verification, ipAddress) => __awaite
             logger_1.logger.error("Driver referral completed ride progress error:", err);
         });
         // Award Points to Driver for Ride Completion
-        points_service_1.PointsService.awardPoints(driverUserId, "ride_completed", "ride", ride._id, { notes: `Completed Ride ${ride._id}` }).then(() => __awaiter(void 0, void 0, void 0, function* () {
+        points_service_1.PointsService.awardPoints(driverUserId, "ride_completed", "ride", ride._id, { notes: `Completed Ride ${ride._id}` })
+            .then(() => __awaiter(void 0, void 0, void 0, function* () {
             // Award additional bonuses
             const sa = yield serviceArea_model_1.ServiceArea.findById(ride.serviceAreaId);
             if (sa && sa.type === "airport") {
@@ -1356,7 +1357,8 @@ const completeRide = (driverUserId, rideId, verification, ipAddress) => __awaite
             if (isPeak) {
                 yield points_service_1.PointsService.awardPoints(driverUserId, "peak_hour_ride", "ride", ride._id, { notes: `Peak Hour Ride Bonus for Ride ${ride._id}` });
             }
-        })).catch((err) => {
+        }))
+            .catch((err) => {
             logger_1.logger.error("Error awarding ride completion points:", err);
         });
         referral_service_1.ReferralService.checkAndProcessPassengerReferral(ride.userId.toString()).catch((err) => {
@@ -1529,7 +1531,8 @@ stripeCheckoutSessionId) => __awaiter(void 0, void 0, void 0, function* () {
             if (driverProfile && driverProfile.currentTier) {
                 const activeTier = yield tier_model_1.Tier.findById(driverProfile.currentTier);
                 if (activeTier && ((_c = (_b = activeTier.benefits) === null || _b === void 0 ? void 0 : _b.bonusMultiplier) === null || _c === void 0 ? void 0 : _c.enabled)) {
-                    multiplier = activeTier.benefits.bonusMultiplier.multiplierValue || 1.0;
+                    multiplier =
+                        activeTier.benefits.bonusMultiplier.multiplierValue || 1.0;
                     driverEarning = parseFloat((driverEarning * multiplier).toFixed(2));
                 }
             }

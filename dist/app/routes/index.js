@@ -48,6 +48,7 @@ const adminRewards_route_1 = require("../modules/tier/adminRewards.route");
 const pendingPayment_route_1 = require("../modules/pendingPayment/pendingPayment.route");
 const systemConfiguration_route_1 = require("../modules/systemConfiguration/systemConfiguration.route");
 const tripReport_route_1 = require("../modules/tripReport/tripReport.route");
+const aiSupport_route_1 = require("../modules/aiSupport/aiSupport.route");
 const router = express_1.default.Router();
 const apiRoutes = [
     {
@@ -229,6 +230,14 @@ const apiRoutes = [
     {
         path: "/trip-reports",
         route: tripReport_route_1.TripReportRoutes,
+    },
+    {
+        path: "/admin/ai-support",
+        route: aiSupport_route_1.AdminAiSupportRoutes,
+    },
+    {
+        path: "/driver/ai-support",
+        route: aiSupport_route_1.DriverAiSupportRoutes,
     },
 ];
 apiRoutes.forEach((route) => router.use(route.path, route.route));

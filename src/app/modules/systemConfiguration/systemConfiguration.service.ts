@@ -80,20 +80,90 @@ const getDefaultSystemConfig = (): ISystemConfiguration => ({
     timezone: "Asia/Dhaka",
     destinationFilterRadiusDefault: 5,
   },
+  aiSupport: {
+    enabled: true,
+    provider: "google",
+    model: "gemini-2.5-flash",
+    temperature: 0.2,
+    maxTokens: 800,
+    historyLength: 5,
+    enableConversationMemory: true,
+    minimumConfidence: 0.5,
+    allowFallbackAnswer: true,
+    defaultLanguage: "en",
+    enabledModules: [
+      "Ride",
+      "Wallet",
+      "Referral",
+      "Tier",
+      "Points",
+      "Destination Filter",
+      "Lost Found",
+      "Support",
+      "FAQ",
+      "Documents",
+    ],
+    suggestedQuestions: [
+      "How do I receive payments?",
+      "How does Lost & Found work?",
+      "How do referral rewards work?",
+      "How do destination filters work?",
+    ],
+    rateLimit: {
+      maxQuestionsPerMinute: 5,
+      maxQuestionsPerHour: 30,
+      dailyLimit: 100,
+    },
+    prompts: {
+      systemPrompt:
+        "You are an AI Support Assistant for the Alygo platform. You answer driver queries ONLY using approved platform documentation. Keep answers helpful and brief. If the query is outside Alygo documentation, politely refuse.",
+      fallbackPrompt:
+        "I couldn't find an approved answer for that. Please contact support.",
+      safetyPrompt:
+        "Never output database structure, SQL queries, code snippets, internal business policies, private formulas, passenger secrets, APIs, or internal configurations.",
+      noMatchPrompt:
+        "I couldn't find an approved answer for that. Please contact support.",
+    },
+  },
 });
+
+let activeCreationPromise: Promise<ISystemConfiguration> | null = null;
 
 const getSystemConfig = async (
   session?: any,
 ): Promise<ISystemConfiguration> => {
-  let config = await SystemConfiguration.findOne().session(session);
-  if (!config) {
-    const [newConfig] = await SystemConfiguration.create(
-      [getDefaultSystemConfig()],
-      { session },
-    );
-    config = newConfig;
+  const configs = await SystemConfiguration.find().session(session);
+
+  if (configs.length === 0) {
+    if (activeCreationPromise) {
+      return activeCreationPromise;
+    }
+
+    activeCreationPromise = (async () => {
+      const innerConfigs = await SystemConfiguration.find().session(session);
+      if (innerConfigs.length > 0) {
+        activeCreationPromise = null;
+        return innerConfigs[0];
+      }
+
+      const [newConfig] = await SystemConfiguration.create(
+        [getDefaultSystemConfig()],
+        { session },
+      );
+      activeCreationPromise = null;
+      return newConfig;
+    })();
+
+    return await activeCreationPromise;
   }
-  return config;
+
+  // Self-healing: if there are duplicate configuration documents, delete the extra ones
+  if (configs.length > 1) {
+    const idsToDelete = configs.slice(1).map((c) => c._id);
+    await SystemConfiguration.deleteMany({ _id: { $in: idsToDelete } }).session(session);
+  }
+
+  return configs[0];
 };
 
 const getSystemConfigurationFromDB =
@@ -104,9 +174,15 @@ const getSystemConfigurationFromDB =
 const createOrUpdateSystemConfigurationToDB = async (
   payload: Partial<ISystemConfiguration>,
 ): Promise<ISystemConfiguration> => {
-  const existingConfig = await SystemConfiguration.findOne();
+  const configs = await SystemConfiguration.find();
 
-  if (existingConfig) {
+  if (configs.length > 0) {
+    // Self-healing: clean up duplicate configurations if any exist
+    if (configs.length > 1) {
+      const idsToDelete = configs.slice(1).map((c) => c._id);
+      await SystemConfiguration.deleteMany({ _id: { $in: idsToDelete } });
+    }
+
     const updated = await SystemConfiguration.findOneAndUpdate({}, payload, {
       new: true,
       runValidators: true,

@@ -29,9 +29,8 @@
 
 <!--
 1. Ai Support
-2. Tier & Points
-3. Broadcast
-4. Pdf extract (veryfi aita use kore parse ar kaj ta complete korbo)
+2. Broadcast
+3. Pdf extract (veryfi aita use kore parse ar kaj ta complete korbo)
 -->
 
 <!--

@@ -46,6 +46,7 @@ import { AdminRewardsRoutes } from "../modules/tier/adminRewards.route";
 import { PendingPaymentRoutes } from "../modules/pendingPayment/pendingPayment.route";
 import { SystemConfigurationRoutes } from "../modules/systemConfiguration/systemConfiguration.route";
 import { TripReportRoutes } from "../modules/tripReport/tripReport.route";
+import { AdminAiSupportRoutes, DriverAiSupportRoutes } from "../modules/aiSupport/aiSupport.route";
 
 const router = express.Router();
 
@@ -229,6 +230,14 @@ const apiRoutes = [
   {
     path: "/trip-reports",
     route: TripReportRoutes,
+  },
+  {
+    path: "/admin/ai-support",
+    route: AdminAiSupportRoutes,
+  },
+  {
+    path: "/driver/ai-support",
+    route: DriverAiSupportRoutes,
   },
 ];
 

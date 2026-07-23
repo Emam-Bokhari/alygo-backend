@@ -84,6 +84,32 @@ export interface IDriverRewardsConfig {
   destinationFilterRadiusDefault: number;
 }
 
+export interface IAiSupportConfig {
+  enabled: boolean;
+  provider: "google" | "openai";
+  model: string;
+  temperature: number;
+  maxTokens: number;
+  historyLength: number;
+  enableConversationMemory: boolean;
+  minimumConfidence: number;
+  allowFallbackAnswer: boolean;
+  defaultLanguage: string;
+  enabledModules: string[];
+  suggestedQuestions: string[];
+  rateLimit: {
+    maxQuestionsPerMinute: number;
+    maxQuestionsPerHour: number;
+    dailyLimit: number;
+  };
+  prompts: {
+    systemPrompt: string;
+    fallbackPrompt: string;
+    safetyPrompt: string;
+    noMatchPrompt: string;
+  };
+}
+
 export interface ISystemConfiguration {
   _id?: Types.ObjectId;
   driverMatching: IDriverMatchingConfig;
@@ -92,6 +118,7 @@ export interface ISystemConfiguration {
   lostFound?: ILostFoundConfig;
   referral?: IReferralConfig;
   driverRewards?: IDriverRewardsConfig;
+  aiSupport?: IAiSupportConfig;
   createdAt?: Date;
   updatedAt?: Date;
 }

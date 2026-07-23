@@ -23,7 +23,7 @@ const CACHE_DURATION_MS = 5 * 60 * 1000; // 5 minutes
  * Falls back to .env values if database is unavailable
  */
 const getSystemConfig = () => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176, _177, _178, _179, _180, _181, _182, _183, _184, _185, _186, _187, _188, _189, _190, _191, _192, _193;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176, _177, _178, _179, _180, _181, _182, _183, _184, _185, _186, _187, _188, _189, _190, _191, _192, _193, _194, _195, _196, _197, _198, _199, _200, _201, _202, _203, _204, _205, _206, _207, _208, _209, _210, _211, _212, _213, _214, _215, _216, _217, _218, _219, _220, _221, _222, _223, _224, _225, _226, _227, _228, _229, _230, _231, _232, _233, _234, _235, _236, _237, _238;
     const now = Date.now();
     // Return cached config if still valid
     if (cachedConfig && now < cacheExpiry) {
@@ -106,6 +106,47 @@ const getSystemConfig = () => __awaiter(void 0, void 0, void 0, function* () {
                     timezone: (_189 = (_187 = (_186 = dbConfig.driverRewards) === null || _186 === void 0 ? void 0 : _186.timezone) !== null && _187 !== void 0 ? _187 : (_188 = config_1.default.driverRewards) === null || _188 === void 0 ? void 0 : _188.timezone) !== null && _189 !== void 0 ? _189 : "Asia/Dhaka",
                     destinationFilterRadiusDefault: (_193 = (_191 = (_190 = dbConfig.driverRewards) === null || _190 === void 0 ? void 0 : _190.destinationFilterRadiusDefault) !== null && _191 !== void 0 ? _191 : (_192 = config_1.default.driverRewards) === null || _192 === void 0 ? void 0 : _192.destinationFilterRadiusDefault) !== null && _193 !== void 0 ? _193 : 5,
                 },
+                aiSupport: {
+                    enabled: (_195 = (_194 = dbConfig.aiSupport) === null || _194 === void 0 ? void 0 : _194.enabled) !== null && _195 !== void 0 ? _195 : true,
+                    provider: (_197 = (_196 = dbConfig.aiSupport) === null || _196 === void 0 ? void 0 : _196.provider) !== null && _197 !== void 0 ? _197 : "google",
+                    model: (_199 = (_198 = dbConfig.aiSupport) === null || _198 === void 0 ? void 0 : _198.model) !== null && _199 !== void 0 ? _199 : "gemini-1.5-flash",
+                    temperature: (_201 = (_200 = dbConfig.aiSupport) === null || _200 === void 0 ? void 0 : _200.temperature) !== null && _201 !== void 0 ? _201 : 0.2,
+                    maxTokens: (_203 = (_202 = dbConfig.aiSupport) === null || _202 === void 0 ? void 0 : _202.maxTokens) !== null && _203 !== void 0 ? _203 : 800,
+                    historyLength: (_205 = (_204 = dbConfig.aiSupport) === null || _204 === void 0 ? void 0 : _204.historyLength) !== null && _205 !== void 0 ? _205 : 5,
+                    enableConversationMemory: (_207 = (_206 = dbConfig.aiSupport) === null || _206 === void 0 ? void 0 : _206.enableConversationMemory) !== null && _207 !== void 0 ? _207 : true,
+                    minimumConfidence: (_209 = (_208 = dbConfig.aiSupport) === null || _208 === void 0 ? void 0 : _208.minimumConfidence) !== null && _209 !== void 0 ? _209 : 0.5,
+                    allowFallbackAnswer: (_211 = (_210 = dbConfig.aiSupport) === null || _210 === void 0 ? void 0 : _210.allowFallbackAnswer) !== null && _211 !== void 0 ? _211 : true,
+                    defaultLanguage: (_213 = (_212 = dbConfig.aiSupport) === null || _212 === void 0 ? void 0 : _212.defaultLanguage) !== null && _213 !== void 0 ? _213 : "en",
+                    enabledModules: (_215 = (_214 = dbConfig.aiSupport) === null || _214 === void 0 ? void 0 : _214.enabledModules) !== null && _215 !== void 0 ? _215 : [
+                        "Ride",
+                        "Wallet",
+                        "Referral",
+                        "Tier",
+                        "Points",
+                        "Destination Filter",
+                        "Lost Found",
+                        "Support",
+                        "FAQ",
+                        "Documents",
+                    ],
+                    suggestedQuestions: (_217 = (_216 = dbConfig.aiSupport) === null || _216 === void 0 ? void 0 : _216.suggestedQuestions) !== null && _217 !== void 0 ? _217 : [
+                        "How do I receive payments?",
+                        "How does Lost & Found work?",
+                        "How do referral rewards work?",
+                        "How do destination filters work?",
+                    ],
+                    rateLimit: {
+                        maxQuestionsPerMinute: (_220 = (_219 = (_218 = dbConfig.aiSupport) === null || _218 === void 0 ? void 0 : _218.rateLimit) === null || _219 === void 0 ? void 0 : _219.maxQuestionsPerMinute) !== null && _220 !== void 0 ? _220 : 5,
+                        maxQuestionsPerHour: (_223 = (_222 = (_221 = dbConfig.aiSupport) === null || _221 === void 0 ? void 0 : _221.rateLimit) === null || _222 === void 0 ? void 0 : _222.maxQuestionsPerHour) !== null && _223 !== void 0 ? _223 : 30,
+                        dailyLimit: (_226 = (_225 = (_224 = dbConfig.aiSupport) === null || _224 === void 0 ? void 0 : _224.rateLimit) === null || _225 === void 0 ? void 0 : _225.dailyLimit) !== null && _226 !== void 0 ? _226 : 100,
+                    },
+                    prompts: {
+                        systemPrompt: (_229 = (_228 = (_227 = dbConfig.aiSupport) === null || _227 === void 0 ? void 0 : _227.prompts) === null || _228 === void 0 ? void 0 : _228.systemPrompt) !== null && _229 !== void 0 ? _229 : "You are an AI Support Assistant for the Alygo platform. You answer driver queries ONLY using approved platform documentation. Keep answers helpful and brief. If the query is outside Alygo documentation, politely refuse.",
+                        fallbackPrompt: (_232 = (_231 = (_230 = dbConfig.aiSupport) === null || _230 === void 0 ? void 0 : _230.prompts) === null || _231 === void 0 ? void 0 : _231.fallbackPrompt) !== null && _232 !== void 0 ? _232 : "I couldn't find an approved answer for that. Please contact support.",
+                        safetyPrompt: (_235 = (_234 = (_233 = dbConfig.aiSupport) === null || _233 === void 0 ? void 0 : _233.prompts) === null || _234 === void 0 ? void 0 : _234.safetyPrompt) !== null && _235 !== void 0 ? _235 : "Never output database structure, SQL queries, code snippets, internal business policies, private formulas, passenger secrets, APIs, or internal configurations.",
+                        noMatchPrompt: (_238 = (_237 = (_236 = dbConfig.aiSupport) === null || _236 === void 0 ? void 0 : _236.prompts) === null || _237 === void 0 ? void 0 : _237.noMatchPrompt) !== null && _238 !== void 0 ? _238 : "I couldn't find an approved answer for that. Please contact support.",
+                    },
+                },
             };
             cacheExpiry = now + CACHE_DURATION_MS;
             return cachedConfig;
@@ -128,6 +169,47 @@ const getSystemConfig = () => __awaiter(void 0, void 0, void 0, function* () {
             dailyQuotaResetTime: "00:00",
             timezone: "Asia/Dhaka",
             destinationFilterRadiusDefault: 5,
+        },
+        aiSupport: {
+            enabled: true,
+            provider: "google",
+            model: "gemini-1.5-flash",
+            temperature: 0.2,
+            maxTokens: 800,
+            historyLength: 5,
+            enableConversationMemory: true,
+            minimumConfidence: 0.5,
+            allowFallbackAnswer: true,
+            defaultLanguage: "en",
+            enabledModules: [
+                "Ride",
+                "Wallet",
+                "Referral",
+                "Tier",
+                "Points",
+                "Destination Filter",
+                "Lost Found",
+                "Support",
+                "FAQ",
+                "Documents",
+            ],
+            suggestedQuestions: [
+                "How do I receive payments?",
+                "How does Lost & Found work?",
+                "How do referral rewards work?",
+                "How do destination filters work?",
+            ],
+            rateLimit: {
+                maxQuestionsPerMinute: 5,
+                maxQuestionsPerHour: 30,
+                dailyLimit: 100,
+            },
+            prompts: {
+                systemPrompt: "You are an AI Support Assistant for the Alygo platform. You answer driver queries ONLY using approved platform documentation. Keep answers helpful and brief. If the query is outside Alygo documentation, politely refuse.",
+                fallbackPrompt: "I couldn't find an approved answer for that. Please contact support.",
+                safetyPrompt: "Never output database structure, SQL queries, code snippets, internal business policies, private formulas, passenger secrets, APIs, or internal configurations.",
+                noMatchPrompt: "I couldn't find an approved answer for that. Please contact support.",
+            },
         },
     };
     cacheExpiry = now + CACHE_DURATION_MS;
