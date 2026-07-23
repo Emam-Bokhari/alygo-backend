@@ -13,6 +13,103 @@ import { ProviderFactory } from "./providers/providerFactory";
 import { IChatMessage } from "./providers/aiProvider.interface";
 
 // ==========================================
+// FUZZY MATCHING HELPER (Levenshtein Distance)
+// ==========================================
+const levenshteinDistance = (str1: string, str2: string): number => {
+  const m = str1.length;
+  const n = str2.length;
+  const dp: number[][] = Array(m + 1).fill(null).map(() => Array(n + 1).fill(0));
+
+  for (let i = 0; i <= m; i++) dp[i][0] = i;
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
+
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      if (str1[i - 1] === str2[j - 1]) {
+        dp[i][j] = dp[i - 1][j - 1];
+      } else {
+        dp[i][j] = 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+      }
+    }
+  }
+  return dp[m][n];
+};
+
+const isFuzzyMatch = (str1: string, str2: string, threshold: number = 0.8): boolean => {
+  const distance = levenshteinDistance(str1.toLowerCase(), str2.toLowerCase());
+  const maxLen = Math.max(str1.length, str2.length);
+  if (maxLen === 0) return true;
+  const similarity = 1 - distance / maxLen;
+  return similarity >= threshold;
+};
+
+// Word-level fuzzy matching - checks if any word in query matches any word in target
+const hasWordLevelFuzzyMatch = (query: string, target: string, threshold: number = 0.7): boolean => {
+  const queryWords = query.toLowerCase().split(/\s+/).filter(w => w.length >= 2);
+  const targetWords = target.toLowerCase().split(/\s+/).filter(w => w.length >= 2);
+
+  for (const qWord of queryWords) {
+    for (const tWord of targetWords) {
+      if (isFuzzyMatch(qWord, tWord, threshold)) {
+        return true;
+      }
+    }
+  }
+  return false;
+};
+
+// Check if query contains a substring that fuzzy matches any part of target
+const hasPartialFuzzyMatch = (query: string, target: string, minWordLength: number = 3): boolean => {
+  const queryWords = query.toLowerCase().split(/\s+/).filter(w => w.length >= minWordLength);
+  const targetLower = target.toLowerCase();
+
+  for (const word of queryWords) {
+    const targetWords = targetLower.split(/\s+/);
+    for (const tWord of targetWords) {
+      if (isFuzzyMatch(word, tWord, 0.65)) {
+        return true;
+      }
+    }
+  }
+  return false;
+};
+
+// Check if query contains any substring of target (for partial matches)
+const hasSubstringMatch = (query: string, target: string): boolean => {
+  const queryLower = query.toLowerCase();
+  const targetLower = target.toLowerCase();
+  const targetWords = targetLower.split(/\s+/).filter(w => w.length >= 3);
+
+  for (const tWord of targetWords) {
+    if (queryLower.includes(tWord)) {
+      return true;
+    }
+  }
+  return false;
+};
+
+// Calculate best match score between query and target
+const getBestMatchScore = (query: string, target: string): number => {
+  const queryWords = query.toLowerCase().split(/\s+/).filter(w => w.length >= 2);
+  const targetWords = target.toLowerCase().split(/\s+/).filter(w => w.length >= 2);
+  let bestScore = 0;
+
+  for (const qWord of queryWords) {
+    for (const tWord of targetWords) {
+      const distance = levenshteinDistance(qWord, tWord);
+      const maxLen = Math.max(qWord.length, tWord.length);
+      if (maxLen > 0) {
+        const similarity = 1 - distance / maxLen;
+        if (similarity > bestScore) {
+          bestScore = similarity;
+        }
+      }
+    }
+  }
+  return bestScore;
+};
+
+// ==========================================
 // AUDIT LOGGING HELPER
 // ==========================================
 const logAudit = async (
@@ -181,9 +278,31 @@ const askAiQuestion = async (
     );
     if (exactKeywordMatch) score += 1000;
 
+    // Fuzzy keyword match for typos
+    const fuzzyKeywordMatch = keywords.some((k) => isFuzzyMatch(normalizedQuestion, k, 0.7));
+    if (fuzzyKeywordMatch) score += 850;
+
+    // Word-level keyword matching - any word in query matches any keyword
+    const wordLevelKeywordMatch = hasWordLevelFuzzyMatch(normalizedQuestion, keywords.join(" "), 0.65);
+    if (wordLevelKeywordMatch) score += 650;
+
+    // Best match score for keywords
+    const keywordBestScore = getBestMatchScore(normalizedQuestion, keywords.join(" "));
+    if (keywordBestScore > 0.6) score += Math.floor(keywordBestScore * 500);
+
     // Title checks
     if (itemTitle === normalizedQuestion) score += 800;
     else if (itemTitle.includes(normalizedQuestion)) score += 400;
+
+    // Fuzzy title match
+    if (isFuzzyMatch(normalizedQuestion, itemTitle, 0.7)) score += 350;
+
+    // Word-level title matching
+    if (hasWordLevelFuzzyMatch(normalizedQuestion, itemTitle, 0.65)) score += 280;
+
+    // Best match score for title
+    const titleBestScore = getBestMatchScore(normalizedQuestion, itemTitle);
+    if (titleBestScore > 0.6) score += Math.floor(titleBestScore * 300);
 
     queryWords.forEach((word) => {
       if (itemTitle.includes(word)) score += 50;
@@ -195,10 +314,28 @@ const askAiQuestion = async (
       if (normalizedQuestion.includes(tag)) score += 200;
     });
 
+    // Fuzzy tag match
+    tags.forEach((tag) => {
+      if (isFuzzyMatch(normalizedQuestion, tag, 0.7)) score += 160;
+    });
+
+    // Word-level tag matching
+    if (hasWordLevelFuzzyMatch(normalizedQuestion, tags.join(" "), 0.65)) score += 130;
+
+    // Best match score for tags
+    const tagBestScore = getBestMatchScore(normalizedQuestion, tags.join(" "));
+    if (tagBestScore > 0.6) score += Math.floor(tagBestScore * 200);
+
     // Content containment
     if (itemContent.includes(normalizedQuestion) || itemSearchable.includes(normalizedQuestion)) {
       score += 100;
     }
+
+    // Partial fuzzy match in content
+    if (hasPartialFuzzyMatch(normalizedQuestion, itemSearchable, 3)) score += 90;
+
+    // Substring match in content
+    if (hasSubstringMatch(normalizedQuestion, itemSearchable)) score += 70;
 
     queryWords.forEach((word) => {
       if (itemContent.includes(word) || itemSearchable.includes(word)) {
@@ -210,6 +347,9 @@ const askAiQuestion = async (
     if (normalizedQuestion.includes(itemCategory)) {
       score += 50;
     }
+
+    // Fuzzy category match
+    if (isFuzzyMatch(normalizedQuestion, itemCategory, 0.65)) score += 35;
 
     // Priority score
     score += (item.priority || 0) * 10;
@@ -419,8 +559,30 @@ const regenerateAnswer = async (
     );
     if (exactKeywordMatch) score += 1000;
 
+    // Fuzzy keyword match for typos
+    const fuzzyKeywordMatch = keywords.some((k) => isFuzzyMatch(existingChat.normalizedQuestion, k, 0.7));
+    if (fuzzyKeywordMatch) score += 850;
+
+    // Word-level keyword matching
+    const wordLevelKeywordMatch = hasWordLevelFuzzyMatch(existingChat.normalizedQuestion, keywords.join(" "), 0.65);
+    if (wordLevelKeywordMatch) score += 650;
+
+    // Best match score for keywords
+    const keywordBestScore = getBestMatchScore(existingChat.normalizedQuestion, keywords.join(" "));
+    if (keywordBestScore > 0.6) score += Math.floor(keywordBestScore * 500);
+
     if (itemTitle === existingChat.normalizedQuestion) score += 800;
     else if (itemTitle.includes(existingChat.normalizedQuestion)) score += 400;
+
+    // Fuzzy title match
+    if (isFuzzyMatch(existingChat.normalizedQuestion, itemTitle, 0.7)) score += 350;
+
+    // Word-level title matching
+    if (hasWordLevelFuzzyMatch(existingChat.normalizedQuestion, itemTitle, 0.65)) score += 280;
+
+    // Best match score for title
+    const titleBestScore = getBestMatchScore(existingChat.normalizedQuestion, itemTitle);
+    if (titleBestScore > 0.6) score += Math.floor(titleBestScore * 300);
 
     queryWords.forEach((word) => {
       if (itemTitle.includes(word)) score += 50;
@@ -431,9 +593,27 @@ const regenerateAnswer = async (
       if (existingChat.normalizedQuestion.includes(tag)) score += 200;
     });
 
+    // Fuzzy tag match
+    tags.forEach((tag) => {
+      if (isFuzzyMatch(existingChat.normalizedQuestion, tag, 0.7)) score += 160;
+    });
+
+    // Word-level tag matching
+    if (hasWordLevelFuzzyMatch(existingChat.normalizedQuestion, tags.join(" "), 0.65)) score += 130;
+
+    // Best match score for tags
+    const tagBestScore = getBestMatchScore(existingChat.normalizedQuestion, tags.join(" "));
+    if (tagBestScore > 0.6) score += Math.floor(tagBestScore * 200);
+
     if (itemContent.includes(existingChat.normalizedQuestion) || itemSearchable.includes(existingChat.normalizedQuestion)) {
       score += 100;
     }
+
+    // Partial fuzzy match in content
+    if (hasPartialFuzzyMatch(existingChat.normalizedQuestion, itemSearchable, 3)) score += 90;
+
+    // Substring match in content
+    if (hasSubstringMatch(existingChat.normalizedQuestion, itemSearchable)) score += 70;
 
     queryWords.forEach((word) => {
       if (itemContent.includes(word) || itemSearchable.includes(word)) {
@@ -444,6 +624,9 @@ const regenerateAnswer = async (
     if (existingChat.normalizedQuestion.includes(itemCategory)) {
       score += 50;
     }
+
+    // Fuzzy category match
+    if (isFuzzyMatch(existingChat.normalizedQuestion, itemCategory, 0.65)) score += 35;
 
     score += (item.priority || 0) * 10;
     const confidenceScore = Math.min(score / 1000, 1.0);
