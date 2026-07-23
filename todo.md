@@ -15,11 +15,6 @@
 
 <!-- ========================================================================= -->
 
-<!--
-# Thursday Work:
-1. referrels ta poro ta check korte hobe
--->
-
 <!-- ======================================================= -->
 
 <!--
@@ -28,7 +23,7 @@
 -->
 
 <!--
-1. Ai Support
+1. In app call and messaging
 2. Broadcast
 3. Pdf extract (veryfi aita use kore parse ar kaj ta complete korbo)
 -->
@@ -38,8 +33,7 @@
 2. sobgular khetre e custom Id make korbe but mongodb query ar jnno sobsomai e _id use korbe
 3. somosto jaigai soft delete use korte hobe, ak e sathe kono data jadi delete orthat soft delete e kora hoi ta o jeno agaer data te ba id te null show na kore, ager existing data jeno sothin vabe e populate hoi
 4. jaigai jaigai curerncy alada kore rakhar/config korar dorakr nai, sob ak jaiga theke currency config hobe, r shaita e poro project a use hobe
-
- -->
+-->
 
 <!--
  App:
@@ -73,6 +67,8 @@
   -->
 
   <!-- 
+Documents Extract
+
   # Implementation Plan - Future-Proof OCR Architecture using Strategy Pattern (Veryfi First)
 
 We want to implement a production-ready OCR (Optical Character Recognition) system for driver onboarding documents.
@@ -768,3 +764,915 @@ npm run build
 
 The project must compile successfully with zero TypeScript errors and preserve all existing functionality.
    -->
+
+
+<!-- 
+In App Call
+# Implementation Plan – Standalone Production-Grade In-App Voice Calling System (Agora)
+
+Implement a completely standalone, production-grade In-App Voice Calling System using **Agora RTC** that integrates with the existing platform without modifying or affecting any existing Ride, Reservation, Lost & Found, Chat, Wallet, Referral, Tracking, Driver Matching, or Notification business logic.
+
+The calling system must be fully reusable so that **one unified API** can be used from every module (Regular Ride, Scheduled Ride, Lost & Found, Reservation, Future Modules, etc.) without creating separate call implementations.
+
+---
+
+# User Review Required
+
+> [!IMPORTANT]
+>
+> This is a generic communication service.
+>
+> The calling module must **NOT** depend on Ride, Lost & Found, Reservation, or any individual module.
+>
+> Instead, every feature simply provides:
+>
+> - communicationType
+> - referenceId
+> - caller
+> - receiver
+>
+> and the Call Module manages everything.
+>
+> This guarantees future scalability.
+
+---
+
+# Design Principles
+
+- Standalone Module
+- Generic Communication Engine
+- Agora RTC
+- Backend Controlled
+- Socket Signaling
+- Firebase Push Notification
+- Token Based Authentication
+- Centralized Call Validation
+- No Duplicate APIs
+- No Business Logic Duplication
+- Future Proof
+
+---
+
+# Communication Types
+
+Support all current and future communication contexts.
+
+```ts
+REGULAR_RIDE
+SCHEDULED_RIDE
+LOST_FOUND
+RESERVATION
+SUPPORT
+OTHER
+```
+
+Every call belongs to exactly one communication context.
+
+---
+
+# Folder Structure
+
+```
+src/app/modules/call
+
+call.interface.ts
+call.model.ts
+call.constant.ts
+call.validation.ts
+call.service.ts
+call.controller.ts
+call.route.ts
+call.utils.ts
+
+providers/
+    agora.provider.ts
+
+helpers/
+    callPermission.helper.ts
+    callToken.helper.ts
+
+socket/
+    call.socket.ts
+
+workers/
+    call.worker.ts
+```
+
+---
+
+# Environment Variables
+
+```
+AGORA_APP_ID=
+
+AGORA_APP_CERTIFICATE=
+
+AGORA_TOKEN_EXPIRE_SECONDS=3600
+
+CALL_RING_TIMEOUT_SECONDS=30
+
+CALL_MAX_DURATION_MINUTES=120
+```
+
+---
+
+# Database Schema
+
+## NEW
+
+call.interface.ts
+
+Create production-grade Call interface.
+
+```
+rideId?: ObjectId
+
+referenceId: ObjectId
+
+communicationType
+
+channelName
+
+agoraUidCaller
+
+agoraUidReceiver
+
+callerId
+
+receiverId
+
+callerRole
+
+receiverRole
+
+status
+
+callType
+
+startedAt
+
+answeredAt
+
+endedAt
+
+durationSeconds
+
+ringStartedAt
+
+endedBy
+
+endReason
+
+missed
+
+rejected
+
+cancelled
+
+failed
+
+networkQuality
+
+tokenVersion
+
+metadata
+
+createdAt
+
+updatedAt
+```
+
+---
+
+# Status
+
+```
+INITIATED
+
+RINGING
+
+ACCEPTED
+
+CONNECTED
+
+ENDED
+
+REJECTED
+
+MISSED
+
+CANCELLED
+
+FAILED
+
+TIMEOUT
+```
+
+---
+
+# Call Type
+
+```
+VOICE
+```
+
+---
+
+# Communication Types
+
+```
+REGULAR_RIDE
+
+SCHEDULED_RIDE
+
+LOST_FOUND
+
+RESERVATION
+
+SUPPORT
+
+OTHER
+```
+
+---
+
+# Agora Provider
+
+Create
+
+providers/agora.provider.ts
+
+Responsibilities
+
+Generate Token
+
+Generate Channel Name
+
+Generate Agora UID
+
+Validate Expiration
+
+---
+
+# Channel Naming
+
+Never expose Ride IDs.
+
+Generate secure names.
+
+Example
+
+```
+call_xxxxxxxxxxxxxxxxx
+```
+
+---
+
+# Permission Engine
+
+Create
+
+callPermission.helper.ts
+
+One centralized validator.
+
+Input
+
+```
+caller
+
+receiver
+
+communicationType
+
+referenceId
+```
+
+It validates
+
+User exists
+
+Driver exists
+
+Both belong to same reference
+
+Ride active
+
+Lost Item active
+
+Reservation valid
+
+Support ticket valid
+
+Communication allowed
+
+Blocked users
+
+Duplicate active call
+
+Maximum concurrent calls
+
+Returns
+
+```
+allowed
+
+reason
+```
+
+---
+
+# Generic Call Service
+
+Create
+
+call.service.ts
+
+Implement
+
+---
+
+## initiateCall()
+
+Input
+
+```
+communicationType
+
+referenceId
+
+receiverId
+
+callType
+```
+
+Responsibilities
+
+Validate permission
+
+Generate Agora Token
+
+Create channel
+
+Create Call Record
+
+Generate Caller UID
+
+Generate Receiver UID
+
+Emit socket
+
+Send FCM
+
+Return
+
+```
+channel
+
+token
+
+uid
+
+expiresAt
+
+callId
+```
+
+---
+
+## answerCall()
+
+Updates
+
+Answered Time
+
+Status
+
+Emit socket
+
+---
+
+## rejectCall()
+
+Updates
+
+Rejected
+
+Reason
+
+Emit socket
+
+---
+
+## cancelCall()
+
+Caller cancels before answer.
+
+---
+
+## endCall()
+
+Calculates
+
+Duration
+
+Updates history
+
+Emits socket
+
+---
+
+## getToken()
+
+Regenerates expired token.
+
+---
+
+## getHistory()
+
+Generic history endpoint.
+
+Supports
+
+pagination
+
+status
+
+communicationType
+
+date
+
+---
+
+## getCall()
+
+Returns single call.
+
+---
+
+## cleanupExpiredCalls()
+
+Background cleanup.
+
+---
+
+# Unified APIs
+
+## POST
+
+```
+/calls/initiate
+```
+
+Body
+
+```
+communicationType
+
+referenceId
+
+receiverId
+
+callType
+```
+
+This single endpoint works for
+
+Regular Ride
+
+Reservation
+
+Lost Found
+
+Support
+
+Future modules
+
+No duplicate APIs.
+
+---
+
+## POST
+
+```
+/calls/answer
+```
+
+---
+
+## POST
+
+```
+/calls/reject
+```
+
+---
+
+## POST
+
+```
+/calls/cancel
+```
+
+---
+
+## POST
+
+```
+/calls/end
+```
+
+---
+
+## POST
+
+```
+/calls/token
+```
+
+---
+
+## GET
+
+```
+/calls/history
+```
+
+---
+
+## GET
+
+```
+/calls/:id
+```
+
+---
+
+# Socket Events
+
+Outgoing
+
+```
+call-initiated
+
+incoming-call
+
+call-ringing
+
+call-accepted
+
+call-connected
+
+call-rejected
+
+call-ended
+
+call-cancelled
+
+call-timeout
+
+call-token-refreshed
+```
+
+---
+
+# Firebase Notifications
+
+Incoming Call
+
+```
+Driver is calling...
+
+Passenger is calling...
+```
+
+Missed Call
+
+Call Ended
+
+Rejected
+
+Cancelled
+
+---
+
+# Call Validation
+
+One validation engine handles every module.
+
+Example
+
+```
+Regular Ride
+
+↓
+
+Permission
+
+↓
+
+Allowed
+
+↓
+
+Call
+```
+
+Reservation
+
+↓
+
+Permission
+
+↓
+
+Allowed
+
+↓
+
+Call
+
+Lost Found
+
+↓
+
+Permission
+
+↓
+
+Allowed
+
+↓
+
+Call
+
+Support
+
+↓
+
+Permission
+
+↓
+
+Allowed
+
+↓
+
+Call
+
+---
+
+# Call History
+
+Store
+
+Caller
+
+Receiver
+
+Context
+
+Duration
+
+Status
+
+Created Time
+
+Answered Time
+
+Ended Time
+
+Reason
+
+---
+
+# Automatic Cleanup Worker
+
+BullMQ Worker
+
+Responsibilities
+
+Expire Ring Timeout
+
+Mark Missed Calls
+
+Delete Old Tokens
+
+Cleanup Failed Calls
+
+---
+
+# Middleware
+
+Driver can only call assigned passenger.
+
+Passenger can only call assigned driver.
+
+Lost Found owner can call assigned driver.
+
+Reservation participants can call each other.
+
+Support follows support permission rules.
+
+---
+
+# Rate Limiting
+
+Prevent spam.
+
+Maximum call attempts
+
+Concurrent active calls
+
+Cooldown after rejection
+
+---
+
+# Security
+
+Never expose Agora credentials.
+
+Only backend generates tokens.
+
+Frontend never creates channels.
+
+Reference validation on every request.
+
+Socket authentication required.
+
+---
+
+# Admin Features
+
+Call analytics
+
+Total Calls
+
+Answered
+
+Rejected
+
+Missed
+
+Average Duration
+
+Failed
+
+Daily Calls
+
+Monthly Calls
+
+---
+
+# Logging
+
+Audit every action.
+
+Call Created
+
+Answered
+
+Rejected
+
+Ended
+
+Timeout
+
+Cancelled
+
+Token Refresh
+
+---
+
+# Flutter Flow
+
+User presses Call
+
+↓
+
+POST
+
+```
+/calls/initiate
+```
+
+↓
+
+Backend
+
+↓
+
+Permission Check
+
+↓
+
+Agora Token
+
+↓
+
+Socket
+
+↓
+
+Receiver
+
+↓
+
+Incoming Call Screen
+
+↓
+
+Accept
+
+↓
+
+POST
+
+```
+/calls/answer
+```
+
+↓
+
+Both Join Agora Channel
+
+↓
+
+Voice Call
+
+↓
+
+End
+
+↓
+
+POST
+
+```
+/calls/end
+```
+
+Only one API flow is required regardless of whether the communication originated from:
+
+- Regular Ride
+- Scheduled Ride
+- Reservation
+- Lost & Found
+- Support
+- Any future module
+
+The frontend never needs separate call APIs for different features.
+
+---
+
+# Verification Plan
+
+## Automated Verification
+
+Run:
+
+```bash
+npm run build
+```
+
+Ensure:
+
+- Zero TypeScript errors
+- Zero circular dependencies
+- No impact on existing modules
+- No business logic regressions
+
+---
+
+## Manual Verification
+
+### Regular Ride
+- Passenger ↔ Driver can initiate, accept, reject, cancel, reconnect, and end calls.
+
+### Scheduled Ride
+- Same unified API works without additional implementation.
+
+### Reservation
+- Same API works by changing only `communicationType` and `referenceId`.
+
+### Lost & Found
+- Same API works using the Lost & Found reference.
+
+### Permission Validation
+- Unauthorized users cannot initiate calls.
+
+### Token Security
+- Verify Agora tokens are backend-generated only and expire correctly.
+
+### Socket Events
+- Confirm all real-time call lifecycle events are emitted correctly.
+
+### Notifications
+- Verify FCM notifications for incoming, missed, rejected, cancelled, and ended calls.
+
+### Call History
+- Verify history, duration, statuses, and analytics are stored accurately.
+
+### Regression Testing
+- Ensure Ride, Tracking, Reservation, Wallet, Referral, Driver Matching, Lost & Found, Chat, and Notification modules continue to work without any behavior changes.
+ -->
