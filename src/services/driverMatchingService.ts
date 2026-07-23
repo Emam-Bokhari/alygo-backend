@@ -27,14 +27,21 @@ interface FindEligibleDriversParams {
   scheduledAt?: Date | string;
 }
 
-const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+const calculateDistance = (
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number,
+): number => {
   const R = 6371; // km
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 };
@@ -471,8 +478,10 @@ export const findEligibleDriversInRadius = async ({
           // Compute Dispatch Score
           const distanceScore = Math.max(0, 100 - distanceToPickup * 10);
           const ratingScore = (driverDoc.averageRating || 0) * 10;
-          
-          const acceptanceRate = await calculateDriverAcceptanceRate(driverDoc.userId);
+
+          const acceptanceRate = await calculateDriverAcceptanceRate(
+            driverDoc.userId,
+          );
           const acceptanceScore = acceptanceRate * 0.5;
 
           // Tier priority & Priority Dispatch
@@ -481,7 +490,9 @@ export const findEligibleDriversInRadius = async ({
           if (activeTier) {
             tierPriorityScore += activeTier.level * 15;
             if (activeTier.benefits?.priorityDispatch?.enabled) {
-              tierPriorityScore += (activeTier.benefits.priorityDispatch.boostMultiplier || 1.0) * 20;
+              tierPriorityScore +=
+                (activeTier.benefits.priorityDispatch.boostMultiplier || 1.0) *
+                20;
             }
           }
 
@@ -498,23 +509,37 @@ export const findEligibleDriversInRadius = async ({
               const filterDest = filter.coordinates;
 
               const vecPR = [rideDest[0] - pickup[0], rideDest[1] - pickup[1]];
-              const vecPF = [filterDest[0] - pickup[0], filterDest[1] - pickup[1]];
+              const vecPF = [
+                filterDest[0] - pickup[0],
+                filterDest[1] - pickup[1],
+              ];
 
-              const magPR = Math.sqrt(vecPR[0]**2 + vecPR[1]**2);
-              const magPF = Math.sqrt(vecPF[0]**2 + vecPF[1]**2);
+              const magPR = Math.sqrt(vecPR[0] ** 2 + vecPR[1] ** 2);
+              const magPF = Math.sqrt(vecPF[0] ** 2 + vecPF[1] ** 2);
 
               if (magPR > 0 && magPF > 0) {
                 const dotProduct = vecPR[0] * vecPF[0] + vecPR[1] * vecPF[1];
                 const cosSim = dotProduct / (magPR * magPF);
 
                 if (cosSim > 0) {
-                  const distDestToFilter = calculateDistance(rideDest[1], rideDest[0], filterDest[1], filterDest[0]);
-                  const distPickupToFilter = calculateDistance(pickup[1], pickup[0], filterDest[1], filterDest[0]);
+                  const distDestToFilter = calculateDistance(
+                    rideDest[1],
+                    rideDest[0],
+                    filterDest[1],
+                    filterDest[0],
+                  );
+                  const distPickupToFilter = calculateDistance(
+                    pickup[1],
+                    pickup[0],
+                    filterDest[1],
+                    filterDest[0],
+                  );
 
                   if (distDestToFilter < distPickupToFilter) {
                     destMatchScore = cosSim * 50;
                     if (distDestToFilter <= filter.radiusKm) {
-                      destMatchScore += (1 - distDestToFilter / filter.radiusKm) * 50;
+                      destMatchScore +=
+                        (1 - distDestToFilter / filter.radiusKm) * 50;
                     }
                   }
                 }
@@ -524,11 +549,20 @@ export const findEligibleDriversInRadius = async ({
 
           // Airport Queue Priority
           let airportPriorityScore = 0;
-          if (rideServiceArea.type === "airport" && activeTier?.benefits?.airportQueuePriority?.enabled) {
+          if (
+            rideServiceArea.type === "airport" &&
+            activeTier?.benefits?.airportQueuePriority?.enabled
+          ) {
             airportPriorityScore = 50;
           }
 
-          const dispatchScore = distanceScore + ratingScore + acceptanceScore + tierPriorityScore + destMatchScore + airportPriorityScore;
+          const dispatchScore =
+            distanceScore +
+            ratingScore +
+            acceptanceScore +
+            tierPriorityScore +
+            destMatchScore +
+            airportPriorityScore;
 
           eligibleDrivers.push({
             driverId: driverDoc.userId,
@@ -545,7 +579,9 @@ export const findEligibleDriversInRadius = async ({
     }
 
     // Sort eligible drivers by dispatchScore descending (highest score first)
-    eligibleDrivers.sort((a, b) => (b.dispatchScore || 0) - (a.dispatchScore || 0));
+    eligibleDrivers.sort(
+      (a, b) => (b.dispatchScore || 0) - (a.dispatchScore || 0),
+    );
   }
 
   return eligibleDrivers;

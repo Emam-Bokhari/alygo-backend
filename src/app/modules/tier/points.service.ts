@@ -176,7 +176,10 @@ const awardPoints = async (
   }
 
   // 2. Fetch point rule configuration
-  const rule = await PointRule.findOne({ eventType, status: STATUS.ACTIVE }).session(session);
+  const rule = await PointRule.findOne({
+    eventType,
+    status: STATUS.ACTIVE,
+  }).session(session);
   const pointValue = rule ? rule.points : FALLBACK_POINTS[eventType] || 0;
 
   if (pointValue === 0) {
@@ -221,10 +224,13 @@ const awardPoints = async (
     const refObjectId = new Types.ObjectId(referenceId);
     if (source === "ride") historyData.rideId = refObjectId;
     else if (source === "referral") historyData.referralId = refObjectId;
-    else if (source === "wallet" || source === "transaction") historyData.transactionId = refObjectId;
+    else if (source === "wallet" || source === "transaction")
+      historyData.transactionId = refObjectId;
   }
 
-  const [historyEntry] = await DriverPointHistory.create([historyData], { session });
+  const [historyEntry] = await DriverPointHistory.create([historyData], {
+    session,
+  });
 
   await driver.save({ session });
 
@@ -262,7 +268,13 @@ const deductPoints = async (
   options: { notes?: string; session?: any } = {},
 ) => {
   // Deducting points is structurally the same as awarding negative points
-  return await awardPoints(driverUserId, eventType, source, referenceId, options);
+  return await awardPoints(
+    driverUserId,
+    eventType,
+    source,
+    referenceId,
+    options,
+  );
 };
 
 /**
@@ -297,18 +309,27 @@ const checkDriverTierProgression = async (
   // 3. Find the highest matching tier
   let eligibleTier = activeTiers[0]; // fallback to lowest level
   for (const tier of activeTiers) {
-    const pointsSatisfied = currentPoints >= (tier.requirements?.pointsRequired || 0);
-    const tripsSatisfied = tripsCount >= (tier.requirements?.tripsRequired || 0);
+    const pointsSatisfied =
+      currentPoints >= (tier.requirements?.pointsRequired || 0);
+    const tripsSatisfied =
+      tripsCount >= (tier.requirements?.tripsRequired || 0);
     const ratingSatisfied = rating >= (tier.requirements?.ratingRequired || 0);
-    const acceptanceSatisfied = acceptanceRate >= (tier.requirements?.acceptanceRateRequired || 0);
+    const acceptanceSatisfied =
+      acceptanceRate >= (tier.requirements?.acceptanceRateRequired || 0);
 
-    if (pointsSatisfied && tripsSatisfied && ratingSatisfied && acceptanceSatisfied) {
+    if (
+      pointsSatisfied &&
+      tripsSatisfied &&
+      ratingSatisfied &&
+      acceptanceSatisfied
+    ) {
       eligibleTier = tier;
     }
   }
 
   // Get next tier if available
-  const nextTier = activeTiers.find((t) => t.level === eligibleTier.level + 1) || null;
+  const nextTier =
+    activeTiers.find((t) => t.level === eligibleTier.level + 1) || null;
   driver.nextTier = nextTier ? nextTier._id : null;
 
   // Update progress percentage
@@ -325,8 +346,10 @@ const checkDriverTierProgression = async (
 
   // If driver qualifies for a higher level tier than their current one, promote!
   if (!oldTierId || oldTierId.toString() !== eligibleTier._id.toString()) {
-    const oldTier = oldTierId ? await Tier.findById(oldTierId).session(session) : null;
-    
+    const oldTier = oldTierId
+      ? await Tier.findById(oldTierId).session(session)
+      : null;
+
     // Promote if eligibleTier level is greater than oldTier level
     if (!oldTier || eligibleTier.level > oldTier.level) {
       driver.currentTier = eligibleTier._id;
@@ -398,12 +421,20 @@ const checkDriverTierDowngrade = async (
   // 3. Find highest level matching tier
   let eligibleTier = activeTiers[0];
   for (const tier of activeTiers) {
-    const pointsSatisfied = currentPoints >= (tier.requirements?.pointsRequired || 0);
-    const tripsSatisfied = tripsCount >= (tier.requirements?.tripsRequired || 0);
+    const pointsSatisfied =
+      currentPoints >= (tier.requirements?.pointsRequired || 0);
+    const tripsSatisfied =
+      tripsCount >= (tier.requirements?.tripsRequired || 0);
     const ratingSatisfied = rating >= (tier.requirements?.ratingRequired || 0);
-    const acceptanceSatisfied = acceptanceRate >= (tier.requirements?.acceptanceRateRequired || 0);
+    const acceptanceSatisfied =
+      acceptanceRate >= (tier.requirements?.acceptanceRateRequired || 0);
 
-    if (pointsSatisfied && tripsSatisfied && ratingSatisfied && acceptanceSatisfied) {
+    if (
+      pointsSatisfied &&
+      tripsSatisfied &&
+      ratingSatisfied &&
+      acceptanceSatisfied
+    ) {
       eligibleTier = tier;
     }
   }
@@ -419,13 +450,16 @@ const checkDriverTierDowngrade = async (
       driver.tierAchievedAt = new Date();
 
       // Get next tier
-      const nextTier = activeTiers.find((t) => t.level === eligibleTier.level + 1) || null;
+      const nextTier =
+        activeTiers.find((t) => t.level === eligibleTier.level + 1) || null;
       driver.nextTier = nextTier ? nextTier._id : null;
-      
+
       if (nextTier && nextTier.requirements?.pointsRequired) {
         driver.progressPercentage = Math.min(
           99,
-          Math.round((currentPoints / nextTier.requirements.pointsRequired) * 100),
+          Math.round(
+            (currentPoints / nextTier.requirements.pointsRequired) * 100,
+          ),
         );
       } else {
         driver.progressPercentage = 100;
@@ -474,7 +508,9 @@ const processScheduledDowngrades = async () => {
 
   // If auto downgrade is disabled globally, skip
   if (config.driverRewards && !config.driverRewards.autoDowngrade) {
-    logger.info("Skipping auto-downgrades (autoDowngrade is disabled in system configurations).");
+    logger.info(
+      "Skipping auto-downgrades (autoDowngrade is disabled in system configurations).",
+    );
     return;
   }
 
@@ -486,23 +522,36 @@ const processScheduledDowngrades = async () => {
       const session = await Driver.startSession();
       session.startTransaction();
       try {
-        const oldTierId = (await Driver.findOne({ userId: d.userId }).session(session))?.currentTier;
+        const oldTierId = (
+          await Driver.findOne({ userId: d.userId }).session(session)
+        )?.currentTier;
         await checkDriverTierDowngrade(d.userId, session);
-        const newTierId = (await Driver.findOne({ userId: d.userId }).session(session))?.currentTier;
+        const newTierId = (
+          await Driver.findOne({ userId: d.userId }).session(session)
+        )?.currentTier;
 
-        if (oldTierId && newTierId && oldTierId.toString() !== newTierId.toString()) {
+        if (
+          oldTierId &&
+          newTierId &&
+          oldTierId.toString() !== newTierId.toString()
+        ) {
           demotedCount++;
         }
         await session.commitTransaction();
       } catch (err: any) {
         await session.abortTransaction();
-        logger.error(`Failed demotion check for driver ${d.userId}:`, err.message);
+        logger.error(
+          `Failed demotion check for driver ${d.userId}:`,
+          err.message,
+        );
       } finally {
         session.endSession();
       }
     }
 
-    logger.info(`✅ Scheduled demotion checks completed. Total demoted: ${demotedCount}`);
+    logger.info(
+      `✅ Scheduled demotion checks completed. Total demoted: ${demotedCount}`,
+    );
   } catch (error: any) {
     logger.error("Error in processScheduledDowngrades:", error.message);
   }

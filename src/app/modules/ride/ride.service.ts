@@ -1941,24 +1941,47 @@ const completeRide = async (
       "ride_completed",
       "ride",
       ride._id,
-      { notes: `Completed Ride ${ride._id}` }
-    ).then(async () => {
-      // Award additional bonuses
-      const sa = await ServiceArea.findById(ride.serviceAreaId);
-      if (sa && sa.type === "airport") {
-        await PointsService.awardPoints(driverUserId, "airport_ride", "ride", ride._id, { notes: `Airport Ride Bonus for Ride ${ride._id}` });
-      }
-      if (ride.rideType === RIDE_TYPE.SCHEDULED) {
-        await PointsService.awardPoints(driverUserId, "scheduled_ride", "ride", ride._id, { notes: `Scheduled Ride Bonus for Ride ${ride._id}` });
-      }
-      const activePeakHours = await PeakHour.find({ status: STATUS.ACTIVE });
-      const isPeak = await isPeakHour(ride.completedAt || new Date(), activePeakHours);
-      if (isPeak) {
-        await PointsService.awardPoints(driverUserId, "peak_hour_ride", "ride", ride._id, { notes: `Peak Hour Ride Bonus for Ride ${ride._id}` });
-      }
-    }).catch((err) => {
-      logger.error("Error awarding ride completion points:", err);
-    });
+      { notes: `Completed Ride ${ride._id}` },
+    )
+      .then(async () => {
+        // Award additional bonuses
+        const sa = await ServiceArea.findById(ride.serviceAreaId);
+        if (sa && sa.type === "airport") {
+          await PointsService.awardPoints(
+            driverUserId,
+            "airport_ride",
+            "ride",
+            ride._id,
+            { notes: `Airport Ride Bonus for Ride ${ride._id}` },
+          );
+        }
+        if (ride.rideType === RIDE_TYPE.SCHEDULED) {
+          await PointsService.awardPoints(
+            driverUserId,
+            "scheduled_ride",
+            "ride",
+            ride._id,
+            { notes: `Scheduled Ride Bonus for Ride ${ride._id}` },
+          );
+        }
+        const activePeakHours = await PeakHour.find({ status: STATUS.ACTIVE });
+        const isPeak = await isPeakHour(
+          ride.completedAt || new Date(),
+          activePeakHours,
+        );
+        if (isPeak) {
+          await PointsService.awardPoints(
+            driverUserId,
+            "peak_hour_ride",
+            "ride",
+            ride._id,
+            { notes: `Peak Hour Ride Bonus for Ride ${ride._id}` },
+          );
+        }
+      })
+      .catch((err) => {
+        logger.error("Error awarding ride completion points:", err);
+      });
 
     ReferralService.checkAndProcessPassengerReferral(
       ride.userId.toString(),
@@ -2202,7 +2225,8 @@ const completeRidePayment = async (
       if (driverProfile && driverProfile.currentTier) {
         const activeTier = await Tier.findById(driverProfile.currentTier);
         if (activeTier && activeTier.benefits?.bonusMultiplier?.enabled) {
-          multiplier = activeTier.benefits.bonusMultiplier.multiplierValue || 1.0;
+          multiplier =
+            activeTier.benefits.bonusMultiplier.multiplierValue || 1.0;
           driverEarning = parseFloat((driverEarning * multiplier).toFixed(2));
         }
       }
@@ -2922,8 +2946,10 @@ const cancelRide = async (
         "accepted_ride_cancelled",
         "ride",
         ride._id,
-        { notes: `Cancelled Accepted Ride ${ride._id}` }
-      ).catch((err) => logger.error("Error deducting points for cancellation:", err));
+        { notes: `Cancelled Accepted Ride ${ride._id}` },
+      ).catch((err) =>
+        logger.error("Error deducting points for cancellation:", err),
+      );
 
       // 3. Resume Driver Matching automatically
       // Original timer calculation
@@ -3607,11 +3633,17 @@ const getDriverRideHistory = async (
     endDate = now;
   } else {
     if (query.fromDate && !isNaN(Date.parse(String(query.fromDate)))) {
-      const { start } = getDayRangeInTimezone(String(query.fromDate), driverTimezone);
+      const { start } = getDayRangeInTimezone(
+        String(query.fromDate),
+        driverTimezone,
+      );
       startDate = start;
     }
     if (query.toDate && !isNaN(Date.parse(String(query.toDate)))) {
-      const { end } = getDayRangeInTimezone(String(query.toDate), driverTimezone);
+      const { end } = getDayRangeInTimezone(
+        String(query.toDate),
+        driverTimezone,
+      );
       endDate = end;
     }
   }
@@ -3922,11 +3954,17 @@ const getUserRideHistory = async (
     endDate = now;
   } else {
     if (query.fromDate && !isNaN(Date.parse(String(query.fromDate)))) {
-      const { start } = getDayRangeInTimezone(String(query.fromDate), riderTimezone);
+      const { start } = getDayRangeInTimezone(
+        String(query.fromDate),
+        riderTimezone,
+      );
       startDate = start;
     }
     if (query.toDate && !isNaN(Date.parse(String(query.toDate)))) {
-      const { end } = getDayRangeInTimezone(String(query.toDate), riderTimezone);
+      const { end } = getDayRangeInTimezone(
+        String(query.toDate),
+        riderTimezone,
+      );
       endDate = end;
     }
   }

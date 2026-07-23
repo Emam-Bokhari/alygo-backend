@@ -101,7 +101,9 @@ async function main() {
       },
     );
     logger.info(
-      colors.green("✅ Driver rewards background job scheduled (every 1 minute)"),
+      colors.green(
+        "✅ Driver rewards background job scheduled (every 1 minute)",
+      ),
     );
   } catch (error) {
     errorLogger.error(colors.red("🤢 Failed to connect Database"));

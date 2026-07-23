@@ -43,4 +43,7 @@ const tierHistorySchema = new Schema<ITierHistory>(
   },
 );
 
-export const TierHistory = model<ITierHistory>("TierHistory", tierHistorySchema);
+export const TierHistory = model<ITierHistory>(
+  "TierHistory",
+  tierHistorySchema,
+);

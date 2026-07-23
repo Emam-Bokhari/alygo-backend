@@ -1,5 +1,8 @@
 import { Types } from "mongoose";
-import { DestinationFilter, IDestinationFilter } from "./destinationFilter.model";
+import {
+  DestinationFilter,
+  IDestinationFilter,
+} from "./destinationFilter.model";
 import { Driver } from "../driver/driver.model";
 import { Tier } from "./tier.model";
 import { getSystemConfig } from "../../../helpers/systemConfigHelper";
@@ -25,7 +28,9 @@ const activateFilter = async (
   const now = new Date();
 
   // 1. Fetch driver profile
-  const driver = await Driver.findOne({ userId: driverId }).populate("currentTier");
+  const driver = await Driver.findOne({ userId: driverId }).populate(
+    "currentTier",
+  );
   if (!driver) {
     throw new ApiError(StatusCodes.NOT_FOUND, "Driver profile not found");
   }
@@ -176,7 +181,10 @@ const cancelFilter = async (
     status: "ACTIVE",
   });
   if (!activeFilter) {
-    throw new ApiError(StatusCodes.NOT_FOUND, "No active destination filter found");
+    throw new ApiError(
+      StatusCodes.NOT_FOUND,
+      "No active destination filter found",
+    );
   }
 
   activeFilter.status = "CANCELLED";
@@ -209,7 +217,9 @@ const getFilterStatus = async (
 ): Promise<any> => {
   const driverId = new Types.ObjectId(driverUserId);
 
-  const driver = await Driver.findOne({ userId: driverId }).populate("currentTier");
+  const driver = await Driver.findOne({ userId: driverId }).populate(
+    "currentTier",
+  );
   if (!driver) {
     throw new ApiError(StatusCodes.NOT_FOUND, "Driver profile not found");
   }
@@ -267,12 +277,15 @@ const expireFilters = async () => {
 
     for (const filter of activeFilters) {
       const driver = await Driver.findOne({ userId: filter.driverId });
-      
+
       // Condition A: Arrival time reached
       const isTimeReached = filter.arrivalTime.getTime() <= now.getTime();
-      
+
       // Condition B: Driver goes offline or breaks
-      const isDriverOffline = driver ? driver.driverAvailabilityStatus !== "online" && driver.driverAvailabilityStatus !== "on_trip" : true;
+      const isDriverOffline = driver
+        ? driver.driverAvailabilityStatus !== "online" &&
+          driver.driverAvailabilityStatus !== "on_trip"
+        : true;
 
       if (isTimeReached || isDriverOffline) {
         filter.status = "EXPIRED";
@@ -282,10 +295,16 @@ const expireFilters = async () => {
         expiredCount++;
 
         // Socket notify
-        socketHelper.sendToUser(filter.driverId.toString(), "destination-filter-expired", {
-          filterId: filter._id,
-          reason: isTimeReached ? "Arrival time reached" : "Driver went offline",
-        });
+        socketHelper.sendToUser(
+          filter.driverId.toString(),
+          "destination-filter-expired",
+          {
+            filterId: filter._id,
+            reason: isTimeReached
+              ? "Arrival time reached"
+              : "Driver went offline",
+          },
+        );
 
         // FCM notify
         sendNotifications({
@@ -298,7 +317,9 @@ const expireFilters = async () => {
     }
 
     if (expiredCount > 0) {
-      logger.info(`Expired ${expiredCount} outdated or offline destination filters.`);
+      logger.info(
+        `Expired ${expiredCount} outdated or offline destination filters.`,
+      );
     }
   } catch (error: any) {
     logger.error("Error in expireFilters cron check:", error.message);

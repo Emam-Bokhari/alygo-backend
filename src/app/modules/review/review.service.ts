@@ -180,7 +180,7 @@ const createReviewInDB = async (
             "five_star_rating",
             "review",
             review._id,
-            { notes: `5-Star Rating received for Ride ${rideId}`, session }
+            { notes: `5-Star Rating received for Ride ${rideId}`, session },
           ).catch((err) => console.error("Error awarding rating points:", err));
         }
       }

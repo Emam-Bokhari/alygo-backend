@@ -297,7 +297,7 @@ const handleDriverRideCompletion = async (driverUserId: string) => {
       "referral_completed",
       "referral",
       referral._id,
-      { notes: `Successful Driver Referral of referee ${referral.refereeId}` }
+      { notes: `Successful Driver Referral of referee ${referral.refereeId}` },
     ).catch((err) => console.error("Error awarding referral points:", err));
 
     referral.auditLogs.push({

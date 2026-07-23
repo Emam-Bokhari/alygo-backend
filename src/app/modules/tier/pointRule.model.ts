@@ -56,4 +56,7 @@ const pointRuleSchema = new Schema<IPointRule, PointRuleModel>(
 
 pointRuleSchema.plugin(softDeletePlugin);
 
-export const PointRule = model<IPointRule, PointRuleModel>("PointRule", pointRuleSchema);
+export const PointRule = model<IPointRule, PointRuleModel>(
+  "PointRule",
+  pointRuleSchema,
+);

@@ -82,19 +82,16 @@ export const reservationReminderQueue = new Queue(
   },
 );
 
-export const driverRewardsQueue = new Queue(
-  QUEUE_NAMES.DRIVER_REWARDS_CHECK,
-  {
-    connection: connectionOptions,
-    defaultJobOptions: {
-      attempts: 3,
-      backoff: {
-        type: "exponential",
-        delay: 2000,
-      },
+export const driverRewardsQueue = new Queue(QUEUE_NAMES.DRIVER_REWARDS_CHECK, {
+  connection: connectionOptions,
+  defaultJobOptions: {
+    attempts: 3,
+    backoff: {
+      type: "exponential",
+      delay: 2000,
     },
   },
-);
+});
 
 // Job data types
 export interface RideExpirationJobData {

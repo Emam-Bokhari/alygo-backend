@@ -17,95 +17,105 @@ import { getDailyResetThreshold } from "./points.controller";
 /**
  * Admin Rewards Dashboard stats - GET /admin/rewards/dashboard
  */
-const getAdminRewardsDashboard = catchAsync(async (req: Request, res: Response) => {
-  // 1. Distribution of drivers across tiers
-  const activeTiers = await Tier.find({ status: "active" as any });
-  const distribution = [];
-  
-  for (const tier of activeTiers) {
-    const count = await Driver.countDocuments({ currentTier: tier._id });
-    distribution.push({
-      tierId: tier._id,
-      name: tier.name,
-      level: tier.level,
-      driverCount: count,
+const getAdminRewardsDashboard = catchAsync(
+  async (req: Request, res: Response) => {
+    // 1. Distribution of drivers across tiers
+    const activeTiers = await Tier.find({ status: "active" as any });
+    const distribution = [];
+
+    for (const tier of activeTiers) {
+      const count = await Driver.countDocuments({ currentTier: tier._id });
+      distribution.push({
+        tierId: tier._id,
+        name: tier.name,
+        level: tier.level,
+        driverCount: count,
+      });
+    }
+
+    // 2. Points statistics
+    const totalAwardedHistory = await DriverPointHistory.aggregate([
+      { $match: { points: { $gt: 0 } } },
+      { $group: { _id: null, total: { $sum: "$points" } } },
+    ]);
+    const totalAwarded = totalAwardedHistory[0]?.total || 0;
+
+    const totalDeductedHistory = await DriverPointHistory.aggregate([
+      { $match: { points: { $lt: 0 } } },
+      { $group: { _id: null, total: { $sum: "$points" } } },
+    ]);
+    const totalDeducted = Math.abs(totalDeductedHistory[0]?.total || 0);
+
+    const driverStats = await Driver.aggregate([
+      {
+        $group: {
+          _id: null,
+          avgPoints: { $avg: "$currentPoints" },
+          maxPoints: { $max: "$currentPoints" },
+        },
+      },
+    ]);
+    const averagePoints = Math.round(driverStats[0]?.avgPoints || 0);
+    const maxPoints = driverStats[0]?.maxPoints || 0;
+
+    // 3. Destination Filter usage
+    const todayStart = await getDailyResetThreshold();
+    const filtersActivatedToday = await DestinationFilter.countDocuments({
+      activatedAt: { $gte: todayStart },
     });
-  }
+    const activeFilters = await DestinationFilter.countDocuments({
+      status: "ACTIVE",
+    });
+    const completedFilters = await DestinationFilter.countDocuments({
+      status: "COMPLETED",
+    });
+    const cancelledFilters = await DestinationFilter.countDocuments({
+      status: "CANCELLED",
+    });
+    const expiredFilters = await DestinationFilter.countDocuments({
+      status: "EXPIRED",
+    });
 
-  // 2. Points statistics
-  const totalAwardedHistory = await DriverPointHistory.aggregate([
-    { $match: { points: { $gt: 0 } } },
-    { $group: { _id: null, total: { $sum: "$points" } } }
-  ]);
-  const totalAwarded = totalAwardedHistory[0]?.total || 0;
+    // 4. Rankings: Top 10 / Lowest 10
+    const topDrivers = await Driver.find({})
+      .populate("currentTier", "name level")
+      .populate("userId", "name email phone profileImage")
+      .sort({ currentPoints: -1 })
+      .limit(10);
 
-  const totalDeductedHistory = await DriverPointHistory.aggregate([
-    { $match: { points: { $lt: 0 } } },
-    { $group: { _id: null, total: { $sum: "$points" } } }
-  ]);
-  const totalDeducted = Math.abs(totalDeductedHistory[0]?.total || 0);
+    const lowestDrivers = await Driver.find({})
+      .populate("currentTier", "name level")
+      .populate("userId", "name email phone profileImage")
+      .sort({ currentPoints: 1 })
+      .limit(10);
 
-  const driverStats = await Driver.aggregate([
-    {
-      $group: {
-        _id: null,
-        avgPoints: { $avg: "$currentPoints" },
-        maxPoints: { $max: "$currentPoints" },
-      }
-    }
-  ]);
-  const averagePoints = Math.round(driverStats[0]?.avgPoints || 0);
-  const maxPoints = driverStats[0]?.maxPoints || 0;
-
-  // 3. Destination Filter usage
-  const todayStart = await getDailyResetThreshold();
-  const filtersActivatedToday = await DestinationFilter.countDocuments({
-    activatedAt: { $gte: todayStart }
-  });
-  const activeFilters = await DestinationFilter.countDocuments({ status: "ACTIVE" });
-  const completedFilters = await DestinationFilter.countDocuments({ status: "COMPLETED" });
-  const cancelledFilters = await DestinationFilter.countDocuments({ status: "CANCELLED" });
-  const expiredFilters = await DestinationFilter.countDocuments({ status: "EXPIRED" });
-
-  // 4. Rankings: Top 10 / Lowest 10
-  const topDrivers = await Driver.find({})
-    .populate("currentTier", "name level")
-    .populate("userId", "name email phone profileImage")
-    .sort({ currentPoints: -1 })
-    .limit(10);
-
-  const lowestDrivers = await Driver.find({})
-    .populate("currentTier", "name level")
-    .populate("userId", "name email phone profileImage")
-    .sort({ currentPoints: 1 })
-    .limit(10);
-
-  sendResponse(res, {
-    statusCode: StatusCodes.OK,
-    success: true,
-    message: "Admin rewards dashboard stats retrieved successfully",
-    data: {
-      distribution,
-      pointsStats: {
-        totalAwarded,
-        totalDeducted,
-        averagePoints,
-        maxPoints,
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "Admin rewards dashboard stats retrieved successfully",
+      data: {
+        distribution,
+        pointsStats: {
+          totalAwarded,
+          totalDeducted,
+          averagePoints,
+          maxPoints,
+        },
+        filterUsage: {
+          activatedToday: filtersActivatedToday,
+          activeCount: activeFilters,
+          completedCount: completedFilters,
+          cancelledCount: cancelledFilters,
+          expiredCount: expiredFilters,
+        },
+        rankings: {
+          topDrivers,
+          lowestDrivers,
+        },
       },
-      filterUsage: {
-        activatedToday: filtersActivatedToday,
-        activeCount: activeFilters,
-        completedCount: completedFilters,
-        cancelledCount: cancelledFilters,
-        expiredCount: expiredFilters,
-      },
-      rankings: {
-        topDrivers,
-        lowestDrivers,
-      }
-    }
-  });
-});
+    });
+  },
+);
 
 /**
  * Export Driver Rewards Data as CSV - GET /admin/rewards/export
@@ -116,9 +126,13 @@ const exportRewardsCSV = catchAsync(async (req: Request, res: Response) => {
     .populate("userId", "name email phone");
 
   res.setHeader("Content-Type", "text/csv");
-  res.setHeader("Content-Disposition", "attachment; filename=driver_rewards_report.csv");
+  res.setHeader(
+    "Content-Disposition",
+    "attachment; filename=driver_rewards_report.csv",
+  );
 
-  let csvContent = "Name,Email,Phone,Current Tier,Current Points,Lifetime Points\n";
+  let csvContent =
+    "Name,Email,Phone,Current Tier,Current Points,Lifetime Points\n";
 
   for (const d of drivers) {
     const user: any = d.userId;
@@ -144,7 +158,10 @@ const overrideDriverPoints = catchAsync(async (req: Request, res: Response) => {
   const adminUserId = req.user.id;
 
   if (!driverUserId || points === undefined) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "driverUserId and points are required");
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      "driverUserId and points are required",
+    );
   }
 
   const driver = await Driver.findOne({ userId: driverUserId });
@@ -161,7 +178,7 @@ const overrideDriverPoints = catchAsync(async (req: Request, res: Response) => {
       "admin_override",
       "admin",
       undefined,
-      { notes: notes || `Admin Manual override added ${change} points` }
+      { notes: notes || `Admin Manual override added ${change} points` },
     );
   } else if (change < 0) {
     await PointsService.deductPoints(
@@ -169,7 +186,10 @@ const overrideDriverPoints = catchAsync(async (req: Request, res: Response) => {
       "admin_override",
       "admin",
       undefined,
-      { notes: notes || `Admin Manual override deducted ${Math.abs(change)} points` }
+      {
+        notes:
+          notes || `Admin Manual override deducted ${Math.abs(change)} points`,
+      },
     );
   }
 
@@ -196,7 +216,10 @@ const overrideDriverTier = catchAsync(async (req: Request, res: Response) => {
   const { driverUserId, tierId, reason } = req.body;
 
   if (!driverUserId || !tierId) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "driverUserId and tierId are required");
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      "driverUserId and tierId are required",
+    );
   }
 
   const driver = await Driver.findOne({ userId: driverUserId });
@@ -219,14 +242,19 @@ const overrideDriverTier = catchAsync(async (req: Request, res: Response) => {
   }
 
   // Update next tier details
-  const activeTiers = await Tier.find({ status: "active" as any }).sort({ level: 1 });
+  const activeTiers = await Tier.find({ status: "active" as any }).sort({
+    level: 1,
+  });
   const nextTier = activeTiers.find((t) => t.level === tier.level + 1) || null;
   driver.nextTier = nextTier ? nextTier._id : null;
-  
+
   if (nextTier) {
     driver.progressPercentage = Math.min(
       99,
-      Math.round(((driver.currentPoints || 0) / nextTier.requirements.pointsRequired) * 100),
+      Math.round(
+        ((driver.currentPoints || 0) / nextTier.requirements.pointsRequired) *
+          100,
+      ),
     );
   } else {
     driver.progressPercentage = 100;

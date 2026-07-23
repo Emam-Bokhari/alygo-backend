@@ -183,7 +183,7 @@ export const getCommonTimezones = (): string[] => {
  */
 export const getDayRangeInTimezone = (
   dateStr: "today" | "yesterday" | string | Date,
-  timezone: string
+  timezone: string,
 ): { start: Date; end: Date } => {
   let targetDateTime = DateTime.now().setZone(timezone);
 
@@ -200,6 +200,6 @@ export const getDayRangeInTimezone = (
 
   const start = targetDateTime.startOf("day").toUTC().toJSDate();
   const end = targetDateTime.endOf("day").toUTC().toJSDate();
-  
+
   return { start, end };
 };

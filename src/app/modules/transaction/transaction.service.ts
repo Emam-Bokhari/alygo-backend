@@ -220,7 +220,9 @@ const getTransactions = async (
         { driverId: userObjectId },
       ];
       if (driverProfile.serviceAreaId) {
-        const serviceArea = await ServiceArea.findById(driverProfile.serviceAreaId);
+        const serviceArea = await ServiceArea.findById(
+          driverProfile.serviceAreaId,
+        );
         userTimezone = serviceArea?.timezone || defaultTimezone;
       }
     } else {
@@ -305,7 +307,10 @@ const getTransactions = async (
   if (queryOptions.startDate || queryOptions.endDate) {
     matchQuery.createdAt = {};
     if (queryOptions.startDate) {
-      const { start } = getDayRangeInTimezone(queryOptions.startDate, userTimezone);
+      const { start } = getDayRangeInTimezone(
+        queryOptions.startDate,
+        userTimezone,
+      );
       matchQuery.createdAt.$gte = start;
     }
     if (queryOptions.endDate) {
