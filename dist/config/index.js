@@ -115,9 +115,12 @@ exports.default = {
             allowMultipleRewards: process.env.REFERRAL_PASSENGER_ALLOW_MULTIPLE !== "false",
             maximumRewardsPerUser: parseInt(process.env.REFERRAL_PASSENGER_MAX_REWARDS || "5"),
             autoRewardEnabled: process.env.REFERRAL_PASSENGER_AUTO_REWARD !== "false",
-            shareInstructions: process.env.REFERRAL_PASSENGER_SHARE_INSTRUCTIONS || "Send your unique referral code or link to friends.",
-            rewardTerms: process.env.REFERRAL_PASSENGER_REWARD_TERMS || "Reward is granted once the referred passenger completes 1 trip.",
-            generalNotes: process.env.REFERRAL_PASSENGER_GENERAL_NOTES || "Referrals are subject to verification.",
+            shareInstructions: process.env.REFERRAL_PASSENGER_SHARE_INSTRUCTIONS ||
+                "Send your unique referral code or link to friends.",
+            rewardTerms: process.env.REFERRAL_PASSENGER_REWARD_TERMS ||
+                "Reward is granted once the referred passenger completes 1 trip.",
+            generalNotes: process.env.REFERRAL_PASSENGER_GENERAL_NOTES ||
+                "Referrals are subject to verification.",
         },
         driver: {
             enabled: process.env.REFERRAL_DRIVER_ENABLED !== "false",
@@ -128,9 +131,19 @@ exports.default = {
             payoutDelayHours: parseInt(process.env.REFERRAL_DRIVER_PAYOUT_DELAY_HOURS || "0"),
             autoRewardEnabled: process.env.REFERRAL_DRIVER_AUTO_REWARD !== "false",
             maximumRewardsPerDriver: parseInt(process.env.REFERRAL_DRIVER_MAX_REWARDS || "10"),
-            shareInstructions: process.env.REFERRAL_DRIVER_SHARE_INSTRUCTIONS || "Send your unique referral code or link to drivers.",
-            termsAndConditions: process.env.REFERRAL_DRIVER_TERMS_AND_CONDITIONS || "The referee driver must complete 10 rides within 30 days.",
-            generalNotes: process.env.REFERRAL_DRIVER_GENERAL_NOTES || "Payouts are processed within 24 hours.",
+            shareInstructions: process.env.REFERRAL_DRIVER_SHARE_INSTRUCTIONS ||
+                "Send your unique referral code or link to drivers.",
+            termsAndConditions: process.env.REFERRAL_DRIVER_TERMS_AND_CONDITIONS ||
+                "The referee driver must complete 10 rides within 30 days.",
+            generalNotes: process.env.REFERRAL_DRIVER_GENERAL_NOTES ||
+                "Payouts are processed within 24 hours.",
         },
+    },
+    driverRewards: {
+        enabled: process.env.DRIVER_REWARDS_ENABLED !== "false",
+        tierPromotion: process.env.DRIVER_TIER_PROMOTION_ENABLED !== "false",
+        autoDowngrade: process.env.DRIVER_AUTO_DOWNGRADE_ENABLED !== "false",
+        dailyQuotaResetTime: process.env.DRIVER_DAILY_RESET_TIME || "00:00",
+        destinationFilterRadiusDefault: parseInt(process.env.DRIVER_DESTINATION_FILTER_RADIUS_DEFAULT || "5"),
     },
 };

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.connectionOptions = exports.reservationReminderQueue = exports.driverAvailabilityCheckQueue = exports.radiusExpansionQueue = exports.driverVisibilityQueue = exports.rideExpirationQueue = exports.QUEUE_NAMES = void 0;
+exports.connectionOptions = exports.driverRewardsQueue = exports.reservationReminderQueue = exports.driverAvailabilityCheckQueue = exports.radiusExpansionQueue = exports.driverVisibilityQueue = exports.rideExpirationQueue = exports.QUEUE_NAMES = void 0;
 const bullmq_1 = require("bullmq");
 const index_1 = __importDefault(require("./index"));
 // BullMQ connection options
@@ -21,6 +21,7 @@ exports.QUEUE_NAMES = {
     RADIUS_EXPANSION: "radius-expansion",
     DRIVER_AVAILABILITY_CHECK: "driver-availability-check",
     RESERVATION_REMINDER: "reservation-reminder",
+    DRIVER_REWARDS_CHECK: "driver-rewards-check",
 };
 // Create queues
 exports.rideExpirationQueue = new bullmq_1.Queue(exports.QUEUE_NAMES.RIDE_EXPIRATION, {
@@ -64,6 +65,16 @@ exports.driverAvailabilityCheckQueue = new bullmq_1.Queue(exports.QUEUE_NAMES.DR
     },
 });
 exports.reservationReminderQueue = new bullmq_1.Queue(exports.QUEUE_NAMES.RESERVATION_REMINDER, {
+    connection: connectionOptions,
+    defaultJobOptions: {
+        attempts: 3,
+        backoff: {
+            type: "exponential",
+            delay: 2000,
+        },
+    },
+});
+exports.driverRewardsQueue = new bullmq_1.Queue(exports.QUEUE_NAMES.DRIVER_REWARDS_CHECK, {
     connection: connectionOptions,
     defaultJobOptions: {
         attempts: 3,

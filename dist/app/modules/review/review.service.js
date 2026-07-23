@@ -48,6 +48,7 @@ const http_status_codes_1 = require("http-status-codes");
 const mongoose_1 = __importStar(require("mongoose"));
 const review_constant_1 = require("./review.constant");
 const ride_constant_1 = require("../ride/ride.constant");
+const points_service_1 = require("../tier/points.service");
 /**
  * Submit a rating & review for a completed ride.
  */
@@ -161,6 +162,10 @@ const createReviewInDB = (reviewerId, reviewerRole, rideId, payload) => __awaite
                 driver.totalRatings = totalRatings + 1;
                 driver.totalReviews = (driver.totalReviews || 0) + 1;
                 yield driver.save({ session });
+                // Award points if passenger left a 5-star rating for driver
+                if (rating === 5) {
+                    points_service_1.PointsService.awardPoints(receiverId, "five_star_rating", "review", review._id, { notes: `5-Star Rating received for Ride ${rideId}`, session }).catch((err) => console.error("Error awarding rating points:", err));
+                }
             }
         }
         // 7. If passenger has driver appreciation amount > 0, handle payment

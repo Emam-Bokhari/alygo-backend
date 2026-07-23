@@ -22,6 +22,7 @@ const socket_io_1 = require("socket.io");
 const DB_1 = __importDefault(require("./DB"));
 require("./workers/rideMatchingWorkers");
 const bullmq_1 = require("./config/bullmq");
+const points_service_1 = require("./app/modules/tier/points.service");
 //uncaught exception
 process.on("uncaughtException", (error) => {
     logger_1.errorLogger.error("uncaughtException Detected", error);
@@ -52,6 +53,8 @@ function main() {
             socketHelper_1.socketHelper.socket(io);
             //@ts-ignore
             global.io = io;
+            // Seed default point rules
+            yield points_service_1.PointsService.seedDefaultPointRules();
             // Schedule recurring driver availability check job (every minute)
             yield bullmq_1.driverAvailabilityCheckQueue.add("driver-availability-check", {}, {
                 repeat: {
@@ -68,6 +71,14 @@ function main() {
                 jobId: "recurring-reservation-reminder-check",
             });
             logger_1.logger.info(colors_1.default.green("✅ Reservation reminder job scheduled (every 1 minute)"));
+            // Schedule recurring driver rewards check job (every minute)
+            yield bullmq_1.driverRewardsQueue.add("driver-rewards-check", {}, {
+                repeat: {
+                    every: 60000,
+                },
+                jobId: "recurring-driver-rewards-check",
+            });
+            logger_1.logger.info(colors_1.default.green("✅ Driver rewards background job scheduled (every 1 minute)"));
         }
         catch (error) {
             logger_1.errorLogger.error(colors_1.default.red("🤢 Failed to connect Database"));

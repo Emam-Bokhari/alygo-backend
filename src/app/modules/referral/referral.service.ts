@@ -19,6 +19,7 @@ import { WalletService } from "../wallet/wallet.service";
 import { Transaction } from "../transaction/transaction.model";
 import { TRANSACTION_TYPE } from "../transaction/transaction.constant";
 import QueryBuilder from "../../builder/queryBuilder";
+import { PointsService } from "../tier/points.service";
 
 /**
  * Generate a unique-ish referral code.
@@ -289,6 +290,16 @@ const handleDriverRideCompletion = async (driverUserId: string) => {
     referral.status = REFERRAL_STATUS.COMPLETED;
     referral.completedAt = new Date();
     referral.qualificationCompletedAt = new Date();
+
+    // Award points to the referrer driver
+    PointsService.awardPoints(
+      referral.referrerId,
+      "referral_completed",
+      "referral",
+      referral._id,
+      { notes: `Successful Driver Referral of referee ${referral.refereeId}` }
+    ).catch((err) => console.error("Error awarding referral points:", err));
+
     referral.auditLogs.push({
       action: "QUALIFICATION_COMPLETED",
       details: { message: "Driver satisfied completed ride requirements." },

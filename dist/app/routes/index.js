@@ -43,6 +43,8 @@ const tracking_route_1 = require("../modules/tracking/tracking.route");
 const recentDestination_route_1 = require("../modules/recentDestination/recentDestination.route");
 const wallet_route_1 = require("../modules/wallet/wallet.route");
 const payout_route_1 = require("../modules/payout/payout.route");
+const driverRewards_route_1 = require("../modules/tier/driverRewards.route");
+const adminRewards_route_1 = require("../modules/tier/adminRewards.route");
 const pendingPayment_route_1 = require("../modules/pendingPayment/pendingPayment.route");
 const systemConfiguration_route_1 = require("../modules/systemConfiguration/systemConfiguration.route");
 const tripReport_route_1 = require("../modules/tripReport/tripReport.route");
@@ -203,6 +205,14 @@ const apiRoutes = [
     {
         path: "/driver/wallet",
         route: wallet_route_1.DriverWalletRoutes,
+    },
+    {
+        path: "/driver",
+        route: driverRewards_route_1.DriverRewardsRoutes,
+    },
+    {
+        path: "/admin/rewards",
+        route: adminRewards_route_1.AdminRewardsRoutes,
     },
     {
         path: "/payout",

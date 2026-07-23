@@ -34,6 +34,7 @@ const vipSupportSchema = new mongoose_1.Schema({
     supportLevel: { type: String, default: "basic" },
 }, { _id: false });
 const tierRequirementsSchema = new mongoose_1.Schema({
+    pointsRequired: { type: Number, required: true, default: 0 },
     tripsRequired: { type: Number, required: true, default: 0 },
     ratingRequired: { type: Number, required: true, default: 0 },
     acceptanceRateRequired: { type: Number, required: true, default: 0 },

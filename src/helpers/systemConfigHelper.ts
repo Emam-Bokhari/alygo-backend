@@ -200,6 +200,28 @@ export const getSystemConfig = async () => {
               "",
           },
         },
+        driverRewards: {
+          enabled:
+            dbConfig.driverRewards?.enabled ??
+            config.driverRewards?.enabled ??
+            true,
+          tierPromotion:
+            dbConfig.driverRewards?.tierPromotion ??
+            config.driverRewards?.tierPromotion ??
+            true,
+          autoDowngrade:
+            dbConfig.driverRewards?.autoDowngrade ??
+            config.driverRewards?.autoDowngrade ??
+            true,
+          dailyQuotaResetTime:
+            dbConfig.driverRewards?.dailyQuotaResetTime ??
+            config.driverRewards?.dailyQuotaResetTime ??
+            "00:00",
+          destinationFilterRadiusDefault:
+            dbConfig.driverRewards?.destinationFilterRadiusDefault ??
+            config.driverRewards?.destinationFilterRadiusDefault ??
+            5,
+        },
       };
       cacheExpiry = now + CACHE_DURATION_MS;
       return cachedConfig;
@@ -218,6 +240,13 @@ export const getSystemConfig = async () => {
     reservation: config.reservation,
     lostFound: config.lostFound,
     referral: config.referral,
+    driverRewards: config.driverRewards || {
+      enabled: true,
+      tierPromotion: true,
+      autoDowngrade: true,
+      dailyQuotaResetTime: "00:00",
+      destinationFilterRadiusDefault: 5,
+    },
   };
   cacheExpiry = now + CACHE_DURATION_MS;
   return cachedConfig;

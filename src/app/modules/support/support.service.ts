@@ -8,6 +8,8 @@ import { TSupport } from "./support.interface";
 import { Support } from "./support.model";
 import QueryBuilder from "../../builder/queryBuilder";
 import { emailTemplate } from "../../../shared/emailTemplate";
+import { Driver } from "../driver/driver.model";
+import { Tier } from "../tier/tier.model";
 
 const support = async (id: string, payload: TSupport) => {
   const user = await User.isExistUserById(id);
@@ -21,6 +23,24 @@ const support = async (id: string, payload: TSupport) => {
   payload.userId = new Types.ObjectId(id);
   payload.name = user.name || "Unknown";
   payload.email = user.email || "Unknown";
+
+  // Map support level from driver tier to priority
+  if (user.role === "driver") {
+    const driver = await Driver.findOne({ userId: id });
+    if (driver && driver.currentTier) {
+      const activeTier = await Tier.findById(driver.currentTier);
+      if (activeTier && activeTier.benefits?.vipSupport?.enabled) {
+        const supportLevel = activeTier.benefits.vipSupport.supportLevel;
+        if (supportLevel === "vip") {
+          payload.priority = "urgent";
+        } else if (supportLevel === "premium") {
+          payload.priority = "high";
+        } else if (supportLevel === "basic") {
+          payload.priority = "medium";
+        }
+      }
+    }
+  }
 
   const supportEntry = await Support.create(payload);
 

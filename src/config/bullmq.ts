@@ -17,6 +17,7 @@ export const QUEUE_NAMES = {
   RADIUS_EXPANSION: "radius-expansion",
   DRIVER_AVAILABILITY_CHECK: "driver-availability-check",
   RESERVATION_REMINDER: "reservation-reminder",
+  DRIVER_REWARDS_CHECK: "driver-rewards-check",
 };
 
 // Create queues
@@ -69,6 +70,20 @@ export const driverAvailabilityCheckQueue = new Queue(
 
 export const reservationReminderQueue = new Queue(
   QUEUE_NAMES.RESERVATION_REMINDER,
+  {
+    connection: connectionOptions,
+    defaultJobOptions: {
+      attempts: 3,
+      backoff: {
+        type: "exponential",
+        delay: 2000,
+      },
+    },
+  },
+);
+
+export const driverRewardsQueue = new Queue(
+  QUEUE_NAMES.DRIVER_REWARDS_CHECK,
   {
     connection: connectionOptions,
     defaultJobOptions: {

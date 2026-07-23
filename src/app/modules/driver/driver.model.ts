@@ -342,6 +342,32 @@ const driverSchema = new Schema<IDriver>(
         default: null,
       },
     },
+    currentPoints: {
+      type: Number,
+      default: 0,
+    },
+    lifetimePoints: {
+      type: Number,
+      default: 0,
+    },
+    currentTier: {
+      type: Schema.Types.ObjectId,
+      ref: "Tier",
+      default: null,
+    },
+    nextTier: {
+      type: Schema.Types.ObjectId,
+      ref: "Tier",
+      default: null,
+    },
+    progressPercentage: {
+      type: Number,
+      default: 0,
+    },
+    tierAchievedAt: {
+      type: Date,
+      default: null,
+    },
   },
 
   {

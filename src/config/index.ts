@@ -196,4 +196,13 @@ export default {
         "Payouts are processed within 24 hours.",
     },
   },
+  driverRewards: {
+    enabled: process.env.DRIVER_REWARDS_ENABLED !== "false",
+    tierPromotion: process.env.DRIVER_TIER_PROMOTION_ENABLED !== "false",
+    autoDowngrade: process.env.DRIVER_AUTO_DOWNGRADE_ENABLED !== "false",
+    dailyQuotaResetTime: process.env.DRIVER_DAILY_RESET_TIME || "00:00",
+    destinationFilterRadiusDefault: parseInt(
+      process.env.DRIVER_DESTINATION_FILTER_RADIUS_DEFAULT || "5",
+    ),
+  },
 };

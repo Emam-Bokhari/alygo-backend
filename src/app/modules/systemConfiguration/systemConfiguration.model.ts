@@ -321,6 +321,37 @@ const referralConfigSchema = new Schema(
   { _id: false },
 );
 
+const driverRewardsConfigSchema = new Schema(
+  {
+    enabled: {
+      type: Boolean,
+      required: true,
+      default: true,
+    },
+    tierPromotion: {
+      type: Boolean,
+      required: true,
+      default: true,
+    },
+    autoDowngrade: {
+      type: Boolean,
+      required: true,
+      default: true,
+    },
+    dailyQuotaResetTime: {
+      type: String,
+      required: true,
+      default: "00:00",
+    },
+    destinationFilterRadiusDefault: {
+      type: Number,
+      required: true,
+      default: 5,
+    },
+  },
+  { _id: false },
+);
+
 const systemConfigurationSchema = new Schema<
   ISystemConfiguration,
   SystemConfigurationModel
@@ -344,6 +375,10 @@ const systemConfigurationSchema = new Schema<
     },
     referral: {
       type: referralConfigSchema,
+      required: false,
+    },
+    driverRewards: {
+      type: driverRewardsConfigSchema,
       required: false,
     },
   },

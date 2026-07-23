@@ -75,6 +75,14 @@ export interface IReferralConfig {
   driver: IDriverReferralConfig;
 }
 
+export interface IDriverRewardsConfig {
+  enabled: boolean;
+  tierPromotion: boolean;
+  autoDowngrade: boolean;
+  dailyQuotaResetTime: string; // e.g. "00:00"
+  destinationFilterRadiusDefault: number;
+}
+
 export interface ISystemConfiguration {
   _id?: Types.ObjectId;
   driverMatching: IDriverMatchingConfig;
@@ -82,6 +90,7 @@ export interface ISystemConfiguration {
   reservation?: IReservationConfig;
   lostFound?: ILostFoundConfig;
   referral?: IReferralConfig;
+  driverRewards?: IDriverRewardsConfig;
   createdAt?: Date;
   updatedAt?: Date;
 }

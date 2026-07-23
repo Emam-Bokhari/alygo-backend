@@ -52,6 +52,10 @@ const systemConfigHelper_1 = require("../../../helpers/systemConfigHelper");
 const recentDestination_service_1 = require("../recentDestination/recentDestination.service");
 const buildRideParticipantSummary_1 = require("./helpers/buildRideParticipantSummary");
 const timezoneHelper_1 = require("../../../shared/timezoneHelper");
+const points_service_1 = require("../tier/points.service");
+const peakHour_model_1 = require("../peakHour/peakHour.model");
+const surgeCalculation_service_2 = require("../surgeRule/surgeCalculation.service");
+const tier_model_1 = require("../tier/tier.model");
 /**
  * Perform fare calculation based on distance, duration, and pricing configuration rules.
  */
@@ -427,6 +431,7 @@ const requestRide = (userId, payload) => __awaiter(void 0, void 0, void 0, funct
         rideCategoryId: payload.rideCategoryId,
         serviceCategoryId: payload.serviceCategoryId,
         rideServiceAreaId: (_d = (_c = routeEstimation.serviceArea) === null || _c === void 0 ? void 0 : _c._id) === null || _d === void 0 ? void 0 : _d.toString(),
+        rideDestination: payload.destination.location,
     });
     const selectedDrivers = eligibleDrivers.slice(0, 10); // Limit to nearest 10 drivers
     const pendingPayments = yield pendingPayment_model_1.PendingPayment.find({
@@ -605,7 +610,7 @@ const requestRide = (userId, payload) => __awaiter(void 0, void 0, void 0, funct
  * Driver accepts the ride (Atomic to prevent race conditions)
  */
 const acceptRide = (driverUserId, rideId) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c;
+    var _a, _b, _c, _d, _e;
     const driverDoc = yield driver_model_1.Driver.findOne({ userId: driverUserId }).populate("userId", "name profileImage");
     if (!driverDoc) {
         throw new ApiErrors_1.default(404, "Driver profile not found");
@@ -614,19 +619,34 @@ const acceptRide = (driverUserId, rideId) => __awaiter(void 0, void 0, void 0, f
     if (driverDoc.driverAvailabilityStatus !== "online") {
         throw new ApiErrors_1.default(400, "You must be online to accept rides.");
     }
-    // Extract user ObjectId from populated userId
-    const userObjectId = typeof driverDoc.userId === "object"
-        ? driverDoc.userId._id
-        : driverDoc.userId;
     const rideToAccept = yield ride_model_1.Ride.findById(rideId);
     if (!rideToAccept) {
         throw new ApiErrors_1.default(404, "Ride request not found");
     }
+    // Verify reservation access if ride is scheduled
+    if (rideToAccept.rideType === ride_constant_1.RIDE_TYPE.SCHEDULED) {
+        const activeTier = yield tier_model_1.Tier.findById(driverDoc.currentTier);
+        if (!activeTier || !((_b = (_a = activeTier.benefits) === null || _a === void 0 ? void 0 : _a.reservationAccess) === null || _b === void 0 ? void 0 : _b.enabled)) {
+            throw new ApiErrors_1.default(403, "Your current tier does not support accepting scheduled reservations.");
+        }
+        const maxAdvanceHours = activeTier.benefits.reservationAccess.maxAdvanceHours || 0;
+        if (maxAdvanceHours > 0 && rideToAccept.scheduledAt) {
+            const scheduledTime = new Date(rideToAccept.scheduledAt).getTime();
+            const advanceHours = (scheduledTime - Date.now()) / (1000 * 60 * 60);
+            if (advanceHours > maxAdvanceHours) {
+                throw new ApiErrors_1.default(403, `Your tier only supports reservation bookings up to ${maxAdvanceHours} hours in advance.`);
+            }
+        }
+    }
+    // Extract user ObjectId from populated userId
+    const userObjectId = typeof driverDoc.userId === "object"
+        ? driverDoc.userId._id
+        : driverDoc.userId;
     if (rideToAccept.status !== ride_constant_1.RIDE_STATUS.SEARCHING_DRIVER) {
         throw new ApiErrors_1.default(409, "This ride request is no longer available or was accepted by another driver.");
     }
     // Verify driver was notified and request is still active
-    const driverNotification = (_b = (_a = rideToAccept.driverMatching) === null || _a === void 0 ? void 0 : _a.notifiedDrivers) === null || _b === void 0 ? void 0 : _b.find((d) => d.driverId.toString() === userObjectId.toString());
+    const driverNotification = (_d = (_c = rideToAccept.driverMatching) === null || _c === void 0 ? void 0 : _c.notifiedDrivers) === null || _d === void 0 ? void 0 : _d.find((d) => d.driverId.toString() === userObjectId.toString());
     if (!driverNotification) {
         throw new ApiErrors_1.default(400, "You were not notified for this ride request.");
     }
@@ -644,7 +664,7 @@ const acceptRide = (driverUserId, rideId) => __awaiter(void 0, void 0, void 0, f
     }
     // Double check request time expiration in case background worker hasn't marked it yet
     if (driverNotification.sentAt &&
-        ((_c = rideToAccept.driverMatching) === null || _c === void 0 ? void 0 : _c.requestExpireSeconds)) {
+        ((_e = rideToAccept.driverMatching) === null || _e === void 0 ? void 0 : _e.requestExpireSeconds)) {
         const expireTime = new Date(driverNotification.sentAt).getTime() +
             rideToAccept.driverMatching.requestExpireSeconds * 1000;
         if (Date.now() > expireTime) {
@@ -1302,6 +1322,24 @@ const completeRide = (driverUserId, rideId, verification, ipAddress) => __awaite
         referral_service_1.ReferralService.handleDriverRideCompletion(driverUserId).catch((err) => {
             logger_1.logger.error("Driver referral completed ride progress error:", err);
         });
+        // Award Points to Driver for Ride Completion
+        points_service_1.PointsService.awardPoints(driverUserId, "ride_completed", "ride", ride._id, { notes: `Completed Ride ${ride._id}` }).then(() => __awaiter(void 0, void 0, void 0, function* () {
+            // Award additional bonuses
+            const sa = yield serviceArea_model_1.ServiceArea.findById(ride.serviceAreaId);
+            if (sa && sa.type === "airport") {
+                yield points_service_1.PointsService.awardPoints(driverUserId, "airport_ride", "ride", ride._id, { notes: `Airport Ride Bonus for Ride ${ride._id}` });
+            }
+            if (ride.rideType === ride_constant_1.RIDE_TYPE.SCHEDULED) {
+                yield points_service_1.PointsService.awardPoints(driverUserId, "scheduled_ride", "ride", ride._id, { notes: `Scheduled Ride Bonus for Ride ${ride._id}` });
+            }
+            const activePeakHours = yield peakHour_model_1.PeakHour.find({ status: status_1.STATUS.ACTIVE });
+            const isPeak = yield (0, surgeCalculation_service_2.isPeakHour)(ride.completedAt || new Date(), activePeakHours);
+            if (isPeak) {
+                yield points_service_1.PointsService.awardPoints(driverUserId, "peak_hour_ride", "ride", ride._id, { notes: `Peak Hour Ride Bonus for Ride ${ride._id}` });
+            }
+        })).catch((err) => {
+            logger_1.logger.error("Error awarding ride completion points:", err);
+        });
         referral_service_1.ReferralService.checkAndProcessPassengerReferral(ride.userId.toString()).catch((err) => {
             logger_1.logger.error("Passenger referral completed ride check error:", err);
         });
@@ -1348,7 +1386,7 @@ const completeRide = (driverUserId, rideId, verification, ipAddress) => __awaite
  */
 const completeRidePayment = (rideId, paymentMethod, paymentIntent, // optional Stripe PaymentIntent object (if paid via Stripe)
 stripeCheckoutSessionId) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _a, _b, _c;
     const ride = yield ride_model_1.Ride.findById(rideId);
     if (!ride) {
         throw new ApiErrors_1.default(404, "Ride not found");
@@ -1461,14 +1499,23 @@ stripeCheckoutSessionId) => __awaiter(void 0, void 0, void 0, function* () {
         // 4. Credit Driver's Wallet automatically with Driver Earnings
         if (ride.driverId) {
             const driverWallet = yield wallet_service_1.WalletService.getOrCreateWallet(ride.driverId, session);
-            const driverEarning = ride.fare.driverEarning;
-            const commission = ride.fare.commission;
-            driverWallet.balance = parseFloat((driverWallet.balance + driverEarning).toFixed(2));
-            yield driverWallet.save({ session });
             // Fetch driver profile ID
             const driverProfile = yield driver_model_1.Driver.findOne({
                 userId: ride.driverId,
             }).session(session);
+            let driverEarning = ride.fare.driverEarning;
+            const commission = ride.fare.commission;
+            // Apply tier bonus multiplier to driver earnings if enabled
+            let multiplier = 1.0;
+            if (driverProfile && driverProfile.currentTier) {
+                const activeTier = yield tier_model_1.Tier.findById(driverProfile.currentTier);
+                if (activeTier && ((_c = (_b = activeTier.benefits) === null || _b === void 0 ? void 0 : _b.bonusMultiplier) === null || _c === void 0 ? void 0 : _c.enabled)) {
+                    multiplier = activeTier.benefits.bonusMultiplier.multiplierValue || 1.0;
+                    driverEarning = parseFloat((driverEarning * multiplier).toFixed(2));
+                }
+            }
+            driverWallet.balance = parseFloat((driverWallet.balance + driverEarning).toFixed(2));
+            yield driverWallet.save({ session });
             // Create Driver Earnings Credit Transaction record
             yield transaction_model_1.Transaction.create([
                 {
@@ -1485,7 +1532,7 @@ stripeCheckoutSessionId) => __awaiter(void 0, void 0, void 0, function* () {
                     paymentMethod,
                     paymentStatus: ride_constant_1.PAYMENT_STATUS.PAID,
                     transactionType: transaction_constant_1.TRANSACTION_TYPE.BOOKING_PAYMENT,
-                    description: `Driver earnings of ${driverEarning} credited (Total fare: ${ride.fare.total}, Commission: ${commission}) for Ride: ${ride._id}.`,
+                    description: `Driver earnings of ${driverEarning} credited (Total fare: ${ride.fare.total}, Commission: ${commission}${multiplier > 1.0 ? `, Tier Multiplier: ${multiplier}x` : ""}) for Ride: ${ride._id}.`,
                 },
             ], { session });
             socketHelper_1.socketHelper.sendToUser(ride.driverId.toString(), "wallet-updated", {
@@ -1962,6 +2009,8 @@ const cancelRide = (userId, role, rideId, payload) => __awaiter(void 0, void 0, 
             yield ride.save({ session });
             yield session.commitTransaction();
             session.endSession();
+            // Deduct points for accepted ride cancellation
+            points_service_1.PointsService.deductPoints(cancellingDriverUserId, "accepted_ride_cancelled", "ride", ride._id, { notes: `Cancelled Accepted Ride ${ride._id}` }).catch((err) => logger_1.logger.error("Error deducting points for cancellation:", err));
             // 3. Resume Driver Matching automatically
             // Original timer calculation
             const systemConfig = yield (0, systemConfigHelper_1.getSystemConfig)();
@@ -2009,6 +2058,7 @@ const cancelRide = (userId, role, rideId, payload) => __awaiter(void 0, void 0, 
                     serviceCategoryId: (_k = ride.serviceCategoryId) === null || _k === void 0 ? void 0 : _k.toString(),
                     excludeDriverIds: ride.driverMatching.notifiedDrivers.map((d) => d.driverId.toString()),
                     rideServiceAreaId: (_l = ride.serviceAreaId) === null || _l === void 0 ? void 0 : _l.toString(),
+                    rideDestination: ride.destination.location,
                 });
                 const newDrivers = eligibleDrivers.slice(0, 10);
                 if (newDrivers.length > 0) {

@@ -72,6 +72,13 @@ const getDefaultSystemConfig = (): ISystemConfiguration => ({
       generalNotes: "Payouts are processed within 24 hours.",
     },
   },
+  driverRewards: {
+    enabled: true,
+    tierPromotion: true,
+    autoDowngrade: true,
+    dailyQuotaResetTime: "00:00",
+    destinationFilterRadiusDefault: 5,
+  },
 });
 
 const getSystemConfig = async (

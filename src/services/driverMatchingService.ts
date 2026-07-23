@@ -11,6 +11,9 @@ import { logger } from "../shared/logger";
 import { RIDE_STATUS, RIDE_TYPE } from "../app/modules/ride/ride.constant";
 import { getCurrentTimeInTimezone } from "../shared/timezoneHelper";
 import { GoogleRouteService } from "./googleRouteService";
+import { Tier } from "../app/modules/tier/tier.model";
+import { DestinationFilter } from "../app/modules/tier/destinationFilter.model";
+import { calculateDriverAcceptanceRate } from "../app/modules/tier/points.service";
 
 interface FindEligibleDriversParams {
   pickupLocation: { type: string; coordinates: [number, number] };
@@ -19,7 +22,20 @@ interface FindEligibleDriversParams {
   serviceCategoryId?: string;
   excludeDriverIds?: string[];
   rideServiceAreaId?: string;
+  rideDestination?: { type: string; coordinates: [number, number] };
 }
+
+const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+  const R = 6371; // km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
 
 /**
  * Find eligible drivers within a specific radius
@@ -32,6 +48,7 @@ export const findEligibleDriversInRadius = async ({
   serviceCategoryId,
   excludeDriverIds = [],
   rideServiceAreaId,
+  rideDestination,
 }: FindEligibleDriversParams) => {
   const searchRadiusMeters = radiusKm * 1000;
 
@@ -234,6 +251,41 @@ export const findEligibleDriversInRadius = async ({
 
     if (!isCarTypeMatched || !isSeatsSufficient) continue;
 
+    // Check Premium Ride Access
+    const isPremiumCategory = (catName: string): boolean => {
+      const name = catName.toLowerCase();
+      return (
+        name.includes("premium") ||
+        name.includes("luxury") ||
+        name.includes("vip") ||
+        name.includes("elite") ||
+        name.includes("business")
+      );
+    };
+
+    if (isPremiumCategory(category.name)) {
+      const activeTier = await Tier.findById(driverDoc.currentTier);
+      if (!activeTier || !activeTier.benefits?.premiumRideAccess?.enabled) {
+        logger.info(
+          `Driver ${driverDoc.userId} excluded: does not have premium ride access.`,
+        );
+        continue;
+      }
+      const allowedCategories =
+        activeTier.benefits.premiumRideAccess.allowedCategories || [];
+      const isAllowed = allowedCategories.some(
+        (catIdOrName: string) =>
+          catIdOrName === category._id.toString() ||
+          catIdOrName.toLowerCase() === category.name.toLowerCase(),
+      );
+      if (!isAllowed) {
+        logger.info(
+          `Driver ${driverDoc.userId} excluded: category ${category.name} is not in allowed premium categories for tier ${activeTier.name}.`,
+        );
+        continue;
+      }
+    }
+
     // C. Check driver duty policy limits based on driver's current location
     let policy = null;
     let driverLocServiceArea = null;
@@ -378,9 +430,72 @@ export const findEligibleDriversInRadius = async ({
             continue;
           }
 
+          // Compute Dispatch Score
+          const distanceScore = Math.max(0, 100 - distanceToPickup * 10);
+          const ratingScore = (driverDoc.averageRating || 0) * 10;
+          
+          const acceptanceRate = await calculateDriverAcceptanceRate(driverDoc.userId);
+          const acceptanceScore = acceptanceRate * 0.5;
+
+          // Tier priority & Priority Dispatch
+          let tierPriorityScore = 0;
+          const activeTier = await Tier.findById(driverDoc.currentTier);
+          if (activeTier) {
+            tierPriorityScore += activeTier.level * 15;
+            if (activeTier.benefits?.priorityDispatch?.enabled) {
+              tierPriorityScore += (activeTier.benefits.priorityDispatch.boostMultiplier || 1.0) * 20;
+            }
+          }
+
+          // Destination Filter Score
+          let destMatchScore = 0;
+          if (rideDestination && rideDestination.coordinates) {
+            const filter = await DestinationFilter.findOne({
+              driverId: driverDoc.userId,
+              status: "ACTIVE",
+            });
+            if (filter) {
+              const pickup = pickupLocation.coordinates;
+              const rideDest = rideDestination.coordinates;
+              const filterDest = filter.coordinates;
+
+              const vecPR = [rideDest[0] - pickup[0], rideDest[1] - pickup[1]];
+              const vecPF = [filterDest[0] - pickup[0], filterDest[1] - pickup[1]];
+
+              const magPR = Math.sqrt(vecPR[0]**2 + vecPR[1]**2);
+              const magPF = Math.sqrt(vecPF[0]**2 + vecPF[1]**2);
+
+              if (magPR > 0 && magPF > 0) {
+                const dotProduct = vecPR[0] * vecPF[0] + vecPR[1] * vecPF[1];
+                const cosSim = dotProduct / (magPR * magPF);
+
+                if (cosSim > 0) {
+                  const distDestToFilter = calculateDistance(rideDest[1], rideDest[0], filterDest[1], filterDest[0]);
+                  const distPickupToFilter = calculateDistance(pickup[1], pickup[0], filterDest[1], filterDest[0]);
+
+                  if (distDestToFilter < distPickupToFilter) {
+                    destMatchScore = cosSim * 50;
+                    if (distDestToFilter <= filter.radiusKm) {
+                      destMatchScore += (1 - distDestToFilter / filter.radiusKm) * 50;
+                    }
+                  }
+                }
+              }
+            }
+          }
+
+          // Airport Queue Priority
+          let airportPriorityScore = 0;
+          if (rideServiceArea.type === "airport" && activeTier?.benefits?.airportQueuePriority?.enabled) {
+            airportPriorityScore = 50;
+          }
+
+          const dispatchScore = distanceScore + ratingScore + acceptanceScore + tierPriorityScore + destMatchScore + airportPriorityScore;
+
           eligibleDrivers.push({
             driverId: driverDoc.userId,
             distance: distanceToPickup,
+            dispatchScore,
           });
         }
       }
@@ -391,8 +506,8 @@ export const findEligibleDriversInRadius = async ({
       throw err;
     }
 
-    // Sort eligible drivers by actual road distance ascending (nearest first)
-    eligibleDrivers.sort((a, b) => a.distance - b.distance);
+    // Sort eligible drivers by dispatchScore descending (highest score first)
+    eligibleDrivers.sort((a, b) => (b.dispatchScore || 0) - (a.dispatchScore || 0));
   }
 
   return eligibleDrivers;

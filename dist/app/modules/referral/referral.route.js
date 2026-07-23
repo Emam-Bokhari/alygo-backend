@@ -20,9 +20,4 @@ router.get("/driver/reward-history", (0, auth_1.default)(user_1.USER_ROLES.DRIVE
 // --- OTHER ROUTES ---
 router.get("/rules", referral_controller_1.ReferralController.getRules);
 router.post("/verify", referral_controller_1.ReferralController.verifyCode);
-// --- BACKWARD COMPATIBILITY LAYER ---
-router.get("/user-info", (0, auth_1.default)(user_1.USER_ROLES.USER, user_1.USER_ROLES.ADMIN, user_1.USER_ROLES.SUPER_ADMIN), referral_controller_1.ReferralController.getUserInfo);
-router.get("/driver-info", (0, auth_1.default)(user_1.USER_ROLES.DRIVER, user_1.USER_ROLES.ADMIN, user_1.USER_ROLES.SUPER_ADMIN), referral_controller_1.ReferralController.getDriverInfo);
-router.get("/driver-progress", (0, auth_1.default)(user_1.USER_ROLES.DRIVER, user_1.USER_ROLES.ADMIN, user_1.USER_ROLES.SUPER_ADMIN), referral_controller_1.ReferralController.getDriverProgress);
-router.get("/driver-payouts", (0, auth_1.default)(user_1.USER_ROLES.DRIVER, user_1.USER_ROLES.ADMIN, user_1.USER_ROLES.SUPER_ADMIN), referral_controller_1.ReferralController.getDriverPayouts);
 exports.ReferralRoutes = router;

@@ -21,6 +21,11 @@ import { getSystemConfig } from "../helpers/systemConfigHelper";
 import config from "../config";
 import { Driver } from "../app/modules/driver/driver.model";
 import { DriverDutyPolicyServices } from "../app/modules/driverDutyPolicy/driverDutyPolicy.service";
+import { DestinationFilterService } from "../app/modules/tier/destinationFilter.service";
+import { PointsService } from "../app/modules/tier/points.service";
+import { driverRewardsQueue } from "../config/bullmq";
+import { sendNotifications } from "../helpers/notificationsHelper";
+import { NOTIFICATION_TYPE } from "../app/modules/notification/notification.constant";
 
 // Import the triggerImmediateRadiusExpansion function from ride service
 // We need to dynamically import it to avoid circular dependency
@@ -220,6 +225,7 @@ const radiusExpansionWorker = new Worker(
           d.driverId.toString(),
         ),
         rideServiceAreaId: ride.serviceAreaId?.toString(),
+        rideDestination: ride.destination.location,
       });
 
       if (newDrivers.length === 0) {
@@ -419,6 +425,40 @@ const reservationReminderWorker = new Worker(
   },
 );
 
+const driverRewardsWorker = new Worker(
+  QUEUE_NAMES.DRIVER_REWARDS_CHECK,
+  async (job: Job) => {
+    // 1. Run filter expiration check
+    await DestinationFilterService.expireFilters();
+
+    // 2. Run daily downgrade checks & quota resets at midnight (00:00)
+    const now = new Date();
+    if (now.getHours() === 0 && now.getMinutes() === 0) {
+      await PointsService.processScheduledDowngrades();
+
+      // Send daily reset push notification to all online drivers
+      const onlineDrivers = await Driver.find({
+        driverAvailabilityStatus: "online",
+      });
+      for (const d of onlineDrivers) {
+        sendNotifications({
+          receiver: d.userId,
+          title: "Daily Quota Reset 🔄",
+          text: "Your daily destination filter quota and limits have been reset.",
+          type: NOTIFICATION_TYPE.DRIVER,
+        }).catch((err) =>
+          logger.error("Daily Reset Notification error:", err.message),
+        );
+      }
+      logger.info("Sent daily quota reset notifications to online drivers.");
+    }
+  },
+  {
+    connection: connectionOptions,
+    concurrency: 1,
+  },
+);
+
 // Error handlers
 rideExpirationWorker.on("error", (err) => {
   logger.error("Ride expiration worker error:", err);
@@ -440,6 +480,10 @@ reservationReminderWorker.on("error", (err) => {
   logger.error("Reservation reminder worker error:", err);
 });
 
+driverRewardsWorker.on("error", (err) => {
+  logger.error("Driver rewards worker error:", err);
+});
+
 // Graceful shutdown
 const gracefulShutdown = async () => {
   logger.info("Closing BullMQ workers...");
@@ -449,6 +493,7 @@ const gracefulShutdown = async () => {
     radiusExpansionWorker.close(),
     driverAvailabilityWorker.close(),
     reservationReminderWorker.close(),
+    driverRewardsWorker.close(),
   ]);
   logger.info("BullMQ workers closed");
 };
@@ -462,4 +507,5 @@ export {
   radiusExpansionWorker,
   driverAvailabilityWorker,
   reservationReminderWorker,
+  driverRewardsWorker,
 };

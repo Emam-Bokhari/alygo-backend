@@ -23,12 +23,25 @@ const logger_1 = require("../shared/logger");
 const ride_constant_1 = require("../app/modules/ride/ride.constant");
 const timezoneHelper_1 = require("../shared/timezoneHelper");
 const googleRouteService_1 = require("./googleRouteService");
+const tier_model_1 = require("../app/modules/tier/tier.model");
+const destinationFilter_model_1 = require("../app/modules/tier/destinationFilter.model");
+const points_service_1 = require("../app/modules/tier/points.service");
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371; // km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+};
 /**
  * Find eligible drivers within a specific radius
  * This function extracts the driver matching logic from the ride service
  */
-const findEligibleDriversInRadius = (_a) => __awaiter(void 0, [_a], void 0, function* ({ pickupLocation, radiusKm, rideCategoryId, serviceCategoryId, excludeDriverIds = [], rideServiceAreaId, }) {
-    var _b, _c, _d, _e;
+const findEligibleDriversInRadius = (_a) => __awaiter(void 0, [_a], void 0, function* ({ pickupLocation, radiusKm, rideCategoryId, serviceCategoryId, excludeDriverIds = [], rideServiceAreaId, rideDestination, }) {
+    var _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
     const searchRadiusMeters = radiusKm * 1000;
     // Resolve the ride's Service Area ID
     let resolvedRideServiceAreaId = rideServiceAreaId;
@@ -182,6 +195,29 @@ const findEligibleDriversInRadius = (_a) => __awaiter(void 0, [_a], void 0, func
         const isSeatsSufficient = car.seatNumber >= minimumSeats;
         if (!isCarTypeMatched || !isSeatsSufficient)
             continue;
+        // Check Premium Ride Access
+        const isPremiumCategory = (catName) => {
+            const name = catName.toLowerCase();
+            return (name.includes("premium") ||
+                name.includes("luxury") ||
+                name.includes("vip") ||
+                name.includes("elite") ||
+                name.includes("business"));
+        };
+        if (isPremiumCategory(category.name)) {
+            const activeTier = yield tier_model_1.Tier.findById(driverDoc.currentTier);
+            if (!activeTier || !((_e = (_d = activeTier.benefits) === null || _d === void 0 ? void 0 : _d.premiumRideAccess) === null || _e === void 0 ? void 0 : _e.enabled)) {
+                logger_1.logger.info(`Driver ${driverDoc.userId} excluded: does not have premium ride access.`);
+                continue;
+            }
+            const allowedCategories = activeTier.benefits.premiumRideAccess.allowedCategories || [];
+            const isAllowed = allowedCategories.some((catIdOrName) => catIdOrName === category._id.toString() ||
+                catIdOrName.toLowerCase() === category.name.toLowerCase());
+            if (!isAllowed) {
+                logger_1.logger.info(`Driver ${driverDoc.userId} excluded: category ${category.name} is not in allowed premium categories for tier ${activeTier.name}.`);
+                continue;
+            }
+        }
         // C. Check driver duty policy limits based on driver's current location
         let policy = null;
         let driverLocServiceArea = null;
@@ -268,8 +304,8 @@ const findEligibleDriversInRadius = (_a) => __awaiter(void 0, [_a], void 0, func
             const matrix = yield googleRouteService_1.GoogleRouteService.calculateDistanceMatrix(origins, destinations);
             for (let i = 0; i < candidates.length; i++) {
                 const driverDoc = candidates[i];
-                const pickupResult = (_d = matrix[i]) === null || _d === void 0 ? void 0 : _d[0];
-                const serviceAreaCenterResult = (_e = matrix[i]) === null || _e === void 0 ? void 0 : _e[1];
+                const pickupResult = (_f = matrix[i]) === null || _f === void 0 ? void 0 : _f[0];
+                const serviceAreaCenterResult = (_g = matrix[i]) === null || _g === void 0 ? void 0 : _g[1];
                 if (pickupResult &&
                     pickupResult.status === "OK" &&
                     serviceAreaCenterResult &&
@@ -285,9 +321,61 @@ const findEligibleDriversInRadius = (_a) => __awaiter(void 0, [_a], void 0, func
                         logger_1.logger.info(`Driver ${driverDoc.userId} excluded: GPS location is outside ride search road distance (${distanceToPickup.toFixed(2)} km > ${radiusKm} km).`);
                         continue;
                     }
+                    // Compute Dispatch Score
+                    const distanceScore = Math.max(0, 100 - distanceToPickup * 10);
+                    const ratingScore = (driverDoc.averageRating || 0) * 10;
+                    const acceptanceRate = yield (0, points_service_1.calculateDriverAcceptanceRate)(driverDoc.userId);
+                    const acceptanceScore = acceptanceRate * 0.5;
+                    // Tier priority & Priority Dispatch
+                    let tierPriorityScore = 0;
+                    const activeTier = yield tier_model_1.Tier.findById(driverDoc.currentTier);
+                    if (activeTier) {
+                        tierPriorityScore += activeTier.level * 15;
+                        if ((_j = (_h = activeTier.benefits) === null || _h === void 0 ? void 0 : _h.priorityDispatch) === null || _j === void 0 ? void 0 : _j.enabled) {
+                            tierPriorityScore += (activeTier.benefits.priorityDispatch.boostMultiplier || 1.0) * 20;
+                        }
+                    }
+                    // Destination Filter Score
+                    let destMatchScore = 0;
+                    if (rideDestination && rideDestination.coordinates) {
+                        const filter = yield destinationFilter_model_1.DestinationFilter.findOne({
+                            driverId: driverDoc.userId,
+                            status: "ACTIVE",
+                        });
+                        if (filter) {
+                            const pickup = pickupLocation.coordinates;
+                            const rideDest = rideDestination.coordinates;
+                            const filterDest = filter.coordinates;
+                            const vecPR = [rideDest[0] - pickup[0], rideDest[1] - pickup[1]];
+                            const vecPF = [filterDest[0] - pickup[0], filterDest[1] - pickup[1]];
+                            const magPR = Math.sqrt(vecPR[0] ** 2 + vecPR[1] ** 2);
+                            const magPF = Math.sqrt(vecPF[0] ** 2 + vecPF[1] ** 2);
+                            if (magPR > 0 && magPF > 0) {
+                                const dotProduct = vecPR[0] * vecPF[0] + vecPR[1] * vecPF[1];
+                                const cosSim = dotProduct / (magPR * magPF);
+                                if (cosSim > 0) {
+                                    const distDestToFilter = calculateDistance(rideDest[1], rideDest[0], filterDest[1], filterDest[0]);
+                                    const distPickupToFilter = calculateDistance(pickup[1], pickup[0], filterDest[1], filterDest[0]);
+                                    if (distDestToFilter < distPickupToFilter) {
+                                        destMatchScore = cosSim * 50;
+                                        if (distDestToFilter <= filter.radiusKm) {
+                                            destMatchScore += (1 - distDestToFilter / filter.radiusKm) * 50;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    // Airport Queue Priority
+                    let airportPriorityScore = 0;
+                    if (rideServiceArea.type === "airport" && ((_l = (_k = activeTier === null || activeTier === void 0 ? void 0 : activeTier.benefits) === null || _k === void 0 ? void 0 : _k.airportQueuePriority) === null || _l === void 0 ? void 0 : _l.enabled)) {
+                        airportPriorityScore = 50;
+                    }
+                    const dispatchScore = distanceScore + ratingScore + acceptanceScore + tierPriorityScore + destMatchScore + airportPriorityScore;
                     eligibleDrivers.push({
                         driverId: driverDoc.userId,
                         distance: distanceToPickup,
+                        dispatchScore,
                     });
                 }
             }
@@ -296,8 +384,8 @@ const findEligibleDriversInRadius = (_a) => __awaiter(void 0, [_a], void 0, func
             logger_1.logger.error(`[DriverMatching] Error calculating distance matrix for matching: ${err}`);
             throw err;
         }
-        // Sort eligible drivers by actual road distance ascending (nearest first)
-        eligibleDrivers.sort((a, b) => a.distance - b.distance);
+        // Sort eligible drivers by dispatchScore descending (highest score first)
+        eligibleDrivers.sort((a, b) => (b.dispatchScore || 0) - (a.dispatchScore || 0));
     }
     return eligibleDrivers;
 });

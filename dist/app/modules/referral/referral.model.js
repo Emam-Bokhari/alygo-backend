@@ -55,10 +55,6 @@ const referralSchema = new mongoose_1.Schema({
         enum: Object.values(referral_interface_1.REFERRAL_STATUS),
         default: referral_interface_1.REFERRAL_STATUS.PENDING,
     },
-    ridesCompleted: {
-        type: Number,
-        default: 0,
-    },
     rewardAmount: {
         type: Number,
         default: 0,

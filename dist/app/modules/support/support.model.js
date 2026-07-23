@@ -24,6 +24,11 @@ const supportSchema = new mongoose_1.Schema({
         type: String,
         required: true,
     },
+    priority: {
+        type: String,
+        enum: ["low", "medium", "high", "urgent"],
+        default: "low",
+    },
 }, {
     timestamps: true,
     versionKey: false,

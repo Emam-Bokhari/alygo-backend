@@ -21,7 +21,10 @@ const user_model_1 = require("../user/user.model");
 const support_model_1 = require("./support.model");
 const queryBuilder_1 = __importDefault(require("../../builder/queryBuilder"));
 const emailTemplate_1 = require("../../../shared/emailTemplate");
+const driver_model_1 = require("../driver/driver.model");
+const tier_model_1 = require("../tier/tier.model");
 const support = (id, payload) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
     const user = yield user_model_1.User.isExistUserById(id);
     console.log(user, payload, "USER, PAYLOAD");
     if (!user) {
@@ -30,6 +33,25 @@ const support = (id, payload) => __awaiter(void 0, void 0, void 0, function* () 
     payload.userId = new mongoose_1.Types.ObjectId(id);
     payload.name = user.name || "Unknown";
     payload.email = user.email || "Unknown";
+    // Map support level from driver tier to priority
+    if (user.role === "driver") {
+        const driver = yield driver_model_1.Driver.findOne({ userId: id });
+        if (driver && driver.currentTier) {
+            const activeTier = yield tier_model_1.Tier.findById(driver.currentTier);
+            if (activeTier && ((_b = (_a = activeTier.benefits) === null || _a === void 0 ? void 0 : _a.vipSupport) === null || _b === void 0 ? void 0 : _b.enabled)) {
+                const supportLevel = activeTier.benefits.vipSupport.supportLevel;
+                if (supportLevel === "vip") {
+                    payload.priority = "urgent";
+                }
+                else if (supportLevel === "premium") {
+                    payload.priority = "high";
+                }
+                else if (supportLevel === "basic") {
+                    payload.priority = "medium";
+                }
+            }
+        }
+    }
     const supportEntry = yield support_model_1.Support.create(payload);
     const emailPayload = emailTemplate_1.emailTemplate.supportNotification({
         to: config_1.default.support_receiver_email,

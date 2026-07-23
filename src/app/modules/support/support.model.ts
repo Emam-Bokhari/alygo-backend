@@ -24,6 +24,11 @@ const supportSchema = new Schema<TSupport>(
       type: String,
       required: true,
     },
+    priority: {
+      type: String,
+      enum: ["low", "medium", "high", "urgent"],
+      default: "low",
+    },
   },
   {
     timestamps: true,

@@ -306,6 +306,32 @@ const driverSchema = new mongoose_1.Schema({
             default: null,
         },
     },
+    currentPoints: {
+        type: Number,
+        default: 0,
+    },
+    lifetimePoints: {
+        type: Number,
+        default: 0,
+    },
+    currentTier: {
+        type: mongoose_1.Schema.Types.ObjectId,
+        ref: "Tier",
+        default: null,
+    },
+    nextTier: {
+        type: mongoose_1.Schema.Types.ObjectId,
+        ref: "Tier",
+        default: null,
+    },
+    progressPercentage: {
+        type: Number,
+        default: 0,
+    },
+    tierAchievedAt: {
+        type: Date,
+        default: null,
+    },
 }, {
     timestamps: true,
     versionKey: false,

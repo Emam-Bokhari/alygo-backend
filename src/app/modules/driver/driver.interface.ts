@@ -106,4 +106,10 @@ export type IDriver = {
     blockedReason?: DRIVER_BLOCK_REASON | null;
     blockedUntil?: Date | null;
   };
+  currentPoints?: number;
+  lifetimePoints?: number;
+  currentTier?: Types.ObjectId;
+  nextTier?: Types.ObjectId | null;
+  progressPercentage?: number;
+  tierAchievedAt?: Date;
 };

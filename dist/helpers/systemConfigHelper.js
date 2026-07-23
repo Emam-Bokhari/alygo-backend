@@ -23,7 +23,7 @@ const CACHE_DURATION_MS = 5 * 60 * 1000; // 5 minutes
  * Falls back to .env values if database is unavailable
  */
 const getSystemConfig = () => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176, _177, _178, _179, _180, _181, _182, _183, _184, _185, _186, _187, _188, _189;
     const now = Date.now();
     // Return cached config if still valid
     if (cachedConfig && now < cacheExpiry) {
@@ -96,8 +96,15 @@ const getSystemConfig = () => __awaiter(void 0, void 0, void 0, function* () {
                         shareInstructions: (_157 = (_154 = (_153 = (_152 = dbConfig.referral) === null || _152 === void 0 ? void 0 : _152.driver) === null || _153 === void 0 ? void 0 : _153.shareInstructions) !== null && _154 !== void 0 ? _154 : (_156 = (_155 = config_1.default.referral) === null || _155 === void 0 ? void 0 : _155.driver) === null || _156 === void 0 ? void 0 : _156.shareInstructions) !== null && _157 !== void 0 ? _157 : "",
                         termsAndConditions: (_163 = (_160 = (_159 = (_158 = dbConfig.referral) === null || _158 === void 0 ? void 0 : _158.driver) === null || _159 === void 0 ? void 0 : _159.termsAndConditions) !== null && _160 !== void 0 ? _160 : (_162 = (_161 = config_1.default.referral) === null || _161 === void 0 ? void 0 : _161.driver) === null || _162 === void 0 ? void 0 : _162.termsAndConditions) !== null && _163 !== void 0 ? _163 : "",
                         generalNotes: (_169 = (_166 = (_165 = (_164 = dbConfig.referral) === null || _164 === void 0 ? void 0 : _164.driver) === null || _165 === void 0 ? void 0 : _165.generalNotes) !== null && _166 !== void 0 ? _166 : (_168 = (_167 = config_1.default.referral) === null || _167 === void 0 ? void 0 : _167.driver) === null || _168 === void 0 ? void 0 : _168.generalNotes) !== null && _169 !== void 0 ? _169 : "",
-                    }
-                }
+                    },
+                },
+                driverRewards: {
+                    enabled: (_173 = (_171 = (_170 = dbConfig.driverRewards) === null || _170 === void 0 ? void 0 : _170.enabled) !== null && _171 !== void 0 ? _171 : (_172 = config_1.default.driverRewards) === null || _172 === void 0 ? void 0 : _172.enabled) !== null && _173 !== void 0 ? _173 : true,
+                    tierPromotion: (_177 = (_175 = (_174 = dbConfig.driverRewards) === null || _174 === void 0 ? void 0 : _174.tierPromotion) !== null && _175 !== void 0 ? _175 : (_176 = config_1.default.driverRewards) === null || _176 === void 0 ? void 0 : _176.tierPromotion) !== null && _177 !== void 0 ? _177 : true,
+                    autoDowngrade: (_181 = (_179 = (_178 = dbConfig.driverRewards) === null || _178 === void 0 ? void 0 : _178.autoDowngrade) !== null && _179 !== void 0 ? _179 : (_180 = config_1.default.driverRewards) === null || _180 === void 0 ? void 0 : _180.autoDowngrade) !== null && _181 !== void 0 ? _181 : true,
+                    dailyQuotaResetTime: (_185 = (_183 = (_182 = dbConfig.driverRewards) === null || _182 === void 0 ? void 0 : _182.dailyQuotaResetTime) !== null && _183 !== void 0 ? _183 : (_184 = config_1.default.driverRewards) === null || _184 === void 0 ? void 0 : _184.dailyQuotaResetTime) !== null && _185 !== void 0 ? _185 : "00:00",
+                    destinationFilterRadiusDefault: (_189 = (_187 = (_186 = dbConfig.driverRewards) === null || _186 === void 0 ? void 0 : _186.destinationFilterRadiusDefault) !== null && _187 !== void 0 ? _187 : (_188 = config_1.default.driverRewards) === null || _188 === void 0 ? void 0 : _188.destinationFilterRadiusDefault) !== null && _189 !== void 0 ? _189 : 5,
+                },
             };
             cacheExpiry = now + CACHE_DURATION_MS;
             return cachedConfig;
@@ -113,6 +120,13 @@ const getSystemConfig = () => __awaiter(void 0, void 0, void 0, function* () {
         reservation: config_1.default.reservation,
         lostFound: config_1.default.lostFound,
         referral: config_1.default.referral,
+        driverRewards: config_1.default.driverRewards || {
+            enabled: true,
+            tierPromotion: true,
+            autoDowngrade: true,
+            dailyQuotaResetTime: "00:00",
+            destinationFilterRadiusDefault: 5,
+        },
     };
     cacheExpiry = now + CACHE_DURATION_MS;
     return cachedConfig;

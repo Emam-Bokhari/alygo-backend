@@ -62,6 +62,7 @@ const vipSupportSchema = new Schema(
 
 const tierRequirementsSchema = new Schema(
   {
+    pointsRequired: { type: Number, required: true, default: 0 },
     tripsRequired: { type: Number, required: true, default: 0 },
     ratingRequired: { type: Number, required: true, default: 0 },
     acceptanceRateRequired: { type: Number, required: true, default: 0 },

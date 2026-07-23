@@ -92,93 +92,6 @@ const deleteAdminFromDB = (id) => __awaiter(void 0, void 0, void 0, function* ()
     }
     return isExistAdmin;
 });
-// --- HOST SERVICES ---
-const createHostToDB = (payload) => __awaiter(void 0, void 0, void 0, function* () {
-    const isExistHost = yield user_model_1.User.findOne({ email: payload.email });
-    if (isExistHost) {
-        throw new ApiErrors_1.default(http_status_codes_1.StatusCodes.CONFLICT, "This Email already taken");
-    }
-    const hostPayload = Object.assign(Object.assign({}, payload), { verified: true, status: user_1.STATUS.ACTIVE, role: user_1.USER_ROLES.DRIVER });
-    const createHost = yield user_model_1.User.create(hostPayload);
-    // notify admin
-    const admin = yield user_model_1.User.findOne({ role: user_1.USER_ROLES.SUPER_ADMIN }).select("_id name");
-    if (admin) {
-        yield (0, notificationsHelper_1.sendNotifications)({
-            title: "New Host Created",
-            text: `New host account created successfully by admin (${admin.name || admin._id})`,
-            receiver: admin._id.toString(),
-            type: notification_constant_1.NOTIFICATION_TYPE.ADMIN,
-            referenceId: createHost._id.toString(),
-            referenceModel: "User",
-        });
-    }
-    return createHost;
-});
-// host revenue
-const ghostLoginAsHost = (superAdmin, hostId) => __awaiter(void 0, void 0, void 0, function* () {
-    if (superAdmin.role !== user_1.USER_ROLES.SUPER_ADMIN) {
-        throw new ApiErrors_1.default(403, "Unauthorized: Only SuperAdmin can use ghost mode");
-    }
-    const host = yield user_model_1.User.findById(hostId);
-    if (!host || host.role !== user_1.USER_ROLES.DRIVER) {
-        throw new ApiErrors_1.default(404, "Host not found");
-    }
-    // Generate JWT as host
-    const token = jwtHelper_1.jwtHelper.createToken({
-        id: host._id,
-        email: host.email,
-        role: user_1.USER_ROLES.DRIVER,
-    }, config_1.default.jwt.jwt_secret, config_1.default.jwt.jwt_expire_in);
-    return {
-        accessToken: token,
-        host: {
-            id: host._id,
-            name: host.name,
-            email: host.email,
-        },
-    };
-});
-const deleteHostByIdFromD = (id) => __awaiter(void 0, void 0, void 0, function* () {
-    const user = yield user_model_1.User.findOne({
-        _id: id,
-        role: user_1.USER_ROLES.DRIVER,
-    });
-    if (!user) {
-        throw new ApiErrors_1.default(404, "Host doest not exist in the database");
-    }
-    const result = yield user_model_1.User.softDeleteById(id);
-    if (!result) {
-        throw new ApiErrors_1.default(400, "Failed to delete user by this ID");
-    }
-    // notify admin
-    const admin = yield user_model_1.User.findOne({ role: user_1.USER_ROLES.SUPER_ADMIN }).select("_id name");
-    if (admin) {
-        yield (0, notificationsHelper_1.sendNotifications)({
-            title: "Host Account Deleted",
-            text: `Host deleted successfully by admin (${admin.name || admin._id})`,
-            receiver: admin._id.toString(),
-            type: notification_constant_1.NOTIFICATION_TYPE.ADMIN,
-            referenceId: result._id.toString(),
-            referenceModel: "User",
-        });
-    }
-    return result;
-});
-const getTotalUsersAndHostsFromDB = () => __awaiter(void 0, void 0, void 0, function* () {
-    const [totalUsers, totalHosts] = yield Promise.all([
-        user_model_1.User.countDocuments({
-            role: user_1.USER_ROLES.USER,
-            status: user_1.STATUS.ACTIVE,
-            verified: true,
-        }),
-        user_model_1.User.countDocuments({
-            role: user_1.USER_ROLES.DRIVER,
-            status: user_1.STATUS.ACTIVE,
-            verified: true,
-        }),
-    ]);
-    return { totalUsers, totalHosts };
-});
 // --- USER SERVICES ---
 const createUserToDB = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     const isExistUser = yield user_model_1.User.findOne({ email: payload.email });
@@ -249,26 +162,6 @@ const updateProfileToDB = (user, payload) => __awaiter(void 0, void 0, void 0, f
     });
     return updateDoc;
 });
-const switchProfileToDB = (userId, role) => __awaiter(void 0, void 0, void 0, function* () {
-    const user = yield user_model_1.User.findById(userId);
-    if (!user)
-        throw new ApiErrors_1.default(404, "This user is not found in the database");
-    if (![user_1.USER_ROLES.USER, user_1.USER_ROLES.DRIVER].includes(role))
-        throw new ApiErrors_1.default(400, "Role is must be either 'USER' or 'DRIVER'");
-    const updatedUser = yield user_model_1.User.findByIdAndUpdate(userId, { role }, { new: true });
-    if (!updatedUser)
-        throw new ApiErrors_1.default(400, "Failed to update role");
-    const createToken = jwtHelper_1.jwtHelper.createToken({
-        id: updatedUser._id,
-        email: updatedUser.email,
-        role: updatedUser.role,
-    }, config_1.default.jwt.jwt_secret, config_1.default.jwt.jwt_expire_in);
-    const result = {
-        token: createToken,
-        user: updatedUser,
-    };
-    return result;
-});
 const getUserByIdFromDB = (id) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield user_model_1.User.findOne({
         _id: id,
@@ -327,20 +220,35 @@ const deleteProfileFromDB = (id, password) => __awaiter(void 0, void 0, void 0, 
     }
     return result;
 });
+const createHostToDB = (payload) => __awaiter(void 0, void 0, void 0, function* () {
+    return {};
+});
+const ghostLoginAsHost = (user, hostId) => __awaiter(void 0, void 0, void 0, function* () {
+    return {};
+});
+const deleteHostByIdFromD = (id) => __awaiter(void 0, void 0, void 0, function* () {
+    return {};
+});
+const getTotalUsersAndHostsFromDB = () => __awaiter(void 0, void 0, void 0, function* () {
+    return {};
+});
+const switchProfileToDB = (userId, role) => __awaiter(void 0, void 0, void 0, function* () {
+    return {};
+});
 exports.UserService = {
     createUserToDB,
     getAdminFromDB,
     deleteAdminFromDB,
     getUserByIdFromDB,
     updateProfileToDB,
-    createHostToDB,
-    ghostLoginAsHost,
-    deleteHostByIdFromD,
-    getTotalUsersAndHostsFromDB,
     createAdminToDB,
-    switchProfileToDB,
     updateUserStatusByIdToDB,
     updateAdminStatusByIdToDB,
     deleteUserByIdFromD,
     deleteProfileFromDB,
+    createHostToDB,
+    ghostLoginAsHost,
+    deleteHostByIdFromD,
+    getTotalUsersAndHostsFromDB,
+    switchProfileToDB,
 };

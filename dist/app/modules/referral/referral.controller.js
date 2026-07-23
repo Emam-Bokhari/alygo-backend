@@ -105,49 +105,6 @@ const verifyCode = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, voi
         data: result,
     });
 }));
-// --- BACKWARD COMPATIBLE WRAPPERS ---
-const getUserInfo = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const userId = req.user.id;
-    const result = yield referral_service_1.ReferralService.getUserReferralDashboard(userId);
-    (0, sendResponse_1.default)(res, {
-        statusCode: http_status_codes_1.StatusCodes.OK,
-        success: true,
-        message: "User referral information retrieved successfully",
-        data: result,
-    });
-}));
-const getDriverInfo = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const userId = req.user.id;
-    const result = yield referral_service_1.ReferralService.getDriverReferralDashboard(userId);
-    (0, sendResponse_1.default)(res, {
-        statusCode: http_status_codes_1.StatusCodes.OK,
-        success: true,
-        message: "Driver referral information retrieved successfully",
-        data: result,
-    });
-}));
-const getDriverProgress = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const userId = req.user.id;
-    const result = yield referral_service_1.ReferralService.getDriverProgressList(userId, req.query);
-    (0, sendResponse_1.default)(res, {
-        statusCode: http_status_codes_1.StatusCodes.OK,
-        success: true,
-        message: "Driver referral progress retrieved successfully",
-        data: result.data,
-        meta: result.meta,
-    });
-}));
-const getDriverPayouts = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const userId = req.user.id;
-    const result = yield referral_service_1.ReferralService.getRewardPayoutHistory(userId, "driver", req.query);
-    (0, sendResponse_1.default)(res, {
-        statusCode: http_status_codes_1.StatusCodes.OK,
-        success: true,
-        message: "Driver referral payout history retrieved successfully",
-        data: result.data,
-        meta: result.meta,
-    });
-}));
 exports.ReferralController = {
     getUserDashboard,
     getReferredUsersHistory,
@@ -157,8 +114,4 @@ exports.ReferralController = {
     getDriverRewardHistory,
     getRules,
     verifyCode,
-    getUserInfo,
-    getDriverInfo,
-    getDriverProgress,
-    getDriverPayouts,
 };

@@ -83,6 +83,13 @@ const getDefaultSystemConfig = () => ({
             generalNotes: "Payouts are processed within 24 hours.",
         },
     },
+    driverRewards: {
+        enabled: true,
+        tierPromotion: true,
+        autoDowngrade: true,
+        dailyQuotaResetTime: "00:00",
+        destinationFilterRadiusDefault: 5,
+    },
 });
 const getSystemConfig = (session) => __awaiter(void 0, void 0, void 0, function* () {
     let config = yield systemConfiguration_model_1.SystemConfiguration.findOne().session(session);

@@ -11,6 +11,7 @@ import { StatusCodes } from "http-status-codes";
 import mongoose, { Types } from "mongoose";
 import { REVIEW_STATUS } from "./review.constant";
 import { RIDE_STATUS } from "../ride/ride.constant";
+import { PointsService } from "../tier/points.service";
 
 /**
  * Submit a rating & review for a completed ride.
@@ -171,6 +172,17 @@ const createReviewInDB = async (
         driver.totalRatings = totalRatings + 1;
         driver.totalReviews = (driver.totalReviews || 0) + 1;
         await driver.save({ session });
+
+        // Award points if passenger left a 5-star rating for driver
+        if (rating === 5) {
+          PointsService.awardPoints(
+            receiverId,
+            "five_star_rating",
+            "review",
+            review._id,
+            { notes: `5-Star Rating received for Ride ${rideId}`, session }
+          ).catch((err) => console.error("Error awarding rating points:", err));
+        }
       }
     }
 

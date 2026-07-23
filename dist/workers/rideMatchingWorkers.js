@@ -32,7 +32,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.reservationReminderWorker = exports.driverAvailabilityWorker = exports.radiusExpansionWorker = exports.driverVisibilityWorker = exports.rideExpirationWorker = void 0;
+exports.driverRewardsWorker = exports.reservationReminderWorker = exports.driverAvailabilityWorker = exports.radiusExpansionWorker = exports.driverVisibilityWorker = exports.rideExpirationWorker = void 0;
 const bullmq_1 = require("bullmq");
 const ride_model_1 = require("../app/modules/ride/ride.model");
 const ride_constant_1 = require("../app/modules/ride/ride.constant");
@@ -44,6 +44,10 @@ const bullmq_2 = require("../config/bullmq");
 const systemConfigHelper_1 = require("../helpers/systemConfigHelper");
 const driver_model_1 = require("../app/modules/driver/driver.model");
 const driverDutyPolicy_service_1 = require("../app/modules/driverDutyPolicy/driverDutyPolicy.service");
+const destinationFilter_service_1 = require("../app/modules/tier/destinationFilter.service");
+const points_service_1 = require("../app/modules/tier/points.service");
+const notificationsHelper_1 = require("../helpers/notificationsHelper");
+const notification_constant_1 = require("../app/modules/notification/notification.constant");
 // Import the triggerImmediateRadiusExpansion function from ride service
 // We need to dynamically import it to avoid circular dependency
 let triggerImmediateRadiusExpansion = null;
@@ -179,6 +183,7 @@ const radiusExpansionWorker = new bullmq_1.Worker(bullmq_2.QUEUE_NAMES.RADIUS_EX
             serviceCategoryId,
             excludeDriverIds: ride.driverMatching.notifiedDrivers.map((d) => d.driverId.toString()),
             rideServiceAreaId: (_a = ride.serviceAreaId) === null || _a === void 0 ? void 0 : _a.toString(),
+            rideDestination: ride.destination.location,
         });
         if (newDrivers.length === 0) {
             logger_1.logger.info(`No new drivers found in expanded radius ${newRadius}km for ride ${rideId}`);
@@ -307,6 +312,32 @@ const reservationReminderWorker = new bullmq_1.Worker(bullmq_2.QUEUE_NAMES.RESER
     concurrency: 2,
 });
 exports.reservationReminderWorker = reservationReminderWorker;
+const driverRewardsWorker = new bullmq_1.Worker(bullmq_2.QUEUE_NAMES.DRIVER_REWARDS_CHECK, (job) => __awaiter(void 0, void 0, void 0, function* () {
+    // 1. Run filter expiration check
+    yield destinationFilter_service_1.DestinationFilterService.expireFilters();
+    // 2. Run daily downgrade checks & quota resets at midnight (00:00)
+    const now = new Date();
+    if (now.getHours() === 0 && now.getMinutes() === 0) {
+        yield points_service_1.PointsService.processScheduledDowngrades();
+        // Send daily reset push notification to all online drivers
+        const onlineDrivers = yield driver_model_1.Driver.find({
+            driverAvailabilityStatus: "online",
+        });
+        for (const d of onlineDrivers) {
+            (0, notificationsHelper_1.sendNotifications)({
+                receiver: d.userId,
+                title: "Daily Quota Reset 🔄",
+                text: "Your daily destination filter quota and limits have been reset.",
+                type: notification_constant_1.NOTIFICATION_TYPE.DRIVER,
+            }).catch((err) => logger_1.logger.error("Daily Reset Notification error:", err.message));
+        }
+        logger_1.logger.info("Sent daily quota reset notifications to online drivers.");
+    }
+}), {
+    connection: bullmq_2.connectionOptions,
+    concurrency: 1,
+});
+exports.driverRewardsWorker = driverRewardsWorker;
 // Error handlers
 rideExpirationWorker.on("error", (err) => {
     logger_1.logger.error("Ride expiration worker error:", err);
@@ -323,6 +354,9 @@ driverAvailabilityWorker.on("error", (err) => {
 reservationReminderWorker.on("error", (err) => {
     logger_1.logger.error("Reservation reminder worker error:", err);
 });
+driverRewardsWorker.on("error", (err) => {
+    logger_1.logger.error("Driver rewards worker error:", err);
+});
 // Graceful shutdown
 const gracefulShutdown = () => __awaiter(void 0, void 0, void 0, function* () {
     logger_1.logger.info("Closing BullMQ workers...");
@@ -332,6 +366,7 @@ const gracefulShutdown = () => __awaiter(void 0, void 0, void 0, function* () {
         radiusExpansionWorker.close(),
         driverAvailabilityWorker.close(),
         reservationReminderWorker.close(),
+        driverRewardsWorker.close(),
     ]);
     logger_1.logger.info("BullMQ workers closed");
 });

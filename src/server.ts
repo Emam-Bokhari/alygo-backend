@@ -10,7 +10,9 @@ import "./workers/rideMatchingWorkers";
 import {
   driverAvailabilityCheckQueue,
   reservationReminderQueue,
+  driverRewardsQueue,
 } from "./config/bullmq";
+import { PointsService } from "./app/modules/tier/points.service";
 
 //uncaught exception
 process.on("uncaughtException", (error) => {
@@ -52,6 +54,9 @@ async function main() {
     //@ts-ignore
     global.io = io;
 
+    // Seed default point rules
+    await PointsService.seedDefaultPointRules();
+
     // Schedule recurring driver availability check job (every minute)
     await driverAvailabilityCheckQueue.add(
       "driver-availability-check",
@@ -82,6 +87,21 @@ async function main() {
     );
     logger.info(
       colors.green("✅ Reservation reminder job scheduled (every 1 minute)"),
+    );
+
+    // Schedule recurring driver rewards check job (every minute)
+    await driverRewardsQueue.add(
+      "driver-rewards-check",
+      {},
+      {
+        repeat: {
+          every: 60000,
+        },
+        jobId: "recurring-driver-rewards-check",
+      },
+    );
+    logger.info(
+      colors.green("✅ Driver rewards background job scheduled (every 1 minute)"),
     );
   } catch (error) {
     errorLogger.error(colors.red("🤢 Failed to connect Database"));

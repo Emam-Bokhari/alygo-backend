@@ -291,6 +291,33 @@ const referralConfigSchema = new mongoose_1.Schema({
         required: true,
     },
 }, { _id: false });
+const driverRewardsConfigSchema = new mongoose_1.Schema({
+    enabled: {
+        type: Boolean,
+        required: true,
+        default: true,
+    },
+    tierPromotion: {
+        type: Boolean,
+        required: true,
+        default: true,
+    },
+    autoDowngrade: {
+        type: Boolean,
+        required: true,
+        default: true,
+    },
+    dailyQuotaResetTime: {
+        type: String,
+        required: true,
+        default: "00:00",
+    },
+    destinationFilterRadiusDefault: {
+        type: Number,
+        required: true,
+        default: 5,
+    },
+}, { _id: false });
 const systemConfigurationSchema = new mongoose_1.Schema({
     driverMatching: {
         type: driverMatchingSchema,
@@ -310,6 +337,10 @@ const systemConfigurationSchema = new mongoose_1.Schema({
     },
     referral: {
         type: referralConfigSchema,
+        required: false,
+    },
+    driverRewards: {
+        type: driverRewardsConfigSchema,
         required: false,
     },
 }, {

@@ -41,6 +41,8 @@ import {
   DriverWalletRoutes,
 } from "../modules/wallet/wallet.route";
 import { PayoutRoutes } from "../modules/payout/payout.route";
+import { DriverRewardsRoutes } from "../modules/tier/driverRewards.route";
+import { AdminRewardsRoutes } from "../modules/tier/adminRewards.route";
 import { PendingPaymentRoutes } from "../modules/pendingPayment/pendingPayment.route";
 import { SystemConfigurationRoutes } from "../modules/systemConfiguration/systemConfiguration.route";
 import { TripReportRoutes } from "../modules/tripReport/tripReport.route";
@@ -203,6 +205,14 @@ const apiRoutes = [
   {
     path: "/driver/wallet",
     route: DriverWalletRoutes,
+  },
+  {
+    path: "/driver",
+    route: DriverRewardsRoutes,
+  },
+  {
+    path: "/rewards",
+    route: AdminRewardsRoutes,
   },
   {
     path: "/payout",

@@ -66,6 +66,10 @@ import {
   utcToTimezone,
   getRideScheduleInfo,
 } from "../../../shared/timezoneHelper";
+import { PointsService } from "../tier/points.service";
+import { PeakHour } from "../peakHour/peakHour.model";
+import { isPeakHour } from "../surgeRule/surgeCalculation.service";
+import { Tier } from "../tier/tier.model";
 
 /**
  * Perform fare calculation based on distance, duration, and pricing configuration rules.
@@ -633,6 +637,7 @@ const requestRide = async (
     rideCategoryId: payload.rideCategoryId,
     serviceCategoryId: payload.serviceCategoryId,
     rideServiceAreaId: routeEstimation.serviceArea?._id?.toString(),
+    rideDestination: payload.destination.location,
   });
 
   const selectedDrivers = eligibleDrivers.slice(0, 10); // Limit to nearest 10 drivers
@@ -903,16 +908,39 @@ const acceptRide = async (
     throw new ApiError(400, "You must be online to accept rides.");
   }
 
+  const rideToAccept = await Ride.findById(rideId);
+  if (!rideToAccept) {
+    throw new ApiError(404, "Ride request not found");
+  }
+
+  // Verify reservation access if ride is scheduled
+  if (rideToAccept.rideType === RIDE_TYPE.SCHEDULED) {
+    const activeTier = await Tier.findById(driverDoc.currentTier);
+    if (!activeTier || !activeTier.benefits?.reservationAccess?.enabled) {
+      throw new ApiError(
+        403,
+        "Your current tier does not support accepting scheduled reservations.",
+      );
+    }
+    const maxAdvanceHours =
+      activeTier.benefits.reservationAccess.maxAdvanceHours || 0;
+    if (maxAdvanceHours > 0 && rideToAccept.scheduledAt) {
+      const scheduledTime = new Date(rideToAccept.scheduledAt).getTime();
+      const advanceHours = (scheduledTime - Date.now()) / (1000 * 60 * 60);
+      if (advanceHours > maxAdvanceHours) {
+        throw new ApiError(
+          403,
+          `Your tier only supports reservation bookings up to ${maxAdvanceHours} hours in advance.`,
+        );
+      }
+    }
+  }
+
   // Extract user ObjectId from populated userId
   const userObjectId =
     typeof driverDoc.userId === "object"
       ? driverDoc.userId._id
       : driverDoc.userId;
-
-  const rideToAccept = await Ride.findById(rideId);
-  if (!rideToAccept) {
-    throw new ApiError(404, "Ride request not found");
-  }
 
   if (rideToAccept.status !== RIDE_STATUS.SEARCHING_DRIVER) {
     throw new ApiError(
@@ -1887,6 +1915,31 @@ const completeRide = async (
       logger.error("Driver referral completed ride progress error:", err);
     });
 
+    // Award Points to Driver for Ride Completion
+    PointsService.awardPoints(
+      driverUserId,
+      "ride_completed",
+      "ride",
+      ride._id,
+      { notes: `Completed Ride ${ride._id}` }
+    ).then(async () => {
+      // Award additional bonuses
+      const sa = await ServiceArea.findById(ride.serviceAreaId);
+      if (sa && sa.type === "airport") {
+        await PointsService.awardPoints(driverUserId, "airport_ride", "ride", ride._id, { notes: `Airport Ride Bonus for Ride ${ride._id}` });
+      }
+      if (ride.rideType === RIDE_TYPE.SCHEDULED) {
+        await PointsService.awardPoints(driverUserId, "scheduled_ride", "ride", ride._id, { notes: `Scheduled Ride Bonus for Ride ${ride._id}` });
+      }
+      const activePeakHours = await PeakHour.find({ status: STATUS.ACTIVE });
+      const isPeak = await isPeakHour(ride.completedAt || new Date(), activePeakHours);
+      if (isPeak) {
+        await PointsService.awardPoints(driverUserId, "peak_hour_ride", "ride", ride._id, { notes: `Peak Hour Ride Bonus for Ride ${ride._id}` });
+      }
+    }).catch((err) => {
+      logger.error("Error awarding ride completion points:", err);
+    });
+
     ReferralService.checkAndProcessPassengerReferral(
       ride.userId.toString(),
     ).catch((err) => {
@@ -2115,18 +2168,29 @@ const completeRidePayment = async (
         ride.driverId,
         session,
       );
-      const driverEarning = ride.fare.driverEarning;
-      const commission = ride.fare.commission;
-
-      driverWallet.balance = parseFloat(
-        (driverWallet.balance + driverEarning).toFixed(2),
-      );
-      await driverWallet.save({ session });
 
       // Fetch driver profile ID
       const driverProfile = await Driver.findOne({
         userId: ride.driverId,
       }).session(session);
+
+      let driverEarning = ride.fare.driverEarning;
+      const commission = ride.fare.commission;
+
+      // Apply tier bonus multiplier to driver earnings if enabled
+      let multiplier = 1.0;
+      if (driverProfile && driverProfile.currentTier) {
+        const activeTier = await Tier.findById(driverProfile.currentTier);
+        if (activeTier && activeTier.benefits?.bonusMultiplier?.enabled) {
+          multiplier = activeTier.benefits.bonusMultiplier.multiplierValue || 1.0;
+          driverEarning = parseFloat((driverEarning * multiplier).toFixed(2));
+        }
+      }
+
+      driverWallet.balance = parseFloat(
+        (driverWallet.balance + driverEarning).toFixed(2),
+      );
+      await driverWallet.save({ session });
 
       // Create Driver Earnings Credit Transaction record
       await Transaction.create(
@@ -2145,7 +2209,7 @@ const completeRidePayment = async (
             paymentMethod,
             paymentStatus: PAYMENT_STATUS.PAID,
             transactionType: TRANSACTION_TYPE.BOOKING_PAYMENT,
-            description: `Driver earnings of ${driverEarning} credited (Total fare: ${ride.fare.total}, Commission: ${commission}) for Ride: ${ride._id}.`,
+            description: `Driver earnings of ${driverEarning} credited (Total fare: ${ride.fare.total}, Commission: ${commission}${multiplier > 1.0 ? `, Tier Multiplier: ${multiplier}x` : ""}) for Ride: ${ride._id}.`,
           },
         ],
         { session },
@@ -2832,6 +2896,15 @@ const cancelRide = async (
       await session.commitTransaction();
       session.endSession();
 
+      // Deduct points for accepted ride cancellation
+      PointsService.deductPoints(
+        cancellingDriverUserId,
+        "accepted_ride_cancelled",
+        "ride",
+        ride._id,
+        { notes: `Cancelled Accepted Ride ${ride._id}` }
+      ).catch((err) => logger.error("Error deducting points for cancellation:", err));
+
       // 3. Resume Driver Matching automatically
       // Original timer calculation
       const systemConfig = await getSystemConfig();
@@ -2890,6 +2963,7 @@ const cancelRide = async (
             d.driverId.toString(),
           ),
           rideServiceAreaId: ride.serviceAreaId?.toString(),
+          rideDestination: ride.destination.location,
         });
 
         const newDrivers = eligibleDrivers.slice(0, 10);

@@ -49,6 +49,7 @@ export interface ITierBenefits {
 }
 
 export interface ITierRequirements {
+  pointsRequired: number;
   tripsRequired: number;
   ratingRequired: number;
   acceptanceRateRequired: number; // e.g. 80 for 80%

@@ -7,6 +7,7 @@ export type TSupport = {
   email: string;
   subject: string;
   message: string;
+  priority?: "low" | "medium" | "high" | "urgent";
 };
 
 export type SupportModel = ISoftDeleteModel<TSupport>;
