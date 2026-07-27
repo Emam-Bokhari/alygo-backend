@@ -15,8 +15,6 @@
 
 <!-- ========================================================================= -->
 
-<!-- ======================================================= -->
-
 <!--
 1. FRIDAY: aro kiso pbl ase ta chatgpt te pin kora ase shaigula o resolve korte hobe
 2. rider ar khetre cancellation ar jonno rider k pay korte hobe na, borong amra porobortite tier create korbo, shaikhne rider ar jnno point add abong point kata jabe, tu rider cancel korle rider ar point kata jabe r  cancellation ar jonno pay korbe kebol user e, tu aita porobortite thik kore nite hobe
@@ -65,7 +63,7 @@
     projonio jaigai timezone gula dropdown akare show korte hobe, jeno easly select korte pare
  
   -->
-
+    
   <!-- 
 Documents Extract
 
