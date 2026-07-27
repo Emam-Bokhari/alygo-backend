@@ -338,7 +338,7 @@ const aiSupportConfigSchema = new mongoose_1.Schema({
     model: {
         type: String,
         required: true,
-        default: "gemini-1.5-flash",
+        default: "gemini-2.5-flash",
     },
     temperature: {
         type: Number,

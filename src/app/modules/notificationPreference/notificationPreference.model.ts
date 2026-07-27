@@ -25,10 +25,10 @@ const notificationPreferenceSchema = new Schema<
       type: Boolean,
       default: true,
     },
-    sms: {
-      type: Boolean,
-      default: true,
-    },
+    // sms: {
+    //   type: Boolean,
+    //   default: true,
+    // },
     newRideRequests: {
       type: Boolean,
       default: true,

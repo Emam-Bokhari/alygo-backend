@@ -109,7 +109,7 @@ const getSystemConfig = () => __awaiter(void 0, void 0, void 0, function* () {
                 aiSupport: {
                     enabled: (_195 = (_194 = dbConfig.aiSupport) === null || _194 === void 0 ? void 0 : _194.enabled) !== null && _195 !== void 0 ? _195 : true,
                     provider: (_197 = (_196 = dbConfig.aiSupport) === null || _196 === void 0 ? void 0 : _196.provider) !== null && _197 !== void 0 ? _197 : "google",
-                    model: (_199 = (_198 = dbConfig.aiSupport) === null || _198 === void 0 ? void 0 : _198.model) !== null && _199 !== void 0 ? _199 : "gemini-1.5-flash",
+                    model: (_199 = (_198 = dbConfig.aiSupport) === null || _198 === void 0 ? void 0 : _198.model) !== null && _199 !== void 0 ? _199 : "gemini-2.5-flash",
                     temperature: (_201 = (_200 = dbConfig.aiSupport) === null || _200 === void 0 ? void 0 : _200.temperature) !== null && _201 !== void 0 ? _201 : 0.2,
                     maxTokens: (_203 = (_202 = dbConfig.aiSupport) === null || _202 === void 0 ? void 0 : _202.maxTokens) !== null && _203 !== void 0 ? _203 : 800,
                     historyLength: (_205 = (_204 = dbConfig.aiSupport) === null || _204 === void 0 ? void 0 : _204.historyLength) !== null && _205 !== void 0 ? _205 : 5,
@@ -173,7 +173,7 @@ const getSystemConfig = () => __awaiter(void 0, void 0, void 0, function* () {
         aiSupport: {
             enabled: true,
             provider: "google",
-            model: "gemini-1.5-flash",
+            model: "gemini-2.5-flash",
             temperature: 0.2,
             maxTokens: 800,
             historyLength: 5,

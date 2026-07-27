@@ -22,8 +22,6 @@ import { ReferralService } from "../referral/referral.service";
 
 // --- ADMIN SERVICES ---
 const createAdminToDB = async (payload: any): Promise<IUser> => {
-  delete payload.phone;
-
   const isExistAdmin = await User.findOne({ email: payload.email });
   if (isExistAdmin) {
     throw new ApiError(StatusCodes.CONFLICT, "This Email already taken");

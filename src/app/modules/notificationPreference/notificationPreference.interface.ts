@@ -7,7 +7,7 @@ export interface INotificationPreference {
   // Channel preferences
   email: boolean;
   push: boolean;
-  sms: boolean;
+  // sms: boolean;
 
   // Ride-sharing event preferences
   newRideRequests: boolean; // For drivers

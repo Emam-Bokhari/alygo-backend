@@ -19,10 +19,10 @@ const notificationPreferenceSchema = new mongoose_1.Schema({
         type: Boolean,
         default: true,
     },
-    sms: {
-        type: Boolean,
-        default: true,
-    },
+    // sms: {
+    //   type: Boolean,
+    //   default: true,
+    // },
     newRideRequests: {
         type: Boolean,
         default: true,

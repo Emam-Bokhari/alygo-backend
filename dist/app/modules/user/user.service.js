@@ -41,7 +41,6 @@ const notification_constant_1 = require("../notification/notification.constant")
 const referral_service_1 = require("../referral/referral.service");
 // --- ADMIN SERVICES ---
 const createAdminToDB = (payload) => __awaiter(void 0, void 0, void 0, function* () {
-    delete payload.phone;
     const isExistAdmin = yield user_model_1.User.findOne({ email: payload.email });
     if (isExistAdmin) {
         throw new ApiErrors_1.default(http_status_codes_1.StatusCodes.CONFLICT, "This Email already taken");

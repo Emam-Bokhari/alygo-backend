@@ -105,18 +105,18 @@ const serviceAreaSchema = new mongoose_1.Schema({
         },
     },
 });
-// Useful indexes
-serviceAreaSchema.index({
-    country: 1,
-    state: 1,
-    city: 1,
-    zone: 1,
-    airport: 1,
-});
-serviceAreaSchema.index({
-    type: 1,
-    status: 1,
-});
+// // Useful indexes
+// serviceAreaSchema.index({
+//   country: 1,
+//   state: 1,
+//   city: 1,
+//   zone: 1,
+//   airport: 1,
+// });
+// serviceAreaSchema.index({
+//   type: 1,
+//   status: 1,
+// });
 // 2dsphere index for geospatial queries on location
 serviceAreaSchema.index({ location: "2dsphere" });
 serviceAreaSchema.plugin(softDeletePlugin_1.softDeletePlugin);

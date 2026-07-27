@@ -26,7 +26,6 @@ import { GoogleRouteService } from "../../../services/googleRouteService";
 import { sendNotifications } from "../../../helpers/notificationsHelper";
 import { NOTIFICATION_TYPE } from "../notification/notification.constant";
 import { TRANSACTION_TYPE } from "../transaction/transaction.constant";
-import { CancellationPolicy } from "../cancellationPolicy/cancellationPolicy.model";
 import { CancellationReason } from "../cancellationReason/cancellationReason.model";
 import {
   CancellationPolicyService,
@@ -172,7 +171,7 @@ const calculateFare = async (
   const commission = surgedSubtotal * (rideCategory.commissionRate / 100);
   const driverEarning = surgedSubtotal - commission;
   const total = surgedSubtotal; // can apply discount/tax adjustments in future
-
+  
   return {
     baseFare: parseFloat((baseFare * multiplier).toFixed(2)),
     distanceFare: parseFloat((distanceFare * multiplier).toFixed(2)),
@@ -1983,6 +1982,7 @@ const completeRide = async (
         logger.error("Error awarding ride completion points:", err);
       });
 
+  
     ReferralService.checkAndProcessPassengerReferral(
       ride.userId.toString(),
     ).catch((err) => {

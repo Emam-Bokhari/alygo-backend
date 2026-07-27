@@ -94,7 +94,7 @@ const getDefaultSystemConfig = () => ({
     aiSupport: {
         enabled: true,
         provider: "google",
-        model: "gemini-1.5-flash",
+        model: "gemini-2.5-flash",
         temperature: 0.2,
         maxTokens: 800,
         historyLength: 5,
@@ -133,20 +133,43 @@ const getDefaultSystemConfig = () => ({
         },
     },
 });
+let activeCreationPromise = null;
 const getSystemConfig = (session) => __awaiter(void 0, void 0, void 0, function* () {
-    let config = yield systemConfiguration_model_1.SystemConfiguration.findOne().session(session);
-    if (!config) {
-        const [newConfig] = yield systemConfiguration_model_1.SystemConfiguration.create([getDefaultSystemConfig()], { session });
-        config = newConfig;
+    const configs = yield systemConfiguration_model_1.SystemConfiguration.find().session(session);
+    if (configs.length === 0) {
+        if (activeCreationPromise) {
+            return activeCreationPromise;
+        }
+        activeCreationPromise = (() => __awaiter(void 0, void 0, void 0, function* () {
+            const innerConfigs = yield systemConfiguration_model_1.SystemConfiguration.find().session(session);
+            if (innerConfigs.length > 0) {
+                activeCreationPromise = null;
+                return innerConfigs[0];
+            }
+            const [newConfig] = yield systemConfiguration_model_1.SystemConfiguration.create([getDefaultSystemConfig()], { session });
+            activeCreationPromise = null;
+            return newConfig;
+        }))();
+        return yield activeCreationPromise;
     }
-    return config;
+    // Self-healing: if there are duplicate configuration documents, delete the extra ones
+    if (configs.length > 1) {
+        const idsToDelete = configs.slice(1).map((c) => c._id);
+        yield systemConfiguration_model_1.SystemConfiguration.deleteMany({ _id: { $in: idsToDelete } }).session(session);
+    }
+    return configs[0];
 });
 const getSystemConfigurationFromDB = () => __awaiter(void 0, void 0, void 0, function* () {
     return yield getSystemConfig();
 });
 const createOrUpdateSystemConfigurationToDB = (payload) => __awaiter(void 0, void 0, void 0, function* () {
-    const existingConfig = yield systemConfiguration_model_1.SystemConfiguration.findOne();
-    if (existingConfig) {
+    const configs = yield systemConfiguration_model_1.SystemConfiguration.find();
+    if (configs.length > 0) {
+        // Self-healing: clean up duplicate configurations if any exist
+        if (configs.length > 1) {
+            const idsToDelete = configs.slice(1).map((c) => c._id);
+            yield systemConfiguration_model_1.SystemConfiguration.deleteMany({ _id: { $in: idsToDelete } });
+        }
         const updated = yield systemConfiguration_model_1.SystemConfiguration.findOneAndUpdate({}, payload, {
             new: true,
             runValidators: true,
