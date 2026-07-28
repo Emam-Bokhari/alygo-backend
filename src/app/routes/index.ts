@@ -47,6 +47,7 @@ import { PendingPaymentRoutes } from "../modules/pendingPayment/pendingPayment.r
 import { SystemConfigurationRoutes } from "../modules/systemConfiguration/systemConfiguration.route";
 import { TripReportRoutes } from "../modules/tripReport/tripReport.route";
 import { AdminAiSupportRoutes, DriverAiSupportRoutes } from "../modules/aiSupport/aiSupport.route";
+import { DashboardRoutes } from "../modules/dashboard/dashboard.route";
 
 const router = express.Router();
 
@@ -238,6 +239,10 @@ const apiRoutes = [
   {
     path: "/driver/ai-support",
     route: DriverAiSupportRoutes,
+  },
+  {
+    path: "/admin/dashboard",
+    route: DashboardRoutes,
   },
 ];
 

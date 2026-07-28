@@ -66,6 +66,7 @@ const deductBalance = async (
   amount: number,
   description: string,
   session?: ClientSession,
+  rideId?: string | Types.ObjectId,
 ): Promise<void> => {
   const wallet = await getOrCreateWallet(userId, session);
 
@@ -87,6 +88,7 @@ const deductBalance = async (
       paymentStatus: PAYMENT_STATUS.PAID,
       transactionType: TRANSACTION_TYPE.CANCELLATION_FEE,
       description,
+      rideId: rideId ? new Types.ObjectId(rideId) : undefined,
     },
     session,
   );
@@ -101,6 +103,7 @@ const addBalance = async (
   description: string,
   session?: ClientSession,
   transactionType?: TRANSACTION_TYPE,
+  rideId?: string | Types.ObjectId,
 ): Promise<void> => {
   const wallet = await getOrCreateWallet(userId, session);
 
@@ -119,6 +122,7 @@ const addBalance = async (
       transactionType:
         transactionType || TRANSACTION_TYPE.CANCELLATION_COMPENSATION,
       description,
+      rideId: rideId ? new Types.ObjectId(rideId) : undefined,
     },
     session,
   );

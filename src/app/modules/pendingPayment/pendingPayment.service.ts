@@ -226,6 +226,8 @@ const processCancellationFeePayment = async (
         driverCompensation,
         `Cancellation compensation for ride ${pendingPayment.rideId}`,
         session,
+        undefined,
+        pendingPayment.rideId,
       );
     }
 
@@ -291,6 +293,7 @@ const payCancellationFeeWithWallet = async (
         ? `Driver appreciation tip for ride ${pendingPayment.rideId}`
         : `Cancellation fee payment for ride ${pendingPayment.rideId}`,
       session,
+      pendingPayment.rideId,
     );
 
     // Update pending payment status
@@ -328,6 +331,7 @@ const payCancellationFeeWithWallet = async (
             `Driver appreciation tip for ride ${pendingPayment.rideId}`,
             session,
             TRANSACTION_TYPE.DRIVER_APPRECIATION,
+            pendingPayment.rideId,
           );
 
           // Update driver stats incrementally
@@ -360,6 +364,8 @@ const payCancellationFeeWithWallet = async (
           walletDriverCompensation,
           `Cancellation compensation for ride ${pendingPayment.rideId}`,
           session,
+          undefined,
+          pendingPayment.rideId,
         );
       }
 
@@ -449,6 +455,7 @@ const processDriverAppreciationPayment = async (
           `Driver appreciation tip for ride ${pendingPayment.rideId}`,
           session,
           TRANSACTION_TYPE.DRIVER_APPRECIATION,
+          pendingPayment.rideId,
         );
 
         // Update driver stats incrementally

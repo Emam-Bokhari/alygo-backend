@@ -49,6 +49,7 @@ const pendingPayment_route_1 = require("../modules/pendingPayment/pendingPayment
 const systemConfiguration_route_1 = require("../modules/systemConfiguration/systemConfiguration.route");
 const tripReport_route_1 = require("../modules/tripReport/tripReport.route");
 const aiSupport_route_1 = require("../modules/aiSupport/aiSupport.route");
+const dashboard_route_1 = require("../modules/dashboard/dashboard.route");
 const router = express_1.default.Router();
 const apiRoutes = [
     {
@@ -238,6 +239,10 @@ const apiRoutes = [
     {
         path: "/driver/ai-support",
         route: aiSupport_route_1.DriverAiSupportRoutes,
+    },
+    {
+        path: "/admin/dashboard",
+        route: dashboard_route_1.DashboardRoutes,
     },
 ];
 apiRoutes.forEach((route) => router.use(route.path, route.route));
