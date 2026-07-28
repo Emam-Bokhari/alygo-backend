@@ -78,7 +78,7 @@ const getPolicyConfig = (session) => __awaiter(void 0, void 0, void 0, function*
     }
     return policy;
 });
-const createCancellationPolicyToDB = (payload) => __awaiter(void 0, void 0, void 0, function* () {
+const createOrUpdateCancellationPolicyToDB = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     const policy = yield cancellationPolicy_model_1.CancellationPolicy.findOne();
     if (policy) {
         const updated = yield cancellationPolicy_model_1.CancellationPolicy.findByIdAndUpdate(policy._id, payload, { new: true });
@@ -93,93 +93,11 @@ const createCancellationPolicyToDB = (payload) => __awaiter(void 0, void 0, void
     }
     return createCancellationPolicy;
 });
-const getCancellationPolicyFromDB = (_cancellationPolicyId) => __awaiter(void 0, void 0, void 0, function* () {
+const getActiveCancellationPolicyFromDB = () => __awaiter(void 0, void 0, void 0, function* () {
     return yield getPolicyConfig();
-});
-const getAllCancellationPolicyFromDB = (...args_1) => __awaiter(void 0, [...args_1], void 0, function* (_query = {}) {
-    const policy = yield getPolicyConfig();
-    const result = policy ? [policy] : [];
-    return {
-        meta: {
-            page: 1,
-            limit: 10,
-            total: result.length,
-            totalPage: 1,
-        },
-        result,
-    };
-});
-const getActiveCancellationPoliciesFromDB = (...args_1) => __awaiter(void 0, [...args_1], void 0, function* (_query = {}) {
-    const policy = yield getPolicyConfig();
-    const result = policy ? [policy] : [];
-    return {
-        meta: {
-            page: 1,
-            limit: 10,
-            total: result.length,
-            totalPage: 1,
-        },
-        result,
-    };
-});
-const getCancellationPolicyByActorAndTriggerFromDB = (actorType, triggerType) => __awaiter(void 0, void 0, void 0, function* () {
-    const policy = yield getPolicyConfig();
-    if (!policy)
-        return null;
-    let scenario;
-    const normalizedActor = actorType.toLowerCase();
-    if (normalizedActor === "user" || normalizedActor === "passenger") {
-        scenario = policy.passenger[triggerType];
-    }
-    else if (normalizedActor === "driver") {
-        scenario = policy.driver[triggerType];
-    }
-    if (!scenario)
-        return null;
-    const actorKey = normalizedActor === "user" ? "passenger" : normalizedActor;
-    const internalKey = `${actorKey}.${triggerType}`;
-    const mapped = exports.CANCEL_SCENARIO_MAPPING[internalKey] || {
-        scenario: internalKey.replace(".", "_"),
-        policyName: triggerType.replace(/([A-Z])/g, " $1").trim(),
-    };
-    return {
-        _id: policy._id,
-        policyName: mapped.policyName,
-        scenario: mapped.scenario,
-        actorType,
-        triggerType,
-        cancellationFee: scenario.cancellationFee,
-        otherPartyCompensation: scenario.driverCompensation || 0,
-        platformShare: scenario.platformShare,
-        status: "ACTIVE",
-        createdAt: policy.createdAt,
-        updatedAt: policy.updatedAt,
-    };
-});
-const updateCancellationPolicyToDB = (_cancellationPolicyId, payload) => __awaiter(void 0, void 0, void 0, function* () {
-    const policy = yield getPolicyConfig();
-    const updated = yield cancellationPolicy_model_1.CancellationPolicy.findByIdAndUpdate(policy._id, payload, { new: true });
-    if (!updated) {
-        throw new ApiErrors_1.default(http_status_codes_1.StatusCodes.NOT_FOUND, "Cancellation policy not found");
-    }
-    return updated;
-});
-const updateCancellationPolicyStatusToDB = (_cancellationPolicyId, _status) => __awaiter(void 0, void 0, void 0, function* () {
-    return yield getPolicyConfig();
-});
-const deleteCancellationPolicyToDB = (_cancellationPolicyId) => __awaiter(void 0, void 0, void 0, function* () {
-    const policy = yield getPolicyConfig();
-    const result = yield cancellationPolicy_model_1.CancellationPolicy.softDeleteById(policy._id.toString());
-    return result;
 });
 exports.CancellationPolicyService = {
     getPolicyConfig,
-    createCancellationPolicyToDB,
-    getCancellationPolicyFromDB,
-    getAllCancellationPolicyFromDB,
-    getActiveCancellationPoliciesFromDB,
-    getCancellationPolicyByActorAndTriggerFromDB,
-    updateCancellationPolicyToDB,
-    deleteCancellationPolicyToDB,
-    updateCancellationPolicyStatusToDB,
+    createOrUpdateCancellationPolicyToDB,
+    getActiveCancellationPolicyFromDB,
 };

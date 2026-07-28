@@ -50,6 +50,8 @@ const systemConfiguration_route_1 = require("../modules/systemConfiguration/syst
 const tripReport_route_1 = require("../modules/tripReport/tripReport.route");
 const aiSupport_route_1 = require("../modules/aiSupport/aiSupport.route");
 const dashboard_route_1 = require("../modules/dashboard/dashboard.route");
+const cancellationAnalytics_route_1 = require("../modules/cancellationAnalytics/cancellationAnalytics.route");
+const liveTrips_route_1 = require("../modules/liveTrips/liveTrips.route");
 const router = express_1.default.Router();
 const apiRoutes = [
     {
@@ -243,6 +245,14 @@ const apiRoutes = [
     {
         path: "/admin/dashboard",
         route: dashboard_route_1.DashboardRoutes,
+    },
+    {
+        path: "/admin/analytics",
+        route: cancellationAnalytics_route_1.CancellationAnalyticsRoutes,
+    },
+    {
+        path: "/live-trips",
+        route: liveTrips_route_1.LiveTripsRoutes,
     },
 ];
 apiRoutes.forEach((route) => router.use(route.path, route.route));

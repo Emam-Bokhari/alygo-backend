@@ -48,6 +48,8 @@ import { SystemConfigurationRoutes } from "../modules/systemConfiguration/system
 import { TripReportRoutes } from "../modules/tripReport/tripReport.route";
 import { AdminAiSupportRoutes, DriverAiSupportRoutes } from "../modules/aiSupport/aiSupport.route";
 import { DashboardRoutes } from "../modules/dashboard/dashboard.route";
+import { CancellationAnalyticsRoutes } from "../modules/cancellationAnalytics/cancellationAnalytics.route";
+import { LiveTripsRoutes } from "../modules/liveTrips/liveTrips.route";
 
 const router = express.Router();
 
@@ -243,6 +245,14 @@ const apiRoutes = [
   {
     path: "/admin/dashboard",
     route: DashboardRoutes,
+  },
+  {
+    path: "/admin/analytics",
+    route: CancellationAnalyticsRoutes,
+  },
+  {
+    path: "/live-trips",
+    route: LiveTripsRoutes,
   },
 ];
 

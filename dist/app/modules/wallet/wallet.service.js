@@ -57,7 +57,7 @@ const getWalletHistory = (userId_1, role_1, ...args_1) => __awaiter(void 0, [use
 /**
  * Deduct balance from wallet
  */
-const deductBalance = (userId, amount, description, session) => __awaiter(void 0, void 0, void 0, function* () {
+const deductBalance = (userId, amount, description, session, rideId) => __awaiter(void 0, void 0, void 0, function* () {
     const wallet = yield getOrCreateWallet(userId, session);
     if (wallet.balance < amount) {
         throw new ApiErrors_1.default(400, "Insufficient wallet balance");
@@ -74,12 +74,13 @@ const deductBalance = (userId, amount, description, session) => __awaiter(void 0
         paymentStatus: ride_constant_1.PAYMENT_STATUS.PAID,
         transactionType: transaction_constant_1.TRANSACTION_TYPE.CANCELLATION_FEE,
         description,
+        rideId: rideId ? new mongoose_1.Types.ObjectId(rideId) : undefined,
     }, session);
 });
 /**
  * Add balance to wallet (for driver compensation, etc.)
  */
-const addBalance = (userId, amount, description, session, transactionType) => __awaiter(void 0, void 0, void 0, function* () {
+const addBalance = (userId, amount, description, session, transactionType, rideId) => __awaiter(void 0, void 0, void 0, function* () {
     const wallet = yield getOrCreateWallet(userId, session);
     wallet.balance += amount;
     yield wallet.save({ session });
@@ -93,6 +94,7 @@ const addBalance = (userId, amount, description, session, transactionType) => __
         paymentStatus: ride_constant_1.PAYMENT_STATUS.PAID,
         transactionType: transactionType || transaction_constant_1.TRANSACTION_TYPE.CANCELLATION_COMPENSATION,
         description,
+        rideId: rideId ? new mongoose_1.Types.ObjectId(rideId) : undefined,
     }, session);
 });
 /**

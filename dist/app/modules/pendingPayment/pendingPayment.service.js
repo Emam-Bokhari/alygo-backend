@@ -179,7 +179,7 @@ const processCancellationFeePayment = (sessionId) => __awaiter(void 0, void 0, v
             ? pendingPayment.driverCompensation
             : ((_b = ride === null || ride === void 0 ? void 0 : ride.cancellation) === null || _b === void 0 ? void 0 : _b.driverCompensation) || 0;
         if (ride && ride.driverId && driverCompensation > 0) {
-            yield wallet_service_1.WalletService.addBalance(ride.driverId.toString(), driverCompensation, `Cancellation compensation for ride ${pendingPayment.rideId}`, session);
+            yield wallet_service_1.WalletService.addBalance(ride.driverId.toString(), driverCompensation, `Cancellation compensation for ride ${pendingPayment.rideId}`, session, undefined, pendingPayment.rideId);
         }
         // Update ride cancellation payment status
         if (ride && ride.cancellation) {
@@ -226,7 +226,7 @@ const payCancellationFeeWithWallet = (userId, pendingPaymentId) => __awaiter(voi
         // Deduct from wallet
         yield wallet_service_1.WalletService.deductBalance(userId, pendingPayment.amount, isAppreciation
             ? `Driver appreciation tip for ride ${pendingPayment.rideId}`
-            : `Cancellation fee payment for ride ${pendingPayment.rideId}`, session);
+            : `Cancellation fee payment for ride ${pendingPayment.rideId}`, session, pendingPayment.rideId);
         // Update pending payment status
         pendingPayment.status = "paid";
         yield pendingPayment.save({ session });
@@ -249,7 +249,7 @@ const payCancellationFeeWithWallet = (userId, pendingPaymentId) => __awaiter(voi
             if (pendingPayment.driverId) {
                 const driver = yield driver_model_1.Driver.findById(pendingPayment.driverId).session(session);
                 if (driver) {
-                    yield wallet_service_1.WalletService.addBalance(driver.userId.toString(), pendingPayment.amount, `Driver appreciation tip for ride ${pendingPayment.rideId}`, session, transaction_constant_1.TRANSACTION_TYPE.DRIVER_APPRECIATION);
+                    yield wallet_service_1.WalletService.addBalance(driver.userId.toString(), pendingPayment.amount, `Driver appreciation tip for ride ${pendingPayment.rideId}`, session, transaction_constant_1.TRANSACTION_TYPE.DRIVER_APPRECIATION, pendingPayment.rideId);
                     // Update driver stats incrementally
                     const totalReceived = driver.totalAppreciationReceived || 0;
                     const totalAmount = driver.totalAppreciationAmount || 0;
@@ -270,7 +270,7 @@ const payCancellationFeeWithWallet = (userId, pendingPaymentId) => __awaiter(voi
                 ? pendingPayment.driverCompensation
                 : ((_a = ride === null || ride === void 0 ? void 0 : ride.cancellation) === null || _a === void 0 ? void 0 : _a.driverCompensation) || 0;
             if (ride && ride.driverId && walletDriverCompensation > 0) {
-                yield wallet_service_1.WalletService.addBalance(ride.driverId.toString(), walletDriverCompensation, `Cancellation compensation for ride ${pendingPayment.rideId}`, session);
+                yield wallet_service_1.WalletService.addBalance(ride.driverId.toString(), walletDriverCompensation, `Cancellation compensation for ride ${pendingPayment.rideId}`, session, undefined, pendingPayment.rideId);
             }
             // Update ride cancellation payment status
             if (ride && ride.cancellation) {
@@ -335,7 +335,7 @@ const processDriverAppreciationPayment = (sessionId) => __awaiter(void 0, void 0
             const driver = yield driver_model_1.Driver.findById(pendingPayment.driverId).session(session);
             if (driver) {
                 // Driver userId is the User document ID
-                yield wallet_service_1.WalletService.addBalance(driver.userId.toString(), pendingPayment.amount, `Driver appreciation tip for ride ${pendingPayment.rideId}`, session, transaction_constant_1.TRANSACTION_TYPE.DRIVER_APPRECIATION);
+                yield wallet_service_1.WalletService.addBalance(driver.userId.toString(), pendingPayment.amount, `Driver appreciation tip for ride ${pendingPayment.rideId}`, session, transaction_constant_1.TRANSACTION_TYPE.DRIVER_APPRECIATION, pendingPayment.rideId);
                 // Update driver stats incrementally
                 const totalReceived = driver.totalAppreciationReceived || 0;
                 const totalAmount = driver.totalAppreciationAmount || 0;
