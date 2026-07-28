@@ -75,7 +75,7 @@ const getPolicyConfig = async (session?: any): Promise<any> => {
   return policy;
 };
 
-const createCancellationPolicyToDB = async (
+const createOrUpdateCancellationPolicyToDB = async (
   payload: ICancellationPolicy,
 ): Promise<ICancellationPolicy> => {
   const policy = await CancellationPolicy.findOne();
@@ -105,125 +105,12 @@ const createCancellationPolicyToDB = async (
   return createCancellationPolicy;
 };
 
-const getCancellationPolicyFromDB = async (
-  _cancellationPolicyId: string,
-): Promise<ICancellationPolicy | null> => {
+const getActiveCancellationPolicyFromDB = async (): Promise<ICancellationPolicy | null> => {
   return await getPolicyConfig();
-};
-
-const getAllCancellationPolicyFromDB = async (
-  _query: Record<string, unknown> = {},
-) => {
-  const policy = await getPolicyConfig();
-  const result = policy ? [policy] : [];
-  return {
-    meta: {
-      page: 1,
-      limit: 10,
-      total: result.length,
-      totalPage: 1,
-    },
-    result,
-  };
-};
-
-const getActiveCancellationPoliciesFromDB = async (
-  _query: Record<string, unknown> = {},
-) => {
-  const policy = await getPolicyConfig();
-  const result = policy ? [policy] : [];
-  return {
-    meta: {
-      page: 1,
-      limit: 10,
-      total: result.length,
-      totalPage: 1,
-    },
-    result,
-  };
-};
-
-const getCancellationPolicyByActorAndTriggerFromDB = async (
-  actorType: string,
-  triggerType: string,
-): Promise<any | null> => {
-  const policy = await getPolicyConfig();
-  if (!policy) return null;
-
-  let scenario: any;
-  const normalizedActor = actorType.toLowerCase();
-
-  if (normalizedActor === "user" || normalizedActor === "passenger") {
-    scenario = (policy.passenger as any)[triggerType];
-  } else if (normalizedActor === "driver") {
-    scenario = (policy.driver as any)[triggerType];
-  }
-
-  if (!scenario) return null;
-
-  const actorKey = normalizedActor === "user" ? "passenger" : normalizedActor;
-  const internalKey = `${actorKey}.${triggerType}`;
-  const mapped = CANCEL_SCENARIO_MAPPING[internalKey] || {
-    scenario: internalKey.replace(".", "_"),
-    policyName: triggerType.replace(/([A-Z])/g, " $1").trim(),
-  };
-
-  return {
-    _id: (policy as any)._id,
-    policyName: mapped.policyName,
-    scenario: mapped.scenario,
-    actorType,
-    triggerType,
-    cancellationFee: scenario.cancellationFee,
-    otherPartyCompensation: scenario.driverCompensation || 0,
-    platformShare: scenario.platformShare,
-    status: "ACTIVE",
-    createdAt: policy.createdAt,
-    updatedAt: policy.updatedAt,
-  } as any;
-};
-
-const updateCancellationPolicyToDB = async (
-  _cancellationPolicyId: string,
-  payload: Partial<ICancellationPolicy>,
-) => {
-  const policy = await getPolicyConfig();
-  const updated = await CancellationPolicy.findByIdAndUpdate(
-    policy._id,
-    payload,
-    { new: true },
-  );
-
-  if (!updated) {
-    throw new ApiError(StatusCodes.NOT_FOUND, "Cancellation policy not found");
-  }
-
-  return updated;
-};
-
-const updateCancellationPolicyStatusToDB = async (
-  _cancellationPolicyId: string,
-  _status: string,
-) => {
-  return await getPolicyConfig();
-};
-
-const deleteCancellationPolicyToDB = async (_cancellationPolicyId: string) => {
-  const policy = await getPolicyConfig();
-  const result = await CancellationPolicy.softDeleteById(
-    (policy as any)._id.toString(),
-  );
-  return result;
 };
 
 export const CancellationPolicyService = {
   getPolicyConfig,
-  createCancellationPolicyToDB,
-  getCancellationPolicyFromDB,
-  getAllCancellationPolicyFromDB,
-  getActiveCancellationPoliciesFromDB,
-  getCancellationPolicyByActorAndTriggerFromDB,
-  updateCancellationPolicyToDB,
-  deleteCancellationPolicyToDB,
-  updateCancellationPolicyStatusToDB,
+  createOrUpdateCancellationPolicyToDB,
+  getActiveCancellationPolicyFromDB,
 };
