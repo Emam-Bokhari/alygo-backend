@@ -2024,7 +2024,21 @@ const getDriverMonitoringListFromDB = async (query: Record<string, unknown>) => 
     })
     .populate({
       path: "serviceAreaId",
-      select: "city state zone airport timezone",
+      select: "city state zone airport timezone cityId stateId type",
+      populate: [
+        {
+          path: "cityId",
+          select: "city stateId type",
+          populate: {
+            path: "stateId",
+            select: "state type",
+          }
+        },
+        {
+          path: "stateId",
+          select: "state type",
+        }
+      ]
     })
     .sort(sortObj)
     .skip(skip)
@@ -2035,6 +2049,23 @@ const getDriverMonitoringListFromDB = async (query: Record<string, unknown>) => 
   for (const driver of drivers) {
     const user = driver.userId as any;
     const serviceArea = driver.serviceAreaId as any;
+
+    let city = "";
+    let state = "";
+    if (serviceArea) {
+      if (serviceArea.type === "city") {
+        city = serviceArea.city || "";
+        state = serviceArea.state || serviceArea.stateId?.state || "";
+      } else if (serviceArea.type === "state") {
+        city = "";
+        state = serviceArea.state || "";
+      } else if (serviceArea.type === "airport" || serviceArea.type === "zone") {
+        const parentCity = serviceArea.cityId as any;
+        city = parentCity?.city || "";
+        const parentState = serviceArea.stateId as any || parentCity?.stateId as any;
+        state = parentState?.state || "";
+      }
+    }
 
     let maxHours = 0;
     let resetHours = 0;
@@ -2150,8 +2181,8 @@ const getDriverMonitoringListFromDB = async (query: Record<string, unknown>) => 
       email: user?.email || "",
       phone: user?.phone || "",
       profileImage: user?.profileImage || "",
-      city: serviceArea?.city || "",
-      state: serviceArea?.state || "",
+      city,
+      state,
       maxHours,
       resetHours,
       dailyLimit,
