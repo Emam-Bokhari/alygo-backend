@@ -2,6 +2,52 @@ import { model, Schema } from "mongoose";
 import { ITripReport, TripReportModel } from "./tripReport.interface";
 import { TRIP_REPORT_STATUS } from "./tripReport.constant";
 
+const adminNoteSchema = new Schema(
+  {
+    note: {
+      type: String,
+      required: true,
+    },
+    adminId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  { _id: false },
+);
+
+const auditLogSchema = new Schema(
+  {
+    action: {
+      type: String,
+      required: true,
+    },
+    actor: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    actorRole: {
+      type: String,
+      required: true,
+    },
+    details: {
+      type: Schema.Types.Mixed,
+      required: false,
+    },
+    timestamp: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  { _id: false },
+);
+
 const tripReportSchema = new Schema<ITripReport, TripReportModel>(
   {
     ticketId: {
@@ -94,6 +140,14 @@ const tripReportSchema = new Schema<ITripReport, TripReportModel>(
         type: Date,
         required: true,
       },
+    },
+    adminNotes: {
+      type: [adminNoteSchema],
+      default: [],
+    },
+    auditLogs: {
+      type: [auditLogSchema],
+      default: [],
     },
   },
   {

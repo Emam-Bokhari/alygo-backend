@@ -1,6 +1,20 @@
 import { Model, Types } from "mongoose";
 import { TRIP_REPORT_STATUS } from "./tripReport.constant";
 
+export interface ITripReportAdminNote {
+  note: string;
+  adminId: Types.ObjectId;
+  createdAt: Date;
+}
+
+export interface ITripReportAuditLog {
+  action: string;
+  actor: Types.ObjectId;
+  actorRole: string;
+  details?: Record<string, any>;
+  timestamp: Date;
+}
+
 export interface ITripReport {
   ticketId: string; // e.g. TRP-20260719-000001
   rideId: Types.ObjectId;
@@ -28,8 +42,12 @@ export interface ITripReport {
     completedAt: Date;
   };
 
+  adminNotes?: ITripReportAdminNote[];
+  auditLogs?: ITripReportAuditLog[];
+
   createdAt: Date;
   updatedAt: Date;
 }
 
 export type TripReportModel = Model<ITripReport>;
+

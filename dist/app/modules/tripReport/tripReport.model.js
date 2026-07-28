@@ -3,6 +3,44 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.TripReport = void 0;
 const mongoose_1 = require("mongoose");
 const tripReport_constant_1 = require("./tripReport.constant");
+const adminNoteSchema = new mongoose_1.Schema({
+    note: {
+        type: String,
+        required: true,
+    },
+    adminId: {
+        type: mongoose_1.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now,
+    },
+}, { _id: false });
+const auditLogSchema = new mongoose_1.Schema({
+    action: {
+        type: String,
+        required: true,
+    },
+    actor: {
+        type: mongoose_1.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+    },
+    actorRole: {
+        type: String,
+        required: true,
+    },
+    details: {
+        type: mongoose_1.Schema.Types.Mixed,
+        required: false,
+    },
+    timestamp: {
+        type: Date,
+        default: Date.now,
+    },
+}, { _id: false });
 const tripReportSchema = new mongoose_1.Schema({
     ticketId: {
         type: String,
@@ -94,6 +132,14 @@ const tripReportSchema = new mongoose_1.Schema({
             type: Date,
             required: true,
         },
+    },
+    adminNotes: {
+        type: [adminNoteSchema],
+        default: [],
+    },
+    auditLogs: {
+        type: [auditLogSchema],
+        default: [],
     },
 }, {
     timestamps: true,

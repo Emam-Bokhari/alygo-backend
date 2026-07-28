@@ -94,9 +94,72 @@ const updateTripReport = (0, catchAsync_1.default)((req, res) => __awaiter(void 
         data: result.data,
     });
 }));
+const getDashboardCards = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield tripReport_service_1.TripReportService.getDashboardCardsFromDB(req.query);
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        message: "Trip completion complaint dashboard cards retrieved successfully",
+        data: result,
+    });
+}));
+const getAllComplaints = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield tripReport_service_1.TripReportService.getAllComplaintsFromDB(req.query);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        success: true,
+        message: result.message,
+        pagination: {
+            page: result.pagination.page,
+            limit: result.pagination.limit,
+            total: result.pagination.total,
+            totalPages: result.pagination.totalPages,
+            totalPage: result.pagination.totalPages,
+        },
+        data: result.data,
+    });
+}));
+const getComplaintDetails = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { complaintId } = req.params;
+    const result = yield tripReport_service_1.TripReportService.getComplaintDetailsFromDB(complaintId);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        success: true,
+        message: result.message,
+        data: result.data,
+    });
+}));
+const updateComplaintStatus = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const adminId = req.user.id;
+    const { complaintId } = req.params;
+    yield tripReport_validation_1.TripReportValidations.updateComplaintStatusValidationSchema.parseAsync({
+        body: req.body,
+    });
+    const result = yield tripReport_service_1.TripReportService.updateComplaintStatusInDB(adminId, complaintId, req.body);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        success: true,
+        message: result.message,
+        data: result.data,
+    });
+}));
+const getComplaintTrend = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield tripReport_service_1.TripReportService.getComplaintTrendFromDB(req.query);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        success: true,
+        message: result.message,
+        data: result.data,
+    });
+}));
 exports.TripReportController = {
     createTripReport,
     getAllTripReports,
     getTripReportById,
     updateTripReport,
+    getDashboardCards,
+    getAllComplaints,
+    getComplaintDetails,
+    updateComplaintStatus,
+    getComplaintTrend,
 };

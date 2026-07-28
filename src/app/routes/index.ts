@@ -45,7 +45,7 @@ import { DriverRewardsRoutes } from "../modules/tier/driverRewards.route";
 import { AdminRewardsRoutes } from "../modules/tier/adminRewards.route";
 import { PendingPaymentRoutes } from "../modules/pendingPayment/pendingPayment.route";
 import { SystemConfigurationRoutes } from "../modules/systemConfiguration/systemConfiguration.route";
-import { TripReportRoutes } from "../modules/tripReport/tripReport.route";
+import { TripReportRoutes, TripCompletionComplaintRoutes } from "../modules/tripReport/tripReport.route";
 import { AdminAiSupportRoutes, DriverAiSupportRoutes } from "../modules/aiSupport/aiSupport.route";
 import { DashboardRoutes } from "../modules/dashboard/dashboard.route";
 import { CancellationAnalyticsRoutes } from "../modules/cancellationAnalytics/cancellationAnalytics.route";
@@ -233,6 +233,10 @@ const apiRoutes = [
   {
     path: "/trip-reports",
     route: TripReportRoutes,
+  },
+  {
+    path: "/admin/trip-completion-complaints",
+    route: TripCompletionComplaintRoutes,
   },
   {
     path: "/admin/ai-support",

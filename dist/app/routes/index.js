@@ -235,6 +235,10 @@ const apiRoutes = [
         route: tripReport_route_1.TripReportRoutes,
     },
     {
+        path: "/admin/trip-completion-complaints",
+        route: tripReport_route_1.TripCompletionComplaintRoutes,
+    },
+    {
         path: "/admin/ai-support",
         route: aiSupport_route_1.AdminAiSupportRoutes,
     },

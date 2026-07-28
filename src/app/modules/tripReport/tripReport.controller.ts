@@ -103,9 +103,88 @@ const updateTripReport = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getDashboardCards = catchAsync(async (req: Request, res: Response) => {
+  const result = await TripReportService.getDashboardCardsFromDB(req.query);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: "Trip completion complaint dashboard cards retrieved successfully",
+    data: result,
+  });
+});
+
+const getAllComplaints = catchAsync(async (req: Request, res: Response) => {
+  const result = await TripReportService.getAllComplaintsFromDB(req.query);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: result.message,
+    pagination: {
+      page: result.pagination.page,
+      limit: result.pagination.limit,
+      total: result.pagination.total,
+      totalPages: result.pagination.totalPages,
+      totalPage: result.pagination.totalPages,
+    } as any,
+    data: result.data,
+  });
+});
+
+const getComplaintDetails = catchAsync(async (req: Request, res: Response) => {
+  const { complaintId } = req.params;
+  const result = await TripReportService.getComplaintDetailsFromDB(complaintId);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: result.message,
+    data: result.data,
+  });
+});
+
+const updateComplaintStatus = catchAsync(async (req: Request, res: Response) => {
+  const adminId = req.user.id;
+  const { complaintId } = req.params;
+
+  await TripReportValidations.updateComplaintStatusValidationSchema.parseAsync({
+    body: req.body,
+  });
+
+  const result = await TripReportService.updateComplaintStatusInDB(
+    adminId,
+    complaintId,
+    req.body,
+  );
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: result.message,
+    data: result.data,
+  });
+});
+
+const getComplaintTrend = catchAsync(async (req: Request, res: Response) => {
+  const result = await TripReportService.getComplaintTrendFromDB(req.query);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: result.message,
+    data: result.data,
+  });
+});
+
 export const TripReportController = {
   createTripReport,
   getAllTripReports,
   getTripReportById,
   updateTripReport,
+  getDashboardCards,
+  getAllComplaints,
+  getComplaintDetails,
+  updateComplaintStatus,
+  getComplaintTrend,
 };

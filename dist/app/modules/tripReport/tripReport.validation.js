@@ -27,7 +27,7 @@ const createTripReportValidationSchema = zod_1.z.object({
 });
 const updateTripReportValidationSchema = zod_1.z.object({
     body: zod_1.z.object({
-        status: zod_1.z.enum(["open", "investigating", "resolved"]).optional(),
+        status: zod_1.z.enum(["open", "investigating", "resolved", "rejected"]).optional(),
         resolutionNotes: zod_1.z
             .string()
             .optional()
@@ -41,7 +41,31 @@ const updateTripReportValidationSchema = zod_1.z.object({
         }),
     }),
 });
+const updateComplaintStatusValidationSchema = zod_1.z.object({
+    body: zod_1.z.object({
+        status: zod_1.z.enum([
+            "open",
+            "investigating",
+            "resolved",
+            "rejected",
+        ], {
+            required_error: "Status is required",
+        }),
+        adminNote: zod_1.z
+            .string()
+            .optional()
+            .refine((val) => {
+            if (val === undefined)
+                return true;
+            const trimmed = val.trim();
+            return trimmed.length > 0 && trimmed.length <= 1000;
+        }, {
+            message: "Admin note cannot be empty and must be under 1000 characters",
+        }),
+    }),
+});
 exports.TripReportValidations = {
     createTripReportValidationSchema,
     updateTripReportValidationSchema,
+    updateComplaintStatusValidationSchema,
 };

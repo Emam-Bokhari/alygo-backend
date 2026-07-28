@@ -30,7 +30,7 @@ const createTripReportValidationSchema = z.object({
 
 const updateTripReportValidationSchema = z.object({
   body: z.object({
-    status: z.enum(["open", "investigating", "resolved"]).optional(),
+    status: z.enum(["open", "investigating", "resolved", "rejected"]).optional(),
     resolutionNotes: z
       .string()
       .optional()
@@ -48,7 +48,35 @@ const updateTripReportValidationSchema = z.object({
   }),
 });
 
+const updateComplaintStatusValidationSchema = z.object({
+  body: z.object({
+    status: z.enum([
+      "open",
+      "investigating",
+      "resolved",
+      "rejected",
+    ], {
+      required_error: "Status is required",
+    }),
+    adminNote: z
+      .string()
+      .optional()
+      .refine(
+        (val) => {
+          if (val === undefined) return true;
+          const trimmed = val.trim();
+          return trimmed.length > 0 && trimmed.length <= 1000;
+        },
+        {
+          message:
+            "Admin note cannot be empty and must be under 1000 characters",
+        },
+      ),
+  }),
+});
+
 export const TripReportValidations = {
   createTripReportValidationSchema,
   updateTripReportValidationSchema,
+  updateComplaintStatusValidationSchema,
 };
