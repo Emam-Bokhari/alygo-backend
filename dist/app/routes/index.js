@@ -191,6 +191,10 @@ const apiRoutes = [
         route: lostAndFound_route_1.LostAndFoundRoutes,
     },
     {
+        path: "/admin/lost-found",
+        route: lostAndFound_route_1.LostAndFoundAdminRoutes,
+    },
+    {
         path: "/rides",
         route: ride_route_1.RideRoutes,
     },

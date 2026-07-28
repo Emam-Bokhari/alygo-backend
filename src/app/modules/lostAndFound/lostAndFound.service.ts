@@ -15,9 +15,12 @@ import ApiError from "../../../errors/ApiErrors";
 import QueryBuilder from "../../builder/queryBuilder";
 import { socketHelper } from "../../../helpers/socketHelper";
 import { sendNotifications } from "../../../helpers/notificationsHelper";
-import { getSystemConfig } from "../../../helpers/systemConfigHelper";
+import { getSystemConfig, clearSystemConfigCache } from "../../../helpers/systemConfigHelper";
 import { NOTIFICATION_TYPE } from "../notification/notification.constant";
 import { TRANSACTION_TYPE } from "../transaction/transaction.constant";
+import { DateTime } from "luxon";
+import { SystemConfigurationService } from "../systemConfiguration/systemConfiguration.service";
+import { SystemConfiguration } from "../systemConfiguration/systemConfiguration.model";
 import {
   PAYMENT_METHOD,
   PAYMENT_STATUS as RidePaymentStatus,
@@ -1225,6 +1228,635 @@ const trackReportStatus = async (
   };
 };
 
+// LostAndFoundService is exported at the end of the file
+
+const getAdminDashboardCardsFromDB = async (): Promise<any> => {
+  const [
+    totalReports,
+    pendingDriverReview,
+    itemsFound,
+    itemsNotFound,
+    pickupScheduled,
+    deliveryScheduled,
+    completedReturns,
+  ] = await Promise.all([
+    LostFound.countDocuments(),
+    LostFound.countDocuments({ reportStatus: REPORT_STATUS.REPORTED }),
+    LostFound.countDocuments({ foundStatus: FOUND_STATUS.FOUND }),
+    LostFound.countDocuments({ foundStatus: FOUND_STATUS.NOT_FOUND }),
+    LostFound.countDocuments({
+      recoveryMethod: RECOVERY_METHOD.PASSENGER_PICKUP,
+      reportStatus: { $in: [REPORT_STATUS.RETURN_SCHEDULED, REPORT_STATUS.RETURN_IN_PROGRESS] },
+    }),
+    LostFound.countDocuments({
+      recoveryMethod: RECOVERY_METHOD.DRIVER_DELIVERY,
+      reportStatus: { $in: [REPORT_STATUS.RETURN_SCHEDULED, REPORT_STATUS.RETURN_IN_PROGRESS] },
+    }),
+    LostFound.countDocuments({
+      reportStatus: {
+        $in: [REPORT_STATUS.RETURN_COMPLETED, REPORT_STATUS.RECEIVED, REPORT_STATUS.CLOSED],
+      },
+    }),
+  ]);
+
+  return {
+    totalReports,
+    pendingDriverReview,
+    itemsFound,
+    itemsNotFound,
+    pickupScheduled,
+    deliveryScheduled,
+    completedReturns,
+  };
+};
+
+const getAdminReportsFromDB = async (
+  query: Record<string, unknown>,
+): Promise<{ items: any[]; pagination: any }> => {
+  const filterObj: Record<string, any> = {};
+
+  if (query.status) {
+    filterObj.reportStatus = query.status;
+  }
+  if (query.itemCategory) {
+    filterObj.itemCategory = query.itemCategory;
+  }
+  if (query.driver && Types.ObjectId.isValid(query.driver as string)) {
+    filterObj.driverId = new Types.ObjectId(query.driver as string);
+  }
+  if (query.passenger && Types.ObjectId.isValid(query.passenger as string)) {
+    filterObj.passengerId = new Types.ObjectId(query.passenger as string);
+  }
+  if (query.fromDate || query.toDate) {
+    filterObj.createdAt = {};
+    if (query.fromDate) {
+      filterObj.createdAt.$gte = new Date(query.fromDate as string);
+    }
+    if (query.toDate) {
+      filterObj.createdAt.$lte = new Date(query.toDate as string);
+    }
+  }
+
+  const cleanQuery = { ...query };
+  delete cleanQuery.status;
+  delete cleanQuery.itemCategory;
+  delete cleanQuery.driver;
+  delete cleanQuery.passenger;
+  delete cleanQuery.fromDate;
+  delete cleanQuery.toDate;
+
+  const searchableFields = ["itemName", "reportNumber", "itemDescription"];
+  const baseQuery = LostFound.find(filterObj)
+    .populate({ path: "passengerId", select: "name email phone profileImage" })
+    .populate({ path: "driverId", select: "name email phone profileImage" })
+    .populate({ path: "itemCategory" });
+
+  const queryBuilder = new QueryBuilder(baseQuery, cleanQuery)
+    .search(searchableFields)
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
+
+  const data = await queryBuilder.modelQuery;
+  const meta = await queryBuilder.countTotal();
+
+  const items = data.map((report: any) => ({
+    reportId: report._id,
+    passenger: report.passengerId || {},
+    driver: report.driverId || {},
+    tripId: report.rideId,
+    itemCategory: report.itemCategory?.name || "",
+    itemName: report.itemName,
+    createdDate: report.createdAt,
+    status: report.reportStatus,
+  }));
+
+  return { items, pagination: meta };
+};
+
+const getAdminReturnsFromDB = async (
+  query: Record<string, unknown>,
+): Promise<{ items: any[]; pagination: any }> => {
+  const filterObj: Record<string, any> = {
+    recoveryMethod: { $in: [RECOVERY_METHOD.PASSENGER_PICKUP, RECOVERY_METHOD.DRIVER_DELIVERY] },
+  };
+
+  if (query.status) {
+    filterObj.reportStatus = query.status;
+  }
+  if (query.returnMethod) {
+    filterObj.recoveryMethod = query.returnMethod;
+  }
+  if (query.driver && Types.ObjectId.isValid(query.driver as string)) {
+    filterObj.driverId = new Types.ObjectId(query.driver as string);
+  }
+  if (query.passenger && Types.ObjectId.isValid(query.passenger as string)) {
+    filterObj.passengerId = new Types.ObjectId(query.passenger as string);
+  }
+  if (query.fromDate || query.toDate) {
+    filterObj.createdAt = {};
+    if (query.fromDate) {
+      filterObj.createdAt.$gte = new Date(query.fromDate as string);
+    }
+    if (query.toDate) {
+      filterObj.createdAt.$lte = new Date(query.toDate as string);
+    }
+  }
+
+  const cleanQuery = { ...query };
+  delete cleanQuery.status;
+  delete cleanQuery.returnMethod;
+  delete cleanQuery.driver;
+  delete cleanQuery.passenger;
+  delete cleanQuery.fromDate;
+  delete cleanQuery.toDate;
+
+  const searchableFields = ["itemName", "reportNumber"];
+  const baseQuery = LostFound.find(filterObj)
+    .populate({ path: "passengerId", select: "name email phone profileImage" })
+    .populate({ path: "driverId", select: "name email phone profileImage" });
+
+  const queryBuilder = new QueryBuilder(baseQuery, cleanQuery)
+    .search(searchableFields)
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
+
+  const data = await queryBuilder.modelQuery;
+  const meta = await queryBuilder.countTotal();
+
+  const items = data.map((report: any) => ({
+    reportId: report._id,
+    returnMethod: report.recoveryMethod,
+    passenger: report.passengerId || {},
+    driver: report.driverId || {},
+    scheduledDate: report.scheduledAt || null,
+    returnStatus: report.reportStatus,
+    fee: report.deliveryFee || 0,
+  }));
+
+  return { items, pagination: meta };
+};
+
+const getDeliveryFeeSettingsFromDB = async (): Promise<any> => {
+  const configObj = await SystemConfigurationService.getSystemConfig();
+  return configObj.lostFound || {};
+};
+
+const updateDeliveryFeeSettingsInDB = async (defaultDeliveryFee: number): Promise<any> => {
+  const updated = await SystemConfiguration.findOneAndUpdate(
+    {},
+    { "lostFound.defaultDeliveryFee": defaultDeliveryFee },
+    { new: true, runValidators: true }
+  );
+
+  if (!updated) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to update system configuration");
+  }
+
+  clearSystemConfigCache();
+  return updated.lostFound || {};
+};
+
+const getAdminItemCategoriesFromDB = async (): Promise<any[]> => {
+  const result = await LostAndFoundItemCategory.aggregate([
+    {
+      $match: {
+        status: STATUS.ACTIVE,
+        isDeleted: { $ne: true },
+      },
+    },
+    {
+      $lookup: {
+        from: "lostfounds",
+        localField: "_id",
+        foreignField: "itemCategory",
+        as: "reports",
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        category: "$name",
+        totalReports: { $size: "$reports" },
+        found: {
+          $size: {
+            $filter: {
+              input: "$reports",
+              as: "report",
+              cond: { $eq: ["$$report.foundStatus", FOUND_STATUS.FOUND] },
+            },
+          },
+        },
+        notFound: {
+          $size: {
+            $filter: {
+              input: "$reports",
+              as: "report",
+              cond: { $eq: ["$$report.foundStatus", FOUND_STATUS.NOT_FOUND] },
+            },
+          },
+        },
+      },
+    },
+  ]);
+
+  return result;
+};
+
+const getDriverCompensationsFromDB = async (
+  query: Record<string, unknown>,
+): Promise<{ items: any[]; pagination: any }> => {
+  const filterObj: Record<string, any> = {
+    recoveryMethod: RECOVERY_METHOD.DRIVER_DELIVERY,
+  };
+
+  if (query.status) {
+    if (query.status === "paid") {
+      filterObj.paymentStatus = PAYMENT_STATUS.PAID;
+    } else if (query.status === "pending") {
+      filterObj.paymentStatus = PAYMENT_STATUS.PENDING;
+    }
+  }
+
+  const cleanQuery = { ...query };
+  delete cleanQuery.status;
+
+  const searchableFields = ["itemName", "reportNumber"];
+  const baseQuery = LostFound.find(filterObj)
+    .populate({ path: "driverId", select: "name email phone profileImage" });
+
+  const queryBuilder = new QueryBuilder(baseQuery, cleanQuery)
+    .search(searchableFields)
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
+
+  const data = await queryBuilder.modelQuery;
+  const meta = await queryBuilder.countTotal();
+
+  const items = data.map((report: any) => {
+    const paidLog = report.auditLogs?.find((log: any) => log.action === "PAYMENT_COMPLETED");
+    const paidAt = paidLog ? paidLog.timestamp : (report.paymentStatus === PAYMENT_STATUS.PAID ? report.updatedAt : null);
+
+    return {
+      driver: report.driverId || {},
+      reportId: report._id,
+      amount: report.deliveryFee || 0,
+      status: report.paymentStatus === PAYMENT_STATUS.PAID ? "paid" : "pending",
+      paidAt,
+    };
+  });
+
+  return { items, pagination: meta };
+};
+
+const getAdminDisputesFromDB = async (
+  query: Record<string, unknown>,
+): Promise<{ items: any[]; pagination: any }> => {
+  const filterObj: Record<string, any> = {};
+
+  if (query.status) {
+    if (query.status === "open" || query.status === "under_review") {
+      filterObj.reportStatus = REPORT_STATUS.UNDER_REVIEW;
+    } else if (query.status === "resolved" || query.status === "closed") {
+      filterObj.reportStatus = { $in: [REPORT_STATUS.CLOSED, REPORT_STATUS.RECEIVED, REPORT_STATUS.RETURN_COMPLETED] };
+    }
+  } else {
+    filterObj.reportStatus = { $in: [REPORT_STATUS.UNDER_REVIEW, REPORT_STATUS.CLOSED, REPORT_STATUS.RECEIVED, REPORT_STATUS.RETURN_COMPLETED] };
+  }
+
+  const cleanQuery = { ...query };
+  delete cleanQuery.status;
+
+  const searchableFields = ["itemName", "reportNumber", "itemDescription"];
+  const baseQuery = LostFound.find(filterObj)
+    .populate({ path: "passengerId", select: "name email phone profileImage" })
+    .populate({ path: "driverId", select: "name email phone profileImage" });
+
+  const queryBuilder = new QueryBuilder(baseQuery, cleanQuery)
+    .search(searchableFields)
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
+
+  const data = await queryBuilder.modelQuery;
+  const meta = await queryBuilder.countTotal();
+
+  const items = data.map((report: any) => {
+    const reason = report.driverNotes || report.itemDescription || "Escalated for admin review";
+    const status = report.reportStatus === REPORT_STATUS.UNDER_REVIEW ? "open" : "resolved";
+
+    return {
+      reportId: report._id,
+      passenger: report.passengerId || {},
+      driver: report.driverId || {},
+      reason,
+      status,
+      createdAt: report.createdAt,
+    };
+  });
+
+  return { items, pagination: meta };
+};
+
+const getAnalyticsOverviewFromDB = async (): Promise<any> => {
+  const tz = (process.env.TIMEZONE as string) || "Asia/Dhaka";
+  const startOfMonth = DateTime.now().setZone(tz).startOf("month").toJSDate();
+
+  const [
+    reportsThisMonth,
+    totalReportsCount,
+    foundReportsCount,
+    returnedReportsCount,
+    resolutionStats,
+    compensationStats,
+  ] = await Promise.all([
+    LostFound.countDocuments({ createdAt: { $gte: startOfMonth } }),
+    LostFound.countDocuments(),
+    LostFound.countDocuments({ foundStatus: FOUND_STATUS.FOUND }),
+    LostFound.countDocuments({
+      foundStatus: FOUND_STATUS.FOUND,
+      reportStatus: { $in: [REPORT_STATUS.RECEIVED, REPORT_STATUS.CLOSED, REPORT_STATUS.RETURN_COMPLETED] },
+    }),
+    LostFound.aggregate([
+      {
+        $match: {
+          reportStatus: { $in: [REPORT_STATUS.RECEIVED, REPORT_STATUS.CLOSED, REPORT_STATUS.RETURN_COMPLETED] },
+        },
+      },
+      {
+        $project: {
+          resolutionTimeMs: { $subtract: ["$updatedAt", "$createdAt"] },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          avgResolutionTimeMs: { $avg: "$resolutionTimeMs" },
+        },
+      },
+    ]),
+    LostFound.aggregate([
+      {
+        $match: {
+          paymentStatus: PAYMENT_STATUS.PAID,
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalPaid: { $sum: "$deliveryFee" },
+        },
+      },
+    ]),
+  ]);
+
+  const foundRate = totalReportsCount > 0
+    ? parseFloat(((foundReportsCount / totalReportsCount) * 100).toFixed(2))
+    : 0;
+
+  const returnSuccessRate = foundReportsCount > 0
+    ? parseFloat(((returnedReportsCount / foundReportsCount) * 100).toFixed(2))
+    : 0;
+
+  const averageResolutionHours = resolutionStats.length > 0
+    ? parseFloat((resolutionStats[0].avgResolutionTimeMs / (1000 * 60 * 60)).toFixed(2))
+    : 0;
+
+  const driverCompensationPaid = compensationStats.length > 0
+    ? compensationStats[0].totalPaid
+    : 0;
+
+  return {
+    reportsThisMonth,
+    foundRate,
+    returnSuccessRate,
+    averageResolutionHours,
+    driverCompensationPaid,
+  };
+};
+
+const getAnalyticsReportTrendFromDB = async (): Promise<any[]> => {
+  const tz = (process.env.TIMEZONE as string) || "Asia/Dhaka";
+  const startOfYear = DateTime.now().setZone(tz).startOf("year").toJSDate();
+  const endOfYear = DateTime.now().setZone(tz).endOf("year").toJSDate();
+
+  const aggregationResult = await LostFound.aggregate([
+    {
+      $match: {
+        createdAt: { $gte: startOfYear, $lte: endOfYear },
+      },
+    },
+    {
+      $project: {
+        yearMonth: {
+          $dateToString: {
+            format: "%Y-%m",
+            date: "$createdAt",
+            timezone: tz,
+          },
+        },
+      },
+    },
+    {
+      $group: {
+        _id: "$yearMonth",
+        count: { $sum: 1 },
+      },
+    },
+  ]);
+
+  const monthlyCountMap: Record<string, number> = {};
+  for (const item of aggregationResult) {
+    if (item._id) {
+      monthlyCountMap[item._id] = item.count;
+    }
+  }
+
+  const monthsList: DateTime[] = [];
+  let currentMonth = DateTime.now().setZone(tz).startOf("year");
+  const limitMonth = DateTime.now().setZone(tz).endOf("year").startOf("month");
+
+  while (currentMonth <= limitMonth) {
+    monthsList.push(currentMonth);
+    currentMonth = currentMonth.plus({ months: 1 });
+  }
+
+  const data = monthsList.map((m) => {
+    const key = m.toFormat("yyyy-MM");
+    const label = m.toFormat("LLL");
+    return {
+      month: label,
+      reports: monthlyCountMap[key] || 0,
+    };
+  });
+
+  return data;
+};
+
+const getAnalyticsMostLostItemsFromDB = async (): Promise<any[]> => {
+  const result = await LostFound.aggregate([
+    {
+      $group: {
+        _id: "$itemCategory",
+        count: { $sum: 1 },
+      },
+    },
+    {
+      $sort: { count: -1 },
+    },
+    {
+      $limit: 10,
+    },
+    {
+      $lookup: {
+        from: "lostandfounditemcategories",
+        localField: "_id",
+        foreignField: "_id",
+        as: "categoryDetails",
+      },
+    },
+    {
+      $unwind: {
+        path: "$categoryDetails",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        category: { $ifNull: ["$categoryDetails.name", "Unknown"] },
+        count: 1,
+      },
+    },
+  ]);
+
+  return result;
+};
+
+const getAnalyticsCityReportsFromDB = async (): Promise<any[]> => {
+  const result = await LostFound.aggregate([
+    {
+      $lookup: {
+        from: "rides",
+        localField: "rideId",
+        foreignField: "_id",
+        as: "ride",
+      },
+    },
+    {
+      $unwind: {
+        path: "$ride",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $lookup: {
+        from: "serviceareas",
+        localField: "ride.serviceAreaId",
+        foreignField: "_id",
+        as: "serviceArea",
+      },
+    },
+    {
+      $unwind: {
+        path: "$serviceArea",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $lookup: {
+        from: "serviceareas",
+        localField: "serviceArea.cityId",
+        foreignField: "_id",
+        as: "parentCity",
+      },
+    },
+    {
+      $unwind: {
+        path: "$parentCity",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $project: {
+        city: {
+          $cond: [
+            {
+              $and: [
+                { $ne: ["$serviceArea.city", ""] },
+                { $ne: ["$serviceArea.city", null] },
+              ],
+            },
+            "$serviceArea.city",
+            { $ifNull: ["$parentCity.city", "Unknown"] },
+          ],
+        },
+      },
+    },
+    {
+      $group: {
+        _id: "$city",
+        reports: { $sum: 1 },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        city: "$_id",
+        reports: 1,
+      },
+    },
+    {
+      $sort: { reports: -1 },
+    },
+  ]);
+
+  return result;
+};
+
+const getAnalyticsCategoryDistributionFromDB = async (): Promise<any[]> => {
+  const result = await LostFound.aggregate([
+    {
+      $group: {
+        _id: "$itemCategory",
+        count: { $sum: 1 },
+      },
+    },
+    {
+      $lookup: {
+        from: "lostandfounditemcategories",
+        localField: "_id",
+        foreignField: "_id",
+        as: "categoryDetails",
+      },
+    },
+    {
+      $unwind: {
+        path: "$categoryDetails",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        category: { $ifNull: ["$categoryDetails.name", "Unknown"] },
+        count: 1,
+      },
+    },
+    {
+      $sort: { count: -1 },
+    },
+  ]);
+
+  return result;
+};
+
 export const LostAndFoundService = {
   reportLostItem,
   getMyReports,
@@ -1242,4 +1874,18 @@ export const LostAndFoundService = {
   getAllReports,
   adminUpdateReport,
   trackReportStatus,
+  getAdminDashboardCardsFromDB,
+  getAdminReportsFromDB,
+  getAdminReturnsFromDB,
+  getDeliveryFeeSettingsFromDB,
+  updateDeliveryFeeSettingsInDB,
+  getAdminItemCategoriesFromDB,
+  getDriverCompensationsFromDB,
+  getAdminDisputesFromDB,
+  getAnalyticsOverviewFromDB,
+  getAnalyticsReportTrendFromDB,
+  getAnalyticsMostLostItemsFromDB,
+  getAnalyticsCityReportsFromDB,
+  getAnalyticsCategoryDistributionFromDB,
 };
+

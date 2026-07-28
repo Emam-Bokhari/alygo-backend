@@ -140,5 +140,19 @@ const aiKnowledgeSchema = new mongoose_1.Schema({
 // Apply soft delete plugin
 aiKnowledgeSchema.plugin(softDeletePlugin_1.softDeletePlugin);
 // Create compound text index for search
-aiKnowledgeSchema.index({ title: "text", content: "text", searchableContent: "text", tags: "text", keywords: "text" }, { weights: { title: 10, content: 5, searchableContent: 4, keywords: 3, tags: 2 } });
+aiKnowledgeSchema.index({
+    title: "text",
+    content: "text",
+    searchableContent: "text",
+    tags: "text",
+    keywords: "text",
+}, {
+    weights: {
+        title: 10,
+        content: 5,
+        searchableContent: 4,
+        keywords: 3,
+        tags: 2,
+    },
+});
 exports.AiKnowledge = (0, mongoose_1.model)("AiKnowledge", aiKnowledgeSchema);

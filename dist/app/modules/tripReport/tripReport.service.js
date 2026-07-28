@@ -265,7 +265,8 @@ const getDashboardCardsFromDB = (query) => __awaiter(void 0, void 0, void 0, fun
         if (statusVal === "PENDING_REVIEW" || statusVal === "open") {
             mappedStatus = "open";
         }
-        else if (statusVal === "UNDER_INVESTIGATION" || statusVal === "investigating") {
+        else if (statusVal === "UNDER_INVESTIGATION" ||
+            statusVal === "investigating") {
             mappedStatus = "investigating";
         }
         else if (statusVal === "REJECTED" || statusVal === "rejected") {
@@ -284,7 +285,10 @@ const getDashboardCardsFromDB = (query) => __awaiter(void 0, void 0, void 0, fun
             matchStage["ride.rideCategory.categoryId"] = new mongoose_1.Types.ObjectId(rideCategory);
         }
         else {
-            matchStage["rideSnapshot.rideCategory"] = { $regex: rideCategory, $options: "i" };
+            matchStage["rideSnapshot.rideCategory"] = {
+                $regex: rideCategory,
+                $options: "i",
+            };
         }
     }
     // City filter
@@ -297,7 +301,10 @@ const getDashboardCardsFromDB = (query) => __awaiter(void 0, void 0, void 0, fun
             matchStage.issueId = new mongoose_1.Types.ObjectId(complaintType);
         }
         else {
-            matchStage["issueCategory.issueName"] = { $regex: complaintType, $options: "i" };
+            matchStage["issueCategory.issueName"] = {
+                $regex: complaintType,
+                $options: "i",
+            };
         }
     }
     const pipeline = [
@@ -354,18 +361,12 @@ const getDashboardCardsFromDB = (query) => __awaiter(void 0, void 0, void 0, fun
         {
             $facet: {
                 totalComplaints: [{ $count: "count" }],
-                pendingReview: [
-                    { $match: { status: "open" } },
-                    { $count: "count" },
-                ],
+                pendingReview: [{ $match: { status: "open" } }, { $count: "count" }],
                 underInvestigation: [
                     { $match: { status: "investigating" } },
                     { $count: "count" },
                 ],
-                rejected: [
-                    { $match: { status: "rejected" } },
-                    { $count: "count" },
-                ],
+                rejected: [{ $match: { status: "rejected" } }, { $count: "count" }],
             },
         },
         // 6. Reshape results
@@ -419,7 +420,8 @@ const getAllComplaintsFromDB = (filters) => __awaiter(void 0, void 0, void 0, fu
         let mappedStatus = "";
         if (filters.status === "PENDING_REVIEW" || filters.status === "open")
             mappedStatus = "open";
-        else if (filters.status === "UNDER_INVESTIGATION" || filters.status === "investigating")
+        else if (filters.status === "UNDER_INVESTIGATION" ||
+            filters.status === "investigating")
             mappedStatus = "investigating";
         else if (filters.status === "REJECTED" || filters.status === "rejected")
             mappedStatus = "rejected";
@@ -431,14 +433,20 @@ const getAllComplaintsFromDB = (filters) => __awaiter(void 0, void 0, void 0, fu
     }
     const afterLookupMatch = {};
     if (filters.city) {
-        afterLookupMatch["serviceArea.city"] = { $regex: filters.city, $options: "i" };
+        afterLookupMatch["serviceArea.city"] = {
+            $regex: filters.city,
+            $options: "i",
+        };
     }
     if (filters.rideCategory) {
         if (mongoose_1.Types.ObjectId.isValid(filters.rideCategory)) {
             afterLookupMatch["ride.rideCategory.categoryId"] = new mongoose_1.Types.ObjectId(filters.rideCategory);
         }
         else {
-            afterLookupMatch["rideSnapshot.rideCategory"] = { $regex: filters.rideCategory, $options: "i" };
+            afterLookupMatch["rideSnapshot.rideCategory"] = {
+                $regex: filters.rideCategory,
+                $options: "i",
+            };
         }
     }
     if (filters.complaintType) {
@@ -446,7 +454,10 @@ const getAllComplaintsFromDB = (filters) => __awaiter(void 0, void 0, void 0, fu
             matchStage.issueId = new mongoose_1.Types.ObjectId(filters.complaintType);
         }
         else {
-            afterLookupMatch["issueCategory.issueName"] = { $regex: filters.complaintType, $options: "i" };
+            afterLookupMatch["issueCategory.issueName"] = {
+                $regex: filters.complaintType,
+                $options: "i",
+            };
         }
     }
     // Sorting
@@ -538,20 +549,25 @@ const getAllComplaintsFromDB = (filters) => __awaiter(void 0, void 0, void 0, fu
                         $multiply: [
                             {
                                 $subtract: [
-                                    { $ifNull: ["$tracking.totalDistanceKm", { $ifNull: ["$ride.routeInfo.totalDistanceKm", 0] }] },
-                                    { $ifNull: ["$ride.routeInfo.totalDistanceKm", 0] }
-                                ]
+                                    {
+                                        $ifNull: [
+                                            "$tracking.totalDistanceKm",
+                                            { $ifNull: ["$ride.routeInfo.totalDistanceKm", 0] },
+                                        ],
+                                    },
+                                    { $ifNull: ["$ride.routeInfo.totalDistanceKm", 0] },
+                                ],
                             },
-                            1000
-                        ]
-                    }
-                }
-            }
-        }
+                            1000,
+                        ],
+                    },
+                },
+            },
+        },
     });
     // Re-match for search after adding names
-    if (filters.search) {
-        const searchRegex = { $regex: filters.search, $options: "i" };
+    if (filters.searchTerm) {
+        const searchRegex = { $regex: filters.searchTerm, $options: "i" };
         pipeline.push({
             $match: {
                 $or: [
@@ -559,19 +575,15 @@ const getAllComplaintsFromDB = (filters) => __awaiter(void 0, void 0, void 0, fu
                     { providedSummaryDetails: searchRegex },
                     { "passenger.name": searchRegex },
                     { "passenger.phone": searchRegex },
-                    { "driver.name": searchRegex }
-                ]
-            }
+                    { "driver.name": searchRegex },
+                ],
+            },
         });
     }
     pipeline.push({
         $facet: {
             metadata: [{ $count: "total" }],
-            data: [
-                { $sort: sortStage },
-                { $skip: skip },
-                { $limit: limit },
-            ],
+            data: [{ $sort: sortStage }, { $skip: skip }, { $limit: limit }],
         },
     });
     const result = yield tripReport_model_1.TripReport.aggregate(pipeline);
@@ -584,17 +596,17 @@ const getAllComplaintsFromDB = (filters) => __awaiter(void 0, void 0, void 0, fu
             rideId: item.rideId,
             passenger: {
                 id: ((_a = item.passenger) === null || _a === void 0 ? void 0 : _a._id) || item.reporterId,
-                name: ((_b = item.passenger) === null || _b === void 0 ? void 0 : _b.name) || "Passenger"
+                name: ((_b = item.passenger) === null || _b === void 0 ? void 0 : _b.name) || "Passenger",
             },
             driver: {
                 id: ((_c = item.driver) === null || _c === void 0 ? void 0 : _c._id) || ((_d = item.rideSnapshot) === null || _d === void 0 ? void 0 : _d.driverId),
-                name: ((_e = item.driver) === null || _e === void 0 ? void 0 : _e.name) || ((_f = item.rideSnapshot) === null || _f === void 0 ? void 0 : _f.driverName)
+                name: ((_e = item.driver) === null || _e === void 0 ? void 0 : _e.name) || ((_f = item.rideSnapshot) === null || _f === void 0 ? void 0 : _f.driverName),
             },
             complaintType: ((_g = item.issueCategory) === null || _g === void 0 ? void 0 : _g.issueName) || "General",
             distanceDeltaMeters: item.distanceDeltaMeters || 0,
             fare: ((_j = (_h = item.ride) === null || _h === void 0 ? void 0 : _h.fare) === null || _j === void 0 ? void 0 : _j.total) || 0,
             reportedAt: item.createdAt,
-            status: item.status
+            status: item.status,
         };
     });
     return {
@@ -604,9 +616,9 @@ const getAllComplaintsFromDB = (filters) => __awaiter(void 0, void 0, void 0, fu
             page,
             limit,
             total,
-            totalPages: Math.ceil(total / limit)
+            totalPages: Math.ceil(total / limit),
         },
-        data
+        data,
     };
 });
 /**
@@ -648,31 +660,54 @@ const getComplaintDetailsFromDB = (complaintId) => __awaiter(void 0, void 0, voi
         subtotal: 0,
         commission: 0,
         driverEarning: 0,
-        total: 0
+        total: 0,
     };
     const timelineEvents = [];
     if (ride) {
         if (ride.requestedAt) {
-            timelineEvents.push({ event: "Ride Requested", timestamp: ride.requestedAt, actor: "Passenger" });
+            timelineEvents.push({
+                event: "Ride Requested",
+                timestamp: ride.requestedAt,
+                actor: "Passenger",
+            });
         }
         if (ride.acceptedAt) {
-            timelineEvents.push({ event: "Ride Accepted", timestamp: ride.acceptedAt, actor: "Driver" });
+            timelineEvents.push({
+                event: "Ride Accepted",
+                timestamp: ride.acceptedAt,
+                actor: "Driver",
+            });
         }
         if (ride.arrivedAt) {
-            timelineEvents.push({ event: "Driver Arrived at Pickup", timestamp: ride.arrivedAt, actor: "Driver" });
+            timelineEvents.push({
+                event: "Driver Arrived at Pickup",
+                timestamp: ride.arrivedAt,
+                actor: "Driver",
+            });
         }
         if (ride.startedAt) {
-            timelineEvents.push({ event: "Ride Started", timestamp: ride.startedAt, actor: "Driver" });
+            timelineEvents.push({
+                event: "Ride Started",
+                timestamp: ride.startedAt,
+                actor: "Driver",
+            });
         }
         if (ride.completedAt) {
-            timelineEvents.push({ event: "Ride Completed", timestamp: ride.completedAt, actor: "Driver" });
+            timelineEvents.push({
+                event: "Ride Completed",
+                timestamp: ride.completedAt,
+                actor: "Driver",
+            });
         }
     }
     timelineEvents.push({
         event: "Complaint Filed",
         timestamp: report.createdAt,
         actor: "Passenger",
-        details: { issue: (_h = report.issueId) === null || _h === void 0 ? void 0 : _h.issueName, details: report.providedSummaryDetails }
+        details: {
+            issue: (_h = report.issueId) === null || _h === void 0 ? void 0 : _h.issueName,
+            details: report.providedSummaryDetails,
+        },
     });
     if (report.auditLogs && report.auditLogs.length > 0) {
         for (const log of report.auditLogs) {
@@ -687,7 +722,7 @@ const getComplaintDetailsFromDB = (complaintId) => __awaiter(void 0, void 0, voi
                 event: eventName,
                 timestamp: log.timestamp,
                 actor: log.actorRole,
-                details: log.details
+                details: log.details,
             });
         }
     }
@@ -699,7 +734,7 @@ const getComplaintDetailsFromDB = (complaintId) => __awaiter(void 0, void 0, voi
         estimatedResponseTimeInMinutes: report.estimatedResponseTimeInMinutes,
         status: report.status,
         createdAt: report.createdAt,
-        updatedAt: report.updatedAt
+        updatedAt: report.updatedAt,
     };
     return {
         success: true,
@@ -707,14 +742,30 @@ const getComplaintDetailsFromDB = (complaintId) => __awaiter(void 0, void 0, voi
         data: {
             complaint: formattedComplaint,
             ride: ride || null,
-            passenger: passenger ? { id: passenger._id, name: passenger.name, email: passenger.email, phone: passenger.phone, profileImage: passenger.profileImage } : null,
-            driver: driver ? { id: driver._id, name: driver.name, email: driver.email, phone: driver.phone, profileImage: driver.profileImage } : null,
+            passenger: passenger
+                ? {
+                    id: passenger._id,
+                    name: passenger.name,
+                    email: passenger.email,
+                    phone: passenger.phone,
+                    profileImage: passenger.profileImage,
+                }
+                : null,
+            driver: driver
+                ? {
+                    id: driver._id,
+                    name: driver.name,
+                    email: driver.email,
+                    phone: driver.phone,
+                    profileImage: driver.profileImage,
+                }
+                : null,
             gpsSummary,
             fareBreakdown,
             refund: null, // Refunds are excluded
             timeline: timelineEvents,
-            adminNotes: report.adminNotes || []
-        }
+            adminNotes: report.adminNotes || [],
+        },
     };
 });
 /**
@@ -731,7 +782,8 @@ const updateComplaintStatusInDB = (adminId, complaintId, payload) => __awaiter(v
     let dbStatus = "";
     if (payload.status === "PENDING_REVIEW" || payload.status === "open")
         dbStatus = "open";
-    else if (payload.status === "UNDER_INVESTIGATION" || payload.status === "investigating")
+    else if (payload.status === "UNDER_INVESTIGATION" ||
+        payload.status === "investigating")
         dbStatus = "investigating";
     else if (payload.status === "REJECTED" || payload.status === "rejected")
         dbStatus = "rejected";
@@ -849,7 +901,10 @@ const getComplaintTrendFromDB = (query) => __awaiter(void 0, void 0, void 0, fun
             afterLookupMatch["ride.rideCategory.categoryId"] = new mongoose_1.Types.ObjectId(rideCategory);
         }
         else {
-            afterLookupMatch["rideSnapshot.rideCategory"] = { $regex: rideCategory, $options: "i" };
+            afterLookupMatch["rideSnapshot.rideCategory"] = {
+                $regex: rideCategory,
+                $options: "i",
+            };
         }
     }
     const pipeline = [

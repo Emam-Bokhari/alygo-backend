@@ -115,6 +115,16 @@ const adminUpdateSchema = z.object({
   }),
 });
 
+const updateDeliveryFeeSettingsSchema = z.object({
+  body: z.object({
+    defaultDeliveryFee: z
+      .number({
+        required_error: "defaultDeliveryFee is required",
+      })
+      .min(0, "defaultDeliveryFee must be non-negative"),
+  }),
+});
+
 export const LostAndFoundValidation = {
   reportLostItemSchema,
   driverFoundSchema,
@@ -122,4 +132,5 @@ export const LostAndFoundValidation = {
   configureRecoverySchema,
   rateDriverSchema,
   adminUpdateSchema,
+  updateDeliveryFeeSettingsSchema,
 };
