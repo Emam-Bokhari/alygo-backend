@@ -759,6 +759,999 @@ const updateDriverAvailability = (driverId) => __awaiter(void 0, void 0, void 0,
     // Return availability data and whether it changed
     return Object.assign(Object.assign({}, availabilityData), { availabilityChanged: previousCanReceiveRide !== newCanReceiveRide });
 });
+const parseSort = (sortStr) => {
+    if (!sortStr)
+        return { createdAt: -1 };
+    const sortObj = {};
+    sortStr.split(",").forEach((field) => {
+        const trimmed = field.trim();
+        if (trimmed.startsWith("-")) {
+            sortObj[trimmed.substring(1)] = -1;
+        }
+        else {
+            sortObj[trimmed] = 1;
+        }
+    });
+    return sortObj;
+};
+const getGlobalRuleFromDB = () => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c, _d;
+    const policy = yield driverDutyPolicy_model_1.DriverDutyPolicy.findOne({
+        scopeType: "global",
+    });
+    return {
+        maxHours: (_a = policy === null || policy === void 0 ? void 0 : policy.maxContinuousDrivingHours) !== null && _a !== void 0 ? _a : 0,
+        resetHours: (_b = policy === null || policy === void 0 ? void 0 : policy.minimumRestHours) !== null && _b !== void 0 ? _b : 0,
+        dailyLimit: (_c = policy === null || policy === void 0 ? void 0 : policy.maxDrivingHoursPerDay) !== null && _c !== void 0 ? _c : 0,
+        weeklyLimit: 0,
+        breakMinutes: (_d = policy === null || policy === void 0 ? void 0 : policy.breakDurationMinutes) !== null && _d !== void 0 ? _d : 0,
+        status: (policy === null || policy === void 0 ? void 0 : policy.status) ? policy.status.toLowerCase() : "active",
+    };
+});
+const getStateRulesFromDB = (query) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const pipeline = [
+        { $match: { type: "state", isDeleted: { $ne: true } } },
+    ];
+    if (query.state) {
+        pipeline.push({
+            $match: { state: { $regex: query.state, $options: "i" } },
+        });
+    }
+    if (query.searchTerm) {
+        pipeline.push({
+            $match: { state: { $regex: query.searchTerm, $options: "i" } },
+        });
+    }
+    pipeline.push({
+        $lookup: {
+            from: "driverdutypolicies",
+            let: { stateId: "$_id" },
+            pipeline: [
+                {
+                    $match: {
+                        $expr: {
+                            $and: [
+                                { $eq: ["$scopeType", "state"] },
+                                { $eq: ["$stateId", "$$stateId"] },
+                                { $eq: [{ $ifNull: ["$isDeleted", false] }, false] },
+                            ],
+                        },
+                    },
+                },
+            ],
+            as: "customPolicy",
+        },
+    }, { $unwind: { path: "$customPolicy", preserveNullAndEmptyArrays: true } }, {
+        $lookup: {
+            from: "driverdutypolicies",
+            pipeline: [
+                {
+                    $match: {
+                        scopeType: "global",
+                        $expr: { $eq: [{ $ifNull: ["$isDeleted", false] }, false] },
+                    },
+                },
+            ],
+            as: "globalPolicy",
+        },
+    }, { $unwind: { path: "$globalPolicy", preserveNullAndEmptyArrays: true } }, {
+        $project: {
+            state: "$state",
+            inheritance: {
+                $cond: {
+                    if: "$customPolicy",
+                    then: "CUSTOM",
+                    else: "GLOBAL",
+                },
+            },
+            maxHours: {
+                $cond: {
+                    if: "$customPolicy",
+                    then: "$customPolicy.maxContinuousDrivingHours",
+                    else: { $ifNull: ["$globalPolicy.maxContinuousDrivingHours", 0] },
+                },
+            },
+            resetHours: {
+                $cond: {
+                    if: "$customPolicy",
+                    then: "$customPolicy.minimumRestHours",
+                    else: { $ifNull: ["$globalPolicy.minimumRestHours", 0] },
+                },
+            },
+            dailyLimit: {
+                $cond: {
+                    if: "$customPolicy",
+                    then: "$customPolicy.maxDrivingHoursPerDay",
+                    else: { $ifNull: ["$globalPolicy.maxDrivingHoursPerDay", 0] },
+                },
+            },
+            weeklyLimit: { $literal: 0 },
+            breakMinutes: {
+                $cond: {
+                    if: "$customPolicy",
+                    then: "$customPolicy.breakDurationMinutes",
+                    else: { $ifNull: ["$globalPolicy.breakDurationMinutes", 0] },
+                },
+            },
+            status: {
+                $toLower: {
+                    $cond: {
+                        if: "$customPolicy",
+                        then: "$customPolicy.status",
+                        else: { $ifNull: ["$globalPolicy.status", "active"] },
+                    },
+                },
+            },
+        },
+    });
+    if (query.status) {
+        pipeline.push({
+            $match: { status: query.status.toLowerCase() },
+        });
+    }
+    // Count total before skip/limit
+    const countPipeline = [...pipeline, { $count: "total" }];
+    const countResult = yield serviceArea_model_1.ServiceArea.aggregate(countPipeline);
+    const total = ((_a = countResult[0]) === null || _a === void 0 ? void 0 : _a.total) || 0;
+    // Sorting
+    const sortObj = parseSort(query.sort);
+    pipeline.push({ $sort: sortObj });
+    // Pagination
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 10;
+    const skip = (page - 1) * limit;
+    pipeline.push({ $skip: skip }, { $limit: limit });
+    const result = yield serviceArea_model_1.ServiceArea.aggregate(pipeline);
+    const totalPage = Math.ceil(total / limit);
+    return {
+        items: result,
+        pagination: { page, limit, total, totalPage },
+    };
+});
+const getCityRulesFromDB = (query) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const pipeline = [
+        { $match: { type: "city", isDeleted: { $ne: true } } },
+    ];
+    if (query.city) {
+        pipeline.push({
+            $match: { city: { $regex: query.city, $options: "i" } },
+        });
+    }
+    pipeline.push({
+        $lookup: {
+            from: "serviceareas",
+            localField: "stateId",
+            foreignField: "_id",
+            as: "stateDoc",
+        },
+    }, { $unwind: { path: "$stateDoc", preserveNullAndEmptyArrays: true } });
+    if (query.state) {
+        pipeline.push({
+            $match: {
+                "stateDoc.state": { $regex: query.state, $options: "i" },
+            },
+        });
+    }
+    if (query.searchTerm) {
+        pipeline.push({
+            $match: {
+                $or: [
+                    { city: { $regex: query.searchTerm, $options: "i" } },
+                    {
+                        "stateDoc.state": {
+                            $regex: query.searchTerm,
+                            $options: "i",
+                        },
+                    },
+                ],
+            },
+        });
+    }
+    pipeline.push({
+        $lookup: {
+            from: "driverdutypolicies",
+            let: { cityId: "$_id" },
+            pipeline: [
+                {
+                    $match: {
+                        $expr: {
+                            $and: [
+                                { $eq: ["$scopeType", "city"] },
+                                { $eq: ["$cityId", "$$cityId"] },
+                                { $eq: [{ $ifNull: ["$isDeleted", false] }, false] },
+                            ],
+                        },
+                    },
+                },
+            ],
+            as: "cityPolicy",
+        },
+    }, { $unwind: { path: "$cityPolicy", preserveNullAndEmptyArrays: true } }, {
+        $lookup: {
+            from: "driverdutypolicies",
+            let: { stateId: "$stateId" },
+            pipeline: [
+                {
+                    $match: {
+                        $expr: {
+                            $and: [
+                                { $eq: ["$scopeType", "state"] },
+                                { $eq: ["$stateId", "$$stateId"] },
+                                { $eq: [{ $ifNull: ["$isDeleted", false] }, false] },
+                            ],
+                        },
+                    },
+                },
+            ],
+            as: "statePolicy",
+        },
+    }, { $unwind: { path: "$statePolicy", preserveNullAndEmptyArrays: true } }, {
+        $lookup: {
+            from: "driverdutypolicies",
+            pipeline: [
+                {
+                    $match: {
+                        scopeType: "global",
+                        $expr: { $eq: [{ $ifNull: ["$isDeleted", false] }, false] },
+                    },
+                },
+            ],
+            as: "globalPolicy",
+        },
+    }, { $unwind: { path: "$globalPolicy", preserveNullAndEmptyArrays: true } }, {
+        $project: {
+            city: "$city",
+            state: { $ifNull: ["$stateDoc.state", ""] },
+            inheritance: {
+                $cond: {
+                    if: "$cityPolicy",
+                    then: "CUSTOM",
+                    else: {
+                        $cond: {
+                            if: "$statePolicy",
+                            then: "STATE",
+                            else: "GLOBAL",
+                        },
+                    },
+                },
+            },
+            maxHours: {
+                $cond: {
+                    if: "$cityPolicy",
+                    then: "$cityPolicy.maxContinuousDrivingHours",
+                    else: {
+                        $cond: {
+                            if: "$statePolicy",
+                            then: "$statePolicy.maxContinuousDrivingHours",
+                            else: {
+                                $ifNull: ["$globalPolicy.maxContinuousDrivingHours", 0],
+                            },
+                        },
+                    },
+                },
+            },
+            resetHours: {
+                $cond: {
+                    if: "$cityPolicy",
+                    then: "$cityPolicy.minimumRestHours",
+                    else: {
+                        $cond: {
+                            if: "$statePolicy",
+                            then: "$statePolicy.minimumRestHours",
+                            else: { $ifNull: ["$globalPolicy.minimumRestHours", 0] },
+                        },
+                    },
+                },
+            },
+            dailyLimit: {
+                $cond: {
+                    if: "$cityPolicy",
+                    then: "$cityPolicy.maxDrivingHoursPerDay",
+                    else: {
+                        $cond: {
+                            if: "$statePolicy",
+                            then: "$statePolicy.maxDrivingHoursPerDay",
+                            else: { $ifNull: ["$globalPolicy.maxDrivingHoursPerDay", 0] },
+                        },
+                    },
+                },
+            },
+            weeklyLimit: { $literal: 0 },
+            breakMinutes: {
+                $cond: {
+                    if: "$cityPolicy",
+                    then: "$cityPolicy.breakDurationMinutes",
+                    else: {
+                        $cond: {
+                            if: "$statePolicy",
+                            then: "$statePolicy.breakDurationMinutes",
+                            else: { $ifNull: ["$globalPolicy.breakDurationMinutes", 0] },
+                        },
+                    },
+                },
+            },
+            status: {
+                $toLower: {
+                    $cond: {
+                        if: "$cityPolicy",
+                        then: "$cityPolicy.status",
+                        else: {
+                            $cond: {
+                                if: "$statePolicy",
+                                then: "$statePolicy.status",
+                                else: { $ifNull: ["$globalPolicy.status", "active"] },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    });
+    if (query.status) {
+        pipeline.push({
+            $match: { status: query.status.toLowerCase() },
+        });
+    }
+    // Count total before skip/limit
+    const countPipeline = [...pipeline, { $count: "total" }];
+    const countResult = yield serviceArea_model_1.ServiceArea.aggregate(countPipeline);
+    const total = ((_a = countResult[0]) === null || _a === void 0 ? void 0 : _a.total) || 0;
+    // Sorting
+    const sortObj = parseSort(query.sort);
+    pipeline.push({ $sort: sortObj });
+    // Pagination
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 10;
+    const skip = (page - 1) * limit;
+    pipeline.push({ $skip: skip }, { $limit: limit });
+    const result = yield serviceArea_model_1.ServiceArea.aggregate(pipeline);
+    const totalPage = Math.ceil(total / limit);
+    return {
+        items: result,
+        pagination: { page, limit, total, totalPage },
+    };
+});
+const getZoneRulesFromDB = (query) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const pipeline = [
+        { $match: { type: "zone", isDeleted: { $ne: true } } },
+    ];
+    if (query.zone) {
+        pipeline.push({
+            $match: { zone: { $regex: query.zone, $options: "i" } },
+        });
+    }
+    pipeline.push({
+        $lookup: {
+            from: "serviceareas",
+            localField: "cityId",
+            foreignField: "_id",
+            as: "cityDoc",
+        },
+    }, { $unwind: { path: "$cityDoc", preserveNullAndEmptyArrays: true } }, {
+        $lookup: {
+            from: "serviceareas",
+            let: { stateId: { $ifNull: ["$stateId", "$cityDoc.stateId"] } },
+            pipeline: [
+                { $match: { $expr: { $eq: ["$_id", "$$stateId"] } } },
+            ],
+            as: "stateDoc",
+        },
+    }, { $unwind: { path: "$stateDoc", preserveNullAndEmptyArrays: true } });
+    if (query.city) {
+        pipeline.push({
+            $match: {
+                "cityDoc.city": { $regex: query.city, $options: "i" },
+            },
+        });
+    }
+    if (query.state) {
+        pipeline.push({
+            $match: {
+                "stateDoc.state": { $regex: query.state, $options: "i" },
+            },
+        });
+    }
+    if (query.searchTerm) {
+        pipeline.push({
+            $match: {
+                $or: [
+                    { zone: { $regex: query.searchTerm, $options: "i" } },
+                    {
+                        "cityDoc.city": {
+                            $regex: query.searchTerm,
+                            $options: "i",
+                        },
+                    },
+                    {
+                        "stateDoc.state": {
+                            $regex: query.searchTerm,
+                            $options: "i",
+                        },
+                    },
+                ],
+            },
+        });
+    }
+    pipeline.push({
+        $lookup: {
+            from: "driverdutypolicies",
+            let: { zoneId: "$_id" },
+            pipeline: [
+                {
+                    $match: {
+                        $expr: {
+                            $and: [
+                                { $eq: ["$scopeType", "zone"] },
+                                { $eq: ["$zoneId", "$$zoneId"] },
+                                { $eq: [{ $ifNull: ["$isDeleted", false] }, false] },
+                            ],
+                        },
+                    },
+                },
+            ],
+            as: "zonePolicy",
+        },
+    }, { $unwind: { path: "$zonePolicy", preserveNullAndEmptyArrays: true } }, {
+        $lookup: {
+            from: "driverdutypolicies",
+            let: { cityId: "$cityId" },
+            pipeline: [
+                {
+                    $match: {
+                        $expr: {
+                            $and: [
+                                { $eq: ["$scopeType", "city"] },
+                                { $eq: ["$cityId", "$$cityId"] },
+                                { $eq: [{ $ifNull: ["$isDeleted", false] }, false] },
+                            ],
+                        },
+                    },
+                },
+            ],
+            as: "cityPolicy",
+        },
+    }, { $unwind: { path: "$cityPolicy", preserveNullAndEmptyArrays: true } }, {
+        $lookup: {
+            from: "driverdutypolicies",
+            let: { stateId: { $ifNull: ["$stateId", "$cityDoc.stateId"] } },
+            pipeline: [
+                {
+                    $match: {
+                        $expr: {
+                            $and: [
+                                { $eq: ["$scopeType", "state"] },
+                                { $eq: ["$stateId", "$$stateId"] },
+                                { $eq: [{ $ifNull: ["$isDeleted", false] }, false] },
+                            ],
+                        },
+                    },
+                },
+            ],
+            as: "statePolicy",
+        },
+    }, { $unwind: { path: "$statePolicy", preserveNullAndEmptyArrays: true } }, {
+        $lookup: {
+            from: "driverdutypolicies",
+            pipeline: [
+                {
+                    $match: {
+                        scopeType: "global",
+                        $expr: { $eq: [{ $ifNull: ["$isDeleted", false] }, false] },
+                    },
+                },
+            ],
+            as: "globalPolicy",
+        },
+    }, { $unwind: { path: "$globalPolicy", preserveNullAndEmptyArrays: true } }, {
+        $project: {
+            zone: "$zone",
+            city: { $ifNull: ["$cityDoc.city", ""] },
+            state: { $ifNull: ["$stateDoc.state", ""] },
+            inheritance: {
+                $cond: {
+                    if: "$zonePolicy",
+                    then: "CUSTOM",
+                    else: {
+                        $cond: {
+                            if: "$cityPolicy",
+                            then: "CITY",
+                            else: {
+                                $cond: {
+                                    if: "$statePolicy",
+                                    then: "STATE",
+                                    else: "GLOBAL",
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+            maxHours: {
+                $cond: {
+                    if: "$zonePolicy",
+                    then: "$zonePolicy.maxContinuousDrivingHours",
+                    else: {
+                        $cond: {
+                            if: "$cityPolicy",
+                            then: "$cityPolicy.maxContinuousDrivingHours",
+                            else: {
+                                $cond: {
+                                    if: "$statePolicy",
+                                    then: "$statePolicy.maxContinuousDrivingHours",
+                                    else: {
+                                        $ifNull: ["$globalPolicy.maxContinuousDrivingHours", 0],
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+            resetHours: {
+                $cond: {
+                    if: "$zonePolicy",
+                    then: "$zonePolicy.minimumRestHours",
+                    else: {
+                        $cond: {
+                            if: "$cityPolicy",
+                            then: "$cityPolicy.minimumRestHours",
+                            else: {
+                                $cond: {
+                                    if: "$statePolicy",
+                                    then: "$statePolicy.minimumRestHours",
+                                    else: { $ifNull: ["$globalPolicy.minimumRestHours", 0] },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+            dailyLimit: {
+                $cond: {
+                    if: "$zonePolicy",
+                    then: "$zonePolicy.maxDrivingHoursPerDay",
+                    else: {
+                        $cond: {
+                            if: "$cityPolicy",
+                            then: "$cityPolicy.maxDrivingHoursPerDay",
+                            else: {
+                                $cond: {
+                                    if: "$statePolicy",
+                                    then: "$statePolicy.maxDrivingHoursPerDay",
+                                    else: {
+                                        $ifNull: ["$globalPolicy.maxDrivingHoursPerDay", 0],
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+            weeklyLimit: { $literal: 0 },
+            breakMinutes: {
+                $cond: {
+                    if: "$zonePolicy",
+                    then: "$zonePolicy.breakDurationMinutes",
+                    else: {
+                        $cond: {
+                            if: "$cityPolicy",
+                            then: "$cityPolicy.breakDurationMinutes",
+                            else: {
+                                $cond: {
+                                    if: "$statePolicy",
+                                    then: "$statePolicy.breakDurationMinutes",
+                                    else: {
+                                        $ifNull: ["$globalPolicy.breakDurationMinutes", 0],
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+            status: {
+                $toLower: {
+                    $cond: {
+                        if: "$zonePolicy",
+                        then: "$zonePolicy.status",
+                        else: {
+                            $cond: {
+                                if: "$cityPolicy",
+                                then: "$cityPolicy.status",
+                                else: {
+                                    $cond: {
+                                        if: "$statePolicy",
+                                        then: "$statePolicy.status",
+                                        else: { $ifNull: ["$globalPolicy.status", "active"] },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    });
+    if (query.status) {
+        pipeline.push({
+            $match: { status: query.status.toLowerCase() },
+        });
+    }
+    // Count total before skip/limit
+    const countPipeline = [...pipeline, { $count: "total" }];
+    const countResult = yield serviceArea_model_1.ServiceArea.aggregate(countPipeline);
+    const total = ((_a = countResult[0]) === null || _a === void 0 ? void 0 : _a.total) || 0;
+    // Sorting
+    const sortObj = parseSort(query.sort);
+    pipeline.push({ $sort: sortObj });
+    // Pagination
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 10;
+    const skip = (page - 1) * limit;
+    pipeline.push({ $skip: skip }, { $limit: limit });
+    const result = yield serviceArea_model_1.ServiceArea.aggregate(pipeline);
+    const totalPage = Math.ceil(total / limit);
+    return {
+        items: result,
+        pagination: { page, limit, total, totalPage },
+    };
+});
+const getAirportRulesFromDB = (query) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const pipeline = [
+        { $match: { type: "airport", isDeleted: { $ne: true } } },
+    ];
+    if (query.airport) {
+        pipeline.push({
+            $match: { airport: { $regex: query.airport, $options: "i" } },
+        });
+    }
+    pipeline.push({
+        $lookup: {
+            from: "serviceareas",
+            localField: "cityId",
+            foreignField: "_id",
+            as: "cityDoc",
+        },
+    }, { $unwind: { path: "$cityDoc", preserveNullAndEmptyArrays: true } }, {
+        $lookup: {
+            from: "serviceareas",
+            let: { stateId: { $ifNull: ["$stateId", "$cityDoc.stateId"] } },
+            pipeline: [
+                { $match: { $expr: { $eq: ["$_id", "$$stateId"] } } },
+            ],
+            as: "stateDoc",
+        },
+    }, { $unwind: { path: "$stateDoc", preserveNullAndEmptyArrays: true } }, {
+        $lookup: {
+            from: "serviceareas",
+            localField: "zoneId",
+            foreignField: "_id",
+            as: "zoneDoc",
+        },
+    }, { $unwind: { path: "$zoneDoc", preserveNullAndEmptyArrays: true } });
+    if (query.city) {
+        pipeline.push({
+            $match: {
+                "cityDoc.city": { $regex: query.city, $options: "i" },
+            },
+        });
+    }
+    if (query.state) {
+        pipeline.push({
+            $match: {
+                "stateDoc.state": { $regex: query.state, $options: "i" },
+            },
+        });
+    }
+    if (query.searchTerm) {
+        pipeline.push({
+            $match: {
+                $or: [
+                    { airport: { $regex: query.searchTerm, $options: "i" } },
+                    {
+                        "cityDoc.city": {
+                            $regex: query.searchTerm,
+                            $options: "i",
+                        },
+                    },
+                    {
+                        "stateDoc.state": {
+                            $regex: query.searchTerm,
+                            $options: "i",
+                        },
+                    },
+                ],
+            },
+        });
+    }
+    pipeline.push({
+        $lookup: {
+            from: "driverdutypolicies",
+            let: { airportId: "$_id" },
+            pipeline: [
+                {
+                    $match: {
+                        $expr: {
+                            $and: [
+                                { $eq: ["$scopeType", "airport"] },
+                                { $eq: ["$airportId", "$$airportId"] },
+                                { $eq: [{ $ifNull: ["$isDeleted", false] }, false] },
+                            ],
+                        },
+                    },
+                },
+            ],
+            as: "airportPolicy",
+        },
+    }, { $unwind: { path: "$airportPolicy", preserveNullAndEmptyArrays: true } }, {
+        $lookup: {
+            from: "driverdutypolicies",
+            let: { zoneId: "$zoneId" },
+            pipeline: [
+                {
+                    $match: {
+                        $expr: {
+                            $and: [
+                                { $eq: ["$scopeType", "zone"] },
+                                { $eq: ["$zoneId", "$$zoneId"] },
+                                { $eq: [{ $ifNull: ["$isDeleted", false] }, false] },
+                            ],
+                        },
+                    },
+                },
+            ],
+            as: "zonePolicy",
+        },
+    }, { $unwind: { path: "$zonePolicy", preserveNullAndEmptyArrays: true } }, {
+        $lookup: {
+            from: "driverdutypolicies",
+            let: { cityId: "$cityId" },
+            pipeline: [
+                {
+                    $match: {
+                        $expr: {
+                            $and: [
+                                { $eq: ["$scopeType", "city"] },
+                                { $eq: ["$cityId", "$$cityId"] },
+                                { $eq: [{ $ifNull: ["$isDeleted", false] }, false] },
+                            ],
+                        },
+                    },
+                },
+            ],
+            as: "cityPolicy",
+        },
+    }, { $unwind: { path: "$cityPolicy", preserveNullAndEmptyArrays: true } }, {
+        $lookup: {
+            from: "driverdutypolicies",
+            let: { stateId: { $ifNull: ["$stateId", "$cityDoc.stateId"] } },
+            pipeline: [
+                {
+                    $match: {
+                        $expr: {
+                            $and: [
+                                { $eq: ["$scopeType", "state"] },
+                                { $eq: ["$stateId", "$$stateId"] },
+                                { $eq: [{ $ifNull: ["$isDeleted", false] }, false] },
+                            ],
+                        },
+                    },
+                },
+            ],
+            as: "statePolicy",
+        },
+    }, { $unwind: { path: "$statePolicy", preserveNullAndEmptyArrays: true } }, {
+        $lookup: {
+            from: "driverdutypolicies",
+            pipeline: [
+                {
+                    $match: {
+                        scopeType: "global",
+                        $expr: { $eq: [{ $ifNull: ["$isDeleted", false] }, false] },
+                    },
+                },
+            ],
+            as: "globalPolicy",
+        },
+    }, { $unwind: { path: "$globalPolicy", preserveNullAndEmptyArrays: true } }, {
+        $project: {
+            airport: "$airport",
+            city: { $ifNull: ["$cityDoc.city", ""] },
+            state: { $ifNull: ["$stateDoc.state", ""] },
+            inheritance: {
+                $cond: {
+                    if: "$airportPolicy",
+                    then: "CUSTOM",
+                    else: {
+                        $cond: {
+                            if: "$zonePolicy",
+                            then: "ZONE",
+                            else: {
+                                $cond: {
+                                    if: "$cityPolicy",
+                                    then: "CITY",
+                                    else: {
+                                        $cond: {
+                                            if: "$statePolicy",
+                                            then: "STATE",
+                                            else: "GLOBAL",
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+            maxHours: {
+                $cond: {
+                    if: "$airportPolicy",
+                    then: "$airportPolicy.maxContinuousDrivingHours",
+                    else: {
+                        $cond: {
+                            if: "$zonePolicy",
+                            then: "$zonePolicy.maxContinuousDrivingHours",
+                            else: {
+                                $cond: {
+                                    if: "$cityPolicy",
+                                    then: "$cityPolicy.maxContinuousDrivingHours",
+                                    else: {
+                                        $cond: {
+                                            if: "$statePolicy",
+                                            then: "$statePolicy.maxContinuousDrivingHours",
+                                            else: {
+                                                $ifNull: [
+                                                    "$globalPolicy.maxContinuousDrivingHours",
+                                                    0,
+                                                ],
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+            resetHours: {
+                $cond: {
+                    if: "$airportPolicy",
+                    then: "$airportPolicy.minimumRestHours",
+                    else: {
+                        $cond: {
+                            if: "$zonePolicy",
+                            then: "$zonePolicy.minimumRestHours",
+                            else: {
+                                $cond: {
+                                    if: "$cityPolicy",
+                                    then: "$cityPolicy.minimumRestHours",
+                                    else: {
+                                        $cond: {
+                                            if: "$statePolicy",
+                                            then: "$statePolicy.minimumRestHours",
+                                            else: {
+                                                $ifNull: ["$globalPolicy.minimumRestHours", 0],
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+            dailyLimit: {
+                $cond: {
+                    if: "$airportPolicy",
+                    then: "$airportPolicy.maxDrivingHoursPerDay",
+                    else: {
+                        $cond: {
+                            if: "$zonePolicy",
+                            then: "$zonePolicy.maxDrivingHoursPerDay",
+                            else: {
+                                $cond: {
+                                    if: "$cityPolicy",
+                                    then: "$cityPolicy.maxDrivingHoursPerDay",
+                                    else: {
+                                        $cond: {
+                                            if: "$statePolicy",
+                                            then: "$statePolicy.maxDrivingHoursPerDay",
+                                            else: {
+                                                $ifNull: ["$globalPolicy.maxDrivingHoursPerDay", 0],
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+            weeklyLimit: { $literal: 0 },
+            breakMinutes: {
+                $cond: {
+                    if: "$airportPolicy",
+                    then: "$airportPolicy.breakDurationMinutes",
+                    else: {
+                        $cond: {
+                            if: "$zonePolicy",
+                            then: "$zonePolicy.breakDurationMinutes",
+                            else: {
+                                $cond: {
+                                    if: "$cityPolicy",
+                                    then: "$cityPolicy.breakDurationMinutes",
+                                    else: {
+                                        $cond: {
+                                            if: "$statePolicy",
+                                            then: "$statePolicy.breakDurationMinutes",
+                                            else: {
+                                                $ifNull: ["$globalPolicy.breakDurationMinutes", 0],
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+            status: {
+                $toLower: {
+                    $cond: {
+                        if: "$airportPolicy",
+                        then: "$airportPolicy.status",
+                        else: {
+                            $cond: {
+                                if: "$zonePolicy",
+                                then: "$zonePolicy.status",
+                                else: {
+                                    $cond: {
+                                        if: "$cityPolicy",
+                                        then: "$cityPolicy.status",
+                                        else: {
+                                            $cond: {
+                                                if: "$statePolicy",
+                                                then: "$statePolicy.status",
+                                                else: { $ifNull: ["$globalPolicy.status", "active"] },
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    });
+    if (query.status) {
+        pipeline.push({
+            $match: { status: query.status.toLowerCase() },
+        });
+    }
+    // Count total before skip/limit
+    const countPipeline = [...pipeline, { $count: "total" }];
+    const countResult = yield serviceArea_model_1.ServiceArea.aggregate(countPipeline);
+    const total = ((_a = countResult[0]) === null || _a === void 0 ? void 0 : _a.total) || 0;
+    // Sorting
+    const sortObj = parseSort(query.sort);
+    pipeline.push({ $sort: sortObj });
+    // Pagination
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 10;
+    const skip = (page - 1) * limit;
+    pipeline.push({ $skip: skip }, { $limit: limit });
+    const result = yield serviceArea_model_1.ServiceArea.aggregate(pipeline);
+    const totalPage = Math.ceil(total / limit);
+    return {
+        items: result,
+        pagination: { page, limit, total, totalPage },
+    };
+});
 exports.DriverDutyPolicyServices = {
     createDriverDutyPolicyToDB,
     getDriverDutyPolicyFromDB,
@@ -769,4 +1762,9 @@ exports.DriverDutyPolicyServices = {
     updateDriverDutyPolicyStatusFromDB,
     getDriverAvailability,
     updateDriverAvailability,
+    getGlobalRuleFromDB,
+    getStateRulesFromDB,
+    getCityRulesFromDB,
+    getZoneRulesFromDB,
+    getAirportRulesFromDB,
 };

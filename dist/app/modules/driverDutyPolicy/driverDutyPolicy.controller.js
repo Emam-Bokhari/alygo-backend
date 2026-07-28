@@ -86,6 +86,51 @@ const updateDriverDutyPolicyStatus = (0, catchAsync_1.default)((req, res) => __a
         data: result,
     });
 }));
+const getGlobalRule = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield driverDutyPolicy_service_1.DriverDutyPolicyServices.getGlobalRuleFromDB();
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        statusCode: 200,
+        message: "Global duty hour rule retrieved successfully",
+        data: result,
+    });
+}));
+const getStateRules = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield driverDutyPolicy_service_1.DriverDutyPolicyServices.getStateRulesFromDB(req.query);
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        statusCode: 200,
+        message: "State rules retrieved successfully",
+        data: result,
+    });
+}));
+const getCityRules = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield driverDutyPolicy_service_1.DriverDutyPolicyServices.getCityRulesFromDB(req.query);
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        statusCode: 200,
+        message: "City rules retrieved successfully",
+        data: result,
+    });
+}));
+const getZoneRules = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield driverDutyPolicy_service_1.DriverDutyPolicyServices.getZoneRulesFromDB(req.query);
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        statusCode: 200,
+        message: "Zone rules retrieved successfully",
+        data: result,
+    });
+}));
+const getAirportRules = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield driverDutyPolicy_service_1.DriverDutyPolicyServices.getAirportRulesFromDB(req.query);
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        statusCode: 200,
+        message: "Airport rules retrieved successfully",
+        data: result,
+    });
+}));
 exports.DriverDutyPolicyController = {
     createDriverDutyPolicy,
     getDriverDutyPolicy,
@@ -94,4 +139,9 @@ exports.DriverDutyPolicyController = {
     deleteDriverDutyPolicy,
     getActiveDriverDutyPolicies,
     updateDriverDutyPolicyStatus,
+    getGlobalRule,
+    getStateRules,
+    getCityRules,
+    getZoneRules,
+    getAirportRules,
 };

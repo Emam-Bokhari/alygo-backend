@@ -16,7 +16,10 @@ import { DriverRoutes } from "../modules/driver/driver.route";
 import { CarRoutes } from "../modules/car/car.routes";
 import { ServiceAreaRoutes } from "../modules/serviceArea/serviceArea.route";
 import { CancellationReasonRoutes } from "../modules/cancellationReason/cancellationReason.route";
-import { DriverDutyPolicyRoutes } from "../modules/driverDutyPolicy/driverDutyPolicy.route";
+import {
+  DriverDutyPolicyRoutes,
+  DriverDutyPolicyAdminRoutes,
+} from "../modules/driverDutyPolicy/driverDutyPolicy.route";
 import { EmergencyHelplineRoutes } from "../modules/emergencyHelpline/emergencyHelpline.route";
 import { EmergencyContactRoutes } from "../modules/emergencyContact/emergencyContact.route";
 import { ReportIssueCategoryRoutes } from "../modules/reportIssueCategory/reportIssueCategory.route";
@@ -134,6 +137,10 @@ const apiRoutes = [
   {
     path: "/driver-duty-policies",
     route: DriverDutyPolicyRoutes,
+  },
+  {
+    path: "/admin/duty-hour",
+    route: DriverDutyPolicyAdminRoutes,
   },
   {
     path: "/emergency-helplines",

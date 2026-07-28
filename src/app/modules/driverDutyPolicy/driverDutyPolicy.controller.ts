@@ -104,6 +104,88 @@ const updateDriverDutyPolicyStatus = catchAsync(async (req, res) => {
   });
 });
 
+const getGlobalRule = catchAsync(async (req, res) => {
+  const result = await DriverDutyPolicyServices.getGlobalRuleFromDB();
+
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Global duty hour rule retrieved successfully",
+    data: result,
+  });
+});
+
+const getStateRules = catchAsync(async (req, res) => {
+  const result = await DriverDutyPolicyServices.getStateRulesFromDB(req.query);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "State rules retrieved successfully",
+    data: result.data,
+    meta: result.meta,
+  });
+});
+
+const getCityRules = catchAsync(async (req, res) => {
+  const result = await DriverDutyPolicyServices.getCityRulesFromDB(req.query);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "City rules retrieved successfully",
+    data: result.data,
+    meta: result.meta,
+  });
+});
+
+const getZoneRules = catchAsync(async (req, res) => {
+  const result = await DriverDutyPolicyServices.getZoneRulesFromDB(req.query);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Zone rules retrieved successfully",
+    data: result.data,
+    meta: result.meta,
+  });
+});
+
+const getAirportRules = catchAsync(async (req, res) => {
+  const result = await DriverDutyPolicyServices.getAirportRulesFromDB(req.query);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Airport rules retrieved successfully",
+    data: result.data,
+    meta: result.meta,
+  });
+});
+
+const getMonitoringCards = catchAsync(async (req, res) => {
+  const result = await DriverDutyPolicyServices.getMonitoringCardsFromDB();
+
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Driver monitoring cards retrieved successfully",
+    data: result,
+  });
+});
+
+const getDriverMonitoringList = catchAsync(async (req, res) => {
+  const result = await DriverDutyPolicyServices.getDriverMonitoringListFromDB(req.query);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Driver monitoring list retrieved successfully",
+    data: result.data,
+    meta: result.meta,
+  });
+});
+
 export const DriverDutyPolicyController = {
   createDriverDutyPolicy,
   getDriverDutyPolicy,
@@ -112,4 +194,13 @@ export const DriverDutyPolicyController = {
   deleteDriverDutyPolicy,
   getActiveDriverDutyPolicies,
   updateDriverDutyPolicyStatus,
+  getGlobalRule,
+  getStateRules,
+  getCityRules,
+  getZoneRules,
+  getAirportRules,
+  getMonitoringCards,
+  getDriverMonitoringList,
 };
+
+

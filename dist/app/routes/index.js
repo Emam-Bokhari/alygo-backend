@@ -127,6 +127,10 @@ const apiRoutes = [
         route: driverDutyPolicy_route_1.DriverDutyPolicyRoutes,
     },
     {
+        path: "/admin/duty-hour",
+        route: driverDutyPolicy_route_1.DriverDutyPolicyAdminRoutes,
+    },
+    {
         path: "/emergency-helplines",
         route: emergencyHelpline_route_1.EmergencyHelplineRoutes,
     },

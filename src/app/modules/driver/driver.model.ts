@@ -60,6 +60,7 @@ const driverSchema = new Schema<IDriver>(
     // Service Area
     serviceAreaId: {
       type: Schema.Types.ObjectId,
+      ref: "ServiceArea",
       default: null,
     },
     serviceAreaAssignedAt: {
