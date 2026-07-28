@@ -171,7 +171,7 @@ const calculateFare = async (
   const commission = surgedSubtotal * (rideCategory.commissionRate / 100);
   const driverEarning = surgedSubtotal - commission;
   const total = surgedSubtotal; // can apply discount/tax adjustments in future
-  
+
   return {
     baseFare: parseFloat((baseFare * multiplier).toFixed(2)),
     distanceFare: parseFloat((distanceFare * multiplier).toFixed(2)),
@@ -1982,7 +1982,6 @@ const completeRide = async (
         logger.error("Error awarding ride completion points:", err);
       });
 
-  
     ReferralService.checkAndProcessPassengerReferral(
       ride.userId.toString(),
     ).catch((err) => {

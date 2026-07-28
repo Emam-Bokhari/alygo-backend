@@ -1,4 +1,4 @@
-# Events System   
+# Events System
 
 This document outlines the design, architecture, and operation of the Events System. It highlights how city-wide or geofenced special events alter passenger pricing, dispatch priorities, and notifications.
 
@@ -7,9 +7,11 @@ This document outlines the design, architecture, and operation of the Events Sys
 ## 1. Business Overview
 
 ### Plain English Summary
-When major events occur (like sports games, concerts, festivals, or conferences), there is usually a massive spike in passenger demand in a concentrated area. The **Events System** allows admins to schedule special events with specific dates, times, and geofences (like a stadium with a 2km radius). 
+
+When major events occur (like sports games, concerts, festivals, or conferences), there is usually a massive spike in passenger demand in a concentrated area. The **Events System** allows admins to schedule special events with specific dates, times, and geofences (like a stadium with a 2km radius).
 
 During an active event:
+
 - Passengers in the event area may experience surge pricing to attract more drivers.
 - Drivers are notified about high-demand zones to help them position their vehicles efficiently.
 - Rides originating from the event zone are prioritized or matched according to the specific event rules.
@@ -19,6 +21,7 @@ During an active event:
 ## 2. Technical Overview
 
 ### Architecture
+
 The Events System integrates with the **ServiceArea** geospatial module and **SurgeCalculationService** to apply multipliers when rides originate near event locations.
 
 ```
@@ -41,7 +44,9 @@ The Events System integrates with the **ServiceArea** geospatial module and **Su
 ### Collections & Key Fields
 
 #### `events` Collection
+
 Defines specific scheduled events.
+
 - `_id`: `ObjectId`
 - `eventName`: `String` (e.g., "Taylor Swift Concert")
 - `description`: `String`
@@ -55,10 +60,12 @@ Defines specific scheduled events.
 - `createdBy`: `ObjectId` -> References `User`
 
 ### Database Relationships
+
 - **ServiceArea**: Events can either be bound to an entire ServiceArea (like a city) or restricted to a specific geofenced location.
 - **SurgeRule**: The `SurgeCalculationService` checks for active events to resolve the event-specific surge rules.
 
 ### Database Indexes
+
 - `{ location: "2dsphere" }` (Allows querying events covering passenger coordinate lookups)
 - `{ status: 1, startDateTime: 1, endDateTime: 1 }` (To quickly retrieve active scheduled events)
 
@@ -83,7 +90,7 @@ sequenceDiagram
 
     Note over S, D: Event starts:
     S->>D: Push Notification & Socket Event: "Special event active nearby!"
-    
+
     Note over S: Passenger requests ride during event:
     S->>DB: Fetch events covering pickup location
     DB-->>S: Return active Taylor Swift Concert event
@@ -95,6 +102,7 @@ sequenceDiagram
 ## 5. Internal Algorithms
 
 ### Geospatial Event Matching Logic
+
 When a ride request is processed, the system determines if the pickup coordinates fall within any active event's geofenced area.
 
 ```mermaid
@@ -163,15 +171,18 @@ sequenceDiagram
 
 ## 8. State Diagrams
 
-*Not applicable. State transitions are detailed in Section 6.*
+_Not applicable. State transitions are detailed in Section 6._
 
 ---
 
 ## 9. API & Socket Interaction
 
 ### API: Create Event (Admin Only)
+
 `POST /api/v1/events`
+
 - **Request Payload**:
+
 ```json
 {
   "eventName": "Lollapalooza Festival",
@@ -181,13 +192,14 @@ sequenceDiagram
   "endDateTime": "2026-08-03T23:59:00Z",
   "location": {
     "type": "Point",
-    "coordinates": [-87.6190, 41.8758]
+    "coordinates": [-87.619, 41.8758]
   },
   "coverageRadiusKm": 2.5
 }
 ```
 
 - **Response Payload**:
+
 ```json
 {
   "success": true,
@@ -204,7 +216,9 @@ sequenceDiagram
 ## 10. Calculations
 
 ### Geofenced Event Surge Interpolation
+
 If a passenger requests a ride from a location 1.5km away from the Grant Park coordinates:
+
 - The event has `coverageRadiusKm: 2.5`.
 - Active Rule: **Event Rule** (`minMultiplier: 1.5`, `maxMultiplier: 3.0`).
 - Since the pickup is within 2.5km, the system selects the Event Surge Rule and calculates the multiplier based on the marketplace ratio.
@@ -223,9 +237,14 @@ During active events, the system priorities drivers who are moving toward the ev
 2. The comparison is evaluated using Luxon:
    ```typescript
    const nowInTimezone = DateTime.now().setZone(event.timezone);
-   const startInTimezone = DateTime.fromJSDate(event.startDateTime).setZone(event.timezone);
-   const endInTimezone = DateTime.fromJSDate(event.endDateTime).setZone(event.timezone);
-   const isActive = nowInTimezone >= startInTimezone && nowInTimezone <= endInTimezone;
+   const startInTimezone = DateTime.fromJSDate(event.startDateTime).setZone(
+     event.timezone,
+   );
+   const endInTimezone = DateTime.fromJSDate(event.endDateTime).setZone(
+     event.timezone,
+   );
+   const isActive =
+     nowInTimezone >= startInTimezone && nowInTimezone <= endInTimezone;
    ```
 
 ---
@@ -241,4 +260,3 @@ During active events, the system priorities drivers who are moving toward the ev
 
 - **Geospatial Queries**: Uses MongoDB `$geoWithin` or `$nearSphere` queries to fetch candidate events instead of fetching all events and calculating distances in-memory.
 - **Compound Indexes**: Combined status and time index queries execute in less than 2ms.
-

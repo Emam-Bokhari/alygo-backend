@@ -18,7 +18,9 @@ import { IChatMessage } from "./providers/aiProvider.interface";
 const levenshteinDistance = (str1: string, str2: string): number => {
   const m = str1.length;
   const n = str2.length;
-  const dp: number[][] = Array(m + 1).fill(null).map(() => Array(n + 1).fill(0));
+  const dp: number[][] = Array(m + 1)
+    .fill(null)
+    .map(() => Array(n + 1).fill(0));
 
   for (let i = 0; i <= m; i++) dp[i][0] = i;
   for (let j = 0; j <= n; j++) dp[0][j] = j;
@@ -35,7 +37,11 @@ const levenshteinDistance = (str1: string, str2: string): number => {
   return dp[m][n];
 };
 
-const isFuzzyMatch = (str1: string, str2: string, threshold: number = 0.8): boolean => {
+const isFuzzyMatch = (
+  str1: string,
+  str2: string,
+  threshold: number = 0.8,
+): boolean => {
   const distance = levenshteinDistance(str1.toLowerCase(), str2.toLowerCase());
   const maxLen = Math.max(str1.length, str2.length);
   if (maxLen === 0) return true;
@@ -44,9 +50,19 @@ const isFuzzyMatch = (str1: string, str2: string, threshold: number = 0.8): bool
 };
 
 // Word-level fuzzy matching - checks if any word in query matches any word in target
-const hasWordLevelFuzzyMatch = (query: string, target: string, threshold: number = 0.7): boolean => {
-  const queryWords = query.toLowerCase().split(/\s+/).filter(w => w.length >= 2);
-  const targetWords = target.toLowerCase().split(/\s+/).filter(w => w.length >= 2);
+const hasWordLevelFuzzyMatch = (
+  query: string,
+  target: string,
+  threshold: number = 0.7,
+): boolean => {
+  const queryWords = query
+    .toLowerCase()
+    .split(/\s+/)
+    .filter((w) => w.length >= 2);
+  const targetWords = target
+    .toLowerCase()
+    .split(/\s+/)
+    .filter((w) => w.length >= 2);
 
   for (const qWord of queryWords) {
     for (const tWord of targetWords) {
@@ -59,8 +75,15 @@ const hasWordLevelFuzzyMatch = (query: string, target: string, threshold: number
 };
 
 // Check if query contains a substring that fuzzy matches any part of target
-const hasPartialFuzzyMatch = (query: string, target: string, minWordLength: number = 3): boolean => {
-  const queryWords = query.toLowerCase().split(/\s+/).filter(w => w.length >= minWordLength);
+const hasPartialFuzzyMatch = (
+  query: string,
+  target: string,
+  minWordLength: number = 3,
+): boolean => {
+  const queryWords = query
+    .toLowerCase()
+    .split(/\s+/)
+    .filter((w) => w.length >= minWordLength);
   const targetLower = target.toLowerCase();
 
   for (const word of queryWords) {
@@ -78,7 +101,7 @@ const hasPartialFuzzyMatch = (query: string, target: string, minWordLength: numb
 const hasSubstringMatch = (query: string, target: string): boolean => {
   const queryLower = query.toLowerCase();
   const targetLower = target.toLowerCase();
-  const targetWords = targetLower.split(/\s+/).filter(w => w.length >= 3);
+  const targetWords = targetLower.split(/\s+/).filter((w) => w.length >= 3);
 
   for (const tWord of targetWords) {
     if (queryLower.includes(tWord)) {
@@ -90,8 +113,14 @@ const hasSubstringMatch = (query: string, target: string): boolean => {
 
 // Calculate best match score between query and target
 const getBestMatchScore = (query: string, target: string): number => {
-  const queryWords = query.toLowerCase().split(/\s+/).filter(w => w.length >= 2);
-  const targetWords = target.toLowerCase().split(/\s+/).filter(w => w.length >= 2);
+  const queryWords = query
+    .toLowerCase()
+    .split(/\s+/)
+    .filter((w) => w.length >= 2);
+  const targetWords = target
+    .toLowerCase()
+    .split(/\s+/)
+    .filter((w) => w.length >= 2);
   let bestScore = 0;
 
   for (const qWord of queryWords) {
@@ -116,7 +145,7 @@ const logAudit = async (
   action: string,
   userType: "admin" | "driver" | "system",
   userId?: string | Types.ObjectId,
-  details?: Record<string, any>
+  details?: Record<string, any>,
 ) => {
   try {
     await AiAuditLog.create({
@@ -135,7 +164,11 @@ const logAudit = async (
 // ==========================================
 const checkRateLimits = async (
   driverId: string | Types.ObjectId,
-  limitConfig: { maxQuestionsPerMinute: number; maxQuestionsPerHour: number; dailyLimit: number }
+  limitConfig: {
+    maxQuestionsPerMinute: number;
+    maxQuestionsPerHour: number;
+    dailyLimit: number;
+  },
 ) => {
   const now = new Date();
   const oneMinAgo = new Date(now.getTime() - 60 * 1000);
@@ -151,19 +184,19 @@ const checkRateLimits = async (
   if (minCount >= limitConfig.maxQuestionsPerMinute) {
     throw new ApiError(
       StatusCodes.TOO_MANY_REQUESTS,
-      `Rate limit exceeded. You can only ask ${limitConfig.maxQuestionsPerMinute} questions per minute.`
+      `Rate limit exceeded. You can only ask ${limitConfig.maxQuestionsPerMinute} questions per minute.`,
     );
   }
   if (hourCount >= limitConfig.maxQuestionsPerHour) {
     throw new ApiError(
       StatusCodes.TOO_MANY_REQUESTS,
-      `Rate limit exceeded. You can only ask ${limitConfig.maxQuestionsPerHour} questions per hour.`
+      `Rate limit exceeded. You can only ask ${limitConfig.maxQuestionsPerHour} questions per hour.`,
     );
   }
   if (dayCount >= limitConfig.dailyLimit) {
     throw new ApiError(
       StatusCodes.TOO_MANY_REQUESTS,
-      `Daily rate limit exceeded. You can only ask ${limitConfig.dailyLimit} questions per day.`
+      `Daily rate limit exceeded. You can only ask ${limitConfig.dailyLimit} questions per day.`,
     );
   }
 };
@@ -174,14 +207,17 @@ const checkRateLimits = async (
 
 const askAiQuestion = async (
   driverId: string,
-  payload: { conversationId: string; question: string; language?: string }
+  payload: { conversationId: string; question: string; language?: string },
 ): Promise<IAiSupport> => {
   const startTime = Date.now();
   const sysConfig = await getSystemConfig();
   const aiSupportConfig = sysConfig.aiSupport;
 
   if (!aiSupportConfig || !aiSupportConfig.enabled) {
-    throw new ApiError(StatusCodes.SERVICE_UNAVAILABLE, "AI Support System is currently disabled.");
+    throw new ApiError(
+      StatusCodes.SERVICE_UNAVAILABLE,
+      "AI Support System is currently disabled.",
+    );
   }
 
   // 1. Enforce Rate Limiting
@@ -208,19 +244,36 @@ const askAiQuestion = async (
 
   // 3. Prompt Injection & AI Safety Guard
   const safetyBlocklist = [
-    "api", "password", "database", "source code", "internal system", "security",
-    "revenue", "payment secrets", "environment variables", "hidden features",
-    "sql", "token", "inject", "ignore previous instructions", "jailbreak",
-    "system schema", "admin panel", "fraud detection", "payment internals"
+    "api",
+    "password",
+    "database",
+    "source code",
+    "internal system",
+    "security",
+    "revenue",
+    "payment secrets",
+    "environment variables",
+    "hidden features",
+    "sql",
+    "token",
+    "inject",
+    "ignore previous instructions",
+    "jailbreak",
+    "system schema",
+    "admin panel",
+    "fraud detection",
+    "payment internals",
   ];
 
   const containsViolation = safetyBlocklist.some((term) =>
-    normalizedQuestion.includes(term)
+    normalizedQuestion.includes(term),
   );
 
   if (containsViolation) {
     const responseTimeMs = Date.now() - startTime;
-    const answer = aiSupportConfig.prompts.safetyPrompt || "I am not authorized to answer this question. Please contact support.";
+    const answer =
+      aiSupportConfig.prompts.safetyPrompt ||
+      "I am not authorized to answer this question. Please contact support.";
     const chatMsg = await AiSupport.create({
       driverId,
       conversationId: payload.conversationId,
@@ -274,20 +327,29 @@ const askAiQuestion = async (
     // Exact keyword check
     const keywords = (item.keywords || []).map((k) => k.toLowerCase());
     const exactKeywordMatch = keywords.some(
-      (k) => normalizedQuestion === k || normalizedQuestion.includes(k)
+      (k) => normalizedQuestion === k || normalizedQuestion.includes(k),
     );
     if (exactKeywordMatch) score += 1000;
 
     // Fuzzy keyword match for typos
-    const fuzzyKeywordMatch = keywords.some((k) => isFuzzyMatch(normalizedQuestion, k, 0.7));
+    const fuzzyKeywordMatch = keywords.some((k) =>
+      isFuzzyMatch(normalizedQuestion, k, 0.7),
+    );
     if (fuzzyKeywordMatch) score += 850;
 
     // Word-level keyword matching - any word in query matches any keyword
-    const wordLevelKeywordMatch = hasWordLevelFuzzyMatch(normalizedQuestion, keywords.join(" "), 0.65);
+    const wordLevelKeywordMatch = hasWordLevelFuzzyMatch(
+      normalizedQuestion,
+      keywords.join(" "),
+      0.65,
+    );
     if (wordLevelKeywordMatch) score += 650;
 
     // Best match score for keywords
-    const keywordBestScore = getBestMatchScore(normalizedQuestion, keywords.join(" "));
+    const keywordBestScore = getBestMatchScore(
+      normalizedQuestion,
+      keywords.join(" "),
+    );
     if (keywordBestScore > 0.6) score += Math.floor(keywordBestScore * 500);
 
     // Title checks
@@ -298,7 +360,8 @@ const askAiQuestion = async (
     if (isFuzzyMatch(normalizedQuestion, itemTitle, 0.7)) score += 350;
 
     // Word-level title matching
-    if (hasWordLevelFuzzyMatch(normalizedQuestion, itemTitle, 0.65)) score += 280;
+    if (hasWordLevelFuzzyMatch(normalizedQuestion, itemTitle, 0.65))
+      score += 280;
 
     // Best match score for title
     const titleBestScore = getBestMatchScore(normalizedQuestion, itemTitle);
@@ -320,19 +383,24 @@ const askAiQuestion = async (
     });
 
     // Word-level tag matching
-    if (hasWordLevelFuzzyMatch(normalizedQuestion, tags.join(" "), 0.65)) score += 130;
+    if (hasWordLevelFuzzyMatch(normalizedQuestion, tags.join(" "), 0.65))
+      score += 130;
 
     // Best match score for tags
     const tagBestScore = getBestMatchScore(normalizedQuestion, tags.join(" "));
     if (tagBestScore > 0.6) score += Math.floor(tagBestScore * 200);
 
     // Content containment
-    if (itemContent.includes(normalizedQuestion) || itemSearchable.includes(normalizedQuestion)) {
+    if (
+      itemContent.includes(normalizedQuestion) ||
+      itemSearchable.includes(normalizedQuestion)
+    ) {
       score += 100;
     }
 
     // Partial fuzzy match in content
-    if (hasPartialFuzzyMatch(normalizedQuestion, itemSearchable, 3)) score += 90;
+    if (hasPartialFuzzyMatch(normalizedQuestion, itemSearchable, 3))
+      score += 90;
 
     // Substring match in content
     if (hasSubstringMatch(normalizedQuestion, itemSearchable)) score += 70;
@@ -369,7 +437,9 @@ const askAiQuestion = async (
   // 6. Handle Fallback if Confidence is below threshold
   if (!bestMatch || bestMatch.confidenceScore < threshold) {
     const responseTimeMs = Date.now() - startTime;
-    const answer = aiSupportConfig.prompts.noMatchPrompt || "I couldn't find an approved answer for that. Please contact support.";
+    const answer =
+      aiSupportConfig.prompts.noMatchPrompt ||
+      "I couldn't find an approved answer for that. Please contact support.";
     const chatMsg = await AiSupport.create({
       driverId,
       conversationId: payload.conversationId,
@@ -439,7 +509,7 @@ User Question: "${rawQuestion}"`;
         model: aiSupportConfig.model,
         temperature: aiSupportConfig.temperature,
         maxTokens: aiSupportConfig.maxTokens,
-      }
+      },
     );
 
     const responseTimeMs = Date.now() - startTime;
@@ -483,9 +553,11 @@ User Question: "${rawQuestion}"`;
       console.error("Response data:", error.response.data);
     }
     console.error("=============================");
-    
+
     const responseTimeMs = Date.now() - startTime;
-    const fallbackAnswer = aiSupportConfig.prompts.fallbackPrompt || "I couldn't find an approved answer for that. Please contact support.";
+    const fallbackAnswer =
+      aiSupportConfig.prompts.fallbackPrompt ||
+      "I couldn't find an approved answer for that. Please contact support.";
     const chatMsg = await AiSupport.create({
       driverId,
       conversationId: payload.conversationId,
@@ -518,14 +590,17 @@ User Question: "${rawQuestion}"`;
 
 const regenerateAnswer = async (
   driverId: string,
-  chatId: string
+  chatId: string,
 ): Promise<IAiSupport> => {
   const startTime = Date.now();
   const sysConfig = await getSystemConfig();
   const aiSupportConfig = sysConfig.aiSupport;
 
   if (!aiSupportConfig || !aiSupportConfig.enabled) {
-    throw new ApiError(StatusCodes.SERVICE_UNAVAILABLE, "AI Support System is currently disabled.");
+    throw new ApiError(
+      StatusCodes.SERVICE_UNAVAILABLE,
+      "AI Support System is currently disabled.",
+    );
   }
 
   const existingChat = await AiSupport.findOne({ _id: chatId, driverId });
@@ -551,37 +626,57 @@ const regenerateAnswer = async (
     const itemCategory = item.category.toLowerCase();
     const itemSearchable = item.searchableContent.toLowerCase();
 
-    const queryWords = existingChat.normalizedQuestion.split(/\s+/).filter(Boolean);
+    const queryWords = existingChat.normalizedQuestion
+      .split(/\s+/)
+      .filter(Boolean);
 
     const keywords = (item.keywords || []).map((k) => k.toLowerCase());
     const exactKeywordMatch = keywords.some(
-      (k) => existingChat.normalizedQuestion === k || existingChat.normalizedQuestion.includes(k)
+      (k) =>
+        existingChat.normalizedQuestion === k ||
+        existingChat.normalizedQuestion.includes(k),
     );
     if (exactKeywordMatch) score += 1000;
 
     // Fuzzy keyword match for typos
-    const fuzzyKeywordMatch = keywords.some((k) => isFuzzyMatch(existingChat.normalizedQuestion, k, 0.7));
+    const fuzzyKeywordMatch = keywords.some((k) =>
+      isFuzzyMatch(existingChat.normalizedQuestion, k, 0.7),
+    );
     if (fuzzyKeywordMatch) score += 850;
 
     // Word-level keyword matching
-    const wordLevelKeywordMatch = hasWordLevelFuzzyMatch(existingChat.normalizedQuestion, keywords.join(" "), 0.65);
+    const wordLevelKeywordMatch = hasWordLevelFuzzyMatch(
+      existingChat.normalizedQuestion,
+      keywords.join(" "),
+      0.65,
+    );
     if (wordLevelKeywordMatch) score += 650;
 
     // Best match score for keywords
-    const keywordBestScore = getBestMatchScore(existingChat.normalizedQuestion, keywords.join(" "));
+    const keywordBestScore = getBestMatchScore(
+      existingChat.normalizedQuestion,
+      keywords.join(" "),
+    );
     if (keywordBestScore > 0.6) score += Math.floor(keywordBestScore * 500);
 
     if (itemTitle === existingChat.normalizedQuestion) score += 800;
     else if (itemTitle.includes(existingChat.normalizedQuestion)) score += 400;
 
     // Fuzzy title match
-    if (isFuzzyMatch(existingChat.normalizedQuestion, itemTitle, 0.7)) score += 350;
+    if (isFuzzyMatch(existingChat.normalizedQuestion, itemTitle, 0.7))
+      score += 350;
 
     // Word-level title matching
-    if (hasWordLevelFuzzyMatch(existingChat.normalizedQuestion, itemTitle, 0.65)) score += 280;
+    if (
+      hasWordLevelFuzzyMatch(existingChat.normalizedQuestion, itemTitle, 0.65)
+    )
+      score += 280;
 
     // Best match score for title
-    const titleBestScore = getBestMatchScore(existingChat.normalizedQuestion, itemTitle);
+    const titleBestScore = getBestMatchScore(
+      existingChat.normalizedQuestion,
+      itemTitle,
+    );
     if (titleBestScore > 0.6) score += Math.floor(titleBestScore * 300);
 
     queryWords.forEach((word) => {
@@ -599,21 +694,38 @@ const regenerateAnswer = async (
     });
 
     // Word-level tag matching
-    if (hasWordLevelFuzzyMatch(existingChat.normalizedQuestion, tags.join(" "), 0.65)) score += 130;
+    if (
+      hasWordLevelFuzzyMatch(
+        existingChat.normalizedQuestion,
+        tags.join(" "),
+        0.65,
+      )
+    )
+      score += 130;
 
     // Best match score for tags
-    const tagBestScore = getBestMatchScore(existingChat.normalizedQuestion, tags.join(" "));
+    const tagBestScore = getBestMatchScore(
+      existingChat.normalizedQuestion,
+      tags.join(" "),
+    );
     if (tagBestScore > 0.6) score += Math.floor(tagBestScore * 200);
 
-    if (itemContent.includes(existingChat.normalizedQuestion) || itemSearchable.includes(existingChat.normalizedQuestion)) {
+    if (
+      itemContent.includes(existingChat.normalizedQuestion) ||
+      itemSearchable.includes(existingChat.normalizedQuestion)
+    ) {
       score += 100;
     }
 
     // Partial fuzzy match in content
-    if (hasPartialFuzzyMatch(existingChat.normalizedQuestion, itemSearchable, 3)) score += 90;
+    if (
+      hasPartialFuzzyMatch(existingChat.normalizedQuestion, itemSearchable, 3)
+    )
+      score += 90;
 
     // Substring match in content
-    if (hasSubstringMatch(existingChat.normalizedQuestion, itemSearchable)) score += 70;
+    if (hasSubstringMatch(existingChat.normalizedQuestion, itemSearchable))
+      score += 70;
 
     queryWords.forEach((word) => {
       if (itemContent.includes(word) || itemSearchable.includes(word)) {
@@ -626,7 +738,8 @@ const regenerateAnswer = async (
     }
 
     // Fuzzy category match
-    if (isFuzzyMatch(existingChat.normalizedQuestion, itemCategory, 0.65)) score += 35;
+    if (isFuzzyMatch(existingChat.normalizedQuestion, itemCategory, 0.65))
+      score += 35;
 
     score += (item.priority || 0) * 10;
     const confidenceScore = Math.min(score / 1000, 1.0);
@@ -641,14 +754,19 @@ const regenerateAnswer = async (
 
   if (!bestMatch || bestMatch.confidenceScore < threshold) {
     const responseTimeMs = Date.now() - startTime;
-    existingChat.answer = aiSupportConfig.prompts.noMatchPrompt || "I couldn't find an approved answer for that. Please contact support.";
+    existingChat.answer =
+      aiSupportConfig.prompts.noMatchPrompt ||
+      "I couldn't find an approved answer for that. Please contact support.";
     existingChat.responseStatus = "no_match";
     existingChat.responseSource = "fallback";
     existingChat.confidenceScore = bestMatch ? bestMatch.confidenceScore : 0.0;
     existingChat.responseTimeMs = responseTimeMs;
     await existingChat.save();
 
-    await logAudit("response_regenerated", "driver", driverId, { chatId, status: "no_match" });
+    await logAudit("response_regenerated", "driver", driverId, {
+      chatId,
+      status: "no_match",
+    });
     return existingChat;
   }
 
@@ -691,7 +809,7 @@ User Question: "${existingChat.question}"`;
         model: aiSupportConfig.model,
         temperature: aiSupportConfig.temperature,
         maxTokens: aiSupportConfig.maxTokens,
-      }
+      },
     );
 
     const responseTimeMs = Date.now() - startTime;
@@ -714,7 +832,9 @@ User Question: "${existingChat.question}"`;
     return existingChat;
   } catch (error: any) {
     const responseTimeMs = Date.now() - startTime;
-    existingChat.answer = aiSupportConfig.prompts.fallbackPrompt || "I couldn't find an approved answer for that. Please contact support.";
+    existingChat.answer =
+      aiSupportConfig.prompts.fallbackPrompt ||
+      "I couldn't find an approved answer for that. Please contact support.";
     existingChat.responseStatus = "error";
     existingChat.responseSource = "fallback";
     existingChat.responseTimeMs = responseTimeMs;
@@ -733,7 +853,7 @@ User Question: "${existingChat.question}"`;
 
 const getChatHistoryFromDB = async (
   driverId: string,
-  query: any
+  query: any,
 ): Promise<{ data: IAiSupport[]; meta: any }> => {
   const baseQuery = AiSupport.find({ driverId });
   const queryBuilder = new AiSupport(null as any); // just mock or build query
@@ -774,8 +894,13 @@ const getChatHistoryFromDB = async (
   };
 };
 
-const getChatDetailsFromDB = async (driverId: string, id: string): Promise<IAiSupport> => {
-  const chat = await AiSupport.findOne({ _id: id, driverId }).populate("knowledgeIds");
+const getChatDetailsFromDB = async (
+  driverId: string,
+  id: string,
+): Promise<IAiSupport> => {
+  const chat = await AiSupport.findOne({ _id: id, driverId }).populate(
+    "knowledgeIds",
+  );
   if (!chat) {
     throw new ApiError(StatusCodes.NOT_FOUND, "Chat details not found.");
   }
@@ -785,7 +910,7 @@ const getChatDetailsFromDB = async (driverId: string, id: string): Promise<IAiSu
 const submitChatFeedback = async (
   driverId: string,
   id: string,
-  feedback: "helpful" | "not_helpful"
+  feedback: "helpful" | "not_helpful",
 ): Promise<IAiSupport> => {
   const chat = await AiSupport.findOne({ _id: id, driverId });
   if (!chat) {
@@ -796,7 +921,10 @@ const submitChatFeedback = async (
   chat.helpful = feedback === "helpful";
   await chat.save();
 
-  await logAudit("driver_feedback", "driver", driverId, { chatId: id, feedback });
+  await logAudit("driver_feedback", "driver", driverId, {
+    chatId: id,
+    feedback,
+  });
 
   return chat;
 };
@@ -805,7 +933,9 @@ const submitChatFeedback = async (
 // CONVERSATION SERVICES
 // ==========================================
 
-const startConversationInDB = async (driverId: string): Promise<IAiConversation> => {
+const startConversationInDB = async (
+  driverId: string,
+): Promise<IAiConversation> => {
   // Check count of active chats to keep it reasonable
   const activeCount = await AiConversation.countDocuments({ driverId });
   const title = `Chat Session #${activeCount + 1}`;
@@ -827,12 +957,12 @@ const startConversationInDB = async (driverId: string): Promise<IAiConversation>
 const renameConversationInDB = async (
   driverId: string,
   id: string,
-  title: string
+  title: string,
 ): Promise<IAiConversation> => {
   const conversation = await AiConversation.findOneAndUpdate(
     { _id: id, driverId },
     { title },
-    { new: true }
+    { new: true },
   );
 
   if (!conversation) {
@@ -842,11 +972,14 @@ const renameConversationInDB = async (
   return conversation;
 };
 
-const archiveConversationInDB = async (driverId: string, id: string): Promise<IAiConversation> => {
+const archiveConversationInDB = async (
+  driverId: string,
+  id: string,
+): Promise<IAiConversation> => {
   const conversation = await AiConversation.findOneAndUpdate(
     { _id: id, driverId },
     { isArchived: true },
-    { new: true }
+    { new: true },
   );
 
   if (!conversation) {
@@ -856,7 +989,10 @@ const archiveConversationInDB = async (driverId: string, id: string): Promise<IA
   return conversation;
 };
 
-const deleteConversationFromDB = async (driverId: string, id: string): Promise<IAiConversation> => {
+const deleteConversationFromDB = async (
+  driverId: string,
+  id: string,
+): Promise<IAiConversation> => {
   const conversation = await AiConversation.findOne({ _id: id, driverId });
   if (!conversation) {
     throw new ApiError(StatusCodes.NOT_FOUND, "Conversation not found.");
@@ -864,20 +1000,29 @@ const deleteConversationFromDB = async (driverId: string, id: string): Promise<I
 
   // Soft delete conversation and all messages inside it
   await (conversation as any).softDelete();
-  await AiSupport.updateMany({ conversationId: id }, { isDeleted: true, deletedAt: new Date() });
+  await AiSupport.updateMany(
+    { conversationId: id },
+    { isDeleted: true, deletedAt: new Date() },
+  );
 
   return conversation;
 };
 
-const getConversationsFromDB = async (driverId: string): Promise<IAiConversation[]> => {
-  return await AiConversation.find({ driverId, isArchived: false }).sort({ updatedAt: -1 });
+const getConversationsFromDB = async (
+  driverId: string,
+): Promise<IAiConversation[]> => {
+  return await AiConversation.find({ driverId, isArchived: false }).sort({
+    updatedAt: -1,
+  });
 };
 
 // ==========================================
 // KNOWLEDGE ADMIN SERVICES
 // ==========================================
 
-const getKnowledgeListFromDB = async (query: any): Promise<{ data: IAiKnowledge[]; meta: any }> => {
+const getKnowledgeListFromDB = async (
+  query: any,
+): Promise<{ data: IAiKnowledge[]; meta: any }> => {
   const page = Number(query.page) || 1;
   const limit = Number(query.limit) || 10;
   const skip = (page - 1) * limit;
@@ -915,7 +1060,10 @@ const getKnowledgeListFromDB = async (query: any): Promise<{ data: IAiKnowledge[
   };
 };
 
-const createKnowledgeInDB = async (payload: IAiKnowledge, adminId: string): Promise<IAiKnowledge> => {
+const createKnowledgeInDB = async (
+  payload: IAiKnowledge,
+  adminId: string,
+): Promise<IAiKnowledge> => {
   // Programmatic Uniqueness check for isLatest published knowledge titles
   const duplicate = await AiKnowledge.findOne({
     title: payload.title,
@@ -926,7 +1074,7 @@ const createKnowledgeInDB = async (payload: IAiKnowledge, adminId: string): Prom
   if (duplicate && payload.status === "published") {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
-      "A published knowledge base document with this title already exists."
+      "A published knowledge base document with this title already exists.",
     );
   }
 
@@ -959,11 +1107,14 @@ const createKnowledgeInDB = async (payload: IAiKnowledge, adminId: string): Prom
 const updateKnowledgeInDB = async (
   id: string,
   payload: Partial<IAiKnowledge>,
-  adminId: string
+  adminId: string,
 ): Promise<IAiKnowledge> => {
   const oldDoc = await AiKnowledge.findById(id);
   if (!oldDoc) {
-    throw new ApiError(StatusCodes.NOT_FOUND, "Knowledge base article not found.");
+    throw new ApiError(
+      StatusCodes.NOT_FOUND,
+      "Knowledge base article not found.",
+    );
   }
 
   const title = payload.title || oldDoc.title;
@@ -972,7 +1123,10 @@ const updateKnowledgeInDB = async (
   const searchableContent = `${title} ${content} ${keywords.join(" ")}`;
 
   // If the old document was PUBLISHED, create a new version document
-  if (oldDoc.status === "published" && (payload.status === "published" || !payload.status)) {
+  if (
+    oldDoc.status === "published" &&
+    (payload.status === "published" || !payload.status)
+  ) {
     // 1. Unmark latest on previous version
     await AiKnowledge.findByIdAndUpdate(id, { isLatest: false });
 
@@ -1011,10 +1165,13 @@ const updateKnowledgeInDB = async (
         searchableContent,
         updatedBy: new Types.ObjectId(adminId),
         ...(payload.status === "published"
-          ? { publishedAt: new Date(), publishedBy: new Types.ObjectId(adminId) }
+          ? {
+              publishedAt: new Date(),
+              publishedBy: new Types.ObjectId(adminId),
+            }
           : {}),
       },
-      { new: true }
+      { new: true },
     );
 
     if (!updated) {
@@ -1031,10 +1188,16 @@ const updateKnowledgeInDB = async (
   }
 };
 
-const deleteKnowledgeFromDB = async (id: string, adminId: string): Promise<IAiKnowledge> => {
+const deleteKnowledgeFromDB = async (
+  id: string,
+  adminId: string,
+): Promise<IAiKnowledge> => {
   const doc = await AiKnowledge.findById(id);
   if (!doc) {
-    throw new ApiError(StatusCodes.NOT_FOUND, "Knowledge base article not found.");
+    throw new ApiError(
+      StatusCodes.NOT_FOUND,
+      "Knowledge base article not found.",
+    );
   }
 
   await (doc as any).softDelete();
@@ -1053,9 +1216,11 @@ const deleteKnowledgeFromDB = async (id: string, adminId: string): Promise<IAiKn
 
 const updateSystemConfig = async (
   payload: Partial<any>,
-  adminId: string
+  adminId: string,
 ): Promise<any> => {
-  const existingConfig = await AiConversation.db.model("SystemConfiguration").findOne();
+  const existingConfig = await AiConversation.db
+    .model("SystemConfiguration")
+    .findOne();
 
   // Defensive fallback merge
   const currentAiSupport = existingConfig?.aiSupport || {
@@ -1087,7 +1252,11 @@ const updateSystemConfig = async (
       "How do referral rewards work?",
       "How do destination filters work?",
     ],
-    rateLimit: { maxQuestionsPerMinute: 5, maxQuestionsPerHour: 30, dailyLimit: 100 },
+    rateLimit: {
+      maxQuestionsPerMinute: 5,
+      maxQuestionsPerHour: 30,
+      dailyLimit: 100,
+    },
     prompts: {
       systemPrompt:
         "You are an AI Support Assistant for the Alygo platform. You answer driver queries ONLY using approved platform documentation. Keep answers helpful and brief. If the query is outside Alygo documentation, politely refuse.",
@@ -1114,14 +1283,18 @@ const updateSystemConfig = async (
     },
   };
 
-  const result = await AiConversation.db.model("SystemConfiguration").findOneAndUpdate(
-    {},
-    { $set: { aiSupport: updatedAiSupport } },
-    { new: true, upsert: true }
-  );
+  const result = await AiConversation.db
+    .model("SystemConfiguration")
+    .findOneAndUpdate(
+      {},
+      { $set: { aiSupport: updatedAiSupport } },
+      { new: true, upsert: true },
+    );
 
   // Clear helper cache
-  const { clearSystemConfigCache } = require("../../../helpers/systemConfigHelper");
+  const {
+    clearSystemConfigCache,
+  } = require("../../../helpers/systemConfigHelper");
   clearSystemConfigCache();
 
   await logAudit("ai_config_changed", "admin", adminId, payload);
@@ -1132,21 +1305,24 @@ const updateSystemConfig = async (
 const bulkImportKnowledge = async (
   rawCsvOrMarkdownData: string,
   format: "csv" | "markdown",
-  adminId: string
+  adminId: string,
 ): Promise<{ count: number }> => {
   const itemsToCreate: any[] = [];
 
   if (format === "csv") {
     // Basic CSV parser
     const lines = rawCsvOrMarkdownData.split("\n");
-    const headers = lines[0].split(",").map((h) => h.trim().replace(/^"|"$/g, ""));
+    const headers = lines[0]
+      .split(",")
+      .map((h) => h.trim().replace(/^"|"$/g, ""));
 
     for (let i = 1; i < lines.length; i++) {
       const line = lines[i].trim();
       if (!line) continue;
 
       // Split accounting for quotes values
-      const matches = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || line.split(",");
+      const matches =
+        line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || line.split(",");
       const values = matches.map((v) => v.trim().replace(/^"|"$/g, ""));
 
       const record: any = {};
@@ -1199,7 +1375,7 @@ const bulkImportKnowledge = async (
           allowedRoles: ["driver"],
           language: "en",
         } as any,
-        adminId
+        adminId,
       );
       count++;
     } catch (err) {
@@ -1217,18 +1393,27 @@ const bulkImportKnowledge = async (
 
 const getDashboardStatsFromDB = async (): Promise<any> => {
   const now = new Date();
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfToday = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+  );
 
-  const [totalQuestions, questionsToday, helpfulFeedback, notHelpfulFeedback] = await Promise.all([
-    AiSupport.countDocuments(),
-    AiSupport.countDocuments({ createdAt: { $gte: startOfToday } }),
-    AiSupport.countDocuments({ feedback: "helpful" }),
-    AiSupport.countDocuments({ feedback: "not_helpful" }),
-  ]);
+  const [totalQuestions, questionsToday, helpfulFeedback, notHelpfulFeedback] =
+    await Promise.all([
+      AiSupport.countDocuments(),
+      AiSupport.countDocuments({ createdAt: { $gte: startOfToday } }),
+      AiSupport.countDocuments({ feedback: "helpful" }),
+      AiSupport.countDocuments({ feedback: "not_helpful" }),
+    ]);
 
   const totalFeedback = helpfulFeedback + notHelpfulFeedback;
-  const helpfulPct = totalFeedback > 0 ? Math.round((helpfulFeedback / totalFeedback) * 100) : 0;
-  const notHelpfulPct = totalFeedback > 0 ? Math.round((notHelpfulFeedback / totalFeedback) * 100) : 0;
+  const helpfulPct =
+    totalFeedback > 0 ? Math.round((helpfulFeedback / totalFeedback) * 100) : 0;
+  const notHelpfulPct =
+    totalFeedback > 0
+      ? Math.round((notHelpfulFeedback / totalFeedback) * 100)
+      : 0;
 
   // Average response time, Token Usage aggregation
   const aggregates = await AiSupport.aggregate([
@@ -1246,7 +1431,9 @@ const getDashboardStatsFromDB = async (): Promise<any> => {
     ? Math.round(aggregates[0].avgResponseTime)
     : 0;
   const totalTokens = aggregates[0]?.totalTokens || 0;
-  const avgTokens = aggregates[0]?.avgTokens ? Math.round(aggregates[0].avgTokens) : 0;
+  const avgTokens = aggregates[0]?.avgTokens
+    ? Math.round(aggregates[0].avgTokens)
+    : 0;
 
   // Assume provider cost rate of $0.0015 per 1,000 tokens
   const estimatedCost = (totalTokens / 1000) * 0.0015;
@@ -1261,7 +1448,13 @@ const getDashboardStatsFromDB = async (): Promise<any> => {
 
   // Top Asked Questions (Frequent queries)
   const topAskedQuestions = await AiSupport.aggregate([
-    { $group: { _id: "$normalizedQuestion", rawQuestion: { $first: "$question" }, count: { $sum: 1 } } },
+    {
+      $group: {
+        _id: "$normalizedQuestion",
+        rawQuestion: { $first: "$question" },
+        count: { $sum: 1 },
+      },
+    },
     { $sort: { count: -1 } },
     { $limit: 10 },
   ]);
@@ -1269,7 +1462,13 @@ const getDashboardStatsFromDB = async (): Promise<any> => {
   // Top Missing / Unanswered Questions
   const topMissingQuestions = await AiSupport.aggregate([
     { $match: { responseStatus: "no_match" } },
-    { $group: { _id: "$normalizedQuestion", rawQuestion: { $first: "$question" }, count: { $sum: 1 } } },
+    {
+      $group: {
+        _id: "$normalizedQuestion",
+        rawQuestion: { $first: "$question" },
+        count: { $sum: 1 },
+      },
+    },
     { $sort: { count: -1 } },
     { $limit: 10 },
   ]);
@@ -1278,7 +1477,14 @@ const getDashboardStatsFromDB = async (): Promise<any> => {
   const docUsage = await AiSupport.aggregate([
     { $unwind: "$knowledgeIds" },
     { $group: { _id: "$knowledgeIds", count: { $sum: 1 } } },
-    { $lookup: { from: "aiknowledges", localField: "_id", foreignField: "_id", as: "doc" } },
+    {
+      $lookup: {
+        from: "aiknowledges",
+        localField: "_id",
+        foreignField: "_id",
+        as: "doc",
+      },
+    },
     { $unwind: "$doc" },
     { $project: { _id: 1, title: "$doc.title", count: 1 } },
     { $sort: { count: -1 } },
@@ -1303,10 +1509,23 @@ const getDashboardStatsFromDB = async (): Promise<any> => {
     totalTokens,
     avgTokens,
     estimatedCost,
-    topCategories: topCategories.map((c) => ({ category: c._id, count: c.count })),
-    topAskedQuestions: topAskedQuestions.map((q) => ({ question: q.rawQuestion, count: q.count })),
-    topMissingQuestions: topMissingQuestions.map((q) => ({ question: q.rawQuestion, count: q.count })),
-    mostUsedDocuments: docUsage.map((d) => ({ id: d._id, title: d.title, count: d.count })),
+    topCategories: topCategories.map((c) => ({
+      category: c._id,
+      count: c.count,
+    })),
+    topAskedQuestions: topAskedQuestions.map((q) => ({
+      question: q.rawQuestion,
+      count: q.count,
+    })),
+    topMissingQuestions: topMissingQuestions.map((q) => ({
+      question: q.rawQuestion,
+      count: q.count,
+    })),
+    mostUsedDocuments: docUsage.map((d) => ({
+      id: d._id,
+      title: d.title,
+      count: d.count,
+    })),
     lowConfidenceResponses: lowConfidence,
   };
 };

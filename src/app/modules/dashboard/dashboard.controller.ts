@@ -42,7 +42,10 @@ const getDemandChart = catchAsync(async (req: Request, res: Response) => {
 const getDriverGrowth = catchAsync(async (req: Request, res: Response) => {
   const range = (req.query.range as string) || "12months";
   const serviceAreaId = req.query.serviceAreaId as string;
-  const result = await DashboardService.getDriverGrowthFromDB(range, serviceAreaId);
+  const result = await DashboardService.getDriverGrowthFromDB(
+    range,
+    serviceAreaId,
+  );
 
   sendResponse(res, {
     success: true,
@@ -55,7 +58,10 @@ const getDriverGrowth = catchAsync(async (req: Request, res: Response) => {
 const getPassengerGrowth = catchAsync(async (req: Request, res: Response) => {
   const range = (req.query.range as string) || "12months";
   const serviceAreaId = req.query.serviceAreaId as string;
-  const result = await DashboardService.getPassengerGrowthFromDB(range, serviceAreaId);
+  const result = await DashboardService.getPassengerGrowthFromDB(
+    range,
+    serviceAreaId,
+  );
 
   sendResponse(res, {
     success: true,
@@ -80,7 +86,11 @@ const getTopCities = catchAsync(async (req: Request, res: Response) => {
   const limit = req.query.limit ? Number(req.query.limit) : 5;
   const range = req.query.range as string;
   const serviceAreaId = req.query.serviceAreaId as string;
-  const result = await DashboardService.getTopCitiesFromDB(limit, range, serviceAreaId);
+  const result = await DashboardService.getTopCitiesFromDB(
+    limit,
+    range,
+    serviceAreaId,
+  );
 
   sendResponse(res, {
     success: true,
@@ -94,7 +104,11 @@ const getTopAirports = catchAsync(async (req: Request, res: Response) => {
   const limit = req.query.limit ? Number(req.query.limit) : 5;
   const range = req.query.range as string;
   const serviceAreaId = req.query.serviceAreaId as string;
-  const result = await DashboardService.getTopAirportsFromDB(limit, range, serviceAreaId);
+  const result = await DashboardService.getTopAirportsFromDB(
+    limit,
+    range,
+    serviceAreaId,
+  );
 
   sendResponse(res, {
     success: true,

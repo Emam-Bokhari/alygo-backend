@@ -21,7 +21,10 @@ const getKnowledgeList = catchAsync(async (req: Request, res: Response) => {
 });
 
 const createKnowledge = catchAsync(async (req: Request, res: Response) => {
-  const result = await AiSupportService.createKnowledgeInDB(req.body, req.user.id);
+  const result = await AiSupportService.createKnowledgeInDB(
+    req.body,
+    req.user.id,
+  );
   sendResponse(res, {
     success: true,
     statusCode: StatusCodes.CREATED,
@@ -32,7 +35,11 @@ const createKnowledge = catchAsync(async (req: Request, res: Response) => {
 
 const updateKnowledge = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const result = await AiSupportService.updateKnowledgeInDB(id, req.body, req.user.id);
+  const result = await AiSupportService.updateKnowledgeInDB(
+    id,
+    req.body,
+    req.user.id,
+  );
   sendResponse(res, {
     success: true,
     statusCode: StatusCodes.OK,
@@ -53,7 +60,10 @@ const deleteKnowledge = catchAsync(async (req: Request, res: Response) => {
 });
 
 const updateConfig = catchAsync(async (req: Request, res: Response) => {
-  const result = await AiSupportService.updateSystemConfig(req.body, req.user.id);
+  const result = await AiSupportService.updateSystemConfig(
+    req.body,
+    req.user.id,
+  );
   sendResponse(res, {
     success: true,
     statusCode: StatusCodes.OK,
@@ -64,7 +74,11 @@ const updateConfig = catchAsync(async (req: Request, res: Response) => {
 
 const importKnowledge = catchAsync(async (req: Request, res: Response) => {
   const { data, format } = req.body;
-  const result = await AiSupportService.bulkImportKnowledge(data, format, req.user.id);
+  const result = await AiSupportService.bulkImportKnowledge(
+    data,
+    format,
+    req.user.id,
+  );
   sendResponse(res, {
     success: true,
     statusCode: StatusCodes.OK,
@@ -109,7 +123,10 @@ const regenerateChatAnswer = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getChatHistory = catchAsync(async (req: Request, res: Response) => {
-  const result = await AiSupportService.getChatHistoryFromDB(req.user.id, req.query);
+  const result = await AiSupportService.getChatHistoryFromDB(
+    req.user.id,
+    req.query,
+  );
   sendResponse(res, {
     success: true,
     statusCode: StatusCodes.OK,
@@ -133,7 +150,11 @@ const getChatDetails = catchAsync(async (req: Request, res: Response) => {
 const submitFeedback = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
   const { feedback } = req.body;
-  const result = await AiSupportService.submitChatFeedback(req.user.id, id, feedback);
+  const result = await AiSupportService.submitChatFeedback(
+    req.user.id,
+    id,
+    feedback,
+  );
   sendResponse(res, {
     success: true,
     statusCode: StatusCodes.OK,
@@ -142,16 +163,18 @@ const submitFeedback = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const getSuggestedQuestions = catchAsync(async (req: Request, res: Response) => {
-  const sysConfig = await getSystemConfig();
-  const suggested = sysConfig.aiSupport?.suggestedQuestions || [];
-  sendResponse(res, {
-    success: true,
-    statusCode: StatusCodes.OK,
-    message: "Suggested questions retrieved successfully",
-    data: suggested,
-  });
-});
+const getSuggestedQuestions = catchAsync(
+  async (req: Request, res: Response) => {
+    const sysConfig = await getSystemConfig();
+    const suggested = sysConfig.aiSupport?.suggestedQuestions || [];
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: "Suggested questions retrieved successfully",
+      data: suggested,
+    });
+  },
+);
 
 const startConversation = catchAsync(async (req: Request, res: Response) => {
   const result = await AiSupportService.startConversationInDB(req.user.id);
@@ -166,7 +189,11 @@ const startConversation = catchAsync(async (req: Request, res: Response) => {
 const renameConversation = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
   const { title } = req.body;
-  const result = await AiSupportService.renameConversationInDB(req.user.id, id, title);
+  const result = await AiSupportService.renameConversationInDB(
+    req.user.id,
+    id,
+    title,
+  );
   sendResponse(res, {
     success: true,
     statusCode: StatusCodes.OK,
@@ -177,7 +204,10 @@ const renameConversation = catchAsync(async (req: Request, res: Response) => {
 
 const archiveConversation = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const result = await AiSupportService.archiveConversationInDB(req.user.id, id);
+  const result = await AiSupportService.archiveConversationInDB(
+    req.user.id,
+    id,
+  );
   sendResponse(res, {
     success: true,
     statusCode: StatusCodes.OK,
@@ -188,7 +218,10 @@ const archiveConversation = catchAsync(async (req: Request, res: Response) => {
 
 const deleteConversation = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const result = await AiSupportService.deleteConversationFromDB(req.user.id, id);
+  const result = await AiSupportService.deleteConversationFromDB(
+    req.user.id,
+    id,
+  );
   sendResponse(res, {
     success: true,
     statusCode: StatusCodes.OK,

@@ -45,8 +45,14 @@ import { DriverRewardsRoutes } from "../modules/tier/driverRewards.route";
 import { AdminRewardsRoutes } from "../modules/tier/adminRewards.route";
 import { PendingPaymentRoutes } from "../modules/pendingPayment/pendingPayment.route";
 import { SystemConfigurationRoutes } from "../modules/systemConfiguration/systemConfiguration.route";
-import { TripReportRoutes, TripCompletionComplaintRoutes } from "../modules/tripReport/tripReport.route";
-import { AdminAiSupportRoutes, DriverAiSupportRoutes } from "../modules/aiSupport/aiSupport.route";
+import {
+  TripReportRoutes,
+  TripCompletionComplaintRoutes,
+} from "../modules/tripReport/tripReport.route";
+import {
+  AdminAiSupportRoutes,
+  DriverAiSupportRoutes,
+} from "../modules/aiSupport/aiSupport.route";
 import { DashboardRoutes } from "../modules/dashboard/dashboard.route";
 import { CancellationAnalyticsRoutes } from "../modules/cancellationAnalytics/cancellationAnalytics.route";
 import { LiveTripsRoutes } from "../modules/liveTrips/liveTrips.route";

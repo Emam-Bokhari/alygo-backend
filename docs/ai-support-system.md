@@ -7,12 +7,14 @@ This document describes the AI Support System, including database models, safety
 ## 1. Business Overview
 
 ### Plain English Summary
+
 The **AI Support System** acts as an automated virtual helper for drivers. Instead of requiring human agents to answer every question about platform rules, policies, or vehicle requirements, drivers can ask the AI directly.
 
 The AI is strictly guided by the platform's **Knowledge Base**—an approved repository of company documentation created and published by admins. To ensure accuracy and security:
+
 - The system checks every question for malicious prompts (like trying to hack the system or get user passwords) and blocks them.
 - It scans the knowledge base using a scoring algorithm to find the most relevant document.
-- It sends only that specific document to the AI engine (OpenAI or Gemini) and instructs it to answer the question using *only* that context.
+- It sends only that specific document to the AI engine (OpenAI or Gemini) and instructs it to answer the question using _only_ that context.
 - If the system cannot find a matching document with a high enough confidence score, it declines to answer and redirects the driver to human support.
 
 ---
@@ -20,6 +22,7 @@ The AI is strictly guided by the platform's **Knowledge Base**—an approved rep
 ## 2. Technical Overview
 
 ### Architecture
+
 The AI Support System uses a retrieval-augmented generation (RAG) style pipeline. It uses keyword matching and Levenshtein distance calculations to rank documents before calling the LLM provider.
 
 ```
@@ -60,7 +63,9 @@ The AI Support System uses a retrieval-augmented generation (RAG) style pipeline
 ### Collections & Key Fields
 
 #### `aiknowledges` Collection
+
 Stores approved documentation snippets.
+
 - `_id`: `ObjectId`
 - `title`: `String`
 - `module`: `String` (e.g., `"ride"`, `"payout"`, `"duty_hours"`)
@@ -76,7 +81,9 @@ Stores approved documentation snippets.
 - `createdBy`: `ObjectId` -> References `User`
 
 #### `aisuports` Collection
+
 Stores each Q&A interaction.
+
 - `driverId`: `ObjectId` -> References `User`
 - `conversationId`: `ObjectId` -> References `AiConversation`
 - `question`: `String`
@@ -89,13 +96,17 @@ Stores each Q&A interaction.
 - `responseTimeMs`: `Number`
 
 #### `aiconversations` Collection
+
 Groups Q&A exchanges.
+
 - `driverId`: `ObjectId` -> References `User`
 - `title`: `String`
 - `isArchived`: `Boolean`
 
 #### `aiauditlogs` Collection
+
 Tracks admin and system edits.
+
 - `action`: `String`
 - `performedBy`: `ObjectId` -> References `User`
 - `details`: `Object`
@@ -163,6 +174,7 @@ flowchart TD
 ```
 
 ### Levenshtein Distance & Fuzzy Match Formula
+
 To compute the edit distance between strings:
 
 $$D_{i,j} = \min \begin{cases} D_{i-1,j} + 1 \\ D_{i,j-1} + 1 \\ D_{i-1,j-1} + (s_1[i] \neq s_2[j]) \end{cases}$$
@@ -199,21 +211,24 @@ flowchart TD
 
 ## 7. Sequence Diagrams
 
-*Detailed in Section 4.*
+_Detailed in Section 4._
 
 ---
 
 ## 8. State Diagrams
 
-*Not applicable as AI operations are stateless, transactional evaluations.*
+_Not applicable as AI operations are stateless, transactional evaluations._
 
 ---
 
 ## 9. API & Socket Interaction
 
 ### API: Ask AI Question
+
 `POST /api/v1/ai-support/ask`
+
 - **Request Payload**:
+
 ```json
 {
   "conversationId": "64ca8e836940d9c49a62657d",
@@ -223,6 +238,7 @@ flowchart TD
 ```
 
 - **Response Payload**:
+
 ```json
 {
   "success": true,
@@ -242,6 +258,7 @@ flowchart TD
 ## 10. Calculations
 
 ### Rate Limiting Calculations
+
 - The system stores limits (e.g. `maxQuestionsPerMinute: 5`, `maxQuestionsPerHour: 20`, `dailyLimit: 100`).
 - When a driver asks a question, the system queries the `aisuports` collection:
   - `minCount` = Count of documents with `driverId` in the last 60 seconds.
@@ -266,7 +283,7 @@ Audit log entries are stored in UTC. Date queries for hourly and daily limits us
 ## 13. Security & Fraud Prevention
 
 - **Prompt Injection Filter**: Normalizes inputs to support English and Bengali characters while stripping special characters. It scans for injection keywords (such as `ignore previous instructions`, `jailbreak`, `SQL`) and blocks them.
-- **Strict Context Enforcement**: The system instructions explicitly direct the LLM: *“Analyze the context above and answer the user question strictly using it. Do not invent details.”*
+- **Strict Context Enforcement**: The system instructions explicitly direct the LLM: _“Analyze the context above and answer the user question strictly using it. Do not invent details.”_
 
 ---
 

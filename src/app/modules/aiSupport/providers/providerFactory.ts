@@ -15,7 +15,7 @@ export class ProviderFactory {
       default:
         throw new ApiError(
           StatusCodes.BAD_REQUEST,
-          `Unsupported AI Provider: "${provider}". Supported providers: google, openai.`
+          `Unsupported AI Provider: "${provider}". Supported providers: google, openai.`,
         );
     }
   }

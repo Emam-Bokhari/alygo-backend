@@ -1,4 +1,4 @@
-# Lost & Found System 
+# Lost & Found System
 
 This document describes the Lost & Found System, including passenger and driver flows, status lifecycles, delivery configurations, and payments integration.
 
@@ -7,6 +7,7 @@ This document describes the Lost & Found System, including passenger and driver 
 ## 1. Business Overview
 
 ### Plain English Summary
+
 It is common for passengers to accidentally leave items in vehicles. The **Lost & Found System** provides a structured way to report and return lost items.
 
 - **Passengers** can report lost items from their completed rides, providing descriptions and pictures.
@@ -21,6 +22,7 @@ It is common for passengers to accidentally leave items in vehicles. The **Lost 
 ## 2. Technical Overview
 
 ### Architecture
+
 The Lost & Found module integrates with the **Ride**, **Wallet**, **Transaction**, and **Stripe** modules. Real-time updates are synchronized via WebSockets and push notifications.
 
 ```
@@ -54,7 +56,9 @@ The Lost & Found module integrates with the **Ride**, **Wallet**, **Transaction*
 ### Collections & Key Fields
 
 #### `lostfounds` Collection
+
 Defines a lost & found case transaction.
+
 - `_id`: `ObjectId`
 - `rideId`: `ObjectId` -> References `Ride`
 - `passengerId`: `ObjectId` -> References `User`
@@ -146,6 +150,7 @@ sequenceDiagram
 ## 5. Internal Algorithms
 
 ### Lost & Found Status Transitions
+
 The lifecycle diagram below outlines the valid status transitions.
 
 ```mermaid
@@ -170,27 +175,30 @@ stateDiagram-v2
 
 ## 6. Flowcharts
 
-*Detailed in Section 5.*
+_Detailed in Section 5._
 
 ---
 
 ## 7. Sequence Diagrams
 
-*Detailed in Section 4.*
+_Detailed in Section 4._
 
 ---
 
 ## 8. State Diagrams
 
-*Detailed in Section 5.*
+_Detailed in Section 5._
 
 ---
 
 ## 9. API & Socket Interaction
 
 ### API: Submit Driver Rating
+
 `POST /api/v1/lost-found/rate/:reportId`
+
 - **Request Payload**:
+
 ```json
 {
   "rating": 5,
@@ -199,6 +207,7 @@ stateDiagram-v2
 ```
 
 - **Response Payload**:
+
 ```json
 {
   "success": true,
@@ -217,6 +226,7 @@ stateDiagram-v2
 ## 10. Calculations
 
 ### Stripe Payment & Driver Wallet Calculations
+
 - **Delivery Fee**: `$15.00`
 - **Platform Fee**: `$0.00` (100% of the delivery fee goes to the driver)
 - **Stripe Transaction**: Passenger pays `$15.00` + payment processing fees.

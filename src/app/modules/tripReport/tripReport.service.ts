@@ -357,7 +357,10 @@ const getDashboardCardsFromDB = async (query: {
     let mappedStatus = "";
     if (statusVal === "PENDING_REVIEW" || statusVal === "open") {
       mappedStatus = "open";
-    } else if (statusVal === "UNDER_INVESTIGATION" || statusVal === "investigating") {
+    } else if (
+      statusVal === "UNDER_INVESTIGATION" ||
+      statusVal === "investigating"
+    ) {
       mappedStatus = "investigating";
     } else if (statusVal === "REJECTED" || statusVal === "rejected") {
       mappedStatus = "rejected";
@@ -373,9 +376,14 @@ const getDashboardCardsFromDB = async (query: {
   // Ride Category filter
   if (rideCategory) {
     if (Types.ObjectId.isValid(rideCategory)) {
-      matchStage["ride.rideCategory.categoryId"] = new Types.ObjectId(rideCategory);
+      matchStage["ride.rideCategory.categoryId"] = new Types.ObjectId(
+        rideCategory,
+      );
     } else {
-      matchStage["rideSnapshot.rideCategory"] = { $regex: rideCategory, $options: "i" };
+      matchStage["rideSnapshot.rideCategory"] = {
+        $regex: rideCategory,
+        $options: "i",
+      };
     }
   }
 
@@ -389,7 +397,10 @@ const getDashboardCardsFromDB = async (query: {
     if (Types.ObjectId.isValid(complaintType)) {
       matchStage.issueId = new Types.ObjectId(complaintType);
     } else {
-      matchStage["issueCategory.issueName"] = { $regex: complaintType, $options: "i" };
+      matchStage["issueCategory.issueName"] = {
+        $regex: complaintType,
+        $options: "i",
+      };
     }
   }
 
@@ -447,18 +458,12 @@ const getDashboardCardsFromDB = async (query: {
     {
       $facet: {
         totalComplaints: [{ $count: "count" }],
-        pendingReview: [
-          { $match: { status: "open" } },
-          { $count: "count" },
-        ],
+        pendingReview: [{ $match: { status: "open" } }, { $count: "count" }],
         underInvestigation: [
           { $match: { status: "investigating" } },
           { $count: "count" },
         ],
-        rejected: [
-          { $match: { status: "rejected" } },
-          { $count: "count" },
-        ],
+        rejected: [{ $match: { status: "rejected" } }, { $count: "count" }],
       },
     },
     // 6. Reshape results
@@ -503,7 +508,7 @@ const getAllComplaintsFromDB = async (filters: {
   rideCategory?: string;
   startDate?: string;
   endDate?: string;
-  search?: string;
+  searchTerm?: string;
   sortBy?: string;
   sortOrder?: "asc" | "desc";
 }) => {
@@ -527,10 +532,17 @@ const getAllComplaintsFromDB = async (filters: {
   // Complaint status filter
   if (filters.status) {
     let mappedStatus = "";
-    if (filters.status === "PENDING_REVIEW" || filters.status === "open") mappedStatus = "open";
-    else if (filters.status === "UNDER_INVESTIGATION" || filters.status === "investigating") mappedStatus = "investigating";
-    else if (filters.status === "REJECTED" || filters.status === "rejected") mappedStatus = "rejected";
-    else if (filters.status === "RESOLVED" || filters.status === "resolved") mappedStatus = "resolved";
+    if (filters.status === "PENDING_REVIEW" || filters.status === "open")
+      mappedStatus = "open";
+    else if (
+      filters.status === "UNDER_INVESTIGATION" ||
+      filters.status === "investigating"
+    )
+      mappedStatus = "investigating";
+    else if (filters.status === "REJECTED" || filters.status === "rejected")
+      mappedStatus = "rejected";
+    else if (filters.status === "RESOLVED" || filters.status === "resolved")
+      mappedStatus = "resolved";
 
     if (mappedStatus) {
       matchStage.status = mappedStatus;
@@ -540,14 +552,22 @@ const getAllComplaintsFromDB = async (filters: {
   const afterLookupMatch: any = {};
 
   if (filters.city) {
-    afterLookupMatch["serviceArea.city"] = { $regex: filters.city, $options: "i" };
+    afterLookupMatch["serviceArea.city"] = {
+      $regex: filters.city,
+      $options: "i",
+    };
   }
 
   if (filters.rideCategory) {
     if (Types.ObjectId.isValid(filters.rideCategory)) {
-      afterLookupMatch["ride.rideCategory.categoryId"] = new Types.ObjectId(filters.rideCategory);
+      afterLookupMatch["ride.rideCategory.categoryId"] = new Types.ObjectId(
+        filters.rideCategory,
+      );
     } else {
-      afterLookupMatch["rideSnapshot.rideCategory"] = { $regex: filters.rideCategory, $options: "i" };
+      afterLookupMatch["rideSnapshot.rideCategory"] = {
+        $regex: filters.rideCategory,
+        $options: "i",
+      };
     }
   }
 
@@ -555,7 +575,10 @@ const getAllComplaintsFromDB = async (filters: {
     if (Types.ObjectId.isValid(filters.complaintType)) {
       matchStage.issueId = new Types.ObjectId(filters.complaintType);
     } else {
-      afterLookupMatch["issueCategory.issueName"] = { $regex: filters.complaintType, $options: "i" };
+      afterLookupMatch["issueCategory.issueName"] = {
+        $regex: filters.complaintType,
+        $options: "i",
+      };
     }
   }
 
@@ -649,21 +672,26 @@ const getAllComplaintsFromDB = async (filters: {
             $multiply: [
               {
                 $subtract: [
-                  { $ifNull: ["$tracking.totalDistanceKm", { $ifNull: ["$ride.routeInfo.totalDistanceKm", 0] }] },
-                  { $ifNull: ["$ride.routeInfo.totalDistanceKm", 0] }
-                ]
+                  {
+                    $ifNull: [
+                      "$tracking.totalDistanceKm",
+                      { $ifNull: ["$ride.routeInfo.totalDistanceKm", 0] },
+                    ],
+                  },
+                  { $ifNull: ["$ride.routeInfo.totalDistanceKm", 0] },
+                ],
               },
-              1000
-            ]
-          }
-        }
-      }
-    }
+              1000,
+            ],
+          },
+        },
+      },
+    },
   });
 
   // Re-match for search after adding names
-  if (filters.search) {
-    const searchRegex = { $regex: filters.search, $options: "i" };
+  if (filters.searchTerm) {
+    const searchRegex = { $regex: filters.searchTerm, $options: "i" };
     pipeline.push({
       $match: {
         $or: [
@@ -671,20 +699,16 @@ const getAllComplaintsFromDB = async (filters: {
           { providedSummaryDetails: searchRegex },
           { "passenger.name": searchRegex },
           { "passenger.phone": searchRegex },
-          { "driver.name": searchRegex }
-        ]
-      }
+          { "driver.name": searchRegex },
+        ],
+      },
     });
   }
 
   pipeline.push({
     $facet: {
       metadata: [{ $count: "total" }],
-      data: [
-        { $sort: sortStage },
-        { $skip: skip },
-        { $limit: limit },
-      ],
+      data: [{ $sort: sortStage }, { $skip: skip }, { $limit: limit }],
     },
   });
 
@@ -698,17 +722,17 @@ const getAllComplaintsFromDB = async (filters: {
       rideId: item.rideId,
       passenger: {
         id: item.passenger?._id || item.reporterId,
-        name: item.passenger?.name || "Passenger"
+        name: item.passenger?.name || "Passenger",
       },
       driver: {
         id: item.driver?._id || item.rideSnapshot?.driverId,
-        name: item.driver?.name || item.rideSnapshot?.driverName
+        name: item.driver?.name || item.rideSnapshot?.driverName,
       },
       complaintType: item.issueCategory?.issueName || "General",
       distanceDeltaMeters: item.distanceDeltaMeters || 0,
       fare: item.ride?.fare?.total || 0,
       reportedAt: item.createdAt,
-      status: item.status
+      status: item.status,
     };
   });
 
@@ -719,9 +743,9 @@ const getAllComplaintsFromDB = async (filters: {
       page,
       limit,
       total,
-      totalPages: Math.ceil(total / limit)
+      totalPages: Math.ceil(total / limit),
     },
-    data
+    data,
   };
 };
 
@@ -739,7 +763,10 @@ const getComplaintDetailsFromDB = async (complaintId: string) => {
     .populate("issueId", "issueName description");
 
   if (!report) {
-    throw new ApiError(StatusCodes.NOT_FOUND, "Trip completion complaint not found");
+    throw new ApiError(
+      StatusCodes.NOT_FOUND,
+      "Trip completion complaint not found",
+    );
   }
 
   const ride: any = report.rideId;
@@ -747,20 +774,26 @@ const getComplaintDetailsFromDB = async (complaintId: string) => {
   let driver: any = null;
 
   if (ride && ride.driverId) {
-    driver = await User.findById(ride.driverId).select("name email phone profileImage");
+    driver = await User.findById(ride.driverId).select(
+      "name email phone profileImage",
+    );
   }
 
   const tracking = await Tracking.findOne({ rideId: report.rideId });
 
   const estimatedDistance = (ride?.routeInfo?.totalDistanceKm || 0) * 1000;
-  const actualDistance = (tracking?.totalDistanceKm || ride?.routeInfo?.totalDistanceKm || 0) * 1000;
+  const actualDistance =
+    (tracking?.totalDistanceKm || ride?.routeInfo?.totalDistanceKm || 0) * 1000;
   const gpsSummary = {
     estimatedDistanceMeters: Math.round(estimatedDistance),
     actualDistanceMeters: Math.round(actualDistance),
-    distanceDeltaMeters: Math.round(Math.abs(actualDistance - estimatedDistance)),
+    distanceDeltaMeters: Math.round(
+      Math.abs(actualDistance - estimatedDistance),
+    ),
     pickupCoords: ride?.pickup?.location?.coordinates || null,
     dropoffCoords: ride?.destination?.location?.coordinates || null,
-    actualRoutePolyline: tracking?.polyline || ride?.routeInfo?.polyline || null,
+    actualRoutePolyline:
+      tracking?.polyline || ride?.routeInfo?.polyline || null,
   };
 
   const fareBreakdown = ride?.fare || {
@@ -770,26 +803,51 @@ const getComplaintDetailsFromDB = async (complaintId: string) => {
     subtotal: 0,
     commission: 0,
     driverEarning: 0,
-    total: 0
+    total: 0,
   };
 
-  const timelineEvents: Array<{ event: string; timestamp: Date; actor?: string; details?: any }> = [];
+  const timelineEvents: Array<{
+    event: string;
+    timestamp: Date;
+    actor?: string;
+    details?: any;
+  }> = [];
 
   if (ride) {
     if (ride.requestedAt) {
-      timelineEvents.push({ event: "Ride Requested", timestamp: ride.requestedAt, actor: "Passenger" });
+      timelineEvents.push({
+        event: "Ride Requested",
+        timestamp: ride.requestedAt,
+        actor: "Passenger",
+      });
     }
     if (ride.acceptedAt) {
-      timelineEvents.push({ event: "Ride Accepted", timestamp: ride.acceptedAt, actor: "Driver" });
+      timelineEvents.push({
+        event: "Ride Accepted",
+        timestamp: ride.acceptedAt,
+        actor: "Driver",
+      });
     }
     if (ride.arrivedAt) {
-      timelineEvents.push({ event: "Driver Arrived at Pickup", timestamp: ride.arrivedAt, actor: "Driver" });
+      timelineEvents.push({
+        event: "Driver Arrived at Pickup",
+        timestamp: ride.arrivedAt,
+        actor: "Driver",
+      });
     }
     if (ride.startedAt) {
-      timelineEvents.push({ event: "Ride Started", timestamp: ride.startedAt, actor: "Driver" });
+      timelineEvents.push({
+        event: "Ride Started",
+        timestamp: ride.startedAt,
+        actor: "Driver",
+      });
     }
     if (ride.completedAt) {
-      timelineEvents.push({ event: "Ride Completed", timestamp: ride.completedAt, actor: "Driver" });
+      timelineEvents.push({
+        event: "Ride Completed",
+        timestamp: ride.completedAt,
+        actor: "Driver",
+      });
     }
   }
 
@@ -797,7 +855,10 @@ const getComplaintDetailsFromDB = async (complaintId: string) => {
     event: "Complaint Filed",
     timestamp: report.createdAt,
     actor: "Passenger",
-    details: { issue: (report.issueId as any)?.issueName, details: report.providedSummaryDetails }
+    details: {
+      issue: (report.issueId as any)?.issueName,
+      details: report.providedSummaryDetails,
+    },
   });
 
   if (report.auditLogs && report.auditLogs.length > 0) {
@@ -812,7 +873,7 @@ const getComplaintDetailsFromDB = async (complaintId: string) => {
         event: eventName,
         timestamp: log.timestamp,
         actor: log.actorRole,
-        details: log.details
+        details: log.details,
       });
     }
   }
@@ -826,7 +887,7 @@ const getComplaintDetailsFromDB = async (complaintId: string) => {
     estimatedResponseTimeInMinutes: report.estimatedResponseTimeInMinutes,
     status: report.status,
     createdAt: report.createdAt,
-    updatedAt: report.updatedAt
+    updatedAt: report.updatedAt,
   };
 
   return {
@@ -835,14 +896,30 @@ const getComplaintDetailsFromDB = async (complaintId: string) => {
     data: {
       complaint: formattedComplaint,
       ride: ride || null,
-      passenger: passenger ? { id: passenger._id, name: passenger.name, email: passenger.email, phone: passenger.phone, profileImage: passenger.profileImage } : null,
-      driver: driver ? { id: driver._id, name: driver.name, email: driver.email, phone: driver.phone, profileImage: driver.profileImage } : null,
+      passenger: passenger
+        ? {
+            id: passenger._id,
+            name: passenger.name,
+            email: passenger.email,
+            phone: passenger.phone,
+            profileImage: passenger.profileImage,
+          }
+        : null,
+      driver: driver
+        ? {
+            id: driver._id,
+            name: driver.name,
+            email: driver.email,
+            phone: driver.phone,
+            profileImage: driver.profileImage,
+          }
+        : null,
       gpsSummary,
       fareBreakdown,
       refund: null, // Refunds are excluded
       timeline: timelineEvents,
-      adminNotes: report.adminNotes || []
-    }
+      adminNotes: report.adminNotes || [],
+    },
   };
 };
 
@@ -863,14 +940,24 @@ const updateComplaintStatusInDB = async (
 
   const report = await TripReport.findOne(query);
   if (!report) {
-    throw new ApiError(StatusCodes.NOT_FOUND, "Trip completion complaint not found");
+    throw new ApiError(
+      StatusCodes.NOT_FOUND,
+      "Trip completion complaint not found",
+    );
   }
 
   let dbStatus = "";
-  if (payload.status === "PENDING_REVIEW" || payload.status === "open") dbStatus = "open";
-  else if (payload.status === "UNDER_INVESTIGATION" || payload.status === "investigating") dbStatus = "investigating";
-  else if (payload.status === "REJECTED" || payload.status === "rejected") dbStatus = "rejected";
-  else if (payload.status === "RESOLVED" || payload.status === "resolved") dbStatus = "resolved";
+  if (payload.status === "PENDING_REVIEW" || payload.status === "open")
+    dbStatus = "open";
+  else if (
+    payload.status === "UNDER_INVESTIGATION" ||
+    payload.status === "investigating"
+  )
+    dbStatus = "investigating";
+  else if (payload.status === "REJECTED" || payload.status === "rejected")
+    dbStatus = "rejected";
+  else if (payload.status === "RESOLVED" || payload.status === "resolved")
+    dbStatus = "resolved";
 
   if (!dbStatus) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid status value");
@@ -965,17 +1052,28 @@ const getComplaintTrendFromDB = async (query: {
     (process.env.TIMEZONE as string) ||
     "Asia/Dhaka";
 
-  const matchStage: any = {};
+  let start = startDate
+    ? DateTime.fromISO(startDate, { zone: tz })
+    : DateTime.now().setZone(tz).startOf("year");
+  let end = endDate
+    ? DateTime.fromISO(endDate, { zone: tz })
+    : DateTime.now().setZone(tz).endOf("year");
 
-  if (startDate || endDate) {
-    matchStage.createdAt = {};
-    if (startDate) {
-      matchStage.createdAt.$gte = new Date(startDate);
-    }
-    if (endDate) {
-      matchStage.createdAt.$lte = new Date(endDate);
-    }
+  if (!start.isValid) start = DateTime.now().setZone(tz).startOf("year");
+  if (!end.isValid) end = DateTime.now().setZone(tz).endOf("year");
+
+  if (start > end) {
+    const temp = start;
+    start = end;
+    end = temp;
   }
+
+  const matchStage: any = {
+    createdAt: {
+      $gte: start.toJSDate(),
+      $lte: end.toJSDate(),
+    },
+  };
 
   const afterLookupMatch: any = {};
 
@@ -985,9 +1083,14 @@ const getComplaintTrendFromDB = async (query: {
 
   if (rideCategory) {
     if (Types.ObjectId.isValid(rideCategory)) {
-      afterLookupMatch["ride.rideCategory.categoryId"] = new Types.ObjectId(rideCategory);
+      afterLookupMatch["ride.rideCategory.categoryId"] = new Types.ObjectId(
+        rideCategory,
+      );
     } else {
-      afterLookupMatch["rideSnapshot.rideCategory"] = { $regex: rideCategory, $options: "i" };
+      afterLookupMatch["rideSnapshot.rideCategory"] = {
+        $regex: rideCategory,
+        $options: "i",
+      };
     }
   }
 
@@ -1046,18 +1149,6 @@ const getComplaintTrendFromDB = async (query: {
     if (item._id) {
       monthlyCountMap[item._id] = item.count;
     }
-  }
-
-  let start = startDate ? DateTime.fromISO(startDate) : DateTime.now().minus({ months: 5 });
-  let end = endDate ? DateTime.fromISO(endDate) : DateTime.now();
-
-  if (!start.isValid) start = DateTime.now().minus({ months: 5 });
-  if (!end.isValid) end = DateTime.now();
-
-  if (start > end) {
-    const temp = start;
-    start = end;
-    end = temp;
   }
 
   const monthsList: DateTime[] = [];

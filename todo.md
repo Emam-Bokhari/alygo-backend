@@ -63,7 +63,7 @@
     projonio jaigai timezone gula dropdown akare show korte hobe, jeno easly select korte pare
  
   -->
-    
+
   <!-- 
 Documents Extract
 
@@ -763,8 +763,7 @@ npm run build
 The project must compile successfully with zero TypeScript errors and preserve all existing functionality.
    -->
 
-
-<!-- 
+<!--
 In App Call
 # Implementation Plan – Standalone Production-Grade In-App Voice Calling System (Agora)
 

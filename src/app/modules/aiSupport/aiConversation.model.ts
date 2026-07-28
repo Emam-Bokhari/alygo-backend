@@ -1,5 +1,8 @@
 import { model, Schema } from "mongoose";
-import { IAiConversation, AiConversationModel } from "./aiConversation.interface";
+import {
+  IAiConversation,
+  AiConversationModel,
+} from "./aiConversation.interface";
 import { softDeletePlugin } from "../../../DB/plugins/softDeletePlugin";
 
 const aiConversationSchema = new Schema<IAiConversation, AiConversationModel>(

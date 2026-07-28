@@ -12,7 +12,12 @@ export interface IAiSupport {
   aiModel: string;
   promptVersion: string;
   confidenceScore: number;
-  responseStatus: "success" | "no_match" | "disabled_module" | "blocked" | "error";
+  responseStatus:
+    | "success"
+    | "no_match"
+    | "disabled_module"
+    | "blocked"
+    | "error";
   responseSource: "knowledge_base" | "fallback";
   responseTimeMs: number;
   tokensUsed: number;

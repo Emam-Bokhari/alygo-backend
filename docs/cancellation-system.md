@@ -7,7 +7,9 @@ This document describes the Cancellation System, covering passenger and driver c
 ## 1. Business Overview
 
 ### Plain English Summary
+
 Rides can be cancelled by either passengers or drivers. To prevent abuse, the platform applies **cancellation fees and penalties** based on the stage of the ride:
+
 - **Before Acceptance**: Passengers can cancel for free.
 - **After Acceptance**: If a passenger cancels after a driver has accepted (and spent time driving towards them), a fee is applied.
 - **After Arrival**: If a passenger cancels after the driver has arrived at the pickup location, a higher fee is applied.
@@ -20,6 +22,7 @@ Fees collected from passengers are split between the platform share and driver c
 ## 2. Technical Overview
 
 ### Architecture
+
 Cancellations are managed in the **Ride Service** using database transactions to update ride states, record financial changes (via the Wallet and PendingPayment modules), adjust driver points, and resume matching if a driver cancels.
 
 ```
@@ -54,7 +57,9 @@ Cancellations are managed in the **Ride Service** using database transactions to
 ### Collections & Key Fields
 
 #### `cancellationpolicies` Collection
+
 Defines fee rules for different scenarios.
+
 - `passenger`:
   - `beforeDriverAccepted`: `{ cancellationFee: Number, platformShare: Number, driverCompensation: Number }`
   - `afterDriverAccepted`: `{ cancellationFee: Number, platformShare: Number, driverCompensation: Number }`
@@ -65,6 +70,7 @@ Defines fee rules for different scenarios.
   - `excessiveCancellationThreshold`: `Number` (e.g. `3`)
 
 #### `rides` Collection (Cancellation fields)
+
 - `cancellation`:
   - `cancelledBy`: `String` (Enum: `passenger`, `driver`, `admin`)
   - `cancellationReasonId`: `ObjectId`
@@ -77,7 +83,9 @@ Defines fee rules for different scenarios.
   - `cancelledAt`: `Date`
 
 #### `pendingpayments` Collection
+
 Tracks outstanding cancellation fees to collect.
+
 - `userId`: `ObjectId`
 - `rideId`: `ObjectId`
 - `type`: `String` (`"cancellation_fee"`)
@@ -104,7 +112,7 @@ sequenceDiagram
     S->>CP: Get active cancellation policy
     CP-->>S: Return policy rules
     S->>S: Match scenario (e.g. passenger.afterDriverArrived)
-    
+
     alt Passenger Cancels (with fee)
         S->>W: Create PendingPayment for passenger cancellation fee
         S->>DB: Update ride status to CANCELLED_BY_USER
@@ -127,28 +135,29 @@ sequenceDiagram
 ## 5. Internal Algorithms
 
 ### Cancellation Handling Logic
+
 The system evaluates the rules and processes cancellations.
 
 ```mermaid
 flowchart TD
     Start([Initiate Cancellation]) --> Validate[Verify ride is active]
     Validate --> ActorCheck{Cancelled by Passenger or Driver?}
-    
+
     ActorCheck -- Passenger --> PassState{Driver Accepted?}
     PassState -- No --> PassBefore[Apply Scenario: beforeDriverAccepted. Fee = 0]
     PassState -- Yes --> ArrivedCheck{Driver Arrived?}
     ArrivedCheck -- Yes --> PassArrive[Apply Scenario: afterDriverArrived. Fee applied]
     ArrivedCheck -- No --> PassAccept[Apply Scenario: afterDriverAccepted. Fee applied]
-    
+
     ActorCheck -- Driver --> CountCheck{Driver consecutive cancellations >= threshold?}
     CountCheck -- Yes --> DrvExcess[Apply Scenario: excessiveCancellation. Deduct points & penalty fee]
     CountCheck -- No --> DrvAccept[Apply Scenario: afterAccept. Deduct points]
-    
+
     PassArrive --> TxPassenger[Create pending payment & record stats]
     PassAccept --> TxPassenger
     DrvExcess --> TxDriver[Deduct points, revert ride status to SEARCHING_DRIVER & resume matching]
     DrvAccept --> TxDriver
-    
+
     TxPassenger --> End([Cancellation Processed])
     TxDriver --> End
 ```
@@ -159,12 +168,12 @@ flowchart TD
 
 ### Financial Fee Splits
 
-| Scenario | Cancellation Fee | Platform Share | Driver Compensation |
-| :--- | :--- | :--- | :--- |
-| **Passenger before acceptance** | $0.00 | $0.00 | $0.00 |
-| **Passenger after acceptance** | $5.00 * surge | $1.50 * surge | $3.50 * surge |
-| **Passenger after arrival** | $8.00 * surge | $2.00 * surge | $6.00 * surge |
-| **Driver after acceptance** | $0.00 | $0.00 | $0.00 (Points deducted) |
+| Scenario                        | Cancellation Fee | Platform Share | Driver Compensation     |
+| :------------------------------ | :--------------- | :------------- | :---------------------- |
+| **Passenger before acceptance** | $0.00            | $0.00          | $0.00                   |
+| **Passenger after acceptance**  | $5.00 \* surge   | $1.50 \* surge | $3.50 \* surge          |
+| **Passenger after arrival**     | $8.00 \* surge   | $2.00 \* surge | $6.00 \* surge          |
+| **Driver after acceptance**     | $0.00            | $0.00          | $0.00 (Points deducted) |
 
 ---
 
@@ -197,15 +206,18 @@ sequenceDiagram
 
 ## 8. State Diagrams
 
-*Detailed in the Driver Matching System documentation.*
+_Detailed in the Driver Matching System documentation._
 
 ---
 
 ## 9. API & Socket Interaction
 
 ### API: Cancel Ride
+
 `POST /api/v1/rides/cancel/:rideId`
+
 - **Request Payload**:
+
 ```json
 {
   "cancellationReasonId": "64ca9e836940d9c49a62657e",
@@ -215,6 +227,7 @@ sequenceDiagram
 ```
 
 - **Response Payload**:
+
 ```json
 {
   "success": true,
@@ -223,9 +236,9 @@ sequenceDiagram
     "status": "cancelled_by_user",
     "cancellation": {
       "cancelledBy": "passenger",
-      "cancellationFee": 5.00,
-      "driverCompensation": 3.50,
-      "platformShare": 1.50,
+      "cancellationFee": 5.0,
+      "driverCompensation": 3.5,
+      "platformShare": 1.5,
       "paymentStatus": "pending",
       "paymentCollectionMode": "next_ride"
     }
@@ -238,7 +251,9 @@ sequenceDiagram
 ## 10. Calculations
 
 ### Surge Multiplier Cancellation Fee Example
+
 If a passenger cancels a ride after the driver has arrived, and the ride was booked during a surge multiplier of `1.5x`:
+
 - Base Scenario Fee = `$8.00`
 - Applied Surge Multiplier = `1.5`
 

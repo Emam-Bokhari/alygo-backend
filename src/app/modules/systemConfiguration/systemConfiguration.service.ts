@@ -160,7 +160,9 @@ const getSystemConfig = async (
   // Self-healing: if there are duplicate configuration documents, delete the extra ones
   if (configs.length > 1) {
     const idsToDelete = configs.slice(1).map((c) => c._id);
-    await SystemConfiguration.deleteMany({ _id: { $in: idsToDelete } }).session(session);
+    await SystemConfiguration.deleteMany({ _id: { $in: idsToDelete } }).session(
+      session,
+    );
   }
 
   return configs[0];

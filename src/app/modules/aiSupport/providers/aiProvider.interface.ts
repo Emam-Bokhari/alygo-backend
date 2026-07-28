@@ -18,6 +18,6 @@ export interface IAiProvider {
       model: string;
       temperature: number;
       maxTokens: number;
-    }
+    },
   ): Promise<IProviderResponse>;
 }

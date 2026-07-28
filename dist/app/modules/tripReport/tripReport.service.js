@@ -819,16 +819,27 @@ const getComplaintTrendFromDB = (query) => __awaiter(void 0, void 0, void 0, fun
         ((_b = config_1.default.driverRewards) === null || _b === void 0 ? void 0 : _b.timezone) ||
         process.env.TIMEZONE ||
         "Asia/Dhaka";
-    const matchStage = {};
-    if (startDate || endDate) {
-        matchStage.createdAt = {};
-        if (startDate) {
-            matchStage.createdAt.$gte = new Date(startDate);
-        }
-        if (endDate) {
-            matchStage.createdAt.$lte = new Date(endDate);
-        }
+    let start = startDate
+        ? luxon_1.DateTime.fromISO(startDate, { zone: tz })
+        : luxon_1.DateTime.now().setZone(tz).startOf("year");
+    let end = endDate
+        ? luxon_1.DateTime.fromISO(endDate, { zone: tz })
+        : luxon_1.DateTime.now().setZone(tz).endOf("year");
+    if (!start.isValid)
+        start = luxon_1.DateTime.now().setZone(tz).startOf("year");
+    if (!end.isValid)
+        end = luxon_1.DateTime.now().setZone(tz).endOf("year");
+    if (start > end) {
+        const temp = start;
+        start = end;
+        end = temp;
     }
+    const matchStage = {
+        createdAt: {
+            $gte: start.toJSDate(),
+            $lte: end.toJSDate(),
+        },
+    };
     const afterLookupMatch = {};
     if (city) {
         afterLookupMatch["serviceArea.city"] = { $regex: city, $options: "i" };
@@ -889,17 +900,6 @@ const getComplaintTrendFromDB = (query) => __awaiter(void 0, void 0, void 0, fun
         if (item._id) {
             monthlyCountMap[item._id] = item.count;
         }
-    }
-    let start = startDate ? luxon_1.DateTime.fromISO(startDate) : luxon_1.DateTime.now().minus({ months: 5 });
-    let end = endDate ? luxon_1.DateTime.fromISO(endDate) : luxon_1.DateTime.now();
-    if (!start.isValid)
-        start = luxon_1.DateTime.now().minus({ months: 5 });
-    if (!end.isValid)
-        end = luxon_1.DateTime.now();
-    if (start > end) {
-        const temp = start;
-        start = end;
-        end = temp;
     }
     const monthsList = [];
     let currentMonth = start.startOf("month");

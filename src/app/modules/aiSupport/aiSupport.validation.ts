@@ -5,9 +5,11 @@ const askQuestionValidationSchema = z.object({
     conversationId: z.string({
       required_error: "Conversation ID is required",
     }),
-    question: z.string({
-      required_error: "Question is required",
-    }).min(1, "Question cannot be empty"),
+    question: z
+      .string({
+        required_error: "Question is required",
+      })
+      .min(1, "Question cannot be empty"),
     language: z.string().optional(),
   }),
 });
@@ -22,9 +24,11 @@ const submitFeedbackValidationSchema = z.object({
 
 const conversationValidationSchema = z.object({
   body: z.object({
-    title: z.string({
-      required_error: "Conversation title is required",
-    }).min(1, "Title cannot be empty"),
+    title: z
+      .string({
+        required_error: "Conversation title is required",
+      })
+      .min(1, "Title cannot be empty"),
   }),
 });
 
@@ -42,17 +46,21 @@ const updateConfigValidationSchema = z.object({
     defaultLanguage: z.string().optional(),
     enabledModules: z.array(z.string()).optional(),
     suggestedQuestions: z.array(z.string()).optional(),
-    rateLimit: z.object({
-      maxQuestionsPerMinute: z.number().min(1),
-      maxQuestionsPerHour: z.number().min(1),
-      dailyLimit: z.number().min(1),
-    }).optional(),
-    prompts: z.object({
-      systemPrompt: z.string(),
-      fallbackPrompt: z.string(),
-      safetyPrompt: z.string(),
-      noMatchPrompt: z.string(),
-    }).optional(),
+    rateLimit: z
+      .object({
+        maxQuestionsPerMinute: z.number().min(1),
+        maxQuestionsPerHour: z.number().min(1),
+        dailyLimit: z.number().min(1),
+      })
+      .optional(),
+    prompts: z
+      .object({
+        systemPrompt: z.string(),
+        fallbackPrompt: z.string(),
+        safetyPrompt: z.string(),
+        noMatchPrompt: z.string(),
+      })
+      .optional(),
   }),
 });
 

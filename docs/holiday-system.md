@@ -1,4 +1,4 @@
-# Holiday System  
+# Holiday System
 
 This document describes the Holiday System, covering how holidays are registered, timezone boundaries are resolved, and how holiday rules interact with the surge pricing engine.
 
@@ -7,9 +7,11 @@ This document describes the Holiday System, covering how holidays are registered
 ## 1. Business Overview
 
 ### Plain English Summary
+
 A **Holiday** represents a calendar day (like Christmas, New Year's Day, or Thanksgiving) when city transit patterns change. The platform allows admins to configure holidays. During a holiday, normal commute rules are typically overridden, and a custom holiday surge pricing rule is applied.
 
 Holidays can be:
+
 - **Full Day**: Active from midnight to 11:59 PM in the target timezone.
 - **Partial Day**: Active only during specific hours (e.g., New Year's Eve from 6:00 PM onwards).
 
@@ -20,6 +22,7 @@ The system automatically checks if the current day is a holiday for the passenge
 ## 2. Technical Overview
 
 ### Architecture
+
 The Holiday system uses **Luxon** to compare dates while respecting localized timezone offset boundaries.
 
 ```
@@ -47,7 +50,9 @@ The Holiday system uses **Luxon** to compare dates while respecting localized ti
 ### Collections & Key Fields
 
 #### `holidays` Collection
+
 Defines holiday intervals.
+
 - `_id`: `ObjectId`
 - `holidayName`: `String` (e.g., "Independence Day")
 - `timezone`: `String` (IANA timezone identifier, e.g., `"America/New_York"`)
@@ -58,10 +63,12 @@ Defines holiday intervals.
 - `createdBy`: `ObjectId` -> References `User`
 
 ### Database Relationships
+
 - The system determines the timezone of a ride by fetching its `ServiceArea`.
 - Holidays are evaluated by converting the current UTC time into the service area's localized timezone and checking if it falls within the holiday window.
 
 ### Database Indexes
+
 - `{ status: 1, startDate: 1, endDate: 1 }` (Allows quick lookups of active holiday dates)
 
 ---
@@ -102,6 +109,7 @@ sequenceDiagram
 ## 5. Internal Algorithms
 
 ### Holiday Range Validation
+
 The `isHolidayActive` algorithm resolves temporal boundaries in the target timezone.
 
 ```mermaid
@@ -163,15 +171,18 @@ sequenceDiagram
 
 ## 8. State Diagrams
 
-*Not applicable as Holidays are static calendar intervals.*
+_Not applicable as Holidays are static calendar intervals._
 
 ---
 
 ## 9. API & Socket Interaction
 
 ### API: Create Holiday (Admin Only)
+
 `POST /api/v1/holidays`
+
 - **Request Payload**:
+
 ```json
 {
   "holidayName": "Christmas Day",
@@ -183,6 +194,7 @@ sequenceDiagram
 ```
 
 - **Response Payload**:
+
 ```json
 {
   "success": true,
@@ -199,7 +211,9 @@ sequenceDiagram
 ## 10. Calculations
 
 ### Holiday Surge Multiplier Calculation
+
 If a passenger requests a ride on Christmas Day:
+
 - The system detects the active holiday.
 - Active Rule: **Holiday Rule** (`minMultiplier: 1.3`, `maxMultiplier: 2.2`).
 - The multiplier is calculated based on the supply/demand ratio and bound between 1.3 and 2.2.
@@ -215,12 +229,17 @@ Holidays do not directly alter the matching priority order of drivers. However, 
 ## 12. Timezone Handling
 
 Holidays resolve localized calendar dates:
+
 1. `startDate` and `endDate` are stored as UTC dates in the database.
 2. The comparison is evaluated using Luxon:
    ```typescript
    const nowInTimezone = DateTime.now().setZone(timezone);
-   const startInTimezone = DateTime.fromJSDate(startDate).setZone(timezone).startOf("day");
-   const endInTimezone = DateTime.fromJSDate(endDate).setZone(timezone).endOf("day");
+   const startInTimezone = DateTime.fromJSDate(startDate)
+     .setZone(timezone)
+     .startOf("day");
+   const endInTimezone = DateTime.fromJSDate(endDate)
+     .setZone(timezone)
+     .endOf("day");
    const nowStart = nowInTimezone.startOf("day");
    const isActive = nowStart >= startInTimezone && nowStart <= endInTimezone;
    ```
@@ -238,4 +257,3 @@ Holidays resolve localized calendar dates:
 
 - **Indexing**: Database indexes on `status`, `startDate`, and `endDate` keep query times under 2ms.
 - **Caching**: Holiday data is queried efficiently using lean operations.
-

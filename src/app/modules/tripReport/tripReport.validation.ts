@@ -30,7 +30,9 @@ const createTripReportValidationSchema = z.object({
 
 const updateTripReportValidationSchema = z.object({
   body: z.object({
-    status: z.enum(["open", "investigating", "resolved", "rejected"]).optional(),
+    status: z
+      .enum(["open", "investigating", "resolved", "rejected"])
+      .optional(),
     resolutionNotes: z
       .string()
       .optional()
@@ -50,12 +52,7 @@ const updateTripReportValidationSchema = z.object({
 
 const updateComplaintStatusValidationSchema = z.object({
   body: z.object({
-    status: z.enum([
-      "open",
-      "investigating",
-      "resolved",
-      "rejected",
-    ], {
+    status: z.enum(["open", "investigating", "resolved", "rejected"], {
       required_error: "Status is required",
     }),
     adminNote: z

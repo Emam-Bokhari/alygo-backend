@@ -43,15 +43,11 @@ complaintRouter.get(
   TripReportController.getComplaintTrend,
 );
 
-complaintRouter.get(
-  "/",
-  isAdmin,
-  TripReportController.getAllComplaints,
-);
+complaintRouter.get("/", isAdmin, TripReportController.getAllComplaints);
 
 complaintRouter.get(
   "/:complaintId",
-  isAdmin, 
+  isAdmin,
   TripReportController.getComplaintDetails,
 );
 

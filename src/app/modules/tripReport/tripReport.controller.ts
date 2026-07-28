@@ -144,27 +144,31 @@ const getComplaintDetails = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const updateComplaintStatus = catchAsync(async (req: Request, res: Response) => {
-  const adminId = req.user.id;
-  const { complaintId } = req.params;
+const updateComplaintStatus = catchAsync(
+  async (req: Request, res: Response) => {
+    const adminId = req.user.id;
+    const { complaintId } = req.params;
 
-  await TripReportValidations.updateComplaintStatusValidationSchema.parseAsync({
-    body: req.body,
-  });
+    await TripReportValidations.updateComplaintStatusValidationSchema.parseAsync(
+      {
+        body: req.body,
+      },
+    );
 
-  const result = await TripReportService.updateComplaintStatusInDB(
-    adminId,
-    complaintId,
-    req.body,
-  );
+    const result = await TripReportService.updateComplaintStatusInDB(
+      adminId,
+      complaintId,
+      req.body,
+    );
 
-  sendResponse(res, {
-    statusCode: StatusCodes.OK,
-    success: true,
-    message: result.message,
-    data: result.data,
-  });
-});
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: result.message,
+      data: result.data,
+    });
+  },
+);
 
 const getComplaintTrend = catchAsync(async (req: Request, res: Response) => {
   const result = await TripReportService.getComplaintTrendFromDB(req.query);

@@ -145,8 +145,22 @@ aiKnowledgeSchema.plugin(softDeletePlugin);
 
 // Create compound text index for search
 aiKnowledgeSchema.index(
-  { title: "text", content: "text", searchableContent: "text", tags: "text", keywords: "text" },
-  { weights: { title: 10, content: 5, searchableContent: 4, keywords: 3, tags: 2 } },
+  {
+    title: "text",
+    content: "text",
+    searchableContent: "text",
+    tags: "text",
+    keywords: "text",
+  },
+  {
+    weights: {
+      title: 10,
+      content: 5,
+      searchableContent: 4,
+      keywords: 3,
+      tags: 2,
+    },
+  },
 );
 
 export const AiKnowledge = model<IAiKnowledge, AiKnowledgeModel>(

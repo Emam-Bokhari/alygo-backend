@@ -7,9 +7,11 @@ This document describes the Driver Duty Hour Restriction System, which monitors 
 ## 1. Business Overview
 
 ### Plain English Summary
-To prevent driver fatigue, the system monitors driving hours. If a driver drives for too long, they are temporarily blocked from receiving new ride requests. 
+
+To prevent driver fatigue, the system monitors driving hours. If a driver drives for too long, they are temporarily blocked from receiving new ride requests.
 
 The system enforces three main limits:
+
 1. **Daily Driving Limit**: The maximum hours a driver can drive in a single day (e.g., 10 hours). If they reach this limit, they are blocked until midnight in their local timezone.
 2. **Continuous Driving Limit**: The maximum hours a driver can drive continuously without a break (e.g., 4 hours). If they reach this limit, they must take a break of a specified duration (e.g., 30 minutes) before they can receive rides again.
 3. **Break Status**: Drivers can manually go offline for a break. The system prevents them from coming back online until their required break duration has finished.
@@ -19,6 +21,7 @@ The system enforces three main limits:
 ## 2. Technical Overview
 
 ### Architecture
+
 The duty hour system is event-driven. Instead of running heavy cron jobs every minute, driver availability is recalculated during key events (such as when a ride starts, completes, or is cancelled).
 
 ```
@@ -53,7 +56,9 @@ The duty hour system is event-driven. Instead of running heavy cron jobs every m
 ### Collections & Key Fields
 
 #### `driverdutypolicies` Collection
+
 Defines the duty hour rules for a location.
+
 - `_id`: `ObjectId`
 - `name`: `String`
 - `scopeType`: `String` (e.g. `"city"`, `"airport"`)
@@ -66,6 +71,7 @@ Defines the duty hour rules for a location.
 - `status`: `String` (Enum: `active`, `inactive`)
 
 #### `drivers` Collection (Duty Fields)
+
 - `availability`:
   - `canReceiveRide`: `Boolean`
   - `blockedReason`: `String` (Enum: `daily_limit_reached`, `continuous_limit_reached`, `break_required`)
@@ -74,9 +80,11 @@ Defines the duty hour rules for a location.
 - `lastOfflineAt`: `Date` (Used to track break start time)
 
 ### Database Relationships
+
 - **ServiceArea**: The driver's current coordinates resolve their `ServiceArea`, which determines the active `DriverDutyPolicy` to apply.
 
 ### Database Indexes
+
 - `{ status: 1, cityId: 1, airportId: 1 }` (To quickly retrieve policies based on location)
 
 ---
@@ -101,7 +109,7 @@ sequenceDiagram
     DP->>DB: Query today's completed rides in driver's timezone
     DB-->>DP: Return ride list
     DP->>DP: Calculate totalDrivingHoursToday & continuousDrivingHours
-    
+
     alt Daily Limit Reached
         DP->>DB: Update Driver canReceiveRide = false, blockedReason = 'daily_limit_reached', blockedUntil = next day midnight
         DP->>D: Emit Socket: driver-duty-limit-reached { blockedUntil, reason }
@@ -109,7 +117,7 @@ sequenceDiagram
         DP->>DB: Update Driver canReceiveRide = false, blockedReason = 'continuous_limit_reached', blockedUntil = now + breakDuration
         DP->>D: Emit Socket: driver-duty-limit-reached { blockedUntil, reason }
     end
-    
+
     DP-->>S: Return updated availability
     deactivate DP
     S-->>D: Acknowledge ride completion
@@ -121,6 +129,7 @@ sequenceDiagram
 ## 5. Internal Algorithms
 
 ### Driver Availability Calculation Logic
+
 When availability is updated, the system evaluates all policy rules.
 
 ```mermaid
@@ -196,14 +205,16 @@ sequenceDiagram
 
 ## 8. State Diagrams
 
-*Detailed in Section 6.*
+_Detailed in Section 6._
 
 ---
 
 ## 9. API & Socket Interaction
 
 ### Socket Event: `driver-duty-limit-reached`
+
 Sent to the driver when a shift limit is reached:
+
 ```json
 {
   "canReceiveRide": false,
@@ -220,14 +231,16 @@ Sent to the driver when a shift limit is reached:
 ## 10. Calculations
 
 ### Continuous Driving Calculation Example
+
 Assuming:
+
 - Policy: `maxContinuousDrivingHours: 4`, `breakAfterHours: 2`, `breakDurationMinutes: 30`.
 - Completed Rides (Reverse chronological order):
   1. Ride A: Started 15:00, Completed 16:30 (Duration: 1.5 hrs)
   2. Ride B: Started 13:00, Completed 14:30 (Duration: 1.5 hrs) - Gap to Ride A: 30 mins (Under 2 hrs break threshold)
   3. Ride C: Started 10:00, Completed 12:00 (Duration: 2.0 hrs) - Gap to Ride B: 1 hour (Under 2 hrs break threshold)
 
-*Continuous driving time = 1.5 + 1.5 + 2.0 = 5.0 hours.*
+_Continuous driving time = 1.5 + 1.5 + 2.0 = 5.0 hours._
 Since 5.0 hours is greater than the 4.0-hour limit, the driver is blocked for 30 minutes starting from the completion of the last ride (16:30), meaning they are blocked until 17:00.
 
 ---
@@ -241,6 +254,7 @@ Drivers with `availability.canReceiveRide == false` are automatically excluded f
 ## 12. Timezone Handling
 
 Shift midnight transitions must respect the local timezone where the driver operates:
+
 1. All ride timestamps are saved in UTC.
 2. The system resolves the timezone from the driver's location (e.g. `Asia/Dhaka`).
 3. Computes the start of the day in that timezone using Luxon:
@@ -265,4 +279,3 @@ Shift midnight transitions must respect the local timezone where the driver oper
 
 - **Aggregation Pipeline**: Uses aggregation lookup pipelines to filter and join ServiceArea and Policy parameters in a single database query.
 - **Event-Driven Check**: Recalculates availability only on key status changes instead of running polling cron jobs.
-

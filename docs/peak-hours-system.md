@@ -1,4 +1,4 @@
-# Peak Hours System   
+# Peak Hours System
 
 This document describes the design and implementation of the Peak Hours system. It outlines how temporal boundaries are managed to regulate demand and supply dynamics through dynamic pricing modifiers.
 
@@ -7,7 +7,8 @@ This document describes the design and implementation of the Peak Hours system. 
 ## 1. Business Overview
 
 ### Plain English Summary
-A **Peak Hour** represents a period of the day when ride demand is historically high (such as rush hours or weekend nights). During these hours, the system applies price increases (surge pricing multipliers) to balance demand and encourage more drivers to go online. 
+
+A **Peak Hour** represents a period of the day when ride demand is historically high (such as rush hours or weekend nights). During these hours, the system applies price increases (surge pricing multipliers) to balance demand and encourage more drivers to go online.
 
 Admin users can define peak hours for specific days (e.g., Monday through Friday from 8:00 AM to 10:00 AM). The system automatically tracks what local time it is in the passenger's city, checks if that time falls inside any peak hours, and updates fares dynamically. If multiple peak hours overlap, or if they clash with holidays or special events, the system follows clear, pre-defined rules to decide which rule applies.
 
@@ -16,6 +17,7 @@ Admin users can define peak hours for specific days (e.g., Monday through Friday
 ## 2. Technical Overview
 
 ### Architecture
+
 The Peak Hours system relies on **Luxon** for timezone-aware date parsing. It compares the server's current UTC time against localized, text-based time slots (e.g., `"08:00"` to `"10:00"`) in the target city's timezone.
 
 ```
@@ -49,7 +51,9 @@ The Peak Hours system relies on **Luxon** for timezone-aware date parsing. It co
 ### Collections & Key Fields
 
 #### `peakhours` Collection
+
 Defines specific recurring peak hour intervals.
+
 - `_id`: `ObjectId`
 - `name`: `String` (e.g., "Morning Rush Hour")
 - `startTime`: `String` (HH:mm format, e.g. `"08:00"`)
@@ -59,16 +63,20 @@ Defines specific recurring peak hour intervals.
 - `status`: `String` (Enum: `active`, `inactive`)
 
 #### `surgerules` Collection
+
 Associates peak hours to surge factors.
+
 - `ruleType`: `String` (Enum: `peak_hour`)
 - `minMultiplier`: `Number` (e.g., `1.2`)
 - `maxMultiplier`: `Number` (e.g., `2.0`)
 
 ### Database Relationships
+
 - The system determines the timezone of a ride by fetching its `ServiceArea`.
 - PeakHour documents are linked to Surge calculations dynamically using the timezone resolved from the `ServiceArea`.
 
 ### Database Indexes
+
 - `{ status: 1 }` (To quickly retrieve all active configurations)
 
 ---
@@ -109,6 +117,7 @@ sequenceDiagram
 ## 5. Internal Algorithms
 
 ### Active Peak Hours Detection
+
 The system loads active peak hours, matches them against the passenger's local timezone, and determines if a peak hour is active.
 
 ```mermaid
@@ -131,7 +140,9 @@ flowchart TD
 ```
 
 ### Overlap Priority Rules
+
 If multiple peak hour configurations are active simultaneously:
+
 1. **Duration Priority**: The configuration with the shorter duration (higher specificity) is chosen.
 2. **Created Time**: If durations are equal, the newest configuration takes precedence.
 
@@ -179,15 +190,18 @@ sequenceDiagram
 
 ## 8. State Diagrams
 
-*Not applicable as Peak Hours are stateless, time-dependent evaluations.*
+_Not applicable as Peak Hours are stateless, time-dependent evaluations._
 
 ---
 
 ## 9. API & Socket Interaction
 
 ### API Endpoint: Create Peak Hour (Admin only)
+
 `POST /api/v1/peak-hours`
+
 - **Request Payload**:
+
 ```json
 {
   "name": "Evening Commute Peak",
@@ -197,7 +211,9 @@ sequenceDiagram
   "applicableDays": ["monday", "tuesday", "wednesday", "thursday", "friday"]
 }
 ```
+
 - **Response Payload**:
+
 ```json
 {
   "success": true,
@@ -220,7 +236,9 @@ sequenceDiagram
 ## 10. Calculations
 
 ### Interpolated Surge Calculation Example
+
 Assuming:
+
 - Active Rule: **Peak Hour Rule** (`minMultiplier: 1.2`, `maxMultiplier: 2.0`).
 - Driver marketplace ratio (Demand / Supply) = `2.5`.
 
@@ -240,6 +258,7 @@ Peak hours influence matching logic indirectly by increasing driver supply (due 
 ## 12. Timezone Handling
 
 ### IANA Local Time Conversion
+
 1. The server checks the current timestamp: `Date.now()`.
 2. Luxon converts this to the target timezone:
    ```typescript
@@ -265,4 +284,3 @@ Peak hours influence matching logic indirectly by increasing driver supply (due 
 
 - **Database Cache**: Active Peak Hour intervals are cached in memory or queried efficiently using lean Mongo operations (`.find().lean()`).
 - **Memory Consumption**: Evaluates time matching calculations in-memory rather than relying on heavy geospatial aggregation queries.
-

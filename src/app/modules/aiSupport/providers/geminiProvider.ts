@@ -1,7 +1,11 @@
 import axios from "axios";
 import { StatusCodes } from "http-status-codes";
 import ApiError from "../../../../errors/ApiErrors";
-import { IAiProvider, IChatMessage, IProviderResponse } from "./aiProvider.interface";
+import {
+  IAiProvider,
+  IChatMessage,
+  IProviderResponse,
+} from "./aiProvider.interface";
 
 export class GeminiProvider implements IAiProvider {
   async generateAnswer(
@@ -12,17 +16,17 @@ export class GeminiProvider implements IAiProvider {
       model: string;
       temperature: number;
       maxTokens: number;
-    }
+    },
   ): Promise<IProviderResponse> {
     const apiKey = process.env.GEMINI_API_KEY;
-    console.log(apiKey,"Api key");
+    console.log(apiKey, "Api key");
 
     if (!apiKey) {
       throw new ApiError(
         StatusCodes.INTERNAL_SERVER_ERROR,
-        "Gemini API Key (GEMINI_API_KEY) is not configured in environment variables."
+        "Gemini API Key (GEMINI_API_KEY) is not configured in environment variables.",
       );
-    } 
+    }
 
     let modelName = config.model || "gemini-3.5-flash";
     if (modelName === "gemini-3.5-flash") {
@@ -67,12 +71,13 @@ export class GeminiProvider implements IAiProvider {
       if (!answer) {
         throw new ApiError(
           StatusCodes.BAD_GATEWAY,
-          "Invalid response received from Gemini API."
+          "Invalid response received from Gemini API.",
         );
       }
 
       const promptTokens = response.data?.usageMetadata?.promptTokenCount || 0;
-      const candidatesTokens = response.data?.usageMetadata?.candidatesTokenCount || 0;
+      const candidatesTokens =
+        response.data?.usageMetadata?.candidatesTokenCount || 0;
       const tokensUsed = promptTokens + candidatesTokens;
 
       return {
@@ -84,7 +89,7 @@ export class GeminiProvider implements IAiProvider {
       const errMsg = error.response?.data?.error?.message || error.message;
       throw new ApiError(
         StatusCodes.BAD_GATEWAY,
-        `Gemini API Error: ${errMsg}`
+        `Gemini API Error: ${errMsg}`,
       );
     }
   }

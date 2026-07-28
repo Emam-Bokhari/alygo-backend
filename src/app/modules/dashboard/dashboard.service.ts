@@ -9,12 +9,17 @@ import { VERIFICATION_STATUS } from "../driver/driver.constant";
 import { STATUS, USER_ROLES } from "../../../enums/user";
 import { PAYMENT_STATUS, RIDE_STATUS, RIDE_TYPE } from "../ride/ride.constant";
 import { TRANSACTION_TYPE } from "../transaction/transaction.constant";
-import { getDayRangeInTimezone, utcToTimezone } from "../../../shared/timezoneHelper";
+import {
+  getDayRangeInTimezone,
+  utcToTimezone,
+} from "../../../shared/timezoneHelper";
 import { getSystemConfig } from "../../../helpers/systemConfigHelper";
 import config from "../../../config";
 import { SERVICE_AREA_TYPE } from "../serviceArea/serviceArea.constant";
 
-const resolveDashboardTimezone = async (serviceAreaId?: string): Promise<string> => {
+const resolveDashboardTimezone = async (
+  serviceAreaId?: string,
+): Promise<string> => {
   if (serviceAreaId) {
     const serviceArea = await ServiceArea.findById(serviceAreaId);
     if (serviceArea?.timezone) {
@@ -32,7 +37,10 @@ const resolveDashboardTimezone = async (serviceAreaId?: string): Promise<string>
 
 const getSummaryFromDB = async () => {
   const tz = await resolveDashboardTimezone();
-  const { start: startOfToday, end: endOfToday } = getDayRangeInTimezone("today", tz);
+  const { start: startOfToday, end: endOfToday } = getDayRangeInTimezone(
+    "today",
+    tz,
+  );
 
   const nowInTz = DateTime.now().setZone(tz);
   const startOfMonth = nowInTz.startOf("month").toUTC().toJSDate();
@@ -111,7 +119,12 @@ const getSummaryFromDB = async () => {
               { $ifNull: ["$commission", 0] },
               {
                 $cond: [
-                  { $eq: ["$transactionType", TRANSACTION_TYPE.CANCELLATION_FEE] },
+                  {
+                    $eq: [
+                      "$transactionType",
+                      TRANSACTION_TYPE.CANCELLATION_FEE,
+                    ],
+                  },
                   "$amount",
                   {
                     $cond: [
@@ -154,7 +167,12 @@ const getSummaryFromDB = async () => {
               { $ifNull: ["$commission", 0] },
               {
                 $cond: [
-                  { $eq: ["$transactionType", TRANSACTION_TYPE.CANCELLATION_FEE] },
+                  {
+                    $eq: [
+                      "$transactionType",
+                      TRANSACTION_TYPE.CANCELLATION_FEE,
+                    ],
+                  },
                   "$amount",
                   {
                     $cond: [
@@ -196,7 +214,12 @@ const getSummaryFromDB = async () => {
               { $ifNull: ["$commission", 0] },
               {
                 $cond: [
-                  { $eq: ["$transactionType", TRANSACTION_TYPE.CANCELLATION_FEE] },
+                  {
+                    $eq: [
+                      "$transactionType",
+                      TRANSACTION_TYPE.CANCELLATION_FEE,
+                    ],
+                  },
                   "$amount",
                   {
                     $cond: [
@@ -280,9 +303,15 @@ const getSummaryFromDB = async () => {
     totalDrivers: totalDriversResult[0]?.count || 0,
     totalPassengers,
     activeTrips,
-    revenueToday: parseFloat((revenueTodayResult[0]?.totalRevenue || 0).toFixed(2)),
-    revenueThisMonth: parseFloat((revenueThisMonthResult[0]?.totalRevenue || 0).toFixed(2)),
-    totalRevenue: parseFloat((totalRevenueResult[0]?.totalRevenue || 0).toFixed(2)),
+    revenueToday: parseFloat(
+      (revenueTodayResult[0]?.totalRevenue || 0).toFixed(2),
+    ),
+    revenueThisMonth: parseFloat(
+      (revenueThisMonthResult[0]?.totalRevenue || 0).toFixed(2),
+    ),
+    totalRevenue: parseFloat(
+      (totalRevenueResult[0]?.totalRevenue || 0).toFixed(2),
+    ),
     driverApprovalQueue: driverApprovalQueueResult[0]?.count || 0,
     airportQueueCount,
     scheduledRides,
@@ -320,7 +349,9 @@ const getRevenueChartFromDB = async (range: string = "week") => {
             { $ifNull: ["$commission", 0] },
             {
               $cond: [
-                { $eq: ["$transactionType", TRANSACTION_TYPE.CANCELLATION_FEE] },
+                {
+                  $eq: ["$transactionType", TRANSACTION_TYPE.CANCELLATION_FEE],
+                },
                 "$amount",
                 {
                   $cond: [
@@ -414,15 +445,30 @@ const getDemandChartFromDB = async (range: string = "today") => {
                     "9AM",
                     {
                       $cond: [
-                        { $and: [{ $gte: ["$hour", 12] }, { $lt: ["$hour", 15] }] },
+                        {
+                          $and: [
+                            { $gte: ["$hour", 12] },
+                            { $lt: ["$hour", 15] },
+                          ],
+                        },
                         "12PM",
                         {
                           $cond: [
-                            { $and: [{ $gte: ["$hour", 15] }, { $lt: ["$hour", 18] }] },
+                            {
+                              $and: [
+                                { $gte: ["$hour", 15] },
+                                { $lt: ["$hour", 18] },
+                              ],
+                            },
                             "3PM",
                             {
                               $cond: [
-                                { $and: [{ $gte: ["$hour", 18] }, { $lt: ["$hour", 21] }] },
+                                {
+                                  $and: [
+                                    { $gte: ["$hour", 18] },
+                                    { $lt: ["$hour", 21] },
+                                  ],
+                                },
                                 "6PM",
                                 "9PM",
                               ],
@@ -629,10 +675,22 @@ const getDriverGrowthFromDB = async (
   }
 
   const monthOrder: Record<string, number> = {
-    Jan: 1, Feb: 2, Mar: 3, Apr: 4, May: 5, Jun: 6,
-    Jul: 7, Aug: 8, Sep: 9, Oct: 10, Nov: 11, Dec: 12
+    Jan: 1,
+    Feb: 2,
+    Mar: 3,
+    Apr: 4,
+    May: 5,
+    Jun: 6,
+    Jul: 7,
+    Aug: 8,
+    Sep: 9,
+    Oct: 10,
+    Nov: 11,
+    Dec: 12,
   };
-  result.sort((a, b) => (monthOrder[a.month] || 0) - (monthOrder[b.month] || 0));
+  result.sort(
+    (a, b) => (monthOrder[a.month] || 0) - (monthOrder[b.month] || 0),
+  );
 
   return result;
 };
@@ -718,10 +776,22 @@ const getPassengerGrowthFromDB = async (
   }
 
   const monthOrder: Record<string, number> = {
-    Jan: 1, Feb: 2, Mar: 3, Apr: 4, May: 5, Jun: 6,
-    Jul: 7, Aug: 8, Sep: 9, Oct: 10, Nov: 11, Dec: 12
+    Jan: 1,
+    Feb: 2,
+    Mar: 3,
+    Apr: 4,
+    May: 5,
+    Jun: 6,
+    Jul: 7,
+    Aug: 8,
+    Sep: 9,
+    Oct: 10,
+    Nov: 11,
+    Dec: 12,
   };
-  result.sort((a, b) => (monthOrder[a.month] || 0) - (monthOrder[b.month] || 0));
+  result.sort(
+    (a, b) => (monthOrder[a.month] || 0) - (monthOrder[b.month] || 0),
+  );
 
   return result;
 };
@@ -742,7 +812,10 @@ const getCategoryUsageFromDB = async () => {
     },
   ]);
 
-  const totalTrips = categoriesResult.reduce((sum, item) => sum + item.totalTrips, 0);
+  const totalTrips = categoriesResult.reduce(
+    (sum, item) => sum + item.totalTrips,
+    0,
+  );
 
   const categories = categoriesResult
     .map((item) => ({
@@ -790,7 +863,9 @@ const getTopCitiesFromDB = async (
             { $ifNull: ["$commission", 0] },
             {
               $cond: [
-                { $eq: ["$transactionType", TRANSACTION_TYPE.CANCELLATION_FEE] },
+                {
+                  $eq: ["$transactionType", TRANSACTION_TYPE.CANCELLATION_FEE],
+                },
                 "$amount",
                 {
                   $cond: [

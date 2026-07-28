@@ -18,7 +18,7 @@ adminRouter
   .post(
     isAdmin,
     validateRequest(AiKnowledgeValidation.createKnowledgeValidationSchema),
-    AiSupportController.createKnowledge
+    AiSupportController.createKnowledge,
   );
 
 adminRouter
@@ -26,26 +26,38 @@ adminRouter
   .patch(
     isAdmin,
     validateRequest(AiKnowledgeValidation.updateKnowledgeValidationSchema),
-    AiSupportController.updateKnowledge
+    AiSupportController.updateKnowledge,
   )
   .delete(isAdmin, AiSupportController.deleteKnowledge);
 
-adminRouter.post("/knowledge/import", isAdmin, AiSupportController.importKnowledge);
+adminRouter.post(
+  "/knowledge/import",
+  isAdmin,
+  AiSupportController.importKnowledge,
+);
 
 adminRouter.patch(
   "/config",
   isAdmin,
   validateRequest(AiSupportValidation.updateConfigValidationSchema),
-  AiSupportController.updateConfig
+  AiSupportController.updateConfig,
 );
 
-adminRouter.get("/dashboard/stats", isAdmin, AiSupportController.getDashboardStats);
+adminRouter.get(
+  "/dashboard/stats",
+  isAdmin,
+  AiSupportController.getDashboardStats,
+);
 
 // ==========================================
 // DRIVER ROUTES (/driver/ai-support)
 // ==========================================
 
-driverRouter.get("/suggested-questions", isDriver, AiSupportController.getSuggestedQuestions);
+driverRouter.get(
+  "/suggested-questions",
+  isDriver,
+  AiSupportController.getSuggestedQuestions,
+);
 
 driverRouter
   .route("/conversations")
@@ -57,20 +69,28 @@ driverRouter
   .patch(
     isDriver,
     validateRequest(AiSupportValidation.conversationValidationSchema),
-    AiSupportController.renameConversation
+    AiSupportController.renameConversation,
   )
   .delete(isDriver, AiSupportController.deleteConversation);
 
-driverRouter.patch("/conversations/:id/archive", isDriver, AiSupportController.archiveConversation);
+driverRouter.patch(
+  "/conversations/:id/archive",
+  isDriver,
+  AiSupportController.archiveConversation,
+);
 
 driverRouter.post(
   "/chat",
   isDriver,
   validateRequest(AiSupportValidation.askQuestionValidationSchema),
-  AiSupportController.askAi
+  AiSupportController.askAi,
 );
 
-driverRouter.patch("/chat/:id/regenerate", isDriver, AiSupportController.regenerateChatAnswer);
+driverRouter.patch(
+  "/chat/:id/regenerate",
+  isDriver,
+  AiSupportController.regenerateChatAnswer,
+);
 
 driverRouter.get("/history", isDriver, AiSupportController.getChatHistory);
 
@@ -80,7 +100,7 @@ driverRouter.patch(
   "/history/:id/feedback",
   isDriver,
   validateRequest(AiSupportValidation.submitFeedbackValidationSchema),
-  AiSupportController.submitFeedback
+  AiSupportController.submitFeedback,
 );
 
 export const AdminAiSupportRoutes = adminRouter;

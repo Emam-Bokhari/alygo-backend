@@ -34,7 +34,7 @@ app.use(
 app.post(
   "/api/v1/stripe/webhook",
   express.raw({ type: "application/json" }),
-  (req, res, next) => { 
+  (req, res, next) => {
     (req as any).rawBody = req.body;
     next();
   },

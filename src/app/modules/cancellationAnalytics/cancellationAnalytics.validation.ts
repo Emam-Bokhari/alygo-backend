@@ -16,21 +16,24 @@ const cancellationQuerySchema = z.object({
         })
         .optional(),
       filter: z
-        .enum([
-          "today",
-          "yesterday",
-          "last7days",
-          "last30days",
-          "thisMonth",
-          "lastMonth",
-          "thisYear",
-          "custom",
-        ], {
-          errorMap: () => ({
-            message:
-              "Invalid filter value. Allowed: today, yesterday, last7days, last30days, thisMonth, lastMonth, thisYear, custom",
-          }),
-        })
+        .enum(
+          [
+            "today",
+            "yesterday",
+            "last7days",
+            "last30days",
+            "thisMonth",
+            "lastMonth",
+            "thisYear",
+            "custom",
+          ],
+          {
+            errorMap: () => ({
+              message:
+                "Invalid filter value. Allowed: today, yesterday, last7days, last30days, thisMonth, lastMonth, thisYear, custom",
+            }),
+          },
+        )
         .optional(),
       timezone: z.string().optional(),
       serviceAreaId: z
@@ -61,7 +64,8 @@ const cancellationQuerySchema = z.object({
         return true;
       },
       {
-        message: "startDate and endDate are required when filter is set to 'custom'",
+        message:
+          "startDate and endDate are required when filter is set to 'custom'",
         path: ["startDate"],
       },
     ),

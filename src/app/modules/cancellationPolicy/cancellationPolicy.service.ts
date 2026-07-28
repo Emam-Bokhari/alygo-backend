@@ -105,9 +105,10 @@ const createOrUpdateCancellationPolicyToDB = async (
   return createCancellationPolicy;
 };
 
-const getActiveCancellationPolicyFromDB = async (): Promise<ICancellationPolicy | null> => {
-  return await getPolicyConfig();
-};
+const getActiveCancellationPolicyFromDB =
+  async (): Promise<ICancellationPolicy | null> => {
+    return await getPolicyConfig();
+  };
 
 export const CancellationPolicyService = {
   getPolicyConfig,

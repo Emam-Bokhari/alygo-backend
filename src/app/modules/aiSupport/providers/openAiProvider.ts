@@ -1,7 +1,11 @@
 import axios from "axios";
 import { StatusCodes } from "http-status-codes";
 import ApiError from "../../../../errors/ApiErrors";
-import { IAiProvider, IChatMessage, IProviderResponse } from "./aiProvider.interface";
+import {
+  IAiProvider,
+  IChatMessage,
+  IProviderResponse,
+} from "./aiProvider.interface";
 
 export class OpenAiProvider implements IAiProvider {
   async generateAnswer(
@@ -12,13 +16,13 @@ export class OpenAiProvider implements IAiProvider {
       model: string;
       temperature: number;
       maxTokens: number;
-    }
+    },
   ): Promise<IProviderResponse> {
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
       throw new ApiError(
         StatusCodes.INTERNAL_SERVER_ERROR,
-        "OpenAI API Key (OPENAI_API_KEY) is not configured in environment variables."
+        "OpenAI API Key (OPENAI_API_KEY) is not configured in environment variables.",
       );
     }
 
@@ -66,7 +70,7 @@ export class OpenAiProvider implements IAiProvider {
       if (!answer) {
         throw new ApiError(
           StatusCodes.BAD_GATEWAY,
-          "Invalid response received from OpenAI API."
+          "Invalid response received from OpenAI API.",
         );
       }
 
@@ -81,7 +85,7 @@ export class OpenAiProvider implements IAiProvider {
       const errMsg = error.response?.data?.error?.message || error.message;
       throw new ApiError(
         StatusCodes.BAD_GATEWAY,
-        `OpenAI API Error: ${errMsg}`
+        `OpenAI API Error: ${errMsg}`,
       );
     }
   }

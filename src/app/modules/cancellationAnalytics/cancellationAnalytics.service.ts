@@ -148,13 +148,20 @@ const getSummaryFromDB = async (
 
   const transactionMatchStage: any = {};
   if (query.serviceAreaId) {
-    transactionMatchStage["ride.serviceAreaId"] = new Types.ObjectId(query.serviceAreaId);
+    transactionMatchStage["ride.serviceAreaId"] = new Types.ObjectId(
+      query.serviceAreaId,
+    );
   }
   if (query.rideCategoryId) {
-    transactionMatchStage["ride.rideCategory.categoryId"] = new Types.ObjectId(query.rideCategoryId);
+    transactionMatchStage["ride.rideCategory.categoryId"] = new Types.ObjectId(
+      query.rideCategoryId,
+    );
   }
   if (query.city) {
-    transactionMatchStage["ride.pickup.address"] = { $regex: query.city, $options: "i" };
+    transactionMatchStage["ride.pickup.address"] = {
+      $regex: query.city,
+      $options: "i",
+    };
   }
 
   const pipelineFees: any[] = [
@@ -246,7 +253,9 @@ const getSummaryFromDB = async (
     totalCancellations: totalCancellationsResult,
     passengerCancellations: passengerCancellationsResult,
     driverCancellations: driverCancellationsResult,
-    feesCollected: parseFloat((feesCollectedResult[0]?.totalFees || 0).toFixed(2)),
+    feesCollected: parseFloat(
+      (feesCollectedResult[0]?.totalFees || 0).toFixed(2),
+    ),
     totalDriverPaid: parseFloat(
       (driverCompensationPaidResult[0]?.totalCompensation || 0).toFixed(2),
     ),
@@ -257,7 +266,10 @@ const getTrendFromDB = async (
   query: ICancellationAnalyticsQuery,
 ): Promise<ICancellationTrendData[]> => {
   const matchStage = await buildBaseMatchStage(query);
-  const tz = await resolveAnalyticsTimezone(query.serviceAreaId, query.timezone);
+  const tz = await resolveAnalyticsTimezone(
+    query.serviceAreaId,
+    query.timezone,
+  );
 
   const trendData = await Ride.aggregate([
     {

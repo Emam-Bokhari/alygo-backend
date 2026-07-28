@@ -50,4 +50,3 @@ export interface ITripReport {
 }
 
 export type TripReportModel = Model<ITripReport>;
-

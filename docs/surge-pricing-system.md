@@ -1,4 +1,4 @@
-# Surge Pricing System  
+# Surge Pricing System
 
 This document describes the Surge Pricing System, covering dynamic calculation formulas, rule priority configurations, timezone offsets, and future weather integrations.
 
@@ -7,9 +7,11 @@ This document describes the Surge Pricing System, covering dynamic calculation f
 ## 1. Business Overview
 
 ### Plain English Summary
+
 At times of high demand (such as rush hour, bad weather, or major concerts), the number of passengers wanting a ride can exceed the number of available drivers nearby. To keep the platform reliable, the system uses **Surge Pricing**.
 
 Surge pricing automatically increases fares. This serves two purposes:
+
 1. It encourages more drivers to log in and drive in high-demand zones.
 2. It allocates available rides to passengers who need them most.
 
@@ -20,6 +22,7 @@ The pricing modifier is calculated using the marketplace ratio (active ride requ
 ## 2. Technical Overview
 
 ### Architecture
+
 The surge pricing engine dynamically evaluates active rules during fare quotes:
 
 ```
@@ -55,6 +58,7 @@ The surge pricing engine dynamically evaluates active rules during fare quotes:
 ### Collections & Key Fields
 
 #### `surgerules` Collection
+
 - `_id`: `ObjectId`
 - `ruleName`: `String` (e.g. `"Evening Commute Surge"`)
 - `ruleType`: `String` (Enum: `airport_surge`, `event_surge`, `peak_hour_surge`, `holiday_surge`, `default_surge`)
@@ -66,9 +70,11 @@ The surge pricing engine dynamically evaluates active rules during fare quotes:
 - `createdBy`: `ObjectId` -> References `User`
 
 ### Database Relationships
+
 - The surge calculation checks for active configurations in the `PeakHour`, `Holiday`, and `Event` collections using the passenger's `ServiceArea` coordinates and timezone.
 
 ### Database Indexes
+
 - `{ ruleType: 1, status: 1 }` (To quickly retrieve active rules during pricing lookups)
 
 ---
@@ -146,21 +152,24 @@ flowchart TD
 
 ## 7. Sequence Diagrams
 
-*Detailed in Section 4.*
+_Detailed in Section 4._
 
 ---
 
 ## 8. State Diagrams
 
-*Not applicable as Surge calculations are stateless, transactional evaluations.*
+_Not applicable as Surge calculations are stateless, transactional evaluations._
 
 ---
 
 ## 9. API & Socket Interaction
 
 ### API: Test Surge Calculation
+
 `GET /api/v1/surge-rules/test/:serviceAreaId`
+
 - **Response Payload**:
+
 ```json
 {
   "success": true,
@@ -185,12 +194,15 @@ flowchart TD
 ## 10. Calculations
 
 ### Interpolated Surge Calculation Formula
+
 The multiplier is calculated using a smooth power function curve:
+
 - **Lower Bound Ratio**: `0.8` (Below this, surge = `1.0`)
 - **Upper Bound Ratio**: `5.0` (Above this, surge = `maxMultiplier`)
 - **Power Exponent (Smoothness)**: `0.7`
 
 #### Calculation Steps:
+
 1. Clamp Ratio:
    $$\text{Clamped Ratio} = \min(\max(\text{Ratio}, 0.8), 5.0)$$
 2. Normalize Ratio:
