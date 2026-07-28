@@ -112,27 +112,62 @@ export const LostAndFoundRoutes = router;
 // New router instance for Admin Lost & Found module
 const adminRouter = express.Router();
 
-adminRouter.get("/dashboard/cards", isAdmin, LostAndFoundController.getAdminDashboardCards);
+adminRouter.get(
+  "/dashboard/cards",
+  isAdmin,
+  LostAndFoundController.getAdminDashboardCards,
+);
 adminRouter.get("/reports", isAdmin, LostAndFoundController.getAdminReports);
 adminRouter.get("/returns", isAdmin, LostAndFoundController.getAdminReturns);
 
-adminRouter.get("/delivery-fee", isAdmin, LostAndFoundController.getDeliveryFeeSettings);
+adminRouter.get(
+  "/delivery-fee",
+  isAdmin,
+  LostAndFoundController.getDeliveryFeeSettings,
+);
 adminRouter.patch(
   "/delivery-fee",
   isAdmin,
   validateRequest(LostAndFoundValidation.updateDeliveryFeeSettingsSchema),
-  LostAndFoundController.updateDeliveryFeeSettings
+  LostAndFoundController.updateDeliveryFeeSettings,
 );
 
-adminRouter.get("/item-categories", isAdmin, LostAndFoundController.getAdminItemCategories);
-adminRouter.get("/driver-compensation", isAdmin, LostAndFoundController.getDriverCompensations);
+adminRouter.get(
+  "/item-categories",
+  isAdmin,
+  LostAndFoundController.getAdminItemCategories,
+);
+adminRouter.get(
+  "/driver-compensation",
+  isAdmin,
+  LostAndFoundController.getDriverCompensations,
+);
 adminRouter.get("/disputes", isAdmin, LostAndFoundController.getAdminDisputes);
 
-adminRouter.get("/analytics/overview", isAdmin, LostAndFoundController.getAnalyticsOverview);
-adminRouter.get("/analytics/report-trend", isAdmin, LostAndFoundController.getAnalyticsReportTrend);
-adminRouter.get("/analytics/most-lost-items", isAdmin, LostAndFoundController.getAnalyticsMostLostItems);
-adminRouter.get("/analytics/city-reports", isAdmin, LostAndFoundController.getAnalyticsCityReports);
-adminRouter.get("/analytics/category-distribution", isAdmin, LostAndFoundController.getAnalyticsCategoryDistribution);
+adminRouter.get(
+  "/analytics/overview",
+  isAdmin,
+  LostAndFoundController.getAnalyticsOverview,
+);
+adminRouter.get(
+  "/analytics/report-trend",
+  isAdmin,
+  LostAndFoundController.getAnalyticsReportTrend,
+);
+adminRouter.get(
+  "/analytics/most-lost-items",
+  isAdmin,
+  LostAndFoundController.getAnalyticsMostLostItems,
+);
+adminRouter.get(
+  "/analytics/city-reports",
+  isAdmin,
+  LostAndFoundController.getAnalyticsCityReports,
+);
+adminRouter.get(
+  "/analytics/category-distribution",
+  isAdmin,
+  LostAndFoundController.getAnalyticsCategoryDistribution,
+);
 
 export const LostAndFoundAdminRoutes = adminRouter;
-

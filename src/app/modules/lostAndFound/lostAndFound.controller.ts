@@ -234,16 +234,18 @@ const trackReportStatus = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const getAdminDashboardCards = catchAsync(async (req: Request, res: Response) => {
-  const result = await LostAndFoundService.getAdminDashboardCardsFromDB();
+const getAdminDashboardCards = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await LostAndFoundService.getAdminDashboardCardsFromDB();
 
-  sendResponse(res, {
-    statusCode: StatusCodes.OK,
-    success: true,
-    message: "Lost & Found dashboard summary retrieved successfully",
-    data: result,
-  });
-});
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "Lost & Found dashboard summary retrieved successfully",
+      data: result,
+    });
+  },
+);
 
 const getAdminReports = catchAsync(async (req: Request, res: Response) => {
   const result = await LostAndFoundService.getAdminReportsFromDB(req.query);
@@ -267,51 +269,61 @@ const getAdminReturns = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const getDeliveryFeeSettings = catchAsync(async (req: Request, res: Response) => {
-  const result = await LostAndFoundService.getDeliveryFeeSettingsFromDB();
+const getDeliveryFeeSettings = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await LostAndFoundService.getDeliveryFeeSettingsFromDB();
 
-  sendResponse(res, {
-    statusCode: StatusCodes.OK,
-    success: true,
-    message: "Delivery fee settings retrieved successfully",
-    data: result,
-  });
-});
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "Delivery fee settings retrieved successfully",
+      data: result,
+    });
+  },
+);
 
-const updateDeliveryFeeSettings = catchAsync(async (req: Request, res: Response) => {
-  const result = await LostAndFoundService.updateDeliveryFeeSettingsInDB(
-    req.body.defaultDeliveryFee,
-  );
+const updateDeliveryFeeSettings = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await LostAndFoundService.updateDeliveryFeeSettingsInDB(
+      req.body.defaultDeliveryFee,
+    );
 
-  sendResponse(res, {
-    statusCode: StatusCodes.OK,
-    success: true,
-    message: "Delivery fee settings updated successfully",
-    data: result,
-  });
-});
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "Delivery fee settings updated successfully",
+      data: result,
+    });
+  },
+);
 
-const getAdminItemCategories = catchAsync(async (req: Request, res: Response) => {
-  const result = await LostAndFoundService.getAdminItemCategoriesFromDB();
+const getAdminItemCategories = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await LostAndFoundService.getAdminItemCategoriesFromDB();
 
-  sendResponse(res, {
-    statusCode: StatusCodes.OK,
-    success: true,
-    message: "Item categories retrieved successfully",
-    data: result,
-  });
-});
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "Item categories retrieved successfully",
+      data: result,
+    });
+  },
+);
 
-const getDriverCompensations = catchAsync(async (req: Request, res: Response) => {
-  const result = await LostAndFoundService.getDriverCompensationsFromDB(req.query);
+const getDriverCompensations = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await LostAndFoundService.getDriverCompensationsFromDB(
+      req.query,
+    );
 
-  sendResponse(res, {
-    statusCode: StatusCodes.OK,
-    success: true,
-    message: "Driver compensation retrieved successfully",
-    data: result,
-  });
-});
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "Driver compensation retrieved successfully",
+      data: result,
+    });
+  },
+);
 
 const getAdminDisputes = catchAsync(async (req: Request, res: Response) => {
   const result = await LostAndFoundService.getAdminDisputesFromDB(req.query);
@@ -335,49 +347,58 @@ const getAnalyticsOverview = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const getAnalyticsReportTrend = catchAsync(async (req: Request, res: Response) => {
-  const result = await LostAndFoundService.getAnalyticsReportTrendFromDB();
+const getAnalyticsReportTrend = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await LostAndFoundService.getAnalyticsReportTrendFromDB();
 
-  sendResponse(res, {
-    statusCode: StatusCodes.OK,
-    success: true,
-    message: "Lost item trend retrieved successfully",
-    data: result,
-  });
-});
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "Lost item trend retrieved successfully",
+      data: result,
+    });
+  },
+);
 
-const getAnalyticsMostLostItems = catchAsync(async (req: Request, res: Response) => {
-  const result = await LostAndFoundService.getAnalyticsMostLostItemsFromDB();
+const getAnalyticsMostLostItems = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await LostAndFoundService.getAnalyticsMostLostItemsFromDB();
 
-  sendResponse(res, {
-    statusCode: StatusCodes.OK,
-    success: true,
-    message: "Most lost items retrieved successfully",
-    data: result,
-  });
-});
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "Most lost items retrieved successfully",
+      data: result,
+    });
+  },
+);
 
-const getAnalyticsCityReports = catchAsync(async (req: Request, res: Response) => {
-  const result = await LostAndFoundService.getAnalyticsCityReportsFromDB();
+const getAnalyticsCityReports = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await LostAndFoundService.getAnalyticsCityReportsFromDB();
 
-  sendResponse(res, {
-    statusCode: StatusCodes.OK,
-    success: true,
-    message: "City report analytics retrieved successfully",
-    data: result,
-  });
-});
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "City report analytics retrieved successfully",
+      data: result,
+    });
+  },
+);
 
-const getAnalyticsCategoryDistribution = catchAsync(async (req: Request, res: Response) => {
-  const result = await LostAndFoundService.getAnalyticsCategoryDistributionFromDB();
+const getAnalyticsCategoryDistribution = catchAsync(
+  async (req: Request, res: Response) => {
+    const result =
+      await LostAndFoundService.getAnalyticsCategoryDistributionFromDB();
 
-  sendResponse(res, {
-    statusCode: StatusCodes.OK,
-    success: true,
-    message: "Category distribution retrieved successfully",
-    data: result,
-  });
-});
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "Category distribution retrieved successfully",
+      data: result,
+    });
+  },
+);
 
 export const LostAndFoundController = {
   reportLostItem,
@@ -408,4 +429,3 @@ export const LostAndFoundController = {
   getAnalyticsCityReports,
   getAnalyticsCategoryDistribution,
 };
-

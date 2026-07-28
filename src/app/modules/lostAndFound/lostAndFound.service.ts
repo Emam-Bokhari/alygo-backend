@@ -15,7 +15,10 @@ import ApiError from "../../../errors/ApiErrors";
 import QueryBuilder from "../../builder/queryBuilder";
 import { socketHelper } from "../../../helpers/socketHelper";
 import { sendNotifications } from "../../../helpers/notificationsHelper";
-import { getSystemConfig, clearSystemConfigCache } from "../../../helpers/systemConfigHelper";
+import {
+  getSystemConfig,
+  clearSystemConfigCache,
+} from "../../../helpers/systemConfigHelper";
 import { NOTIFICATION_TYPE } from "../notification/notification.constant";
 import { TRANSACTION_TYPE } from "../transaction/transaction.constant";
 import { DateTime } from "luxon";
@@ -1246,15 +1249,23 @@ const getAdminDashboardCardsFromDB = async (): Promise<any> => {
     LostFound.countDocuments({ foundStatus: FOUND_STATUS.NOT_FOUND }),
     LostFound.countDocuments({
       recoveryMethod: RECOVERY_METHOD.PASSENGER_PICKUP,
-      reportStatus: { $in: [REPORT_STATUS.RETURN_SCHEDULED, REPORT_STATUS.RETURN_IN_PROGRESS] },
+      reportStatus: {
+        $in: [REPORT_STATUS.RETURN_SCHEDULED, REPORT_STATUS.RETURN_IN_PROGRESS],
+      },
     }),
     LostFound.countDocuments({
       recoveryMethod: RECOVERY_METHOD.DRIVER_DELIVERY,
-      reportStatus: { $in: [REPORT_STATUS.RETURN_SCHEDULED, REPORT_STATUS.RETURN_IN_PROGRESS] },
+      reportStatus: {
+        $in: [REPORT_STATUS.RETURN_SCHEDULED, REPORT_STATUS.RETURN_IN_PROGRESS],
+      },
     }),
     LostFound.countDocuments({
       reportStatus: {
-        $in: [REPORT_STATUS.RETURN_COMPLETED, REPORT_STATUS.RECEIVED, REPORT_STATUS.CLOSED],
+        $in: [
+          REPORT_STATUS.RETURN_COMPLETED,
+          REPORT_STATUS.RECEIVED,
+          REPORT_STATUS.CLOSED,
+        ],
       },
     }),
   ]);
@@ -1339,7 +1350,9 @@ const getAdminReturnsFromDB = async (
   query: Record<string, unknown>,
 ): Promise<{ items: any[]; pagination: any }> => {
   const filterObj: Record<string, any> = {
-    recoveryMethod: { $in: [RECOVERY_METHOD.PASSENGER_PICKUP, RECOVERY_METHOD.DRIVER_DELIVERY] },
+    recoveryMethod: {
+      $in: [RECOVERY_METHOD.PASSENGER_PICKUP, RECOVERY_METHOD.DRIVER_DELIVERY],
+    },
   };
 
   if (query.status) {
@@ -1405,15 +1418,20 @@ const getDeliveryFeeSettingsFromDB = async (): Promise<any> => {
   return configObj.lostFound || {};
 };
 
-const updateDeliveryFeeSettingsInDB = async (defaultDeliveryFee: number): Promise<any> => {
+const updateDeliveryFeeSettingsInDB = async (
+  defaultDeliveryFee: number,
+): Promise<any> => {
   const updated = await SystemConfiguration.findOneAndUpdate(
     {},
     { "lostFound.defaultDeliveryFee": defaultDeliveryFee },
-    { new: true, runValidators: true }
+    { new: true, runValidators: true },
   );
 
   if (!updated) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to update system configuration");
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      "Failed to update system configuration",
+    );
   }
 
   clearSystemConfigCache();
@@ -1485,8 +1503,10 @@ const getDriverCompensationsFromDB = async (
   delete cleanQuery.status;
 
   const searchableFields = ["itemName", "reportNumber"];
-  const baseQuery = LostFound.find(filterObj)
-    .populate({ path: "driverId", select: "name email phone profileImage" });
+  const baseQuery = LostFound.find(filterObj).populate({
+    path: "driverId",
+    select: "name email phone profileImage",
+  });
 
   const queryBuilder = new QueryBuilder(baseQuery, cleanQuery)
     .search(searchableFields)
@@ -1499,8 +1519,14 @@ const getDriverCompensationsFromDB = async (
   const meta = await queryBuilder.countTotal();
 
   const items = data.map((report: any) => {
-    const paidLog = report.auditLogs?.find((log: any) => log.action === "PAYMENT_COMPLETED");
-    const paidAt = paidLog ? paidLog.timestamp : (report.paymentStatus === PAYMENT_STATUS.PAID ? report.updatedAt : null);
+    const paidLog = report.auditLogs?.find(
+      (log: any) => log.action === "PAYMENT_COMPLETED",
+    );
+    const paidAt = paidLog
+      ? paidLog.timestamp
+      : report.paymentStatus === PAYMENT_STATUS.PAID
+        ? report.updatedAt
+        : null;
 
     return {
       driver: report.driverId || {},
@@ -1523,10 +1549,23 @@ const getAdminDisputesFromDB = async (
     if (query.status === "open" || query.status === "under_review") {
       filterObj.reportStatus = REPORT_STATUS.UNDER_REVIEW;
     } else if (query.status === "resolved" || query.status === "closed") {
-      filterObj.reportStatus = { $in: [REPORT_STATUS.CLOSED, REPORT_STATUS.RECEIVED, REPORT_STATUS.RETURN_COMPLETED] };
+      filterObj.reportStatus = {
+        $in: [
+          REPORT_STATUS.CLOSED,
+          REPORT_STATUS.RECEIVED,
+          REPORT_STATUS.RETURN_COMPLETED,
+        ],
+      };
     }
   } else {
-    filterObj.reportStatus = { $in: [REPORT_STATUS.UNDER_REVIEW, REPORT_STATUS.CLOSED, REPORT_STATUS.RECEIVED, REPORT_STATUS.RETURN_COMPLETED] };
+    filterObj.reportStatus = {
+      $in: [
+        REPORT_STATUS.UNDER_REVIEW,
+        REPORT_STATUS.CLOSED,
+        REPORT_STATUS.RECEIVED,
+        REPORT_STATUS.RETURN_COMPLETED,
+      ],
+    };
   }
 
   const cleanQuery = { ...query };
@@ -1548,8 +1587,12 @@ const getAdminDisputesFromDB = async (
   const meta = await queryBuilder.countTotal();
 
   const items = data.map((report: any) => {
-    const reason = report.driverNotes || report.itemDescription || "Escalated for admin review";
-    const status = report.reportStatus === REPORT_STATUS.UNDER_REVIEW ? "open" : "resolved";
+    const reason =
+      report.driverNotes ||
+      report.itemDescription ||
+      "Escalated for admin review";
+    const status =
+      report.reportStatus === REPORT_STATUS.UNDER_REVIEW ? "open" : "resolved";
 
     return {
       reportId: report._id,
@@ -1581,12 +1624,24 @@ const getAnalyticsOverviewFromDB = async (): Promise<any> => {
     LostFound.countDocuments({ foundStatus: FOUND_STATUS.FOUND }),
     LostFound.countDocuments({
       foundStatus: FOUND_STATUS.FOUND,
-      reportStatus: { $in: [REPORT_STATUS.RECEIVED, REPORT_STATUS.CLOSED, REPORT_STATUS.RETURN_COMPLETED] },
+      reportStatus: {
+        $in: [
+          REPORT_STATUS.RECEIVED,
+          REPORT_STATUS.CLOSED,
+          REPORT_STATUS.RETURN_COMPLETED,
+        ],
+      },
     }),
     LostFound.aggregate([
       {
         $match: {
-          reportStatus: { $in: [REPORT_STATUS.RECEIVED, REPORT_STATUS.CLOSED, REPORT_STATUS.RETURN_COMPLETED] },
+          reportStatus: {
+            $in: [
+              REPORT_STATUS.RECEIVED,
+              REPORT_STATUS.CLOSED,
+              REPORT_STATUS.RETURN_COMPLETED,
+            ],
+          },
         },
       },
       {
@@ -1616,21 +1671,29 @@ const getAnalyticsOverviewFromDB = async (): Promise<any> => {
     ]),
   ]);
 
-  const foundRate = totalReportsCount > 0
-    ? parseFloat(((foundReportsCount / totalReportsCount) * 100).toFixed(2))
-    : 0;
+  const foundRate =
+    totalReportsCount > 0
+      ? parseFloat(((foundReportsCount / totalReportsCount) * 100).toFixed(2))
+      : 0;
 
-  const returnSuccessRate = foundReportsCount > 0
-    ? parseFloat(((returnedReportsCount / foundReportsCount) * 100).toFixed(2))
-    : 0;
+  const returnSuccessRate =
+    foundReportsCount > 0
+      ? parseFloat(
+          ((returnedReportsCount / foundReportsCount) * 100).toFixed(2),
+        )
+      : 0;
 
-  const averageResolutionHours = resolutionStats.length > 0
-    ? parseFloat((resolutionStats[0].avgResolutionTimeMs / (1000 * 60 * 60)).toFixed(2))
-    : 0;
+  const averageResolutionHours =
+    resolutionStats.length > 0
+      ? parseFloat(
+          (resolutionStats[0].avgResolutionTimeMs / (1000 * 60 * 60)).toFixed(
+            2,
+          ),
+        )
+      : 0;
 
-  const driverCompensationPaid = compensationStats.length > 0
-    ? compensationStats[0].totalPaid
-    : 0;
+  const driverCompensationPaid =
+    compensationStats.length > 0 ? compensationStats[0].totalPaid : 0;
 
   return {
     reportsThisMonth,
@@ -1888,4 +1951,3 @@ export const LostAndFoundService = {
   getAnalyticsCityReportsFromDB,
   getAnalyticsCategoryDistributionFromDB,
 };
-
