@@ -4,6 +4,7 @@ import catchAsync from "../../../shared/catchAsync";
 import sendResponse from "../../../shared/sendResponse";
 import { Driver } from "../driver/driver.model";
 import { Tier } from "./tier.model";
+import { POINT_EVENT_TYPE } from "./tier.constant";
 import { PointRule } from "./pointRule.model";
 import { DriverPointHistory } from "./driverPointHistory.model";
 import { DestinationFilter } from "./destinationFilter.model";
@@ -175,7 +176,7 @@ const overrideDriverPoints = catchAsync(async (req: Request, res: Response) => {
   if (change > 0) {
     await PointsService.awardPoints(
       driverUserId,
-      "admin_override",
+      POINT_EVENT_TYPE.ADMIN_OVERRIDE,
       "admin",
       undefined,
       { notes: notes || `Admin Manual override added ${change} points` },
@@ -183,7 +184,7 @@ const overrideDriverPoints = catchAsync(async (req: Request, res: Response) => {
   } else if (change < 0) {
     await PointsService.deductPoints(
       driverUserId,
-      "admin_override",
+      POINT_EVENT_TYPE.ADMIN_OVERRIDE,
       "admin",
       undefined,
       {

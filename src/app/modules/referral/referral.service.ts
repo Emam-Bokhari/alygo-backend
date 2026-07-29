@@ -20,6 +20,7 @@ import { Transaction } from "../transaction/transaction.model";
 import { TRANSACTION_TYPE } from "../transaction/transaction.constant";
 import QueryBuilder from "../../builder/queryBuilder";
 import { PointsService } from "../tier/points.service";
+import { POINT_EVENT_TYPE } from "../tier/tier.constant";
 
 /**
  * Generate a unique-ish referral code.
@@ -294,7 +295,7 @@ const handleDriverRideCompletion = async (driverUserId: string) => {
     // Award points to the referrer driver
     PointsService.awardPoints(
       referral.referrerId,
-      "referral_completed",
+      POINT_EVENT_TYPE.REFERRAL_COMPLETED,
       "referral",
       referral._id,
       { notes: `Successful Driver Referral of referee ${referral.refereeId}` },

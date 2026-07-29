@@ -35,7 +35,7 @@ const getWalletSummary = (0, catchAsync_1.default)((req, res) => __awaiter(void 
         success: true,
         message: "Wallet summary retrieved successfully",
         data: {
-            walletBalance: wallet.balance,
+            walletBalance: parseFloat(wallet.balance.toFixed(2)),
             currency: wallet.currency,
             stripeConnected: !!((user === null || user === void 0 ? void 0 : user.stripeCustomerId) || (user === null || user === void 0 ? void 0 : user.stripeConnectedAccountId)),
         },
@@ -128,7 +128,7 @@ const getDriverWalletSummary = (0, catchAsync_1.default)((req, res) => __awaiter
         message: "Driver wallet summary retrieved successfully",
         data: {
             totalEarnings,
-            availableBalance: wallet.balance,
+            availableBalance: parseFloat(wallet.balance.toFixed(2)),
             pendingBalance,
             currency: wallet.currency,
             stripeConnected,

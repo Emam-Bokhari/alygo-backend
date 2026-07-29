@@ -27,4 +27,6 @@ adminRouter.get("/states", authHelper_1.isAdmin, driverDutyPolicy_controller_1.D
 adminRouter.get("/cities", authHelper_1.isAdmin, driverDutyPolicy_controller_1.DriverDutyPolicyController.getCityRules);
 adminRouter.get("/zones", authHelper_1.isAdmin, driverDutyPolicy_controller_1.DriverDutyPolicyController.getZoneRules);
 adminRouter.get("/airports", authHelper_1.isAdmin, driverDutyPolicy_controller_1.DriverDutyPolicyController.getAirportRules);
+adminRouter.get("/cards", authHelper_1.isAdmin, driverDutyPolicy_controller_1.DriverDutyPolicyController.getMonitoringCards);
+adminRouter.get("/monitoring/drivers", authHelper_1.isAdmin, driverDutyPolicy_controller_1.DriverDutyPolicyController.getDriverMonitoringList);
 exports.DriverDutyPolicyAdminRoutes = adminRouter;

@@ -12,6 +12,7 @@ import mongoose, { Types } from "mongoose";
 import { REVIEW_STATUS } from "./review.constant";
 import { RIDE_STATUS } from "../ride/ride.constant";
 import { PointsService } from "../tier/points.service";
+import { POINT_EVENT_TYPE } from "../tier/tier.constant";
 
 /**
  * Submit a rating & review for a completed ride.
@@ -177,7 +178,7 @@ const createReviewInDB = async (
         if (rating === 5) {
           PointsService.awardPoints(
             receiverId,
-            "five_star_rating",
+            POINT_EVENT_TYPE.FIVE_STAR_RATING,
             "review",
             review._id,
             { notes: `5-Star Rating received for Ride ${rideId}`, session },

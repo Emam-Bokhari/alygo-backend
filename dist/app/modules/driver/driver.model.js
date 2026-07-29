@@ -48,6 +48,7 @@ const driverSchema = new mongoose_1.Schema({
     // Service Area
     serviceAreaId: {
         type: mongoose_1.Schema.Types.ObjectId,
+        ref: "ServiceArea",
         default: null,
     },
     serviceAreaAssignedAt: {

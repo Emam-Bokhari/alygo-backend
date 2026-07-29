@@ -19,6 +19,7 @@ const serviceArea_model_1 = require("../serviceArea/serviceArea.model");
 const serviceArea_service_1 = require("../serviceArea/serviceArea.service");
 const status_1 = require("../../../constants/status");
 const driver_model_1 = require("../driver/driver.model");
+const user_model_1 = require("../user/user.model");
 const ride_model_1 = require("../ride/ride.model");
 const driver_constant_1 = require("../driver/driver.constant");
 const socketHelper_1 = require("../../../helpers/socketHelper");
@@ -905,8 +906,8 @@ const getStateRulesFromDB = (query) => __awaiter(void 0, void 0, void 0, functio
     const result = yield serviceArea_model_1.ServiceArea.aggregate(pipeline);
     const totalPage = Math.ceil(total / limit);
     return {
-        items: result,
-        pagination: { page, limit, total, totalPage },
+        data: result,
+        meta: { page, limit, total, totalPage },
     };
 });
 const getCityRulesFromDB = (query) => __awaiter(void 0, void 0, void 0, function* () {
@@ -1109,8 +1110,8 @@ const getCityRulesFromDB = (query) => __awaiter(void 0, void 0, void 0, function
     const result = yield serviceArea_model_1.ServiceArea.aggregate(pipeline);
     const totalPage = Math.ceil(total / limit);
     return {
-        items: result,
-        pagination: { page, limit, total, totalPage },
+        data: result,
+        meta: { page, limit, total, totalPage },
     };
 });
 const getZoneRulesFromDB = (query) => __awaiter(void 0, void 0, void 0, function* () {
@@ -1395,8 +1396,8 @@ const getZoneRulesFromDB = (query) => __awaiter(void 0, void 0, void 0, function
     const result = yield serviceArea_model_1.ServiceArea.aggregate(pipeline);
     const totalPage = Math.ceil(total / limit);
     return {
-        items: result,
-        pagination: { page, limit, total, totalPage },
+        data: result,
+        meta: { page, limit, total, totalPage },
     };
 });
 const getAirportRulesFromDB = (query) => __awaiter(void 0, void 0, void 0, function* () {
@@ -1748,8 +1749,264 @@ const getAirportRulesFromDB = (query) => __awaiter(void 0, void 0, void 0, funct
     const result = yield serviceArea_model_1.ServiceArea.aggregate(pipeline);
     const totalPage = Math.ceil(total / limit);
     return {
-        items: result,
-        pagination: { page, limit, total, totalPage },
+        data: result,
+        meta: { page, limit, total, totalPage },
+    };
+});
+const getMonitoringCardsFromDB = () => __awaiter(void 0, void 0, void 0, function* () {
+    const [totalDrivers, activeDrivers, onBreakDrivers, restrictedDrivers] = yield Promise.all([
+        driver_model_1.Driver.countDocuments({}),
+        driver_model_1.Driver.countDocuments({
+            driverAvailabilityStatus: "online",
+            "availability.canReceiveRide": true,
+        }),
+        driver_model_1.Driver.countDocuments({
+            driverAvailabilityStatus: "break",
+        }),
+        driver_model_1.Driver.countDocuments({
+            "availability.canReceiveRide": false,
+        }),
+    ]);
+    return {
+        totalDrivers,
+        activeDrivers,
+        onBreakDrivers,
+        restrictedDrivers,
+    };
+});
+const getDriverMonitoringListFromDB = (query) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c, _d;
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 10;
+    const skip = (page - 1) * limit;
+    // 1. Build user query for searchTerm
+    const userConditions = [];
+    if (query.searchTerm) {
+        userConditions.push({ name: { $regex: query.searchTerm, $options: "i" } });
+        userConditions.push({ email: { $regex: query.searchTerm, $options: "i" } });
+        userConditions.push({ phone: { $regex: query.searchTerm, $options: "i" } });
+    }
+    let matchedUserIds = [];
+    if (userConditions.length > 0) {
+        const matchingUsers = yield user_model_1.User.find({ $or: userConditions }).select("_id");
+        matchedUserIds = matchingUsers.map((u) => u._id);
+    }
+    // 2. Build driver query
+    const driverQuery = {};
+    if (query.searchTerm) {
+        driverQuery.userId = { $in: matchedUserIds };
+    }
+    // City and State filtering
+    if (query.city || query.state) {
+        const saQuery = { isDeleted: { $ne: true } };
+        if (query.city) {
+            saQuery.city = { $regex: query.city, $options: "i" };
+        }
+        if (query.state) {
+            saQuery.state = { $regex: query.state, $options: "i" };
+        }
+        const matchingSAs = yield serviceArea_model_1.ServiceArea.find(saQuery).select("_id");
+        driverQuery.serviceAreaId = { $in: matchingSAs.map((sa) => sa._id) };
+    }
+    // Status filtering
+    if (query.status) {
+        const statusStr = query.status.toLowerCase();
+        if (statusStr === "restricted" || statusStr === "blocked") {
+            driverQuery["availability.canReceiveRide"] = false;
+        }
+        else if (statusStr === "online") {
+            driverQuery.driverAvailabilityStatus = "online";
+            driverQuery["availability.canReceiveRide"] = true;
+        }
+        else {
+            driverQuery.driverAvailabilityStatus = statusStr;
+        }
+    }
+    // 3. Count total drivers
+    const total = yield driver_model_1.Driver.countDocuments(driverQuery);
+    // 4. Query drivers page
+    // Sort
+    const sortObj = parseSort(query.sort);
+    const drivers = yield driver_model_1.Driver.find(driverQuery)
+        .populate({
+        path: "userId",
+        select: "name email phone profileImage",
+    })
+        .populate({
+        path: "serviceAreaId",
+        select: "city state zone airport timezone cityId stateId type",
+        populate: [
+            {
+                path: "cityId",
+                select: "city stateId type",
+                populate: {
+                    path: "stateId",
+                    select: "state type",
+                }
+            },
+            {
+                path: "stateId",
+                select: "state type",
+            }
+        ]
+    })
+        .sort(sortObj)
+        .skip(skip)
+        .limit(limit);
+    // 5. Calculate duty stats for each driver dynamically
+    const items = [];
+    for (const driver of drivers) {
+        const user = driver.userId;
+        const serviceArea = driver.serviceAreaId;
+        let city = "";
+        let state = "";
+        if (serviceArea) {
+            if (serviceArea.type === "city") {
+                city = serviceArea.city || "";
+                state = serviceArea.state || ((_a = serviceArea.stateId) === null || _a === void 0 ? void 0 : _a.state) || "";
+            }
+            else if (serviceArea.type === "state") {
+                city = "";
+                state = serviceArea.state || "";
+            }
+            else if (serviceArea.type === "airport" || serviceArea.type === "zone") {
+                const parentCity = serviceArea.cityId;
+                city = (parentCity === null || parentCity === void 0 ? void 0 : parentCity.city) || "";
+                const parentState = serviceArea.stateId || (parentCity === null || parentCity === void 0 ? void 0 : parentCity.stateId);
+                state = (parentState === null || parentState === void 0 ? void 0 : parentState.state) || "";
+            }
+        }
+        let maxHours = 0;
+        let resetHours = 0;
+        let dailyLimit = 0;
+        let weeklyLimit = 0;
+        let breakMinutes = 0;
+        let drivingHoursToday = 0;
+        let remainingHoursToday = 0;
+        let continuousDrivingHours = 0;
+        // Resolve timezone
+        const timezone = (serviceArea === null || serviceArea === void 0 ? void 0 : serviceArea.timezone) || "UTC";
+        // Resolve policy limits
+        // Use the same coordinate-based lookup first if location exists
+        let policy = null;
+        if (driver.location && driver.location.coordinates) {
+            const [lon, lat] = driver.location.coordinates;
+            const driverLocServiceArea = yield serviceArea_service_1.ServiceAreaServices.findServiceAreaByCoordinates(lon, lat);
+            if (driverLocServiceArea) {
+                const pQuery = { status: "active" };
+                if (driverLocServiceArea.type === "city")
+                    pQuery.cityId = driverLocServiceArea._id;
+                else if (driverLocServiceArea.type === "zone")
+                    pQuery.zoneId = driverLocServiceArea._id;
+                else if (driverLocServiceArea.type === "airport")
+                    pQuery.airportId = driverLocServiceArea._id;
+                else if (driverLocServiceArea.type === "state")
+                    pQuery.stateId = driverLocServiceArea._id;
+                else if (driverLocServiceArea.type === "country")
+                    pQuery.countryId = driverLocServiceArea._id;
+                policy = yield driverDutyPolicy_model_1.DriverDutyPolicy.findOne(pQuery);
+            }
+        }
+        // Fallback to driver's registered serviceArea policy if coordinate-based policy not found
+        if (!policy && driver.serviceAreaId) {
+            const pQuery = { status: "active" };
+            if ((serviceArea === null || serviceArea === void 0 ? void 0 : serviceArea.type) === "city")
+                pQuery.cityId = driver.serviceAreaId;
+            else if ((serviceArea === null || serviceArea === void 0 ? void 0 : serviceArea.type) === "zone")
+                pQuery.zoneId = driver.serviceAreaId;
+            else if ((serviceArea === null || serviceArea === void 0 ? void 0 : serviceArea.type) === "airport")
+                pQuery.airportId = driver.serviceAreaId;
+            else if ((serviceArea === null || serviceArea === void 0 ? void 0 : serviceArea.type) === "state")
+                pQuery.stateId = driver.serviceAreaId;
+            else if ((serviceArea === null || serviceArea === void 0 ? void 0 : serviceArea.type) === "country")
+                pQuery.countryId = driver.serviceAreaId;
+            policy = yield driverDutyPolicy_model_1.DriverDutyPolicy.findOne(pQuery);
+        }
+        // Fallback to global policy if still not found
+        if (!policy) {
+            policy = yield driverDutyPolicy_model_1.DriverDutyPolicy.findOne({ scopeType: "global" });
+        }
+        if (policy) {
+            maxHours = policy.maxContinuousDrivingHours || 0;
+            resetHours = policy.minimumRestHours || 0;
+            dailyLimit = policy.maxDrivingHoursPerDay || 0;
+            breakMinutes = policy.breakDurationMinutes || 0;
+        }
+        // Calculate today's driving hours starting at local midnight
+        const startOfDay = (0, timezoneHelper_1.getCurrentTimeInTimezone)(timezone)
+            .startOf("day")
+            .toUTC()
+            .toJSDate();
+        const completedRides = yield ride_model_1.Ride.find({
+            driverId: driver.userId,
+            status: "completed",
+            completedAt: { $gte: startOfDay },
+        }).sort({ completedAt: 1 });
+        for (const ride of completedRides) {
+            if (ride.startedAt && ride.completedAt) {
+                const durationHrs = (ride.completedAt.getTime() - ride.startedAt.getTime()) / (1000 * 60 * 60);
+                drivingHoursToday += durationHrs;
+            }
+        }
+        remainingHoursToday = Math.max(0, dailyLimit - drivingHoursToday);
+        // Calculate continuous driving hours going backward
+        if (policy && policy.maxContinuousDrivingHours > 0) {
+            let lastRideEndTime = new Date();
+            for (let i = completedRides.length - 1; i >= 0; i--) {
+                const ride = completedRides[i];
+                if (ride.startedAt && ride.completedAt) {
+                    const rideDuration = (ride.completedAt.getTime() - ride.startedAt.getTime()) / (1000 * 60 * 60);
+                    const gapHours = (lastRideEndTime.getTime() - ride.completedAt.getTime()) / (1000 * 60 * 60);
+                    if (gapHours > policy.breakAfterHours) {
+                        break;
+                    }
+                    continuousDrivingHours += rideDuration;
+                    lastRideEndTime = ride.completedAt;
+                }
+            }
+        }
+        // Determine status
+        let status = "offline";
+        if (driver.driverAvailabilityStatus === "offline") {
+            status = "offline";
+        }
+        else if (driver.driverAvailabilityStatus === "break") {
+            status = "break";
+        }
+        else if (driver.driverAvailabilityStatus === "on_trip") {
+            status = "on_trip";
+        }
+        else if (driver.driverAvailabilityStatus === "online") {
+            if (((_b = driver.availability) === null || _b === void 0 ? void 0 : _b.canReceiveRide) === false) {
+                status = ((_d = (_c = driver.availability) === null || _c === void 0 ? void 0 : _c.blockedReason) === null || _d === void 0 ? void 0 : _d.toLowerCase()) || "blocked";
+            }
+            else {
+                status = "online";
+            }
+        }
+        items.push({
+            driverId: driver._id,
+            name: (user === null || user === void 0 ? void 0 : user.name) || "",
+            email: (user === null || user === void 0 ? void 0 : user.email) || "",
+            phone: (user === null || user === void 0 ? void 0 : user.phone) || "",
+            profileImage: (user === null || user === void 0 ? void 0 : user.profileImage) || "",
+            city,
+            state,
+            maxHours,
+            resetHours,
+            dailyLimit,
+            weeklyLimit,
+            breakMinutes,
+            drivingHoursToday: Number(drivingHoursToday.toFixed(2)),
+            remainingHoursToday: Number(remainingHoursToday.toFixed(2)),
+            continuousDrivingHours: Number(continuousDrivingHours.toFixed(2)),
+            status,
+        });
+    }
+    const totalPage = Math.ceil(total / limit);
+    return {
+        data: items,
+        meta: { page, limit, total, totalPage },
     };
 });
 exports.DriverDutyPolicyServices = {
@@ -1767,4 +2024,6 @@ exports.DriverDutyPolicyServices = {
     getCityRulesFromDB,
     getZoneRulesFromDB,
     getAirportRulesFromDB,
+    getMonitoringCardsFromDB,
+    getDriverMonitoringListFromDB,
 };

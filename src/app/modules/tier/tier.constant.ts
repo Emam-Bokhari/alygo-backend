@@ -6,6 +6,19 @@ export enum SUPPORT_LEVEL {
   VIP = "vip",
 }
 
+export enum POINT_EVENT_TYPE {
+  RIDE_COMPLETED = "ride_completed",
+  FIVE_STAR_RATING = "five_star_rating",
+  AIRPORT_RIDE = "airport_ride",
+  SCHEDULED_RIDE = "scheduled_ride",
+  PEAK_HOUR_RIDE = "peak_hour_ride",
+  REFERRAL_COMPLETED = "referral_completed",
+  ACCEPTED_RIDE_CANCELLED = "accepted_ride_cancelled",
+  POLICY_VIOLATION = "policy_violation",
+  ADMIN_OVERRIDE = "admin_override",
+}
+
+
 export const DEFAULT_TIER_BENEFITS: ITierBenefits = {
   destinationFilter: {
     enabled: false,

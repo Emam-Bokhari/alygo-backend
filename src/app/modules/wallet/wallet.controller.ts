@@ -23,7 +23,7 @@ const getWalletSummary = catchAsync(async (req: Request, res: Response) => {
     success: true,
     message: "Wallet summary retrieved successfully",
     data: {
-      walletBalance: wallet.balance,
+      walletBalance: parseFloat(wallet.balance.toFixed(2)),
       currency: wallet.currency,
       stripeConnected: !!(
         user?.stripeCustomerId || user?.stripeConnectedAccountId
@@ -147,7 +147,7 @@ const getDriverWalletSummary = catchAsync(
       message: "Driver wallet summary retrieved successfully",
       data: {
         totalEarnings,
-        availableBalance: wallet.balance,
+        availableBalance: parseFloat(wallet.balance.toFixed(2)),
         pendingBalance,
         currency: wallet.currency,
         stripeConnected,

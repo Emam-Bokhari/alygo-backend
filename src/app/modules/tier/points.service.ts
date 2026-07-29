@@ -1,4 +1,5 @@
 import { Types } from "mongoose";
+import { POINT_EVENT_TYPE } from "./tier.constant";
 import { PointRule } from "./pointRule.model";
 import { DriverPointHistory } from "./driverPointHistory.model";
 import { TierHistory } from "./tierHistory.model";
@@ -14,15 +15,15 @@ import { logger } from "../../../shared/logger";
 import { STATUS } from "../../../enums/user";
 
 // Fallback points constants
-const FALLBACK_POINTS: Record<string, number> = {
-  ride_completed: 5,
-  five_star_rating: 2,
-  airport_ride: 3,
-  scheduled_ride: 2,
-  peak_hour_ride: 2,
-  referral_completed: 10,
-  accepted_ride_cancelled: -10,
-  policy_violation: -50,
+const FALLBACK_POINTS: Partial<Record<POINT_EVENT_TYPE, number>> = {
+  [POINT_EVENT_TYPE.RIDE_COMPLETED]: 5,
+  [POINT_EVENT_TYPE.FIVE_STAR_RATING]: 2,
+  [POINT_EVENT_TYPE.AIRPORT_RIDE]: 3,
+  [POINT_EVENT_TYPE.SCHEDULED_RIDE]: 2,
+  [POINT_EVENT_TYPE.PEAK_HOUR_RIDE]: 2,
+  [POINT_EVENT_TYPE.REFERRAL_COMPLETED]: 10,
+  [POINT_EVENT_TYPE.ACCEPTED_RIDE_CANCELLED]: -10,
+  [POINT_EVENT_TYPE.POLICY_VIOLATION]: -50,
 };
 
 /**
@@ -71,56 +72,56 @@ const seedDefaultPointRules = async () => {
       const defaultRules = [
         {
           name: "Ride Completed",
-          eventType: "ride_completed",
+          eventType: POINT_EVENT_TYPE.RIDE_COMPLETED,
           points: 5,
           actionType: "earning",
           status: STATUS.ACTIVE,
         },
         {
           name: "5-Star Rating",
-          eventType: "five_star_rating",
+          eventType: POINT_EVENT_TYPE.FIVE_STAR_RATING,
           points: 2,
           actionType: "earning",
           status: STATUS.ACTIVE,
         },
         {
           name: "Airport Ride",
-          eventType: "airport_ride",
+          eventType: POINT_EVENT_TYPE.AIRPORT_RIDE,
           points: 3,
           actionType: "earning",
           status: STATUS.ACTIVE,
         },
         {
           name: "Scheduled Ride",
-          eventType: "scheduled_ride",
+          eventType: POINT_EVENT_TYPE.SCHEDULED_RIDE,
           points: 2,
           actionType: "earning",
           status: STATUS.ACTIVE,
         },
         {
           name: "Peak Hour Ride",
-          eventType: "peak_hour_ride",
+          eventType: POINT_EVENT_TYPE.PEAK_HOUR_RIDE,
           points: 2,
           actionType: "earning",
           status: STATUS.ACTIVE,
         },
         {
           name: "Referral Completed",
-          eventType: "referral_completed",
+          eventType: POINT_EVENT_TYPE.REFERRAL_COMPLETED,
           points: 10,
           actionType: "earning",
           status: STATUS.ACTIVE,
         },
         {
           name: "Accepted Ride Cancelled",
-          eventType: "accepted_ride_cancelled",
+          eventType: POINT_EVENT_TYPE.ACCEPTED_RIDE_CANCELLED,
           points: -10,
           actionType: "deduction",
           status: STATUS.ACTIVE,
         },
         {
           name: "Policy Violation",
-          eventType: "policy_violation",
+          eventType: POINT_EVENT_TYPE.POLICY_VIOLATION,
           points: -50,
           actionType: "deduction",
           status: STATUS.ACTIVE,
@@ -139,7 +140,7 @@ const seedDefaultPointRules = async () => {
  */
 const awardPoints = async (
   driverUserId: string | Types.ObjectId,
-  eventType: string,
+  eventType: POINT_EVENT_TYPE,
   source: string,
   referenceId?: string | Types.ObjectId,
   options: { notes?: string; session?: any } = {},
@@ -262,7 +263,7 @@ const awardPoints = async (
  */
 const deductPoints = async (
   driverUserId: string | Types.ObjectId,
-  eventType: string,
+  eventType: POINT_EVENT_TYPE,
   source: string,
   referenceId?: string | Types.ObjectId,
   options: { notes?: string; session?: any } = {},

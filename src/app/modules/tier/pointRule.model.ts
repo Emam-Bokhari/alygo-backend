@@ -2,10 +2,11 @@ import { model, Schema } from "mongoose";
 import { STATUS } from "../../../enums/user";
 import { softDeletePlugin } from "../../../DB/plugins/softDeletePlugin";
 import { ISoftDeleteModel } from "../../../types/softDelete";
+import { POINT_EVENT_TYPE } from "./tier.constant";
 
 export interface IPointRule {
   name: string;
-  eventType: string; // e.g. "ride_completed"
+  eventType: POINT_EVENT_TYPE;
   points: number;
   actionType: "earning" | "deduction";
   status: STATUS;
@@ -28,6 +29,7 @@ const pointRuleSchema = new Schema<IPointRule, PointRuleModel>(
       required: true,
       unique: true,
       trim: true,
+      enum: Object.values(POINT_EVENT_TYPE),
     },
     points: {
       type: Number,

@@ -1,11 +1,12 @@
 import { model, Schema, Types } from "mongoose";
+import { POINT_EVENT_TYPE } from "./tier.constant";
 
 export interface IDriverPointHistory {
   driverId: Types.ObjectId;
   rideId?: Types.ObjectId;
   referralId?: Types.ObjectId;
   transactionId?: Types.ObjectId;
-  eventType: string;
+  eventType: POINT_EVENT_TYPE;
   source: string;
   points: number;
   balanceAfter: number;
@@ -40,6 +41,7 @@ const driverPointHistorySchema = new Schema<IDriverPointHistory>(
     eventType: {
       type: String,
       required: true,
+      enum: Object.values(POINT_EVENT_TYPE),
     },
     source: {
       type: String,

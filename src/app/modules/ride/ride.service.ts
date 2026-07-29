@@ -67,6 +67,7 @@ import {
   getDayRangeInTimezone,
 } from "../../../shared/timezoneHelper";
 import { PointsService } from "../tier/points.service";
+import { POINT_EVENT_TYPE } from "../tier/tier.constant";
 import { PeakHour } from "../peakHour/peakHour.model";
 import { isPeakHour } from "../surgeRule/surgeCalculation.service";
 import { Tier } from "../tier/tier.model";
@@ -1937,7 +1938,7 @@ const completeRide = async (
     // Award Points to Driver for Ride Completion
     PointsService.awardPoints(
       driverUserId,
-      "ride_completed",
+      POINT_EVENT_TYPE.RIDE_COMPLETED,
       "ride",
       ride._id,
       { notes: `Completed Ride ${ride._id}` },
@@ -1948,7 +1949,7 @@ const completeRide = async (
         if (sa && sa.type === "airport") {
           await PointsService.awardPoints(
             driverUserId,
-            "airport_ride",
+            POINT_EVENT_TYPE.AIRPORT_RIDE,
             "ride",
             ride._id,
             { notes: `Airport Ride Bonus for Ride ${ride._id}` },
@@ -1957,7 +1958,7 @@ const completeRide = async (
         if (ride.rideType === RIDE_TYPE.SCHEDULED) {
           await PointsService.awardPoints(
             driverUserId,
-            "scheduled_ride",
+            POINT_EVENT_TYPE.SCHEDULED_RIDE,
             "ride",
             ride._id,
             { notes: `Scheduled Ride Bonus for Ride ${ride._id}` },
@@ -1971,7 +1972,7 @@ const completeRide = async (
         if (isPeak) {
           await PointsService.awardPoints(
             driverUserId,
-            "peak_hour_ride",
+            POINT_EVENT_TYPE.PEAK_HOUR_RIDE,
             "ride",
             ride._id,
             { notes: `Peak Hour Ride Bonus for Ride ${ride._id}` },
@@ -2942,7 +2943,7 @@ const cancelRide = async (
       // Deduct points for accepted ride cancellation
       PointsService.deductPoints(
         cancellingDriverUserId,
-        "accepted_ride_cancelled",
+        POINT_EVENT_TYPE.ACCEPTED_RIDE_CANCELLED,
         "ride",
         ride._id,
         { notes: `Cancelled Accepted Ride ${ride._id}` },
