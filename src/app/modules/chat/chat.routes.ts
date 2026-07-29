@@ -2,6 +2,8 @@ import { Router } from "express";
 import { ChatController } from "./chat.controller";
 import { USER_ROLES } from "../../../enums/user";
 import auth from "../../middlewares/auth";
+import validateRequest from "../../middlewares/validateRequest";
+import { chatValidation } from "./chat.validation";
 
 const router = Router();
 
@@ -35,6 +37,7 @@ router.post(
     USER_ROLES.USER,
     USER_ROLES.DRIVER,
   ),
+  validateRequest(chatValidation.createChatValidationSchema),
   ChatController.createChat,
 );
 

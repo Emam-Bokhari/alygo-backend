@@ -3,12 +3,27 @@ import mongoose from "mongoose";
 import { User } from "../user/user.model";
 import { Message } from "../message/message.model";
 import ApiError from "../../../errors/ApiErrors";
+import { CHAT_COMMUNICATION_TYPE } from "./chat.constant";
+import { chatSocketHelper } from "./socket/chat.socket";
 
-const createChatIntoDB = async (participants: string[]) => {
-  const isExistChat = await Chat.findOne({
+const createChatIntoDB = async (
+  participants: string[],
+  communicationType?: CHAT_COMMUNICATION_TYPE,
+  referenceId?: string,
+) => {
+  const query: any = {
     participants: { $all: participants },
     isDeleted: { $ne: true },
-  });
+  };
+
+  if (communicationType) {
+    query.communicationType = communicationType;
+  }
+  if (referenceId) {
+    query.referenceId = referenceId;
+  }
+
+  const isExistChat = await Chat.findOne(query);
 
   if (isExistChat) {
     return isExistChat;
@@ -16,16 +31,15 @@ const createChatIntoDB = async (participants: string[]) => {
   const newChat = await Chat.create({
     participants: participants,
     lastMessage: null,
+    communicationType: communicationType || CHAT_COMMUNICATION_TYPE.OTHER,
+    referenceId: referenceId ? new mongoose.Types.ObjectId(referenceId) : undefined,
   });
   if (!newChat) {
     throw new Error("Failed to create chat");
   }
 
-  //@ts-ignore
-  const io = global.io;
   newChat.participants.forEach((participant) => {
-    //@ts-ignore
-    io.emit(`newChat::${participant._id}`, newChat);
+    chatSocketHelper.emitNewChat(participant.toString(), newChat);
   });
   return newChat;
 };
@@ -219,11 +233,8 @@ const softDeleteChatForUser = async (chatId: string, id: string) => {
 
   await chat.save();
 
-  //@ts-ignore
-  const io = global.io;
   chat.participants.forEach((participant) => {
-    //@ts-ignore
-    io.emit(`chatDeletedForUser::${participant._id}`, { chatId, userId });
+    chatSocketHelper.emitChatDeleted(participant.toString(), { chatId, userId });
   });
 
   return chat;

@@ -1,12 +1,33 @@
 import catchAsync from "../../../shared/catchAsync";
 import sendResponse from "../../../shared/sendResponse";
 import { ChatService } from "./chat.service";
+import ApiError from "../../../errors/ApiErrors";
+import { CHAT_COMMUNICATION_TYPE } from "./chat.constant";
+import { chatPermissionHelper } from "./helpers/chatPermission.helper";
 
 const createChat = catchAsync(async (req, res) => {
-  const participant = req.body.participant;
+  const { participant, communicationType, referenceId } = req.body;
   const { id: userId }: any = req.user;
   const participants = [userId, participant];
-  const result = await ChatService.createChatIntoDB(participants);
+
+  // Validate contextual permission if a specific type is provided
+  if (communicationType && communicationType !== CHAT_COMMUNICATION_TYPE.OTHER) {
+    const permission = await chatPermissionHelper.checkChatPermission(
+      userId,
+      participant,
+      communicationType,
+      referenceId,
+    );
+    if (!permission.allowed) {
+      throw new ApiError(403, permission.reason);
+    }
+  }
+
+  const result = await ChatService.createChatIntoDB(
+    participants,
+    communicationType,
+    referenceId,
+  );
 
   sendResponse(res, {
     statusCode: 200,

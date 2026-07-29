@@ -3,6 +3,8 @@ import { MessageController } from "./message.controller";
 import { USER_ROLES } from "../../../enums/user";
 import { FOLDER_NAMES } from "../../../enums/files";
 import auth from "../../middlewares/auth";
+import validateRequest from "../../middlewares/validateRequest";
+import { messageValidation } from "./message.validation";
 
 import { parseFileData } from "../../middlewares/parseFileData";
 import fileUploadHandler from "../../middlewares/flieUploadHandler";
@@ -20,6 +22,7 @@ router.post(
   ),
   fileUploadHandler(),
   parseFileData({ fieldName: FOLDER_NAMES.IMAGE, mode: "single" }),
+  validateRequest(messageValidation.sendMessageValidationSchema),
   MessageController.sendMessage,
 );
 
@@ -54,6 +57,7 @@ router.patch(
     USER_ROLES.SUPER_ADMIN,
     USER_ROLES.ADMIN,
   ),
+  validateRequest(messageValidation.pinUnpinMessageValidationSchema),
   MessageController.pinUnpinMessage,
 );
 

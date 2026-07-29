@@ -3,6 +3,10 @@ import { Chat } from "../chat/chat.model";
 import { IMessage } from "./message.interface";
 import { Message } from "./message.model";
 import { Types } from "mongoose";
+import { chatSocketHelper } from "../chat/socket/chat.socket";
+import { chatPermissionHelper } from "../chat/helpers/chatPermission.helper";
+import { CHAT_COMMUNICATION_TYPE } from "../chat/chat.constant";
+import { notificationHelper } from "../../builder/pushNotification";
 
 const detectMessageType = (
   payload: Partial<IMessage>,
@@ -31,6 +35,24 @@ const sendMessageToDB = async (payload: IMessage): Promise<IMessage> => {
 
   if (!isSenderParticipant) {
     throw new ApiError(403, "Sender is not a participant in this chat");
+  }
+
+  // Validate contextual permission if the chat has a type other than OTHER
+  if (chat.communicationType && chat.communicationType !== CHAT_COMMUNICATION_TYPE.OTHER) {
+    const receiverId = chat.participants.find(
+      (p) => p.toString() !== payload.sender.toString(),
+    );
+    if (receiverId) {
+      const permission = await chatPermissionHelper.checkChatPermission(
+        payload.sender,
+        receiverId,
+        chat.communicationType,
+        chat.referenceId,
+      );
+      if (!permission.allowed) {
+        throw new ApiError(403, `Cannot send message: ${permission.reason}`);
+      }
+    }
   }
 
   // create message with proper defaults
@@ -68,11 +90,7 @@ const sendMessageToDB = async (payload: IMessage): Promise<IMessage> => {
     .populate("lastMessage")
     .lean();
 
-  // socket emissions
-  //@ts-ignore
-  const io = global.io;
-
-  if (chat.participants && io) {
+  if (chat.participants) {
     const otherParticipants = chat.participants.filter(
       (participant) =>
         participant && participant.toString() !== payload.sender.toString(),
@@ -83,16 +101,16 @@ const sendMessageToDB = async (payload: IMessage): Promise<IMessage> => {
       const participantIdStr = participantId.toString();
 
       // emit new message
-      io.emit(`newMessage::${participantIdStr}`, populatedMessage);
+      chatSocketHelper.emitNewMessage(participantIdStr, populatedMessage);
 
       // emit unread count update - let frontend handle the increment
-      io.emit(`unreadCountUpdate::${participantIdStr}`, {
+      chatSocketHelper.emitUnreadCountUpdate(participantIdStr, {
         chatId: payload.chatId,
-        action: "increment", // frontend should increment its local count
+        action: "increment",
       });
 
       // emit chat list update to move this chat to top
-      io.emit(`chatListUpdate::${participantIdStr}`, {
+      chatSocketHelper.emitChatListUpdate(participantIdStr, {
         chatId: payload.chatId,
         chat: populatedChat,
         action: "moveToTop",
@@ -103,13 +121,22 @@ const sendMessageToDB = async (payload: IMessage): Promise<IMessage> => {
 
     // also emit chat list update to sender (to update their own chat list)
     const senderIdStr = payload.sender.toString();
-    io.emit(`chatListUpdate::${senderIdStr}`, {
+    chatSocketHelper.emitChatListUpdate(senderIdStr, {
       chatId: payload.chatId,
       chat: populatedChat,
       action: "moveToTop",
       lastMessage: populatedMessage,
       updatedAt: new Date(),
     });
+  }
+
+  // Send real-time FCM push notifications to message recipients
+  try {
+    if (populatedMessage) {
+      await notificationHelper.sendChatMessage(chat, populatedMessage);
+    }
+  } catch (error: any) {
+    console.error("FCM push notification failed for chat message:", error.message);
   }
 
   return response;
@@ -305,12 +332,9 @@ const pinUnpinMessage = async (
         $addToSet: { pinnedMessages: messageId },
       });
 
-      //@ts-ignore
-      const io = global.io;
       // Notify all participants
       chat.participants.forEach((participantId) => {
-        //@ts-ignore
-        io.emit(`messagePinned::${participantId}`, {
+        chatSocketHelper.emitMessagePinned(participantId.toString(), {
           messageId,
           chatId: message.chatId,
           pinnedBy: userId,
@@ -342,12 +366,9 @@ const pinUnpinMessage = async (
         $pull: { pinnedMessages: messageId },
       });
 
-      //@ts-ignore
-      const io = global.io;
       // Notify all participants
       chat.participants.forEach((participantId) => {
-        //@ts-ignore
-        io.emit(`messageUnpinned::${participantId}`, {
+        chatSocketHelper.emitMessageUnpinned(participantId.toString(), {
           messageId,
           chatId: message.chatId,
           unpinnedBy: userId,
