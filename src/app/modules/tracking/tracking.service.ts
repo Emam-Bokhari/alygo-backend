@@ -5,7 +5,8 @@ import { ITracking } from "./tracking.interface";
 import { Ride } from "../ride/ride.model";
 import { User } from "../user/user.model";
 import { RIDE_STATUS, RIDE_TYPE } from "../ride/ride.constant";
-import { socketHelper } from "../../../helpers/socketHelper";
+import { rideDriverSocketHelper } from "../ride/socket/driver.socket";
+import { rideUserSocketHelper } from "../ride/socket/user.socket";
 import {
   validateLocationUpdate,
   shouldRefreshETA,
@@ -410,7 +411,7 @@ const updateDriverLocation = async (
 
   for (const transition of transitions) {
     if (transition.type === "driver-on-the-way") {
-      socketHelper.sendToUser(ride.userId.toString(), "driver-on-the-way", {
+      rideUserSocketHelper.emitDriverOnTheWay(ride.userId.toString(), {
         rideId: ride._id,
         ...getRideScheduleInfo(ride),
         driver: driverSummary,
@@ -424,7 +425,7 @@ const updateDriverLocation = async (
         `[TrackingService] Emitted driver-on-the-way for ride ${ride._id}`,
       );
     } else if (transition.type === "driver-arrived") {
-      socketHelper.sendToUser(ride.userId.toString(), "driver-arrived", {
+      rideUserSocketHelper.emitDriverArrived(ride.userId.toString(), {
         rideId: ride._id,
         ...getRideScheduleInfo(ride),
         automaticDetection: true,
@@ -439,7 +440,7 @@ const updateDriverLocation = async (
         `[TrackingService] Emitted driver-arrived for ride ${ride._id}`,
       );
     } else if (transition.type === "stop-arrived") {
-      socketHelper.sendToUser(ride.userId.toString(), "stop-arrived", {
+      rideUserSocketHelper.emitStopArrived(ride.userId.toString(), {
         rideId: ride._id,
         ...getRideScheduleInfo(ride),
         stopOrder: transition.payload.stopOrder,
@@ -461,7 +462,7 @@ const updateDriverLocation = async (
     resolvedState
   ) {
     const driverUser = driverDoc?.userId as any;
-    socketHelper.sendToUser(ride.userId.toString(), "driver-location-updated", {
+    rideUserSocketHelper.emitDriverLocationUpdated(ride.userId.toString(), {
       rideId: ride._id,
       driverId: ride.driverId,
       driverName: driverUser?.name || "",
@@ -674,7 +675,7 @@ const createOrUpdateTracking = async (
 
   // Sync to counterpart via Socket
   if (payload.driverLocation && ride.userId) {
-    socketHelper.sendToUser(ride.userId.toString(), "driver-location-updated", {
+    rideUserSocketHelper.emitDriverLocationUpdated(ride.userId.toString(), {
       rideId: ride._id,
       driverId: ride.driverId,
       coordinates: payload.driverLocation.coordinates,
@@ -683,7 +684,7 @@ const createOrUpdateTracking = async (
   }
 
   if (payload.userLocation && ride.driverId) {
-    socketHelper.sendToUser(ride.driverId.toString(), "user-location-updated", {
+    rideDriverSocketHelper.emitUserLocationUpdated(ride.driverId.toString(), {
       rideId: ride._id,
       userId: ride.userId,
       coordinates: payload.userLocation.coordinates,

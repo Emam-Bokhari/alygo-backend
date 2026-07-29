@@ -1,6 +1,7 @@
 import { Ride } from "../app/modules/ride/ride.model";
 import { RIDE_TYPE, RIDE_STATUS } from "../app/modules/ride/ride.constant";
-import { socketHelper } from "../helpers/socketHelper";
+import { rideDriverSocketHelper } from "../app/modules/ride/socket/driver.socket";
+import { rideUserSocketHelper } from "../app/modules/ride/socket/user.socket";
 import { sendNotifications } from "../helpers/notificationsHelper";
 import { NOTIFICATION_TYPE } from "../app/modules/notification/notification.constant";
 import { getSystemConfig } from "../helpers/systemConfigHelper";
@@ -111,9 +112,8 @@ const sendReminderNotifications = async (ride: any, intervalLabel: string) => {
   };
 
   // Socket notification to passenger
-  socketHelper.sendToUser(
+  rideUserSocketHelper.emitReservationReminder(
     ride.userId.toString(),
-    "reservation-reminder",
     payload,
   );
 
@@ -130,9 +130,8 @@ const sendReminderNotifications = async (ride: any, intervalLabel: string) => {
   // Socket notification & push to assigned driver if exists
   const driverUserId = ride.assignedDriverId || ride.driverId;
   if (driverUserId) {
-    socketHelper.sendToUser(
+    rideDriverSocketHelper.emitReservationReminder(
       driverUserId.toString(),
-      "reservation-reminder",
       payload,
     );
     await sendNotifications({

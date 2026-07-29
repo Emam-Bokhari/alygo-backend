@@ -16,8 +16,9 @@
 <!-- ========================================================================= -->
 
 <!--
-1. In app call and messaging
+1. Message
 2. Broadcast
+3. Notification
 -->
 
 <!--
@@ -26,13 +27,7 @@
 3. somosto jaigai soft delete use korte hobe, ak e sathe kono data jadi delete orthat soft delete e kora hoi ta o jeno agaer data te ba id te null show na kore, ager existing data jeno sothik vabe e populate hoi
 -->
 
-<!--
- App:
- 1.
-
-  -->
-
- <!-- 
+<!-- 
  App-Dashboard
 
    "UTC",
@@ -57,7 +52,7 @@
  
   -->
 
-  <!-- 
+<!-- 
 Documents Extract
 
   # Implementation Plan - Future-Proof OCR Architecture using Strategy Pattern (Veryfi First)

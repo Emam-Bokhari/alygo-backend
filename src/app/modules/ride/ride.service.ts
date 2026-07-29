@@ -22,8 +22,9 @@ import { WalletService } from "../wallet/wallet.service";
 import { ReferralService } from "../referral/referral.service";
 import { Tracking } from "../tracking/tracking.model";
 import { googleMapsHelper } from "../../../helpers/googleMapsHelper";
-import { socketHelper } from "../../../helpers/socketHelper";
 import { GoogleRouteService } from "../../../services/googleRouteService";
+import { rideDriverSocketHelper } from "./socket/driver.socket";
+import { rideUserSocketHelper } from "./socket/user.socket";
 import { sendNotifications } from "../../../helpers/notificationsHelper";
 import { NOTIFICATION_TYPE } from "../notification/notification.constant";
 import { TRANSACTION_TYPE } from "../transaction/transaction.constant";
@@ -798,11 +799,11 @@ const requestRide = async (
         ? utcToTimezone(ride.scheduledAt, ride.timezone).toISO()
         : ride.scheduledAt;
 
-    socketHelper.sendToUser(userId, "reservation-created", {
+    rideUserSocketHelper.emitReservationCreated(userId, {
       ride,
       message: "Reservation ride created successfully",
     });
-    socketHelper.sendToUser(userId, "reservation-searching-driver", {
+    rideUserSocketHelper.emitReservationSearchingDriver(userId, {
       rideId: ride._id,
       ...getRideScheduleInfo(ride),
     });
@@ -833,9 +834,8 @@ const requestRide = async (
     logger.info(
       `Sending ride-request to driver: ${driver.driverId.toString()}`,
     );
-    const sent = socketHelper.sendToUser(
+    const sent = rideDriverSocketHelper.emitRideRequest(
       driver.driverId.toString(),
-      "ride-request",
       {
         rideId: ride._id,
         ...getRideScheduleInfo(ride),
@@ -1220,7 +1220,7 @@ const acceptRide = async (
     // Get tracking info for ETA
     const tracking = await Tracking.findOne({ rideId: ride._id });
 
-    socketHelper.sendToUser(ride.userId.toString(), "ride-accepted", {
+    rideUserSocketHelper.emitRideAccepted(ride.userId.toString(), {
       ride: populatedRide,
       ...getRideScheduleInfo(ride),
       driver: driverSummary,
@@ -1233,13 +1233,12 @@ const acceptRide = async (
     });
 
     if (ride.rideType === RIDE_TYPE.SCHEDULED) {
-      socketHelper.sendToUser(ride.userId.toString(), "reservation-confirmed", {
+      rideUserSocketHelper.emitReservationConfirmed(ride.userId.toString(), {
         ride: populatedRide,
         driver: driverSummary,
       });
-      socketHelper.sendToUser(
+      rideUserSocketHelper.emitReservationDriverAssigned(
         ride.userId.toString(),
-        "reservation-driver-assigned",
         {
           rideId: ride._id,
           ...getRideScheduleInfo(ride),
@@ -1263,7 +1262,7 @@ const acceptRide = async (
       .filter((d) => d.driverId.toString() !== driverUserId)
       .map((d) => d.driverId.toString());
 
-    socketHelper.sendToUsers(otherDrivers, "ride-request-cancelled", {
+    rideDriverSocketHelper.emitRideRequestCancelled(otherDrivers, {
       rideId: ride._id,
       message: "This ride request has been accepted by another driver.",
       driverSearch: driverSearchTiming,
@@ -1436,7 +1435,7 @@ const arriveAtPickup = async (
   const driverSummary = await buildDriverSummary(driverDoc, car);
 
   // Send real-time updates with enriched driver summary
-  socketHelper.sendToUser(ride.userId.toString(), "driver-arrived", {
+  rideUserSocketHelper.emitDriverArrived(ride.userId.toString(), {
     rideId: ride._id,
     ...getRideScheduleInfo(ride),
     driver: driverSummary,
@@ -1490,7 +1489,7 @@ const requestStartVerification = async (
       !ride.pickupVerification.otp.verified
     ) {
       // OTP is still valid, resend it
-      socketHelper.sendToUser(ride.userId.toString(), "start-otp-generated", {
+      rideUserSocketHelper.emitStartOtpGenerated(ride.userId.toString(), {
         rideId: ride._id,
         otp: ride.pickupVerification.otp.code,
       });
@@ -1521,7 +1520,7 @@ const requestStartVerification = async (
 
   // Send OTP ONLY to passenger via Socket.IO
   // Note: phoneLastFourDigits is NOT sent - driver must ask passenger verbally
-  socketHelper.sendToUser(ride.userId.toString(), "start-otp-generated", {
+  rideUserSocketHelper.emitStartOtpGenerated(ride.userId.toString(), {
     rideId: ride._id,
     otp: otpCode,
   });
@@ -1681,14 +1680,14 @@ const startRide = async (
   const passengerSummary = buildPassengerSummary(userDoc);
 
   // Socket update - notify both passenger and driver with enriched summaries
-  socketHelper.sendToUser(ride.userId.toString(), "ride-started", {
+  rideUserSocketHelper.emitRideStarted(ride.userId.toString(), {
     rideId: ride._id,
     ...getRideScheduleInfo(ride),
     verificationMethod: methodUsed,
     driver: driverSummary,
   });
 
-  socketHelper.sendToUser(driverUserId, "ride-started", {
+  rideDriverSocketHelper.emitRideStarted(driverUserId, {
     rideId: ride._id,
     ...getRideScheduleInfo(ride),
     user: passengerSummary,
@@ -1737,7 +1736,7 @@ const requestEndVerification = async (
       !ride.dropVerification.otp.verified
     ) {
       // OTP is still valid, resend it
-      socketHelper.sendToUser(ride.userId.toString(), "end-otp-generated", {
+      rideUserSocketHelper.emitEndOtpGenerated(ride.userId.toString(), {
         rideId: ride._id,
         otp: ride.dropVerification.otp.code,
       });
@@ -1768,7 +1767,7 @@ const requestEndVerification = async (
 
   // Send OTP ONLY to passenger via Socket.IO
   // Note: phoneLastFourDigits is NOT sent - driver must ask passenger verbally
-  socketHelper.sendToUser(ride.userId.toString(), "end-otp-generated", {
+  rideUserSocketHelper.emitEndOtpGenerated(ride.userId.toString(), {
     rideId: ride._id,
     otp: otpCode,
   });
@@ -2028,7 +2027,7 @@ const completeRide = async (
     const passengerSummary = buildPassengerSummary(userDoc);
 
     // Socket notify - notify both passenger and driver with enriched summaries
-    socketHelper.sendToUser(ride.userId.toString(), "ride-completed", {
+    rideUserSocketHelper.emitRideCompleted(ride.userId.toString(), {
       rideId: ride._id,
       ...getRideScheduleInfo(ride),
       finalFare: ride.fare,
@@ -2036,7 +2035,7 @@ const completeRide = async (
       driver: driverSummary,
     });
 
-    socketHelper.sendToUser(driverUserId, "ride-completed", {
+    rideDriverSocketHelper.emitRideCompleted(driverUserId, {
       rideId: ride._id,
       ...getRideScheduleInfo(ride),
       user: passengerSummary,
@@ -2150,7 +2149,7 @@ const completeRidePayment = async (
         { session },
       );
 
-      socketHelper.sendToUser(ride.userId.toString(), "wallet-updated", {
+      rideUserSocketHelper.emitWalletUpdated(ride.userId.toString(), {
         balance: passengerWallet.balance,
       });
     }
@@ -2274,12 +2273,11 @@ const completeRidePayment = async (
         { session },
       );
 
-      socketHelper.sendToUser(ride.driverId.toString(), "wallet-updated", {
+      rideDriverSocketHelper.emitWalletUpdated(ride.driverId.toString(), {
         balance: driverWallet.balance,
       });
-      socketHelper.sendToUser(
+      rideDriverSocketHelper.emitDriverWalletCredited(
         ride.driverId.toString(),
-        "driver-wallet-credited",
         {
           amount: driverEarning,
           rideId: ride._id,
@@ -2327,26 +2325,23 @@ const completeRidePayment = async (
       driver: driverSummary,
     };
 
-    socketHelper.sendToUser(
+    rideUserSocketHelper.emitPaymentCompleted(
       ride.userId.toString(),
-      "payment-completed",
       receipt,
     );
-    socketHelper.sendToUser(ride.userId.toString(), "payment-success", receipt);
+    rideUserSocketHelper.emitPaymentSuccess(ride.userId.toString(), receipt);
 
     if (ride.driverId) {
       const driverReceipt = {
         ...receipt,
         user: passengerSummary,
       };
-      socketHelper.sendToUser(
+      rideDriverSocketHelper.emitPaymentCompleted(
         ride.driverId.toString(),
-        "payment-completed",
         driverReceipt,
       );
-      socketHelper.sendToUser(
+      rideDriverSocketHelper.emitPaymentSuccess(
         ride.driverId.toString(),
-        "payment-success",
         driverReceipt,
       );
     }
@@ -2483,12 +2478,11 @@ const confirmCashPayment = async (
       user: passengerSummary,
     };
 
-    socketHelper.sendToUser(
+    rideUserSocketHelper.emitPaymentCompleted(
       ride.userId.toString(),
-      "payment-completed",
       receipt,
     );
-    socketHelper.sendToUser(driverUserId, "payment-completed", driverReceipt);
+    rideDriverSocketHelper.emitPaymentCompleted(driverUserId, driverReceipt);
 
     await sendNotifications({
       title: "Cash Payment Confirmed",
@@ -2805,22 +2799,19 @@ const cancelRide = async (
         driver: driverSummary,
       };
 
-      socketHelper.sendToUser(
+      rideUserSocketHelper.emitRideCancelled(
         ride.userId.toString(),
-        "ride-cancelled",
         cancelPayload,
       );
 
       if (ride.rideType === RIDE_TYPE.SCHEDULED) {
-        socketHelper.sendToUser(
+        rideUserSocketHelper.emitReservationCancelled(
           ride.userId.toString(),
-          "reservation-cancelled",
           cancelPayload,
         );
         if (ride.driverId) {
-          socketHelper.sendToUser(
+          rideDriverSocketHelper.emitReservationCancelled(
             ride.driverId.toString(),
-            "reservation-cancelled",
             {
               ...cancelPayload,
               user: passengerSummary,
@@ -2832,9 +2823,8 @@ const cancelRide = async (
       // Notify all notified drivers whose status is "sent"
       ride.driverMatching?.notifiedDrivers?.forEach((d: any) => {
         if (d.status === DRIVER_MATCHING_STATUS.SENT) {
-          socketHelper.sendToUser(
+          rideDriverSocketHelper.emitRideRequestExpired(
             d.driverId.toString(),
-            "ride-request-expired",
             {
               rideId: ride._id,
               message: "Ride request cancelled by passenger.",
@@ -3024,7 +3014,7 @@ const cancelRide = async (
         };
         await ride.save();
 
-        socketHelper.sendToUser(ride.userId.toString(), "ride-expired", {
+        rideUserSocketHelper.emitRideExpired(ride.userId.toString(), {
           rideId: ride._id,
           message: "Request expired. No driver found within the time limit.",
           driverSearch: calculateDriverSearchTiming(ride),
@@ -3086,9 +3076,8 @@ const cancelRide = async (
           const passengerSummary = buildPassengerSummary(userDoc);
 
           newDrivers.forEach((driver: any) => {
-            socketHelper.sendToUser(
+            rideDriverSocketHelper.emitRideRequest(
               driver.driverId.toString(),
-              "ride-request",
               {
                 rideId: ride._id,
                 ...getRideScheduleInfo(ride),
@@ -3133,14 +3122,12 @@ const cancelRide = async (
       };
 
       // Emit ride-cancelled socket event to user/cancelling driver to signal cancellation of current acceptance
-      socketHelper.sendToUser(
+      rideUserSocketHelper.emitRideCancelled(
         ride.userId.toString(),
-        "ride-cancelled",
         cancelPayload,
       );
-      socketHelper.sendToUser(
+      rideDriverSocketHelper.emitRideCancelled(
         cancellingDriverUserId,
-        "ride-cancelled",
         cancelPayload,
       );
 
@@ -3386,7 +3373,7 @@ const addStopsDuringTrip = async (
   }
 
   // Notify passenger about updated route and fare
-  socketHelper.sendToUser(ride.userId.toString(), "stops-added", {
+  rideUserSocketHelper.emitStopsAdded(ride.userId.toString(), {
     rideId: ride._id,
     newStops: payload.stops,
     updatedRouteInfo: ride.routeInfo,
@@ -3397,7 +3384,7 @@ const addStopsDuringTrip = async (
 
   // Notify driver about updated route
   if (ride.driverId) {
-    socketHelper.sendToUser(ride.driverId.toString(), "stops-added", {
+    rideDriverSocketHelper.emitStopsAdded(ride.driverId.toString(), {
       rideId: ride._id,
       newStops: payload.stops,
       updatedRouteInfo: ride.routeInfo,

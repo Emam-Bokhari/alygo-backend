@@ -2,7 +2,8 @@ import { Worker, Job } from "bullmq";
 import { DateTime } from "luxon";
 import { Ride } from "../app/modules/ride/ride.model";
 import { RIDE_STATUS, CANCELLED_BY } from "../app/modules/ride/ride.constant";
-import { socketHelper } from "../helpers/socketHelper";
+import { rideDriverSocketHelper } from "../app/modules/ride/socket/driver.socket";
+import { rideUserSocketHelper } from "../app/modules/ride/socket/user.socket";
 import { logger } from "../shared/logger";
 import { calculateDriverSearchTiming } from "../helpers/rideSearchTimingHelper";
 import { getRideScheduleInfo } from "../shared/timezoneHelper";
@@ -79,7 +80,7 @@ const rideExpirationWorker = new Worker(
       const driverSearchTiming = calculateDriverSearchTiming(ride);
 
       // Notify user
-      socketHelper.sendToUser(userId, "ride-expired", {
+      rideUserSocketHelper.emitRideExpired(userId, {
         rideId: ride._id,
         message: "Request expired. No driver found within the time limit.",
         driverSearch: driverSearchTiming,
@@ -135,7 +136,7 @@ const driverVisibilityWorker = new Worker(
         const driverSearchTiming = calculateDriverSearchTiming(ride);
 
         // Notify driver to remove the request from their screen
-        socketHelper.sendToUser(driverId, "ride-request-expired", {
+        rideDriverSocketHelper.emitRideRequestExpired(driverId, {
           rideId: ride._id,
           driverSearch: driverSearchTiming,
         });
@@ -281,7 +282,7 @@ const radiusExpansionWorker = new Worker(
 
       // Send ride requests to new drivers via socket
       newDrivers.forEach((driver: any) => {
-        socketHelper.sendToUser(driver.driverId.toString(), "ride-request", {
+        rideDriverSocketHelper.emitRideRequest(driver.driverId.toString(), {
           rideId: ride._id,
           ...getRideScheduleInfo(ride),
           pickup: ride.pickup,
@@ -378,9 +379,8 @@ const driverAvailabilityWorker = new Worker(
             );
 
             // Send socket notification to driver
-            socketHelper.sendToUser(
+            rideDriverSocketHelper.emitDriverAvailable(
               driver.userId.toString(),
-              "driver-available",
               {
                 canReceiveRide: true,
                 blockedReason: null,
