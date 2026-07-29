@@ -206,4 +206,11 @@ export default {
       process.env.DRIVER_DESTINATION_FILTER_RADIUS_DEFAULT || "5",
     ),
   },
+  agora: {
+    appId: process.env.AGORA_APP_ID || "",
+    appCertificate: process.env.AGORA_APP_CERTIFICATE || "",
+    tokenExpireSeconds: parseInt(process.env.AGORA_TOKEN_EXPIRE_SECONDS || "3600"),
+    ringTimeoutSeconds: parseInt(process.env.CALL_RING_TIMEOUT_SECONDS || "30"),
+    maxDurationMinutes: parseInt(process.env.CALL_MAX_DURATION_MINUTES || "120"),
+  },
 };

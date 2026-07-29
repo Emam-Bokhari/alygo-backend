@@ -13,7 +13,7 @@ const platformSettingsSchema = new mongoose_1.Schema({
     currency: {
         type: String,
         enum: Object.values(platformSettings_constant_1.PLATFORM_CURRENCY),
-        default: platformSettings_constant_1.PLATFORM_CURRENCY.MYR,
+        default: platformSettings_constant_1.PLATFORM_CURRENCY.USD,
         required: true,
     },
     isMaintenanceMode: {

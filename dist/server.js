@@ -21,6 +21,8 @@ const socketHelper_1 = require("./helpers/socketHelper");
 const socket_io_1 = require("socket.io");
 const DB_1 = __importDefault(require("./DB"));
 require("./workers/rideMatchingWorkers");
+require("./app/modules/call/workers/call.worker");
+const call_worker_1 = require("./app/modules/call/workers/call.worker");
 const bullmq_1 = require("./config/bullmq");
 const points_service_1 = require("./app/modules/tier/points.service");
 //uncaught exception
@@ -79,6 +81,14 @@ function main() {
                 jobId: "recurring-driver-rewards-check",
             });
             logger_1.logger.info(colors_1.default.green("✅ Driver rewards background job scheduled (every 1 minute)"));
+            // Schedule recurring call cleanup job (every 15 seconds)
+            yield call_worker_1.callCleanupQueue.add("call-cleanup-check", {}, {
+                repeat: {
+                    every: 15000,
+                },
+                jobId: "recurring-call-cleanup",
+            });
+            logger_1.logger.info(colors_1.default.green("✅ Call cleanup job scheduled (every 15 seconds)"));
         }
         catch (error) {
             logger_1.errorLogger.error(colors_1.default.red("🤢 Failed to connect Database"));

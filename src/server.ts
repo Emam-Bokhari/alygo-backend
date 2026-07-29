@@ -7,6 +7,8 @@ import { socketHelper } from "./helpers/socketHelper";
 import { Server } from "socket.io";
 import seedSuperAdmin from "./DB";
 import "./workers/rideMatchingWorkers";
+import "./app/modules/call/workers/call.worker";
+import { callCleanupQueue } from "./app/modules/call/workers/call.worker";
 import {
   driverAvailabilityCheckQueue,
   reservationReminderQueue,
@@ -104,6 +106,21 @@ async function main() {
       colors.green(
         "✅ Driver rewards background job scheduled (every 1 minute)",
       ),
+    );
+
+    // Schedule recurring call cleanup job (every 15 seconds)
+    await callCleanupQueue.add(
+      "call-cleanup-check",
+      {},
+      {
+        repeat: {
+          every: 15000,
+        },
+        jobId: "recurring-call-cleanup",
+      },
+    );
+    logger.info(
+      colors.green("✅ Call cleanup job scheduled (every 15 seconds)"),
     );
   } catch (error) {
     errorLogger.error(colors.red("🤢 Failed to connect Database"));

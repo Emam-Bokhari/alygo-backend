@@ -24,7 +24,8 @@ const getPlatformCurrency = () => __awaiter(void 0, void 0, void 0, function* ()
         return cachedCurrency;
     }
     const settings = yield platformSettings_model_1.PlatformSettings.findOne({});
-    cachedCurrency = (settings === null || settings === void 0 ? void 0 : settings.currency) || "myr";
+    const rawCurrency = settings === null || settings === void 0 ? void 0 : settings.currency;
+    cachedCurrency = (rawCurrency && rawCurrency.toLowerCase() !== "myr") ? rawCurrency : "usd";
     cacheExpiry = now + CACHE_DURATION_MS;
     return cachedCurrency;
 });

@@ -62,6 +62,7 @@ import {
 import { DashboardRoutes } from "../modules/dashboard/dashboard.route";
 import { CancellationAnalyticsRoutes } from "../modules/cancellationAnalytics/cancellationAnalytics.route";
 import { LiveTripsRoutes } from "../modules/liveTrips/liveTrips.route";
+import { CallRoutes } from "../modules/call/call.route";
 
 const router = express.Router();
 
@@ -277,6 +278,10 @@ const apiRoutes = [
   {
     path: "/live-trips",
     route: LiveTripsRoutes,
+  },
+  {
+    path: "/calls",
+    route: CallRoutes,
   },
 ];
 
