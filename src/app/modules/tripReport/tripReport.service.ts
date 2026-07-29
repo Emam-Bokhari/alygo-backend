@@ -18,6 +18,8 @@ import { DateTime } from "luxon";
 import { getSystemConfig } from "../../../helpers/systemConfigHelper";
 import config from "../../../config";
 import { logger } from "../../../shared/logger";
+import { PointsService } from "../tier/points.service";
+import { POINT_EVENT_TYPE } from "../tier/tier.constant";
 
 /**
  * Create a trip report for a completed ride
@@ -305,6 +307,26 @@ const updateTripReport = async (
     .populate("reporterId", "name email phone")
     .populate("issueId", "issueName description")
     .populate("resolvedBy", "name email");
+
+  if (
+    payload.status === TRIP_REPORT_STATUS.RESOLVED &&
+    report.status !== TRIP_REPORT_STATUS.RESOLVED &&
+    updatedReport &&
+    updatedReport.rideSnapshot?.driverId
+  ) {
+    PointsService.deductPoints(
+      updatedReport.rideSnapshot.driverId,
+      POINT_EVENT_TYPE.POLICY_VIOLATION,
+      "tripReport",
+      updatedReport._id,
+      {
+        notes: `Policy violation confirmed for ticket ${updatedReport.ticketId}`,
+        rideId: updatedReport.rideId,
+      },
+    ).catch((err) =>
+      logger.error(`[Point Processing Failed] Error deducting points for policy violation:`, err),
+    );
+  }
 
   return {
     success: true,

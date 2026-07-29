@@ -54,6 +54,7 @@ const transaction_model_1 = require("../transaction/transaction.model");
 const transaction_constant_1 = require("../transaction/transaction.constant");
 const queryBuilder_1 = __importDefault(require("../../builder/queryBuilder"));
 const points_service_1 = require("../tier/points.service");
+const tier_constant_1 = require("../tier/tier.constant");
 /**
  * Generate a unique-ish referral code.
  */
@@ -288,7 +289,7 @@ const handleDriverRideCompletion = (driverUserId) => __awaiter(void 0, void 0, v
         referral.completedAt = new Date();
         referral.qualificationCompletedAt = new Date();
         // Award points to the referrer driver
-        points_service_1.PointsService.awardPoints(referral.referrerId, "referral_completed", "referral", referral._id, { notes: `Successful Driver Referral of referee ${referral.refereeId}` }).catch((err) => console.error("Error awarding referral points:", err));
+        points_service_1.PointsService.awardPoints(referral.referrerId, tier_constant_1.POINT_EVENT_TYPE.REFERRAL_COMPLETED, "referral", referral._id, { notes: `Successful Driver Referral of referee ${referral.refereeId}` }).catch((err) => console.error("Error awarding referral points:", err));
         referral.auditLogs.push({
             action: "QUALIFICATION_COMPLETED",
             details: { message: "Driver satisfied completed ride requirements." },

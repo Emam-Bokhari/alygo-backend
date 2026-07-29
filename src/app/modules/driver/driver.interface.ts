@@ -87,6 +87,7 @@ export type IDriver = {
     cancellationFee?: number;
     platformShare?: number;
     driverCompensation?: number;
+    pointsDeducted?: number;
     cancellationPolicy?: {
       scenario: string;
       policyName?: string;

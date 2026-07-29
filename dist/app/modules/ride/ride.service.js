@@ -53,6 +53,7 @@ const recentDestination_service_1 = require("../recentDestination/recentDestinat
 const buildRideParticipantSummary_1 = require("./helpers/buildRideParticipantSummary");
 const timezoneHelper_1 = require("../../../shared/timezoneHelper");
 const points_service_1 = require("../tier/points.service");
+const tier_constant_1 = require("../tier/tier.constant");
 const peakHour_model_1 = require("../peakHour/peakHour.model");
 const surgeCalculation_service_2 = require("../surgeRule/surgeCalculation.service");
 const tier_model_1 = require("../tier/tier.model");
@@ -1342,20 +1343,20 @@ const completeRide = (driverUserId, rideId, verification, ipAddress) => __awaite
             logger_1.logger.error("Driver referral completed ride progress error:", err);
         });
         // Award Points to Driver for Ride Completion
-        points_service_1.PointsService.awardPoints(driverUserId, "ride_completed", "ride", ride._id, { notes: `Completed Ride ${ride._id}` })
+        points_service_1.PointsService.awardPoints(driverUserId, tier_constant_1.POINT_EVENT_TYPE.RIDE_COMPLETED, "ride", ride._id, { notes: `Completed Ride ${ride._id}` })
             .then(() => __awaiter(void 0, void 0, void 0, function* () {
             // Award additional bonuses
             const sa = yield serviceArea_model_1.ServiceArea.findById(ride.serviceAreaId);
             if (sa && sa.type === "airport") {
-                yield points_service_1.PointsService.awardPoints(driverUserId, "airport_ride", "ride", ride._id, { notes: `Airport Ride Bonus for Ride ${ride._id}` });
+                yield points_service_1.PointsService.awardPoints(driverUserId, tier_constant_1.POINT_EVENT_TYPE.AIRPORT_RIDE, "ride", ride._id, { notes: `Airport Ride Bonus for Ride ${ride._id}` });
             }
             if (ride.rideType === ride_constant_1.RIDE_TYPE.SCHEDULED) {
-                yield points_service_1.PointsService.awardPoints(driverUserId, "scheduled_ride", "ride", ride._id, { notes: `Scheduled Ride Bonus for Ride ${ride._id}` });
+                yield points_service_1.PointsService.awardPoints(driverUserId, tier_constant_1.POINT_EVENT_TYPE.SCHEDULED_RIDE, "ride", ride._id, { notes: `Scheduled Ride Bonus for Ride ${ride._id}` });
             }
             const activePeakHours = yield peakHour_model_1.PeakHour.find({ status: status_1.STATUS.ACTIVE });
             const isPeak = yield (0, surgeCalculation_service_2.isPeakHour)(ride.completedAt || new Date(), activePeakHours);
             if (isPeak) {
-                yield points_service_1.PointsService.awardPoints(driverUserId, "peak_hour_ride", "ride", ride._id, { notes: `Peak Hour Ride Bonus for Ride ${ride._id}` });
+                yield points_service_1.PointsService.awardPoints(driverUserId, tier_constant_1.POINT_EVENT_TYPE.PEAK_HOUR_RIDE, "ride", ride._id, { notes: `Peak Hour Ride Bonus for Ride ${ride._id}` });
             }
         }))
             .catch((err) => {
@@ -1783,6 +1784,16 @@ const cancelRide = (userId, role, rideId, payload) => __awaiter(void 0, void 0, 
         session.startTransaction();
         try {
             const rideStatusBefore = ride.status;
+            let isRiderDriver = false;
+            if (isDriverAccepted) {
+                const passengerDriver = yield driver_model_1.Driver.findOne({ userId: ride.userId }).session(session);
+                if (passengerDriver) {
+                    isRiderDriver = true;
+                }
+            }
+            const finalCancellationFee = isRiderDriver ? 0 : cancellationFee;
+            const finalPlatformShare = isRiderDriver ? 0 : platformShare;
+            const finalDriverCompensation = isRiderDriver ? 0 : driverCompensation;
             // Release driver immediately if exists
             if (ride.driverId) {
                 yield driver_model_1.Driver.findOneAndUpdate({ userId: ride.driverId }, { $set: { driverAvailabilityStatus: "online" } }, { session });
@@ -1797,22 +1808,22 @@ const cancelRide = (userId, role, rideId, payload) => __awaiter(void 0, void 0, 
                 cancelledBy,
                 cancellationReasonId: cancellationReason._id,
                 cancellationReasonName: payload.cancellationReasonName || cancellationReason.reasonName,
-                cancellationFee,
-                driverCompensation,
-                platformShare,
+                cancellationFee: finalCancellationFee,
+                driverCompensation: finalDriverCompensation,
+                platformShare: finalPlatformShare,
                 cancellationPolicy: {
                     scenario: mapped.scenario,
                     policyName: mapped.policyName,
-                    cancellationFee,
-                    driverCompensation,
-                    platformShare,
+                    cancellationFee: finalCancellationFee,
+                    driverCompensation: finalDriverCompensation,
+                    platformShare: finalPlatformShare,
                 },
-                paymentStatus: cancellationFee > 0
+                paymentStatus: finalCancellationFee > 0
                     ? payload.paymentTiming === "now"
                         ? "pending"
                         : "pending"
                     : "paid",
-                paymentCollectionMode: cancellationFee > 0
+                paymentCollectionMode: finalCancellationFee > 0
                     ? payload.paymentTiming === "now"
                         ? "immediate"
                         : "next_ride"
@@ -1826,15 +1837,15 @@ const cancelRide = (userId, role, rideId, payload) => __awaiter(void 0, void 0, 
                 cancelledAt: new Date(),
             };
             let pendingPaymentId;
-            if (cancellationFee > 0) {
+            if (finalCancellationFee > 0) {
                 const [createdPendingPayment] = yield pendingPayment_model_1.PendingPayment.create([
                     {
                         userId: ride.userId,
                         rideId: ride._id,
                         type: "cancellation_fee",
-                        amount: cancellationFee,
-                        driverCompensation: driverCompensation || 0,
-                        platformShare: platformShare || 0,
+                        amount: finalCancellationFee,
+                        driverCompensation: finalDriverCompensation || 0,
+                        platformShare: finalPlatformShare || 0,
                         status: "pending",
                     },
                 ], { session });
@@ -1857,6 +1868,9 @@ const cancelRide = (userId, role, rideId, payload) => __awaiter(void 0, void 0, 
             }
             yield session.commitTransaction();
             session.endSession();
+            if (isRiderDriver) {
+                points_service_1.PointsService.deductPoints(ride.userId, tier_constant_1.POINT_EVENT_TYPE.ACCEPTED_RIDE_CANCELLED, "ride", ride._id, { notes: `Rider Cancelled Accepted Ride ${ride._id}` }).catch((err) => logger_1.logger.error(`[Point Processing Failed] Error deducting points for Rider cancellation:`, err));
+            }
             // Cancel all matching jobs
             try {
                 const expirationJob = yield bullmq_1.rideExpirationQueue.getJob(`ride-expiration-${ride._id}`);
@@ -2032,7 +2046,7 @@ const cancelRide = (userId, role, rideId, payload) => __awaiter(void 0, void 0, 
             yield session.commitTransaction();
             session.endSession();
             // Deduct points for accepted ride cancellation
-            points_service_1.PointsService.deductPoints(cancellingDriverUserId, "accepted_ride_cancelled", "ride", ride._id, { notes: `Cancelled Accepted Ride ${ride._id}` }).catch((err) => logger_1.logger.error("Error deducting points for cancellation:", err));
+            points_service_1.PointsService.deductPoints(cancellingDriverUserId, tier_constant_1.POINT_EVENT_TYPE.ACCEPTED_RIDE_CANCELLED, "ride", ride._id, { notes: `Cancelled Accepted Ride ${ride._id}` }).catch((err) => logger_1.logger.error("Error deducting points for cancellation:", err));
             // 3. Resume Driver Matching automatically
             // Original timer calculation
             const systemConfig = yield (0, systemConfigHelper_1.getSystemConfig)();

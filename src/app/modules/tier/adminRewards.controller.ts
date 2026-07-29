@@ -179,7 +179,11 @@ const overrideDriverPoints = catchAsync(async (req: Request, res: Response) => {
       POINT_EVENT_TYPE.ADMIN_OVERRIDE,
       "admin",
       undefined,
-      { notes: notes || `Admin Manual override added ${change} points` },
+      {
+        notes: notes || `Admin Manual override added ${change} points`,
+        overridePoints: change,
+        adminId: adminUserId,
+      },
     );
   } else if (change < 0) {
     await PointsService.deductPoints(
@@ -188,8 +192,9 @@ const overrideDriverPoints = catchAsync(async (req: Request, res: Response) => {
       "admin",
       undefined,
       {
-        notes:
-          notes || `Admin Manual override deducted ${Math.abs(change)} points`,
+        notes: notes || `Admin Manual override deducted ${Math.abs(change)} points`,
+        overridePoints: change,
+        adminId: adminUserId,
       },
     );
   }
@@ -198,9 +203,8 @@ const overrideDriverPoints = catchAsync(async (req: Request, res: Response) => {
   driver.currentPoints = points;
   await driver.save();
 
-  // Recheck progression and downgrades
-  await PointsService.checkDriverTierProgression(driverUserId);
-  await PointsService.checkDriverTierDowngrade(driverUserId);
+  // Recheck progression and downgrades (using centralized syncDriverTier)
+  await PointsService.syncDriverTier(driverUserId);
 
   sendResponse(res, {
     statusCode: StatusCodes.OK,

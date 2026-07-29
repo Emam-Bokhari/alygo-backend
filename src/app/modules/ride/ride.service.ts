@@ -71,6 +71,7 @@ import { POINT_EVENT_TYPE } from "../tier/tier.constant";
 import { PeakHour } from "../peakHour/peakHour.model";
 import { isPeakHour } from "../surgeRule/surgeCalculation.service";
 import { Tier } from "../tier/tier.model";
+import { PointRule } from "../tier/pointRule.model";
 
 /**
  * Perform fare calculation based on distance, duration, and pricing configuration rules.
@@ -2597,6 +2598,18 @@ const cancelRide = async (
     try {
       const rideStatusBefore = ride.status;
 
+      let isRiderDriver = false;
+      if (isDriverAccepted) {
+        const passengerDriver = await Driver.findOne({ userId: ride.userId }).session(session);
+        if (passengerDriver) {
+          isRiderDriver = true;
+        }
+      }
+
+      const finalCancellationFee = isRiderDriver ? 0 : cancellationFee;
+      const finalPlatformShare = isRiderDriver ? 0 : platformShare;
+      const finalDriverCompensation = isRiderDriver ? 0 : driverCompensation;
+
       // Release driver immediately if exists
       if (ride.driverId) {
         await Driver.findOneAndUpdate(
@@ -2621,24 +2634,24 @@ const cancelRide = async (
         cancellationReasonId: cancellationReason._id,
         cancellationReasonName:
           payload.cancellationReasonName || cancellationReason.reasonName,
-        cancellationFee,
-        driverCompensation,
-        platformShare,
+        cancellationFee: finalCancellationFee,
+        driverCompensation: finalDriverCompensation,
+        platformShare: finalPlatformShare,
         cancellationPolicy: {
           scenario: mapped.scenario,
           policyName: mapped.policyName,
-          cancellationFee,
-          driverCompensation,
-          platformShare,
+          cancellationFee: finalCancellationFee,
+          driverCompensation: finalDriverCompensation,
+          platformShare: finalPlatformShare,
         },
         paymentStatus:
-          cancellationFee > 0
+          finalCancellationFee > 0
             ? payload.paymentTiming === "now"
               ? "pending"
               : "pending"
             : "paid",
         paymentCollectionMode:
-          cancellationFee > 0
+          finalCancellationFee > 0
             ? payload.paymentTiming === "now"
               ? "immediate"
               : "next_ride"
@@ -2654,16 +2667,16 @@ const cancelRide = async (
 
       let pendingPaymentId: string | undefined;
 
-      if (cancellationFee > 0) {
+      if (finalCancellationFee > 0) {
         const [createdPendingPayment] = await PendingPayment.create(
           [
             {
               userId: ride.userId,
               rideId: ride._id,
               type: "cancellation_fee",
-              amount: cancellationFee,
-              driverCompensation: driverCompensation || 0,
-              platformShare: platformShare || 0,
+              amount: finalCancellationFee,
+              driverCompensation: finalDriverCompensation || 0,
+              platformShare: finalPlatformShare || 0,
               status: "pending",
             },
           ],
@@ -2696,6 +2709,18 @@ const cancelRide = async (
 
       await session.commitTransaction();
       session.endSession();
+
+      if (isRiderDriver) {
+        PointsService.deductPoints(
+          ride.userId,
+          POINT_EVENT_TYPE.ACCEPTED_RIDE_CANCELLED,
+          "ride",
+          ride._id,
+          { notes: `Rider Cancelled Accepted Ride ${ride._id}` }
+        ).catch((err) =>
+          logger.error(`[Point Processing Failed] Error deducting points for Rider cancellation:`, err)
+        );
+      }
 
       // Cancel all matching jobs
       try {
@@ -2868,14 +2893,20 @@ const cancelRide = async (
     };
 
     const surgeMultiplier = ride.fare?.surgeMultiplier || 1.0;
-    const cancellationFee = scenario.cancellationFee * surgeMultiplier;
-    const platformShare = scenario.platformShare * surgeMultiplier;
+    const cancellationFee = 0;
+    const platformShare = 0;
     const driverCompensation = 0;
 
     const session = await mongoose.startSession();
     session.startTransaction();
 
     try {
+      // Fetch point rule to find out how many points are deducted
+      const pointRule = await PointRule.findOne({
+        eventType: POINT_EVENT_TYPE.ACCEPTED_RIDE_CANCELLED,
+      }).session(session);
+      const pointsDeducted = pointRule ? Math.abs(pointRule.points) : 10;
+
       // 1. Release the cancelling driver and make online
       await Driver.findOneAndUpdate(
         { userId: cancellingDriverUserId },
@@ -2895,6 +2926,7 @@ const cancelRide = async (
               cancellationFee,
               platformShare,
               driverCompensation,
+              pointsDeducted,
               cancellationPolicy: {
                 scenario: mapped.scenario,
                 policyName: mapped.policyName,

@@ -181,7 +181,11 @@ const createReviewInDB = async (
             POINT_EVENT_TYPE.FIVE_STAR_RATING,
             "review",
             review._id,
-            { notes: `5-Star Rating received for Ride ${rideId}`, session },
+            {
+              notes: `5-Star Rating received for Ride ${rideId}`,
+              session,
+              rideId: rideId,
+            },
           ).catch((err) => console.error("Error awarding rating points:", err));
         }
       }

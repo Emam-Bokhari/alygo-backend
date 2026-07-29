@@ -32,6 +32,8 @@ const luxon_1 = require("luxon");
 const systemConfigHelper_1 = require("../../../helpers/systemConfigHelper");
 const config_1 = __importDefault(require("../../../config"));
 const logger_1 = require("../../../shared/logger");
+const points_service_1 = require("../tier/points.service");
+const tier_constant_1 = require("../tier/tier.constant");
 /**
  * Create a trip report for a completed ride
  * Only the passenger (user) who took the ride can submit a report
@@ -210,6 +212,7 @@ const getTripReportById = (reportId) => __awaiter(void 0, void 0, void 0, functi
  * Admin only
  */
 const updateTripReport = (adminId, reportId, payload) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     const report = yield tripReport_model_1.TripReport.findById(reportId);
     if (!report) {
         throw new ApiErrors_1.default(http_status_codes_1.StatusCodes.NOT_FOUND, "Trip report not found");
@@ -232,6 +235,15 @@ const updateTripReport = (adminId, reportId, payload) => __awaiter(void 0, void 
         .populate("reporterId", "name email phone")
         .populate("issueId", "issueName description")
         .populate("resolvedBy", "name email");
+    if (payload.status === tripReport_constant_1.TRIP_REPORT_STATUS.RESOLVED &&
+        report.status !== tripReport_constant_1.TRIP_REPORT_STATUS.RESOLVED &&
+        updatedReport &&
+        ((_a = updatedReport.rideSnapshot) === null || _a === void 0 ? void 0 : _a.driverId)) {
+        points_service_1.PointsService.deductPoints(updatedReport.rideSnapshot.driverId, tier_constant_1.POINT_EVENT_TYPE.POLICY_VIOLATION, "tripReport", updatedReport._id, {
+            notes: `Policy violation confirmed for ticket ${updatedReport.ticketId}`,
+            rideId: updatedReport.rideId,
+        }).catch((err) => logger_1.logger.error(`[Point Processing Failed] Error deducting points for policy violation:`, err));
+    }
     return {
         success: true,
         message: "Trip report updated successfully",

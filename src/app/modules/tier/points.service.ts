@@ -143,119 +143,203 @@ const awardPoints = async (
   eventType: POINT_EVENT_TYPE,
   source: string,
   referenceId?: string | Types.ObjectId,
-  options: { notes?: string; session?: any } = {},
+  options: {
+    notes?: string;
+    session?: any;
+    rideId?: string | Types.ObjectId;
+    metadata?: Record<string, any>;
+    overridePoints?: number;
+    adminId?: string | Types.ObjectId;
+  } = {},
 ) => {
   const session = options.session;
-  const config = await getSystemConfig();
+  try {
+    const config = await getSystemConfig();
 
-  // If driver rewards system is disabled globally, skip
-  if (config.driverRewards && !config.driverRewards.enabled) {
-    return null;
-  }
-
-  const driverId = new Types.ObjectId(driverUserId);
-
-  // 1. Idempotency Check: Prevent duplicate awards
-  if (referenceId) {
-    const refObjectId = new Types.ObjectId(referenceId);
-    const existingHistory = await DriverPointHistory.findOne({
-      driverId,
-      eventType,
-      $or: [
-        { rideId: refObjectId },
-        { referralId: refObjectId },
-        { transactionId: refObjectId },
-      ],
-    }).session(session);
-
-    if (existingHistory) {
-      logger.info(
-        `Duplicate points event skipped: driver ${driverUserId}, event ${eventType}, reference ${referenceId}`,
-      );
+    // If driver rewards system is disabled globally, skip
+    if (config.driverRewards && !config.driverRewards.enabled) {
+      logger.info(`[Point Processing Failed] Driver rewards system is disabled globally.`);
       return null;
     }
-  }
 
-  // 2. Fetch point rule configuration
-  const rule = await PointRule.findOne({
-    eventType,
-    status: STATUS.ACTIVE,
-  }).session(session);
-  const pointValue = rule ? rule.points : FALLBACK_POINTS[eventType] || 0;
+    const driverId = new Types.ObjectId(driverUserId);
 
-  if (pointValue === 0) {
-    return null;
-  }
+    // 1. Idempotency Checks
+    let finalReferenceId = referenceId ? new Types.ObjectId(referenceId) : undefined;
 
-  // 3. Find driver profile
-  const driver = await Driver.findOne({ userId: driverId }).session(session);
-  if (!driver) {
-    logger.error(`Driver profile not found for user ID: ${driverUserId}`);
-    return null;
-  }
+    if (finalReferenceId) {
+      const existingHistory = await DriverPointHistory.findOne({
+        driverId,
+        eventType,
+        referenceId: finalReferenceId,
+      }).session(session);
 
-  // Calculate new points
-  const oldPoints = driver.currentPoints || 0;
-  const newPoints = Math.max(0, oldPoints + pointValue);
-  const lifetimeIncrease = pointValue > 0 ? pointValue : 0;
-  const oldLifetime = driver.lifetimePoints || 0;
-
-  driver.currentPoints = newPoints;
-  driver.lifetimePoints = oldLifetime + lifetimeIncrease;
-
-  // Initialize tier if not present
-  if (!driver.currentTier) {
-    const defaultTier = await Tier.findOne({ level: 1 }).session(session);
-    if (defaultTier) {
-      driver.currentTier = defaultTier._id;
+      if (existingHistory) {
+        logger.info(
+          `[Duplicate Prevented] Point transaction already processed (by referenceId) for driver ${driverUserId}, event ${eventType}, reference ${referenceId}.`
+        );
+        return null;
+      }
     }
+
+    // Deduplicate by rideId for ride-related events to ensure they only apply once per ride
+    let rideIdToCheck: Types.ObjectId | undefined;
+    if (options.rideId) {
+      rideIdToCheck = new Types.ObjectId(options.rideId);
+    } else if (source === "ride" && referenceId) {
+      rideIdToCheck = new Types.ObjectId(referenceId);
+    }
+
+    if (rideIdToCheck) {
+      const existingRideHistory = await DriverPointHistory.findOne({
+        driverId,
+        eventType,
+        rideId: rideIdToCheck,
+      }).session(session);
+
+      if (existingRideHistory) {
+        logger.info(
+          `[Duplicate Prevented] Point transaction already processed (by rideId) for driver ${driverUserId}, event ${eventType}, ride ${rideIdToCheck}.`
+        );
+        return null;
+      }
+    }
+
+    // 2. Fetch point rule configuration
+    let pointValue = 0;
+    let ruleId: Types.ObjectId | undefined;
+    let action: "earning" | "deduction" = "earning";
+
+    if (eventType === POINT_EVENT_TYPE.ADMIN_OVERRIDE) {
+      pointValue = options.overridePoints !== undefined ? options.overridePoints : 0;
+      action = pointValue >= 0 ? "earning" : "deduction";
+    } else {
+      const rule = await PointRule.findOne({ eventType }).session(session);
+
+      if (!rule) {
+        logger.warn(`[Rule Missing] PointRule does not exist in the database for event: ${eventType}.`);
+        return null;
+      }
+
+      if (rule.status !== STATUS.ACTIVE) {
+        logger.warn(`[Rule Disabled] PointRule is not active for event: ${eventType}.`);
+        return null;
+      }
+
+      if (typeof rule.points !== "number" || isNaN(rule.points)) {
+        logger.error(`[Point Processing Failed] PointRule points value is invalid for event ${eventType}: ${rule.points}`);
+        return null;
+      }
+
+      pointValue = rule.points;
+      ruleId = rule._id;
+      action = rule.actionType;
+
+      // Normalize points sign based on actionType
+      if (action === "deduction" && pointValue > 0) {
+        pointValue = -pointValue;
+      } else if (action === "earning" && pointValue < 0) {
+        pointValue = -pointValue;
+      }
+    }
+
+    if (pointValue === 0) {
+      logger.info(`[Point Processing Failed] Point value is 0 for event ${eventType}, skipping.`);
+      return null;
+    }
+
+    // 3. Find driver profile
+    const driver = await Driver.findOne({ userId: driverId }).session(session);
+    if (!driver) {
+      logger.error(`[Point Processing Failed] Driver profile not found for user ID: ${driverUserId}`);
+      return null;
+    }
+
+    // Calculate new points
+    const oldPoints = driver.currentPoints || 0;
+    const newPoints = Math.max(0, oldPoints + pointValue);
+    const lifetimeIncrease = pointValue > 0 ? pointValue : 0;
+    const oldLifetime = driver.lifetimePoints || 0;
+
+    driver.currentPoints = newPoints;
+    driver.lifetimePoints = oldLifetime + lifetimeIncrease;
+
+    // Initialize tier if not present
+    if (!driver.currentTier) {
+      const defaultTier = await Tier.findOne({ level: 1 }).session(session);
+      if (defaultTier) {
+        driver.currentTier = defaultTier._id;
+      }
+    }
+
+    // Ensure we have a referenceId to satisfy Mongoose compound unique index
+    if (!finalReferenceId) {
+      finalReferenceId = new Types.ObjectId();
+    }
+
+    // 4. Save points log history
+    const historyData: any = {
+      driverId,
+      eventType,
+      source,
+      points: pointValue,
+      balanceAfter: newPoints,
+      notes: options.notes || `Points change for event ${eventType}`,
+      ruleId,
+      referenceId: finalReferenceId,
+      action,
+      previousBalance: oldPoints,
+      balanceChange: pointValue,
+      newBalance: newPoints,
+      metadata: {
+        rideId: rideIdToCheck,
+        reportId: source === "tripReport" ? finalReferenceId : undefined,
+        referralId: source === "referral" ? finalReferenceId : undefined,
+        adminId: options.adminId ? new Types.ObjectId(options.adminId) : undefined,
+        notes: options.notes,
+        source,
+        ...options.metadata,
+      },
+    };
+
+    if (source === "ride" && rideIdToCheck) historyData.rideId = rideIdToCheck;
+    else if (source === "referral" && finalReferenceId) historyData.referralId = finalReferenceId;
+
+    const [historyEntry] = await DriverPointHistory.create([historyData], {
+      session,
+    });
+
+    await driver.save({ session });
+
+    if (pointValue > 0) {
+      logger.info(`[Points Awarded] Awarded ${pointValue} points to driver ${driverUserId} for event ${eventType}.`);
+    } else {
+      logger.info(`[Points Deducted] Deducted ${Math.abs(pointValue)} points from driver ${driverUserId} for event ${eventType}.`);
+    }
+
+    // 5. Evaluate and sync tiers immediately
+    await syncDriverTier(driverId, session);
+
+    // 6. Socket notification
+    socketHelper.sendToUser(driverId.toString(), "driver-points-updated", {
+      points: newPoints,
+      eventType,
+      change: pointValue,
+    });
+
+    // 7. Push notification
+    sendNotifications({
+      receiver: driverId,
+      title: pointValue > 0 ? "Points Earned! 🎉" : "Points Deducted ⚠️",
+      text: `You have ${pointValue > 0 ? "earned" : "lost"} ${Math.abs(pointValue)} points. Your new balance is ${newPoints} points.`,
+      type: NOTIFICATION_TYPE.DRIVER,
+    }).catch((err) => logger.error("FCM Notification error:", err.message));
+
+    return historyEntry;
+  } catch (error: any) {
+    logger.error(`[Point Processing Failed] Failed to process points: ${error.message}`);
+    return null;
   }
-
-  // 4. Save points log history
-  const historyData: any = {
-    driverId,
-    eventType,
-    source,
-    points: pointValue,
-    balanceAfter: newPoints,
-    notes: options.notes || `Points change for event ${eventType}`,
-  };
-
-  if (referenceId) {
-    const refObjectId = new Types.ObjectId(referenceId);
-    if (source === "ride") historyData.rideId = refObjectId;
-    else if (source === "referral") historyData.referralId = refObjectId;
-    else if (source === "wallet" || source === "transaction")
-      historyData.transactionId = refObjectId;
-  }
-
-  const [historyEntry] = await DriverPointHistory.create([historyData], {
-    session,
-  });
-
-  await driver.save({ session });
-
-  // 5. Evaluate upgrades immediately on points increase
-  if (pointValue > 0) {
-    await checkDriverTierProgression(driverId, session);
-  }
-
-  // 6. Socket notification
-  socketHelper.sendToUser(driverId.toString(), "driver-points-updated", {
-    points: newPoints,
-    eventType,
-    change: pointValue,
-  });
-
-  // 7. Push notification
-  sendNotifications({
-    receiver: driverId,
-    title: pointValue > 0 ? "Points Earned! 🎉" : "Points Deducted ⚠️",
-    text: `You have ${pointValue > 0 ? "earned" : "lost"} ${Math.abs(pointValue)} points. Your new balance is ${newPoints} points.`,
-    type: NOTIFICATION_TYPE.DRIVER,
-  }).catch((err) => logger.error("FCM Notification error:", err.message));
-
-  return historyEntry;
 };
 
 /**
@@ -266,9 +350,16 @@ const deductPoints = async (
   eventType: POINT_EVENT_TYPE,
   source: string,
   referenceId?: string | Types.ObjectId,
-  options: { notes?: string; session?: any } = {},
+  options: {
+    notes?: string;
+    session?: any;
+    rideId?: string | Types.ObjectId;
+    metadata?: Record<string, any>;
+    overridePoints?: number;
+    adminId?: string | Types.ObjectId;
+  } = {},
 ) => {
-  // Deducting points is structurally the same as awarding negative points
+  // Deducting points is structurally the same as awarding points (the awardPoints method normalizes the sign based on the event rule)
   return await awardPoints(
     driverUserId,
     eventType,
@@ -279,15 +370,18 @@ const deductPoints = async (
 };
 
 /**
- * Evaluate tier qualifications and promote if requirements are met
+ * Sync driver tier (evaluates qualifications and promotes/demotes if necessary)
  */
-const checkDriverTierProgression = async (
+const syncDriverTier = async (
   driverUserId: string | Types.ObjectId,
   session?: any,
 ) => {
   const driverId = new Types.ObjectId(driverUserId);
   const driver = await Driver.findOne({ userId: driverId }).session(session);
-  if (!driver) return;
+  if (!driver) {
+    logger.warn(`[Point Processing Failed] Driver profile not found for user: ${driverUserId}`);
+    return;
+  }
 
   const currentPoints = driver.currentPoints || 0;
 
@@ -305,7 +399,10 @@ const checkDriverTierProgression = async (
     .sort({ level: 1 })
     .session(session);
 
-  if (activeTiers.length === 0) return;
+  if (activeTiers.length === 0) {
+    logger.warn(`[Point Processing Failed] No active tiers found in system.`);
+    return;
+  }
 
   // 3. Find the highest matching tier
   let eligibleTier = activeTiers[0]; // fallback to lowest level
@@ -345,14 +442,29 @@ const checkDriverTierProgression = async (
 
   const oldTierId = driver.currentTier;
 
-  // If driver qualifies for a higher level tier than their current one, promote!
-  if (!oldTierId || oldTierId.toString() !== eligibleTier._id.toString()) {
-    const oldTier = oldTierId
-      ? await Tier.findById(oldTierId).session(session)
-      : null;
+  // Check if we need to promote, demote, or keep same
+  if (!oldTierId) {
+    // Initial tier assignment
+    driver.currentTier = eligibleTier._id;
+    driver.tierAchievedAt = new Date();
+    await driver.save({ session });
+    logger.info(`[Tier Updated] Initial tier assigned: driver ${driverUserId}, tier ${eligibleTier.name}`);
+    return;
+  }
 
-    // Promote if eligibleTier level is greater than oldTier level
-    if (!oldTier || eligibleTier.level > oldTier.level) {
+  if (oldTierId.toString() !== eligibleTier._id.toString()) {
+    const oldTier = await Tier.findById(oldTierId).session(session);
+    if (!oldTier) {
+      // If old tier doesn't exist, just update
+      driver.currentTier = eligibleTier._id;
+      driver.tierAchievedAt = new Date();
+      await driver.save({ session });
+      logger.info(`[Tier Updated] Tier updated from non-existent: driver ${driverUserId}, new tier ${eligibleTier.name}`);
+      return;
+    }
+
+    if (eligibleTier.level > oldTier.level) {
+      // Promote!
       driver.currentTier = eligibleTier._id;
       driver.tierAchievedAt = new Date();
 
@@ -361,7 +473,7 @@ const checkDriverTierProgression = async (
         [
           {
             driverId,
-            oldTierId: oldTierId || null,
+            oldTierId: oldTier._id,
             newTierId: eligibleTier._id,
             points: currentPoints,
             reason: `Automatic Promotion to ${eligibleTier.name} (Satisfied all conditions: Points, Trips, Rating, Acceptance Rate)`,
@@ -372,9 +484,11 @@ const checkDriverTierProgression = async (
 
       await driver.save({ session });
 
+      logger.info(`[Tier Updated] Driver promoted: driver ${driverUserId}, old tier ${oldTier.name}, new tier ${eligibleTier.name}`);
+
       // Socket upgrade
       socketHelper.sendToUser(driverId.toString(), "driver-tier-upgraded", {
-        oldTier: oldTier ? oldTier.name : null,
+        oldTier: oldTier.name,
         newTier: eligibleTier.name,
         level: eligibleTier.level,
       });
@@ -386,85 +500,11 @@ const checkDriverTierProgression = async (
         text: `Congratulations! You have been upgraded to the ${eligibleTier.name} Tier. Enjoy your new benefits.`,
         type: NOTIFICATION_TYPE.DRIVER,
       }).catch((err) => logger.error("FCM Notification error:", err.message));
-    }
-  }
-};
 
-/**
- * Evaluate tier downgrade criteria and demote if necessary
- */
-const checkDriverTierDowngrade = async (
-  driverUserId: string | Types.ObjectId,
-  session?: any,
-) => {
-  const driverId = new Types.ObjectId(driverUserId);
-  const driver = await Driver.findOne({ userId: driverId }).session(session);
-  if (!driver) return;
-
-  const currentPoints = driver.currentPoints || 0;
-
-  // 1. Calculate stats
-  const tripsCount = await Ride.countDocuments({
-    driverId,
-    status: RIDE_STATUS.COMPLETED,
-  }).session(session);
-
-  const rating = driver.averageRating || 0;
-  const acceptanceRate = await calculateDriverAcceptanceRate(driverId);
-
-  // 2. Fetch all active tiers
-  const activeTiers = await Tier.find({ status: STATUS.ACTIVE })
-    .sort({ level: 1 })
-    .session(session);
-
-  if (activeTiers.length === 0) return;
-
-  // 3. Find highest level matching tier
-  let eligibleTier = activeTiers[0];
-  for (const tier of activeTiers) {
-    const pointsSatisfied =
-      currentPoints >= (tier.requirements?.pointsRequired || 0);
-    const tripsSatisfied =
-      tripsCount >= (tier.requirements?.tripsRequired || 0);
-    const ratingSatisfied = rating >= (tier.requirements?.ratingRequired || 0);
-    const acceptanceSatisfied =
-      acceptanceRate >= (tier.requirements?.acceptanceRateRequired || 0);
-
-    if (
-      pointsSatisfied &&
-      tripsSatisfied &&
-      ratingSatisfied &&
-      acceptanceSatisfied
-    ) {
-      eligibleTier = tier;
-    }
-  }
-
-  const oldTierId = driver.currentTier;
-
-  // Demote if eligible level is lower than current tier level
-  if (oldTierId && oldTierId.toString() !== eligibleTier._id.toString()) {
-    const oldTier = await Tier.findById(oldTierId).session(session);
-
-    if (oldTier && eligibleTier.level < oldTier.level) {
+    } else if (eligibleTier.level < oldTier.level) {
+      // Demote!
       driver.currentTier = eligibleTier._id;
       driver.tierAchievedAt = new Date();
-
-      // Get next tier
-      const nextTier =
-        activeTiers.find((t) => t.level === eligibleTier.level + 1) || null;
-      driver.nextTier = nextTier ? nextTier._id : null;
-
-      if (nextTier && nextTier.requirements?.pointsRequired) {
-        driver.progressPercentage = Math.min(
-          99,
-          Math.round(
-            (currentPoints / nextTier.requirements.pointsRequired) * 100,
-          ),
-        );
-      } else {
-        driver.progressPercentage = 100;
-      }
 
       // Log tier history
       await TierHistory.create(
@@ -482,6 +522,8 @@ const checkDriverTierDowngrade = async (
 
       await driver.save({ session });
 
+      logger.info(`[Tier Updated] Driver demoted: driver ${driverUserId}, old tier ${oldTier.name}, new tier ${eligibleTier.name}`);
+
       // Socket downgrade
       socketHelper.sendToUser(driverId.toString(), "driver-tier-downgraded", {
         oldTier: oldTier.name,
@@ -497,6 +539,9 @@ const checkDriverTierDowngrade = async (
         type: NOTIFICATION_TYPE.DRIVER,
       }).catch((err) => logger.error("FCM Notification error:", err.message));
     }
+  } else {
+    // Save driver progress changes (nextTier, progressPercentage) even if currentTier didn't change
+    await driver.save({ session });
   }
 };
 
@@ -526,7 +571,7 @@ const processScheduledDowngrades = async () => {
         const oldTierId = (
           await Driver.findOne({ userId: d.userId }).session(session)
         )?.currentTier;
-        await checkDriverTierDowngrade(d.userId, session);
+        await syncDriverTier(d.userId, session);
         const newTierId = (
           await Driver.findOne({ userId: d.userId }).session(session)
         )?.currentTier;
@@ -536,7 +581,12 @@ const processScheduledDowngrades = async () => {
           newTierId &&
           oldTierId.toString() !== newTierId.toString()
         ) {
-          demotedCount++;
+          // Verify if it was a demotion
+          const oldTier = await Tier.findById(oldTierId).session(session);
+          const newTier = await Tier.findById(newTierId).session(session);
+          if (oldTier && newTier && newTier.level < oldTier.level) {
+            demotedCount++;
+          }
         }
         await session.commitTransaction();
       } catch (err: any) {
@@ -562,7 +612,8 @@ export const PointsService = {
   seedDefaultPointRules,
   awardPoints,
   deductPoints,
-  checkDriverTierProgression,
-  checkDriverTierDowngrade,
+  checkDriverTierProgression: syncDriverTier,
+  checkDriverTierDowngrade: syncDriverTier,
+  syncDriverTier,
   processScheduledDowngrades,
 };
