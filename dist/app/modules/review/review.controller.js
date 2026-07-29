@@ -18,7 +18,7 @@ const catchAsync_1 = __importDefault(require("../../../shared/catchAsync"));
 const sendResponse_1 = __importDefault(require("../../../shared/sendResponse"));
 const review_service_1 = require("./review.service");
 const review_validation_1 = require("./review.validation");
-const config_1 = __importDefault(require("../../../config"));
+const platformSettings_service_1 = require("../platformSettings/platformSettings.service");
 /**
  * Create review handler (passenger or driver).
  */
@@ -84,7 +84,7 @@ const createReview = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, v
                     status: "pending",
                     pendingPaymentId: pendingPayment._id,
                     amount: pendingPayment.amount,
-                    currency: config_1.default.stripe.currency || "USD",
+                    currency: (yield platformSettings_service_1.PlatformSettingsService.getPlatformCurrency()).toUpperCase(),
                     options: ["pay_now", "skip"],
                 },
             },

@@ -15,6 +15,23 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PlatformSettingsService = void 0;
 const platformSettings_model_1 = require("./platformSettings.model");
 const ApiErrors_1 = __importDefault(require("../../../errors/ApiErrors"));
+let cachedCurrency = null;
+let cacheExpiry = 0;
+const CACHE_DURATION_MS = 5 * 60 * 1000; // 5 minutes
+const getPlatformCurrency = () => __awaiter(void 0, void 0, void 0, function* () {
+    const now = Date.now();
+    if (cachedCurrency && now < cacheExpiry) {
+        return cachedCurrency;
+    }
+    const settings = yield platformSettings_model_1.PlatformSettings.findOne({});
+    cachedCurrency = (settings === null || settings === void 0 ? void 0 : settings.currency) || "myr";
+    cacheExpiry = now + CACHE_DURATION_MS;
+    return cachedCurrency;
+});
+const clearPlatformCurrencyCache = () => {
+    cachedCurrency = null;
+    cacheExpiry = 0;
+};
 const getPlatformSettingsFromDB = () => __awaiter(void 0, void 0, void 0, function* () {
     const settings = yield platformSettings_model_1.PlatformSettings.findOne({});
     if (!settings) {
@@ -23,6 +40,7 @@ const getPlatformSettingsFromDB = () => __awaiter(void 0, void 0, void 0, functi
     return settings;
 });
 const createOrUpdatePlatformSettingsToDB = (payload) => __awaiter(void 0, void 0, void 0, function* () {
+    clearPlatformCurrencyCache();
     const existingSettings = yield platformSettings_model_1.PlatformSettings.findOne({});
     if (existingSettings) {
         // Update existing settings
@@ -47,4 +65,6 @@ const createOrUpdatePlatformSettingsToDB = (payload) => __awaiter(void 0, void 0
 exports.PlatformSettingsService = {
     getPlatformSettingsFromDB,
     createOrUpdatePlatformSettingsToDB,
+    getPlatformCurrency,
+    clearPlatformCurrencyCache,
 };

@@ -9,6 +9,7 @@ import { ServiceArea } from "../serviceArea/serviceArea.model";
 import { getSystemConfig } from "../../../helpers/systemConfigHelper";
 import { getDayRangeInTimezone } from "../../../shared/timezoneHelper";
 import { DateTime } from "luxon";
+import { PlatformSettingsService } from "../platformSettings/platformSettings.service";
 
 const generateTransactionId = (): string => {
   const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
@@ -202,6 +203,7 @@ const getTransactions = async (
     endDate?: string;
   },
 ): Promise<any> => {
+  const platformCurrency = await PlatformSettingsService.getPlatformCurrency();
   const userObjectId = new Types.ObjectId(userId);
   const matchQuery: any = {};
 
@@ -396,7 +398,7 @@ const getTransactions = async (
     const id = txObj._id;
     const transactionId = txObj.transactionId;
     const createdAt = txObj.createdAt;
-    const currency = txObj.currency || "USD";
+    const currency = txObj.currency || platformCurrency.toUpperCase();
 
     // Subtitle formatting using resolved user's timezone
     const dt = DateTime.fromJSDate(createdAt).setZone(userTimezone);

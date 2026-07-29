@@ -17,8 +17,8 @@ const mongoose_1 = require("mongoose");
 const mongoose_2 = __importDefault(require("mongoose"));
 const http_status_codes_1 = require("http-status-codes");
 const ApiErrors_1 = __importDefault(require("../../../errors/ApiErrors"));
-const config_1 = __importDefault(require("../../../config"));
 const ride_model_1 = require("./ride.model");
+const platformSettings_service_1 = require("../platformSettings/platformSettings.service");
 const user_model_1 = require("../user/user.model");
 const driver_model_1 = require("../driver/driver.model");
 const car_model_1 = require("../car/car.model");
@@ -57,6 +57,7 @@ const tier_constant_1 = require("../tier/tier.constant");
 const peakHour_model_1 = require("../peakHour/peakHour.model");
 const surgeCalculation_service_2 = require("../surgeRule/surgeCalculation.service");
 const tier_model_1 = require("../tier/tier.model");
+const pointRule_model_1 = require("../tier/pointRule.model");
 /**
  * Perform fare calculation based on distance, duration, and pricing configuration rules.
  */
@@ -645,7 +646,12 @@ const acceptRide = (driverUserId, rideId) => __awaiter(void 0, void 0, void 0, f
     }
     // Verify reservation access if ride is scheduled
     if (rideToAccept.rideType === ride_constant_1.RIDE_TYPE.SCHEDULED) {
-        const activeTier = yield tier_model_1.Tier.findById(driverDoc.currentTier);
+        let activeTier = driverDoc.currentTier
+            ? yield tier_model_1.Tier.findById(driverDoc.currentTier)
+            : null;
+        if (!activeTier) {
+            activeTier = yield tier_model_1.Tier.findOne({ level: 1 });
+        }
         if (!activeTier || !((_b = (_a = activeTier.benefits) === null || _a === void 0 ? void 0 : _a.reservationAccess) === null || _b === void 0 ? void 0 : _b.enabled)) {
             throw new ApiErrors_1.default(403, "Your current tier does not support accepting scheduled reservations.");
         }
@@ -1409,6 +1415,7 @@ const completeRide = (driverUserId, rideId, verification, ipAddress) => __awaite
 const completeRidePayment = (rideId, paymentMethod, paymentIntent, // optional Stripe PaymentIntent object (if paid via Stripe)
 stripeCheckoutSessionId) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c;
+    const platformCurrency = yield platformSettings_service_1.PlatformSettingsService.getPlatformCurrency();
     const ride = yield ride_model_1.Ride.findById(rideId);
     if (!ride) {
         throw new ApiErrors_1.default(404, "Ride not found");
@@ -1462,7 +1469,7 @@ stripeCheckoutSessionId) => __awaiter(void 0, void 0, void 0, function* () {
                     bookingId: ride._id,
                     walletId: passengerWallet._id,
                     amount: walletAmount,
-                    currency: config_1.default.stripe.currency || "USD",
+                    currency: platformCurrency.toUpperCase(),
                     paymentMethod: ride_constant_1.PAYMENT_METHOD.WALLET,
                     paymentStatus: ride_constant_1.PAYMENT_STATUS.PAID,
                     transactionType: transaction_constant_1.TRANSACTION_TYPE.BOOKING_PAYMENT,
@@ -1504,7 +1511,7 @@ stripeCheckoutSessionId) => __awaiter(void 0, void 0, void 0, function* () {
                     bookingId: ride._id,
                     rideId: ride._id,
                     amount: chargeAmount,
-                    currency: config_1.default.stripe.currency || "USD",
+                    currency: platformCurrency.toUpperCase(),
                     paymentMethod,
                     paymentStatus: ride_constant_1.PAYMENT_STATUS.PAID,
                     transactionType: transaction_constant_1.TRANSACTION_TYPE.BOOKING_PAYMENT,
@@ -1519,6 +1526,7 @@ stripeCheckoutSessionId) => __awaiter(void 0, void 0, void 0, function* () {
             cardTransaction = cardTxn;
         }
         // 4. Credit Driver's Wallet automatically with Driver Earnings
+        let finalDriverEarning = ride.fare.driverEarning;
         if (ride.driverId) {
             const driverWallet = yield wallet_service_1.WalletService.getOrCreateWallet(ride.driverId, session);
             // Fetch driver profile ID
@@ -1529,14 +1537,20 @@ stripeCheckoutSessionId) => __awaiter(void 0, void 0, void 0, function* () {
             const commission = ride.fare.commission;
             // Apply tier bonus multiplier to driver earnings if enabled
             let multiplier = 1.0;
-            if (driverProfile && driverProfile.currentTier) {
-                const activeTier = yield tier_model_1.Tier.findById(driverProfile.currentTier);
+            if (driverProfile) {
+                let activeTier = driverProfile.currentTier
+                    ? yield tier_model_1.Tier.findById(driverProfile.currentTier).session(session)
+                    : null;
+                if (!activeTier) {
+                    activeTier = yield tier_model_1.Tier.findOne({ level: 1 }).session(session);
+                }
                 if (activeTier && ((_c = (_b = activeTier.benefits) === null || _b === void 0 ? void 0 : _b.bonusMultiplier) === null || _c === void 0 ? void 0 : _c.enabled)) {
                     multiplier =
                         activeTier.benefits.bonusMultiplier.multiplierValue || 1.0;
                     driverEarning = parseFloat((driverEarning * multiplier).toFixed(2));
                 }
             }
+            finalDriverEarning = driverEarning;
             driverWallet.balance = parseFloat((driverWallet.balance + driverEarning).toFixed(2));
             yield driverWallet.save({ session });
             // Create Driver Earnings Credit Transaction record
@@ -1551,7 +1565,7 @@ stripeCheckoutSessionId) => __awaiter(void 0, void 0, void 0, function* () {
                     amount: driverEarning,
                     totalFare: ride.fare.total,
                     commission,
-                    currency: config_1.default.stripe.currency || "USD",
+                    currency: platformCurrency.toUpperCase(),
                     paymentMethod,
                     paymentStatus: ride_constant_1.PAYMENT_STATUS.PAID,
                     transactionType: transaction_constant_1.TRANSACTION_TYPE.BOOKING_PAYMENT,
@@ -1615,7 +1629,7 @@ stripeCheckoutSessionId) => __awaiter(void 0, void 0, void 0, function* () {
         if (ride.driverId) {
             yield (0, notificationsHelper_1.sendNotifications)({
                 title: "Earnings Received",
-                text: `Passenger paid ${ride.fare.total}. Your earning of ${ride.fare.driverEarning} has been added.`,
+                text: `Passenger paid ${ride.fare.total}. Your earning of ${finalDriverEarning} has been added.`,
                 receiver: ride.driverId,
                 type: notification_constant_1.NOTIFICATION_TYPE.DRIVER,
                 referenceId: ride._id,
@@ -1988,12 +2002,17 @@ const cancelRide = (userId, role, rideId, payload) => __awaiter(void 0, void 0, 
             policyName: internalScenarioName,
         };
         const surgeMultiplier = ((_j = ride.fare) === null || _j === void 0 ? void 0 : _j.surgeMultiplier) || 1.0;
-        const cancellationFee = scenario.cancellationFee * surgeMultiplier;
-        const platformShare = scenario.platformShare * surgeMultiplier;
+        const cancellationFee = 0;
+        const platformShare = 0;
         const driverCompensation = 0;
         const session = yield mongoose_2.default.startSession();
         session.startTransaction();
         try {
+            // Fetch point rule to find out how many points are deducted
+            const pointRule = yield pointRule_model_1.PointRule.findOne({
+                eventType: tier_constant_1.POINT_EVENT_TYPE.ACCEPTED_RIDE_CANCELLED,
+            }).session(session);
+            const pointsDeducted = pointRule ? Math.abs(pointRule.points) : 10;
             // 1. Release the cancelling driver and make online
             yield driver_model_1.Driver.findOneAndUpdate({ userId: cancellingDriverUserId }, {
                 $set: {
@@ -2010,6 +2029,7 @@ const cancelRide = (userId, role, rideId, payload) => __awaiter(void 0, void 0, 
                         cancellationFee,
                         platformShare,
                         driverCompensation,
+                        pointsDeducted,
                         cancellationPolicy: {
                             scenario: mapped.scenario,
                             policyName: mapped.policyName,

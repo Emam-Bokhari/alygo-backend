@@ -23,6 +23,8 @@ const queryBuilder_1 = __importDefault(require("../../builder/queryBuilder"));
 const emailTemplate_1 = require("../../../shared/emailTemplate");
 const driver_model_1 = require("../driver/driver.model");
 const tier_model_1 = require("../tier/tier.model");
+const support_constant_1 = require("./support.constant");
+const tier_constant_1 = require("../tier/tier.constant");
 const support = (id, payload) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     const user = yield user_model_1.User.isExistUserById(id);
@@ -36,18 +38,23 @@ const support = (id, payload) => __awaiter(void 0, void 0, void 0, function* () 
     // Map support level from driver tier to priority
     if (user.role === "driver") {
         const driver = yield driver_model_1.Driver.findOne({ userId: id });
-        if (driver && driver.currentTier) {
-            const activeTier = yield tier_model_1.Tier.findById(driver.currentTier);
+        if (driver) {
+            let activeTier = driver.currentTier
+                ? yield tier_model_1.Tier.findById(driver.currentTier)
+                : null;
+            if (!activeTier) {
+                activeTier = yield tier_model_1.Tier.findOne({ level: 1 });
+            }
             if (activeTier && ((_b = (_a = activeTier.benefits) === null || _a === void 0 ? void 0 : _a.vipSupport) === null || _b === void 0 ? void 0 : _b.enabled)) {
                 const supportLevel = activeTier.benefits.vipSupport.supportLevel;
-                if (supportLevel === "vip") {
-                    payload.priority = "urgent";
+                if (supportLevel === tier_constant_1.SUPPORT_LEVEL.VIP) {
+                    payload.priority = support_constant_1.SUPPORT_PRIORITY.URGENT;
                 }
-                else if (supportLevel === "premium") {
-                    payload.priority = "high";
+                else if (supportLevel === tier_constant_1.SUPPORT_LEVEL.PREMIUM) {
+                    payload.priority = support_constant_1.SUPPORT_PRIORITY.HIGH;
                 }
-                else if (supportLevel === "basic") {
-                    payload.priority = "medium";
+                else if (supportLevel === tier_constant_1.SUPPORT_LEVEL.BASIC) {
+                    payload.priority = support_constant_1.SUPPORT_PRIORITY.MEDIUM;
                 }
             }
         }

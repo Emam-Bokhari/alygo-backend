@@ -9,6 +9,7 @@ import { PAYMENT_METHOD, PAYMENT_STATUS } from "../ride/ride.constant";
 import stripe from "../../../config/stripe";
 import config from "../../../config";
 import stripeService from "../stripe/stripe.service";
+import { PlatformSettingsService } from "../platformSettings/platformSettings.service";
 
 /**
  * Safely find or create a user's wallet (passengers or drivers)
@@ -23,12 +24,13 @@ const getOrCreateWallet = async (
   );
 
   if (!wallet) {
+    const platformCurrency = await PlatformSettingsService.getPlatformCurrency();
     const [newWallet] = await Wallet.create(
       [
         {
           userId: userObjectId,
           balance: 0,
-          currency: config.stripe.currency || "USD",
+          currency: platformCurrency.toUpperCase(),
         },
       ],
       { session },
@@ -77,13 +79,15 @@ const deductBalance = async (
   wallet.balance -= amount;
   await wallet.save({ session });
 
+  const platformCurrency = await PlatformSettingsService.getPlatformCurrency();
+
   // Create transaction record
   await TransactionService.createTransaction(
     {
       userId: new Types.ObjectId(userId),
       walletId: wallet._id,
       amount: amount,
-      currency: config.stripe.currency || "usd",
+      currency: platformCurrency.toUpperCase(),
       paymentMethod: PAYMENT_METHOD.WALLET,
       paymentStatus: PAYMENT_STATUS.PAID,
       transactionType: TRANSACTION_TYPE.CANCELLATION_FEE,
@@ -110,13 +114,15 @@ const addBalance = async (
   wallet.balance += amount;
   await wallet.save({ session });
 
+  const platformCurrency = await PlatformSettingsService.getPlatformCurrency();
+
   // Create transaction record
   await TransactionService.createTransaction(
     {
       userId: new Types.ObjectId(userId),
       walletId: wallet._id,
       amount: amount,
-      currency: config.stripe.currency || "usd",
+      currency: platformCurrency.toUpperCase(),
       paymentMethod: PAYMENT_METHOD.WALLET,
       paymentStatus: PAYMENT_STATUS.PAID,
       transactionType:
@@ -161,10 +167,12 @@ const topUpWallet = async (
   const successUrl = `${config.client_url || "http://localhost:3000"}/wallet/success?session_id={CHECKOUT_SESSION_ID}`;
   const cancelUrl = `${config.client_url || "http://localhost:3000"}/wallet/cancel?session_id={CHECKOUT_SESSION_ID}`;
 
+  const platformCurrency = await PlatformSettingsService.getPlatformCurrency();
+
   // Create Stripe Checkout Session
   const session = await stripeService.createCheckoutSession(
     amount,
-    config.stripe.currency || "usd",
+    platformCurrency.toLowerCase(),
     {
       type: "wallet_topup",
       userId,
@@ -182,7 +190,7 @@ const topUpWallet = async (
     userId: new Types.ObjectId(userId),
     walletId: wallet._id,
     amount,
-    currency: config.stripe.currency || "usd",
+    currency: platformCurrency.toUpperCase(),
     paymentMethod: PAYMENT_METHOD.STRIPE,
     paymentStatus: PAYMENT_STATUS.PENDING,
     transactionType: TRANSACTION_TYPE.WALLET_TOPUP,
@@ -194,7 +202,7 @@ const topUpWallet = async (
     gatewayTransactionId: session.payment_intent
       ? (session.payment_intent as string)
       : session.id,
-    description: `Wallet top-up of ${amount} ${config.stripe.currency || "USD"} initiated.`,
+    description: `Wallet top-up of ${amount} ${platformCurrency.toUpperCase()} initiated.`,
   });
 
   return {

@@ -5,6 +5,7 @@ import sendResponse from "../../../shared/sendResponse";
 import { RideServices } from "./ride.service";
 import { PendingPayment } from "../pendingPayment/pendingPayment.model";
 import config from "../../../config";
+import { PlatformSettingsService } from "../platformSettings/platformSettings.service";
 
 const estimateFareAndRoute = catchAsync(async (req: Request, res: Response) => {
   const result = await RideServices.estimateFareAndRoute(req.body);
@@ -171,7 +172,7 @@ const cancelRide = catchAsync(async (req: Request, res: Response) => {
             status: "pending",
             pendingPaymentId: pendingPayment._id.toString(),
             amount: pendingPayment.amount,
-            currency: config.stripe.currency?.toUpperCase() || "USD",
+            currency: (await PlatformSettingsService.getPlatformCurrency()).toUpperCase(),
             options: ["pay_now", "pay_later"],
           },
         },

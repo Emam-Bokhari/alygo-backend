@@ -4,6 +4,7 @@ import { StatusCodes } from "http-status-codes";
 import ApiError from "../../../errors/ApiErrors";
 import config from "../../../config";
 import { Ride } from "./ride.model";
+import { PlatformSettingsService } from "../platformSettings/platformSettings.service";
 import { IRide } from "./rider.interface";
 import { User } from "../user/user.model";
 import { Driver } from "../driver/driver.model";
@@ -2070,6 +2071,7 @@ const completeRidePayment = async (
   paymentIntent?: any, // optional Stripe PaymentIntent object (if paid via Stripe)
   stripeCheckoutSessionId?: string, // optional Checkout Session ID
 ): Promise<{ ride: IRide; transaction: any; invoice: any }> => {
+  const platformCurrency = await PlatformSettingsService.getPlatformCurrency();
   const ride = await Ride.findById(rideId);
   if (!ride) {
     throw new ApiError(404, "Ride not found");
@@ -2135,7 +2137,7 @@ const completeRidePayment = async (
             bookingId: ride._id,
             walletId: passengerWallet._id,
             amount: walletAmount,
-            currency: config.stripe.currency || "USD",
+            currency: platformCurrency.toUpperCase(),
             paymentMethod: PAYMENT_METHOD.WALLET,
             paymentStatus: PAYMENT_STATUS.PAID,
             transactionType: TRANSACTION_TYPE.BOOKING_PAYMENT,
@@ -2194,7 +2196,7 @@ const completeRidePayment = async (
             bookingId: ride._id,
             rideId: ride._id,
             amount: chargeAmount,
-            currency: config.stripe.currency || "USD",
+            currency: platformCurrency.toUpperCase(),
             paymentMethod,
             paymentStatus: PAYMENT_STATUS.PAID,
             transactionType: TRANSACTION_TYPE.BOOKING_PAYMENT,
@@ -2262,7 +2264,7 @@ const completeRidePayment = async (
             amount: driverEarning,
             totalFare: ride.fare.total,
             commission,
-            currency: config.stripe.currency || "USD",
+            currency: platformCurrency.toUpperCase(),
             paymentMethod,
             paymentStatus: PAYMENT_STATUS.PAID,
             transactionType: TRANSACTION_TYPE.BOOKING_PAYMENT,

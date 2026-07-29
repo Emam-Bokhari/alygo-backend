@@ -257,6 +257,10 @@ const driverSchema = new mongoose_1.Schema({
                     type: Number,
                     required: false,
                 },
+                pointsDeducted: {
+                    type: Number,
+                    required: false,
+                },
                 cancellationPolicy: {
                     scenario: { type: String, required: false },
                     policyName: { type: String, required: false },

@@ -47,8 +47,14 @@ const findEligibleDriversInRadius = (_a) => __awaiter(void 0, [_a], void 0, func
     const searchRadiusMeters = radiusKm * 1000;
     const tierCache = new Map();
     const getTier = (tierId) => __awaiter(void 0, void 0, void 0, function* () {
-        if (!tierId)
-            return null;
+        if (!tierId) {
+            const defaultTierKey = "level_1_default";
+            if (!tierCache.has(defaultTierKey)) {
+                const defaultTier = yield tier_model_1.Tier.findOne({ level: 1 });
+                tierCache.set(defaultTierKey, defaultTier);
+            }
+            return tierCache.get(defaultTierKey);
+        }
         const key = tierId.toString();
         if (!tierCache.has(key)) {
             const tierDoc = yield tier_model_1.Tier.findById(tierId);

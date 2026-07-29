@@ -3,6 +3,7 @@ import stripe from "../../../config/stripe";
 import { User } from "../user/user.model";
 import ApiError from "../../../errors/ApiErrors";
 import config from "../../../config";
+import { PlatformSettingsService } from "../platformSettings/platformSettings.service";
 
 class StripeService {
   // get or create customer helper
@@ -22,7 +23,7 @@ class StripeService {
     });
 
     user.stripeCustomerId = customer.id;
-    await user.save();
+    await user.save(); 
     return customer.id;
   }
 
@@ -35,12 +36,14 @@ class StripeService {
     successUrl?: string,
     cancelUrl?: string,
   ): Promise<Stripe.Checkout.Session> {
+    const platformCurrency = await PlatformSettingsService.getPlatformCurrency();
+    const stripeCurrency = (currency || platformCurrency || "usd").toLowerCase();
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       mode: "payment",
       line_items: [
         {
           price_data: {
-            currency: currency || config.stripe.currency || "usd",
+            currency: stripeCurrency,
             product_data: {
               name:
                 metadata.type === "wallet_topup"

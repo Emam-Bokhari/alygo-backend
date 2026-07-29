@@ -9,6 +9,7 @@ import { Transaction } from "../transaction/transaction.model";
 import stripeService from "./stripe.service";
 import stripe from "../../../config/stripe";
 import config from "../../../config";
+import { PlatformSettingsService } from "../platformSettings/platformSettings.service";
 import ApiError from "../../../errors/ApiErrors";
 import { RideServices } from "../ride/ride.service";
 import { WalletService } from "../wallet/wallet.service";
@@ -195,9 +196,11 @@ const createCheckoutSession = catchAsync(
     const successUrl = `${config.client_url || "http://localhost:3000"}/payment/success?session_id={CHECKOUT_SESSION_ID}&rideId=${rideId}`;
     const cancelUrl = `${config.client_url || "http://localhost:3000"}/payment/cancel?session_id={CHECKOUT_SESSION_ID}&rideId=${rideId}`;
 
+    const platformCurrency = await PlatformSettingsService.getPlatformCurrency();
+
     const session = await stripeService.createCheckoutSession(
       chargeAmount,
-      config.stripe.currency || "usd",
+      platformCurrency.toLowerCase(),
       {
         type: "ride_payment",
         rideId: ride._id.toString(),
@@ -205,7 +208,7 @@ const createCheckoutSession = catchAsync(
         useWallet: useWallet ? "true" : "false",
         walletAmount: walletDeduction.toString(),
         amount: chargeAmount.toString(),
-        currency: config.stripe.currency || "usd",
+        currency: platformCurrency.toLowerCase(),
       },
       stripeCustomerId,
       successUrl,

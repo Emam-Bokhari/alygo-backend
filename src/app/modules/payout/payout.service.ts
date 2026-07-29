@@ -10,6 +10,7 @@ import { PAYMENT_METHOD, PAYMENT_STATUS } from "../ride/ride.constant";
 import { PAYOUT_STATUS, PAYOUT_METHOD } from "./payout.constant";
 import stripe from "../../../config/stripe";
 import config from "../../../config";
+import { PlatformSettingsService } from "../platformSettings/platformSettings.service";
 import { sendNotifications } from "../../../helpers/notificationsHelper";
 import { NOTIFICATION_TYPE } from "../notification/notification.constant";
 import { socketHelper } from "../../../helpers/socketHelper";
@@ -27,6 +28,7 @@ const requestWithdrawal = async (
   driverUserId: string,
   amount: number,
 ): Promise<any> => {
+  const platformCurrency = await PlatformSettingsService.getPlatformCurrency();
   if (amount <= 0) {
     throw new ApiError(400, "Withdrawal amount must be greater than zero.");
   }
@@ -72,7 +74,7 @@ const requestWithdrawal = async (
   try {
     transfer = await stripe.transfers.create({
       amount: Math.round(amount * 100), // convert to cents
-      currency: config.stripe.currency || "usd",
+      currency: platformCurrency.toLowerCase(),
       destination: driver.stripeConnectedAccountId,
       description: `Withdrawal payout for Driver: ${driverUserId}`,
       metadata: {
@@ -105,7 +107,7 @@ const requestWithdrawal = async (
         driverId: driver._id,
         walletId: wallet._id,
         amount,
-        currency: config.stripe.currency || "usd",
+        currency: platformCurrency.toUpperCase(),
         paymentMethod: PAYMENT_METHOD.STRIPE,
         paymentStatus: PAYMENT_STATUS.PAID,
         transactionType: TRANSACTION_TYPE.PAYOUT,
@@ -123,7 +125,7 @@ const requestWithdrawal = async (
           payoutId,
           userId: new Types.ObjectId(driverUserId),
           amount,
-          currency: config.stripe.currency || "usd",
+          currency: platformCurrency.toUpperCase(),
           status: PAYOUT_STATUS.COMPLETED,
           method: PAYOUT_METHOD.STRIPE,
           destinationAccountId: driver.stripeConnectedAccountId,

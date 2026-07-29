@@ -23,6 +23,7 @@ const transaction_model_1 = require("../transaction/transaction.model");
 const stripe_service_1 = __importDefault(require("./stripe.service"));
 const stripe_1 = __importDefault(require("../../../config/stripe"));
 const config_1 = __importDefault(require("../../../config"));
+const platformSettings_service_1 = require("../platformSettings/platformSettings.service");
 const ApiErrors_1 = __importDefault(require("../../../errors/ApiErrors"));
 const ride_service_1 = require("../ride/ride.service");
 const wallet_service_1 = require("../wallet/wallet.service");
@@ -139,14 +140,15 @@ const createCheckoutSession = (0, catchAsync_1.default)((req, res) => __awaiter(
     // Success and cancel URLs pointing to frontend pages
     const successUrl = `${config_1.default.client_url || "http://localhost:3000"}/payment/success?session_id={CHECKOUT_SESSION_ID}&rideId=${rideId}`;
     const cancelUrl = `${config_1.default.client_url || "http://localhost:3000"}/payment/cancel?session_id={CHECKOUT_SESSION_ID}&rideId=${rideId}`;
-    const session = yield stripe_service_1.default.createCheckoutSession(chargeAmount, config_1.default.stripe.currency || "usd", {
+    const platformCurrency = yield platformSettings_service_1.PlatformSettingsService.getPlatformCurrency();
+    const session = yield stripe_service_1.default.createCheckoutSession(chargeAmount, platformCurrency.toLowerCase(), {
         type: "ride_payment",
         rideId: ride._id.toString(),
         userId,
         useWallet: useWallet ? "true" : "false",
         walletAmount: walletDeduction.toString(),
         amount: chargeAmount.toString(),
-        currency: config_1.default.stripe.currency || "usd",
+        currency: platformCurrency.toLowerCase(),
     }, stripeCustomerId, successUrl, cancelUrl);
     // Save Stripe Checkout Session and Payment Intent details to Ride
     ride.payment.stripeCheckoutSessionId = session.id;

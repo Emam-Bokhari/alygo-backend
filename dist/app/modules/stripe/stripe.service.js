@@ -16,6 +16,7 @@ const stripe_1 = __importDefault(require("../../../config/stripe"));
 const user_model_1 = require("../user/user.model");
 const ApiErrors_1 = __importDefault(require("../../../errors/ApiErrors"));
 const config_1 = __importDefault(require("../../../config"));
+const platformSettings_service_1 = require("../platformSettings/platformSettings.service");
 class StripeService {
     // get or create customer helper
     getOrCreateCustomer(userId, email, name) {
@@ -38,12 +39,14 @@ class StripeService {
     // create checkout session helper
     createCheckoutSession(amount, currency, metadata, stripeCustomerId, successUrl, cancelUrl) {
         return __awaiter(this, void 0, void 0, function* () {
+            const platformCurrency = yield platformSettings_service_1.PlatformSettingsService.getPlatformCurrency();
+            const stripeCurrency = (currency || platformCurrency || "usd").toLowerCase();
             const sessionParams = {
                 mode: "payment",
                 line_items: [
                     {
                         price_data: {
-                            currency: currency || config_1.default.stripe.currency || "usd",
+                            currency: stripeCurrency,
                             product_data: {
                                 name: metadata.type === "wallet_topup"
                                     ? "Alygo Wallet Top-up"

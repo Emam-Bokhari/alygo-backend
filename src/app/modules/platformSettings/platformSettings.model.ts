@@ -19,7 +19,7 @@ const platformSettingsSchema = new Schema<
     currency: {
       type: String,
       enum: Object.values(PLATFORM_CURRENCY),
-      default: PLATFORM_CURRENCY.MYR,
+      default: PLATFORM_CURRENCY.USD,
       required: true,
     },
     isMaintenanceMode: {

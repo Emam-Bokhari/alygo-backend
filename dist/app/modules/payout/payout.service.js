@@ -24,7 +24,7 @@ const transaction_constant_1 = require("../transaction/transaction.constant");
 const ride_constant_1 = require("../ride/ride.constant");
 const payout_constant_1 = require("./payout.constant");
 const stripe_1 = __importDefault(require("../../../config/stripe"));
-const config_1 = __importDefault(require("../../../config"));
+const platformSettings_service_1 = require("../platformSettings/platformSettings.service");
 const notificationsHelper_1 = require("../../../helpers/notificationsHelper");
 const notification_constant_1 = require("../notification/notification.constant");
 const socketHelper_1 = require("../../../helpers/socketHelper");
@@ -37,6 +37,7 @@ const generatePayoutId = () => {
  * Handle Driver withdrawal request
  */
 const requestWithdrawal = (driverUserId, amount) => __awaiter(void 0, void 0, void 0, function* () {
+    const platformCurrency = yield platformSettings_service_1.PlatformSettingsService.getPlatformCurrency();
     if (amount <= 0) {
         throw new ApiErrors_1.default(400, "Withdrawal amount must be greater than zero.");
     }
@@ -68,7 +69,7 @@ const requestWithdrawal = (driverUserId, amount) => __awaiter(void 0, void 0, vo
     try {
         transfer = yield stripe_1.default.transfers.create({
             amount: Math.round(amount * 100), // convert to cents
-            currency: config_1.default.stripe.currency || "usd",
+            currency: platformCurrency.toLowerCase(),
             destination: driver.stripeConnectedAccountId,
             description: `Withdrawal payout for Driver: ${driverUserId}`,
             metadata: {
@@ -94,7 +95,7 @@ const requestWithdrawal = (driverUserId, amount) => __awaiter(void 0, void 0, vo
             driverId: driver._id,
             walletId: wallet._id,
             amount,
-            currency: config_1.default.stripe.currency || "usd",
+            currency: platformCurrency.toUpperCase(),
             paymentMethod: ride_constant_1.PAYMENT_METHOD.STRIPE,
             paymentStatus: ride_constant_1.PAYMENT_STATUS.PAID,
             transactionType: transaction_constant_1.TRANSACTION_TYPE.PAYOUT,
@@ -108,7 +109,7 @@ const requestWithdrawal = (driverUserId, amount) => __awaiter(void 0, void 0, vo
                 payoutId,
                 userId: new mongoose_1.Types.ObjectId(driverUserId),
                 amount,
-                currency: config_1.default.stripe.currency || "usd",
+                currency: platformCurrency.toUpperCase(),
                 status: payout_constant_1.PAYOUT_STATUS.COMPLETED,
                 method: payout_constant_1.PAYOUT_METHOD.STRIPE,
                 destinationAccountId: driver.stripeConnectedAccountId,

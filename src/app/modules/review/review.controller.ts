@@ -5,6 +5,7 @@ import sendResponse from "../../../shared/sendResponse";
 import { ReviewServices } from "./review.service";
 import { ReviewValidations } from "./review.validation";
 import config from "../../../config";
+import { PlatformSettingsService } from "../platformSettings/platformSettings.service";
 
 /**
  * Create review handler (passenger or driver).
@@ -87,7 +88,7 @@ const createReview = catchAsync(async (req: Request, res: Response) => {
           status: "pending",
           pendingPaymentId: pendingPayment._id,
           amount: pendingPayment.amount,
-          currency: config.stripe.currency || "USD",
+          currency: (await PlatformSettingsService.getPlatformCurrency()).toUpperCase(),
           options: ["pay_now", "skip"],
         },
       },

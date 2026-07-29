@@ -26,6 +26,7 @@ const transaction_constant_1 = require("../transaction/transaction.constant");
 const mongoose_1 = __importDefault(require("mongoose"));
 const stripe_service_1 = __importDefault(require("../stripe/stripe.service"));
 const config_1 = __importDefault(require("../../../config"));
+const platformSettings_service_1 = require("../platformSettings/platformSettings.service");
 /**
  * Get all pending payments for a user
  */
@@ -41,6 +42,7 @@ const getPendingPaymentsByUser = (userId) => __awaiter(void 0, void 0, void 0, f
  */
 const payCancellationFeeNow = (userId, pendingPaymentId) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
+    const platformCurrency = yield platformSettings_service_1.PlatformSettingsService.getPlatformCurrency();
     const pendingPayment = yield pendingPayment_model_1.PendingPayment.findById(pendingPaymentId);
     if (!pendingPayment) {
         throw new ApiErrors_1.default(404, "Pending payment not found");
@@ -107,7 +109,7 @@ const payCancellationFeeNow = (userId, pendingPaymentId) => __awaiter(void 0, vo
         rideId: pendingPayment.rideId.toString(),
         userId: userId,
         amount: pendingPayment.amount.toString(),
-        currency: config_1.default.stripe.currency || "usd",
+        currency: platformCurrency.toLowerCase(),
     };
     if (pendingPayment.type === "cancellation_fee" && cancellationReasonId) {
         metadata.cancellationReasonId = cancellationReasonId;
@@ -117,7 +119,7 @@ const payCancellationFeeNow = (userId, pendingPaymentId) => __awaiter(void 0, vo
         metadata.driverId = pendingPayment.driverId.toString();
     }
     // Create Stripe Checkout Session
-    const session = yield stripe_service_1.default.createCheckoutSession(pendingPayment.amount, config_1.default.stripe.currency || "usd", metadata, stripeCustomerId, successUrl, cancelUrl);
+    const session = yield stripe_service_1.default.createCheckoutSession(pendingPayment.amount, platformCurrency.toLowerCase(), metadata, stripeCustomerId, successUrl, cancelUrl);
     // Save session details to the pending payment
     pendingPayment.stripeSessionId = session.id;
     pendingPayment.checkoutSessionExpiresAt = new Date(session.expires_at * 1000);

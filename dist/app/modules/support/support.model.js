@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Support = void 0;
 const mongoose_1 = require("mongoose");
 const softDeletePlugin_1 = require("../../../DB/plugins/softDeletePlugin");
+const support_constant_1 = require("./support.constant");
 const supportSchema = new mongoose_1.Schema({
     userId: {
         type: mongoose_1.Schema.Types.ObjectId,
@@ -26,8 +27,8 @@ const supportSchema = new mongoose_1.Schema({
     },
     priority: {
         type: String,
-        enum: ["low", "medium", "high", "urgent"],
-        default: "low",
+        enum: Object.values(support_constant_1.SUPPORT_PRIORITY),
+        default: support_constant_1.SUPPORT_PRIORITY.LOW,
     },
 }, {
     timestamps: true,

@@ -55,6 +55,7 @@ const transaction_constant_1 = require("../transaction/transaction.constant");
 const queryBuilder_1 = __importDefault(require("../../builder/queryBuilder"));
 const points_service_1 = require("../tier/points.service");
 const tier_constant_1 = require("../tier/tier.constant");
+const platformSettings_service_1 = require("../platformSettings/platformSettings.service");
 /**
  * Generate a unique-ish referral code.
  */
@@ -119,6 +120,7 @@ const handleReferralSignup = (refereeId, referralCode) => __awaiter(void 0, void
     if (referrer.referredById &&
         referrer.referredById.toString() === refereeId.toString())
         return;
+    const platformCurrency = yield platformSettings_service_1.PlatformSettingsService.getPlatformCurrency();
     // Enforce program matching
     if (referrer.role === user_1.USER_ROLES.DRIVER &&
         referee.role === user_1.USER_ROLES.DRIVER) {
@@ -138,7 +140,7 @@ const handleReferralSignup = (refereeId, referralCode) => __awaiter(void 0, void
             qualificationProgress: 0,
             qualificationTarget: config.referral.driver.requiredCompletedTrips || 10,
             rewardAmount: config.referral.driver.rewardAmount || 100,
-            rewardCurrency: config.referral.driver.rewardCurrency || "USD",
+            rewardCurrency: platformCurrency.toUpperCase(),
             rewardStatus: referral_interface_1.REWARD_STATUS.PENDING,
             joinedAt: new Date(),
             auditLogs: [
@@ -191,7 +193,7 @@ const handleReferralSignup = (refereeId, referralCode) => __awaiter(void 0, void
             qualificationProgress: 0,
             qualificationTarget: config.referral.passenger.requiredCompletedTrips || 1,
             rewardAmount: config.referral.passenger.rewardAmount || 20,
-            rewardCurrency: config.referral.passenger.rewardCurrency || "USD",
+            rewardCurrency: platformCurrency.toUpperCase(),
             rewardStatus: referral_interface_1.REWARD_STATUS.PENDING,
             joinedAt: new Date(),
             auditLogs: [
@@ -614,7 +616,8 @@ const checkAndProcessPassengerReferral = (passengerUserId) => __awaiter(void 0, 
  * Get dynamic referral program rules configured in System Config.
  */
 const getRules = (role) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o;
+    const platformCurrency = yield platformSettings_service_1.PlatformSettingsService.getPlatformCurrency();
     const config = yield (0, systemConfigHelper_1.getSystemConfig)();
     const lowerRole = role ? role.toLowerCase() : "user";
     if (lowerRole === "driver") {
@@ -622,10 +625,10 @@ const getRules = (role) => __awaiter(void 0, void 0, void 0, function* () {
         return {
             enabled: (_b = dConf === null || dConf === void 0 ? void 0 : dConf.enabled) !== null && _b !== void 0 ? _b : true,
             rewardAmount: (_c = dConf === null || dConf === void 0 ? void 0 : dConf.rewardAmount) !== null && _c !== void 0 ? _c : 100,
-            currency: (_d = dConf === null || dConf === void 0 ? void 0 : dConf.rewardCurrency) !== null && _d !== void 0 ? _d : "USD",
-            requiredCompletedRides: (_e = dConf === null || dConf === void 0 ? void 0 : dConf.requiredCompletedTrips) !== null && _e !== void 0 ? _e : 10,
-            qualificationPeriod: `${(_f = dConf === null || dConf === void 0 ? void 0 : dConf.qualificationDays) !== null && _f !== void 0 ? _f : 30} days`,
-            payoutDelay: `${(_g = dConf === null || dConf === void 0 ? void 0 : dConf.payoutDelayHours) !== null && _g !== void 0 ? _g : 0} hours`,
+            currency: platformCurrency.toUpperCase(),
+            requiredCompletedRides: (_d = dConf === null || dConf === void 0 ? void 0 : dConf.requiredCompletedTrips) !== null && _d !== void 0 ? _d : 10,
+            qualificationPeriod: `${(_e = dConf === null || dConf === void 0 ? void 0 : dConf.qualificationDays) !== null && _e !== void 0 ? _e : 30} days`,
+            payoutDelay: `${(_f = dConf === null || dConf === void 0 ? void 0 : dConf.payoutDelayHours) !== null && _f !== void 0 ? _f : 0} hours`,
             rewardPayoutInformation: "Payout is directly processed into your connected Stripe wallet account.",
             shareInstructions: (dConf === null || dConf === void 0 ? void 0 : dConf.shareInstructions) ||
                 "Send your unique referral code or link to experienced drivers in your community.",
@@ -637,15 +640,15 @@ const getRules = (role) => __awaiter(void 0, void 0, void 0, function* () {
     }
     else {
         // default to user rules
-        const pConf = (_h = config.referral) === null || _h === void 0 ? void 0 : _h.passenger;
+        const pConf = (_g = config.referral) === null || _g === void 0 ? void 0 : _g.passenger;
         return {
-            enabled: (_j = pConf === null || pConf === void 0 ? void 0 : pConf.enabled) !== null && _j !== void 0 ? _j : true,
-            rewardAmount: (_k = pConf === null || pConf === void 0 ? void 0 : pConf.rewardAmount) !== null && _k !== void 0 ? _k : 20,
-            currency: (_l = pConf === null || pConf === void 0 ? void 0 : pConf.rewardCurrency) !== null && _l !== void 0 ? _l : "USD",
-            qualificationRequirements: `Satisfy qualification via ${(_m = pConf === null || pConf === void 0 ? void 0 : pConf.qualificationType) !== null && _m !== void 0 ? _m : "rides"}.`,
-            requiredCompletedTrips: (_o = pConf === null || pConf === void 0 ? void 0 : pConf.requiredCompletedTrips) !== null && _o !== void 0 ? _o : 1,
-            qualificationPeriod: `${(_p = pConf === null || pConf === void 0 ? void 0 : pConf.qualificationDays) !== null && _p !== void 0 ? _p : 30} days`,
-            maximumRewards: `${(_q = pConf === null || pConf === void 0 ? void 0 : pConf.maximumRewardsPerUser) !== null && _q !== void 0 ? _q : 5} rewards`,
+            enabled: (_h = pConf === null || pConf === void 0 ? void 0 : pConf.enabled) !== null && _h !== void 0 ? _h : true,
+            rewardAmount: (_j = pConf === null || pConf === void 0 ? void 0 : pConf.rewardAmount) !== null && _j !== void 0 ? _j : 20,
+            currency: platformCurrency.toUpperCase(),
+            qualificationRequirements: `Satisfy qualification via ${(_k = pConf === null || pConf === void 0 ? void 0 : pConf.qualificationType) !== null && _k !== void 0 ? _k : "rides"}.`,
+            requiredCompletedTrips: (_l = pConf === null || pConf === void 0 ? void 0 : pConf.requiredCompletedTrips) !== null && _l !== void 0 ? _l : 1,
+            qualificationPeriod: `${(_m = pConf === null || pConf === void 0 ? void 0 : pConf.qualificationDays) !== null && _m !== void 0 ? _m : 30} days`,
+            maximumRewards: `${(_o = pConf === null || pConf === void 0 ? void 0 : pConf.maximumRewardsPerUser) !== null && _o !== void 0 ? _o : 5} rewards`,
             shareInstructions: (pConf === null || pConf === void 0 ? void 0 : pConf.shareInstructions) ||
                 "Share your unique referral code or link with friends who aren't on the platform yet.",
             rewardTerms: (pConf === null || pConf === void 0 ? void 0 : pConf.rewardTerms) ||

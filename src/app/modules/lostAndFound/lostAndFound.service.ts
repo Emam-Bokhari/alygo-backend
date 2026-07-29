@@ -11,6 +11,7 @@ import { TransactionService } from "../transaction/transaction.service";
 import { WalletService } from "../wallet/wallet.service";
 import stripeService from "../stripe/stripe.service";
 import config from "../../../config";
+import { PlatformSettingsService } from "../platformSettings/platformSettings.service";
 import ApiError from "../../../errors/ApiErrors";
 import QueryBuilder from "../../builder/queryBuilder";
 import { socketHelper } from "../../../helpers/socketHelper";
@@ -760,6 +761,7 @@ const createPaymentSession = async (
   reportId: string,
   passengerId: string,
 ): Promise<any> => {
+  const platformCurrency = await PlatformSettingsService.getPlatformCurrency();
   const report = await LostFound.findById(reportId);
   if (!report) {
     throw new ApiError(StatusCodes.NOT_FOUND, "Report not found.");
@@ -798,7 +800,7 @@ const createPaymentSession = async (
 
   const session = await stripeService.createCheckoutSession(
     report.deliveryFee,
-    config.stripe.currency || "usd",
+    platformCurrency.toLowerCase(),
     {
       type: "lost_found_payment",
       reportId: report._id.toString(),
@@ -806,7 +808,7 @@ const createPaymentSession = async (
       passengerId,
       driverId: report.driverId.toString(),
       amount: report.deliveryFee.toString(),
-      currency: config.stripe.currency || "usd",
+      currency: platformCurrency.toLowerCase(),
     },
     stripeCustomerId,
     successUrl,
@@ -829,6 +831,7 @@ const completeLostFoundPayment = async (
   paymentIntentId: string,
   stripeSession: any,
 ): Promise<void> => {
+  const platformCurrency = await PlatformSettingsService.getPlatformCurrency();
   const dbSession = await mongoose.startSession();
   dbSession.startTransaction();
 
@@ -862,7 +865,7 @@ const completeLostFoundPayment = async (
         bookingId: report.rideId,
         rideId: report.rideId,
         amount: report.deliveryFee,
-        currency: stripeSession.currency || config.stripe.currency || "usd",
+        currency: stripeSession.currency || platformCurrency.toLowerCase(),
         paymentMethod: PAYMENT_METHOD.STRIPE,
         paymentStatus: RidePaymentStatus.PAID,
         transactionType: TRANSACTION_TYPE.LOST_FOUND_DELIVERY,
@@ -891,7 +894,7 @@ const completeLostFoundPayment = async (
     report.paymentReference = paymentIntentId;
     report.paymentAmount = report.deliveryFee;
     report.paymentCurrency =
-      stripeSession.currency || config.stripe.currency || "usd";
+      stripeSession.currency || platformCurrency.toLowerCase();
 
     // Also automatically transition to RETURN_SCHEDULED
     report.reportStatus = REPORT_STATUS.RETURN_SCHEDULED;

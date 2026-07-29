@@ -21,6 +21,7 @@ import { TRANSACTION_TYPE } from "../transaction/transaction.constant";
 import QueryBuilder from "../../builder/queryBuilder";
 import { PointsService } from "../tier/points.service";
 import { POINT_EVENT_TYPE } from "../tier/tier.constant";
+import { PlatformSettingsService } from "../platformSettings/platformSettings.service";
 
 /**
  * Generate a unique-ish referral code.
@@ -102,6 +103,8 @@ const handleReferralSignup = async (
   )
     return;
 
+  const platformCurrency = await PlatformSettingsService.getPlatformCurrency();
+
   // Enforce program matching
   if (
     referrer.role === USER_ROLES.DRIVER &&
@@ -124,7 +127,7 @@ const handleReferralSignup = async (
       qualificationProgress: 0,
       qualificationTarget: config.referral.driver.requiredCompletedTrips || 10,
       rewardAmount: config.referral.driver.rewardAmount || 100,
-      rewardCurrency: config.referral.driver.rewardCurrency || "USD",
+      rewardCurrency: platformCurrency.toUpperCase(),
       rewardStatus: REWARD_STATUS.PENDING,
       joinedAt: new Date(),
       auditLogs: [
@@ -182,7 +185,7 @@ const handleReferralSignup = async (
       qualificationTarget:
         config.referral.passenger.requiredCompletedTrips || 1,
       rewardAmount: config.referral.passenger.rewardAmount || 20,
-      rewardCurrency: config.referral.passenger.rewardCurrency || "USD",
+      rewardCurrency: platformCurrency.toUpperCase(),
       rewardStatus: REWARD_STATUS.PENDING,
       joinedAt: new Date(),
       auditLogs: [
@@ -680,6 +683,7 @@ const checkAndProcessPassengerReferral = async (passengerUserId: string) => {
  * Get dynamic referral program rules configured in System Config.
  */
 const getRules = async (role: string) => {
+  const platformCurrency = await PlatformSettingsService.getPlatformCurrency();
   const config = await getSystemConfig();
   const lowerRole = role ? role.toLowerCase() : "user";
 
@@ -688,7 +692,7 @@ const getRules = async (role: string) => {
     return {
       enabled: dConf?.enabled ?? true,
       rewardAmount: dConf?.rewardAmount ?? 100,
-      currency: dConf?.rewardCurrency ?? "USD",
+      currency: platformCurrency.toUpperCase(),
       requiredCompletedRides: dConf?.requiredCompletedTrips ?? 10,
       qualificationPeriod: `${dConf?.qualificationDays ?? 30} days`,
       payoutDelay: `${dConf?.payoutDelayHours ?? 0} hours`,
@@ -710,7 +714,7 @@ const getRules = async (role: string) => {
     return {
       enabled: pConf?.enabled ?? true,
       rewardAmount: pConf?.rewardAmount ?? 20,
-      currency: pConf?.rewardCurrency ?? "USD",
+      currency: platformCurrency.toUpperCase(),
       qualificationRequirements: `Satisfy qualification via ${pConf?.qualificationType ?? "rides"}.`,
       requiredCompletedTrips: pConf?.requiredCompletedTrips ?? 1,
       qualificationPeriod: `${pConf?.qualificationDays ?? 30} days`,

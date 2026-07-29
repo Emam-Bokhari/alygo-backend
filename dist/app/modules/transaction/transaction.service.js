@@ -20,6 +20,7 @@ const serviceArea_model_1 = require("../serviceArea/serviceArea.model");
 const systemConfigHelper_1 = require("../../../helpers/systemConfigHelper");
 const timezoneHelper_1 = require("../../../shared/timezoneHelper");
 const luxon_1 = require("luxon");
+const platformSettings_service_1 = require("../platformSettings/platformSettings.service");
 const generateTransactionId = () => {
     const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
@@ -180,6 +181,7 @@ const getTransactionsByUser = (userId_1, role_1, ...args_1) => __awaiter(void 0,
 });
 const getTransactions = (userId, role, queryOptions) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
+    const platformCurrency = yield platformSettings_service_1.PlatformSettingsService.getPlatformCurrency();
     const userObjectId = new mongoose_1.Types.ObjectId(userId);
     const matchQuery = {};
     // Resolve timezone dynamically
@@ -360,7 +362,7 @@ const getTransactions = (userId, role, queryOptions) => __awaiter(void 0, void 0
         const id = txObj._id;
         const transactionId = txObj.transactionId;
         const createdAt = txObj.createdAt;
-        const currency = txObj.currency || "USD";
+        const currency = txObj.currency || platformCurrency.toUpperCase();
         // Subtitle formatting using resolved user's timezone
         const dt = luxon_1.DateTime.fromJSDate(createdAt).setZone(userTimezone);
         const dStr = dt.toFormat("LLL d, yyyy");

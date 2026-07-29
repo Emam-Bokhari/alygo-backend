@@ -17,7 +17,6 @@
 
 <!--
 1. FRIDAY: aro kiso pbl ase ta chatgpt te pin kora ase shaigula o resolve korte hobe
-2. rider ar khetre cancellation ar jonno rider k pay korte hobe na, borong amra porobortite tier create korbo, shaikhne rider ar jnno point add abong point kata jabe, tu rider cancel korle rider ar point kata jabe r  cancellation ar jonno pay korbe kebol user e, tu aita porobortite thik kore nite hobe
 -->
 
 
@@ -29,8 +28,7 @@
 <!--
 1. id bananor jonno sob kiso ak jaiga theke use hobe
 2. sobgular khetre e custom Id make korbe but mongodb query ar jnno sobsomai e _id use korbe
-3. somosto jaigai soft delete use korte hobe, ak e sathe kono data jadi delete orthat soft delete e kora hoi ta o jeno agaer data te ba id te null show na kore, ager existing data jeno sothin vabe e populate hoi
-4. jaigai jaigai curerncy alada kore rakhar/config korar dorakr nai, sob ak jaiga theke currency config hobe, r shaita e poro project a use hobe
+3. somosto jaigai soft delete use korte hobe, ak e sathe kono data jadi delete orthat soft delete e kora hoi ta o jeno agaer data te ba id te null show na kore, ager existing data jeno sothik vabe e populate hoi
 -->
 
 <!--

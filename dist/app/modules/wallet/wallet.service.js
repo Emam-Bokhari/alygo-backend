@@ -23,6 +23,7 @@ const ride_constant_1 = require("../ride/ride.constant");
 const stripe_1 = __importDefault(require("../../../config/stripe"));
 const config_1 = __importDefault(require("../../../config"));
 const stripe_service_1 = __importDefault(require("../stripe/stripe.service"));
+const platformSettings_service_1 = require("../platformSettings/platformSettings.service");
 /**
  * Safely find or create a user's wallet (passengers or drivers)
  */
@@ -30,11 +31,12 @@ const getOrCreateWallet = (userId, session) => __awaiter(void 0, void 0, void 0,
     const userObjectId = new mongoose_1.Types.ObjectId(userId);
     let wallet = yield wallet_model_1.Wallet.findOne({ userId: userObjectId }).session(session || null);
     if (!wallet) {
+        const platformCurrency = yield platformSettings_service_1.PlatformSettingsService.getPlatformCurrency();
         const [newWallet] = yield wallet_model_1.Wallet.create([
             {
                 userId: userObjectId,
                 balance: 0,
-                currency: config_1.default.stripe.currency || "USD",
+                currency: platformCurrency.toUpperCase(),
             },
         ], { session });
         wallet = newWallet;
@@ -64,12 +66,13 @@ const deductBalance = (userId, amount, description, session, rideId) => __awaite
     }
     wallet.balance -= amount;
     yield wallet.save({ session });
+    const platformCurrency = yield platformSettings_service_1.PlatformSettingsService.getPlatformCurrency();
     // Create transaction record
     yield transaction_service_1.TransactionService.createTransaction({
         userId: new mongoose_1.Types.ObjectId(userId),
         walletId: wallet._id,
         amount: amount,
-        currency: config_1.default.stripe.currency || "usd",
+        currency: platformCurrency.toUpperCase(),
         paymentMethod: ride_constant_1.PAYMENT_METHOD.WALLET,
         paymentStatus: ride_constant_1.PAYMENT_STATUS.PAID,
         transactionType: transaction_constant_1.TRANSACTION_TYPE.CANCELLATION_FEE,
@@ -84,12 +87,13 @@ const addBalance = (userId, amount, description, session, transactionType, rideI
     const wallet = yield getOrCreateWallet(userId, session);
     wallet.balance += amount;
     yield wallet.save({ session });
+    const platformCurrency = yield platformSettings_service_1.PlatformSettingsService.getPlatformCurrency();
     // Create transaction record
     yield transaction_service_1.TransactionService.createTransaction({
         userId: new mongoose_1.Types.ObjectId(userId),
         walletId: wallet._id,
         amount: amount,
-        currency: config_1.default.stripe.currency || "usd",
+        currency: platformCurrency.toUpperCase(),
         paymentMethod: ride_constant_1.PAYMENT_METHOD.WALLET,
         paymentStatus: ride_constant_1.PAYMENT_STATUS.PAID,
         transactionType: transactionType || transaction_constant_1.TRANSACTION_TYPE.CANCELLATION_COMPENSATION,
@@ -123,8 +127,9 @@ const topUpWallet = (userId, amount) => __awaiter(void 0, void 0, void 0, functi
     // Success and cancel URLs pointing to frontend wallet pages
     const successUrl = `${config_1.default.client_url || "http://localhost:3000"}/wallet/success?session_id={CHECKOUT_SESSION_ID}`;
     const cancelUrl = `${config_1.default.client_url || "http://localhost:3000"}/wallet/cancel?session_id={CHECKOUT_SESSION_ID}`;
+    const platformCurrency = yield platformSettings_service_1.PlatformSettingsService.getPlatformCurrency();
     // Create Stripe Checkout Session
-    const session = yield stripe_service_1.default.createCheckoutSession(amount, config_1.default.stripe.currency || "usd", {
+    const session = yield stripe_service_1.default.createCheckoutSession(amount, platformCurrency.toLowerCase(), {
         type: "wallet_topup",
         userId,
         amount: amount.toString(),
@@ -135,7 +140,7 @@ const topUpWallet = (userId, amount) => __awaiter(void 0, void 0, void 0, functi
         userId: new mongoose_1.Types.ObjectId(userId),
         walletId: wallet._id,
         amount,
-        currency: config_1.default.stripe.currency || "usd",
+        currency: platformCurrency.toUpperCase(),
         paymentMethod: ride_constant_1.PAYMENT_METHOD.STRIPE,
         paymentStatus: ride_constant_1.PAYMENT_STATUS.PENDING,
         transactionType: transaction_constant_1.TRANSACTION_TYPE.WALLET_TOPUP,
@@ -147,7 +152,7 @@ const topUpWallet = (userId, amount) => __awaiter(void 0, void 0, void 0, functi
         gatewayTransactionId: session.payment_intent
             ? session.payment_intent
             : session.id,
-        description: `Wallet top-up of ${amount} ${config_1.default.stripe.currency || "USD"} initiated.`,
+        description: `Wallet top-up of ${amount} ${platformCurrency.toUpperCase()} initiated.`,
     });
     return {
         checkoutUrl: session.url,

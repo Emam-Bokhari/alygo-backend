@@ -13,6 +13,7 @@ import { TRANSACTION_TYPE } from "../transaction/transaction.constant";
 import mongoose from "mongoose";
 import stripeService from "../stripe/stripe.service";
 import config from "../../../config";
+import { PlatformSettingsService } from "../platformSettings/platformSettings.service";
 
 /**
  * Get all pending payments for a user
@@ -35,6 +36,7 @@ const payCancellationFeeNow = async (
   userId: string,
   pendingPaymentId: string,
 ): Promise<{ checkoutUrl: string; sessionId: string; expiresAt: string }> => {
+  const platformCurrency = await PlatformSettingsService.getPlatformCurrency();
   const pendingPayment = await PendingPayment.findById(pendingPaymentId);
 
   if (!pendingPayment) {
@@ -120,7 +122,7 @@ const payCancellationFeeNow = async (
     rideId: pendingPayment.rideId.toString(),
     userId: userId,
     amount: pendingPayment.amount.toString(),
-    currency: config.stripe.currency || "usd",
+    currency: platformCurrency.toLowerCase(),
   };
 
   if (pendingPayment.type === "cancellation_fee" && cancellationReasonId) {
@@ -135,7 +137,7 @@ const payCancellationFeeNow = async (
   // Create Stripe Checkout Session
   const session = await stripeService.createCheckoutSession(
     pendingPayment.amount,
-    config.stripe.currency || "usd",
+    platformCurrency.toLowerCase(),
     metadata,
     stripeCustomerId,
     successUrl,

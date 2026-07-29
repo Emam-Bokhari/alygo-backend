@@ -1,5 +1,6 @@
 import config from "../config";
 import { SystemConfigurationService } from "../app/modules/systemConfiguration/systemConfiguration.service";
+import { PlatformSettingsService } from "../app/modules/platformSettings/platformSettings.service";
 
 let cachedConfig: any = null;
 let cacheExpiry: number = 0;
@@ -19,6 +20,7 @@ export const getSystemConfig = async () => {
 
   try {
     const dbConfig = await SystemConfigurationService.getSystemConfig();
+    const platformCurrency = await PlatformSettingsService.getPlatformCurrency();
 
     if (dbConfig) {
       cachedConfig = {
@@ -112,10 +114,7 @@ export const getSystemConfig = async () => {
               dbConfig.referral?.passenger?.rewardAmount ??
               config.referral?.passenger?.rewardAmount ??
               20,
-            rewardCurrency:
-              dbConfig.referral?.passenger?.rewardCurrency ??
-              config.referral?.passenger?.rewardCurrency ??
-              "USD",
+            rewardCurrency: platformCurrency.toUpperCase(),
             qualificationType:
               dbConfig.referral?.passenger?.qualificationType ??
               config.referral?.passenger?.qualificationType ??
@@ -162,10 +161,7 @@ export const getSystemConfig = async () => {
               dbConfig.referral?.driver?.rewardAmount ??
               config.referral?.driver?.rewardAmount ??
               100,
-            rewardCurrency:
-              dbConfig.referral?.driver?.rewardCurrency ??
-              config.referral?.driver?.rewardCurrency ??
-              "USD",
+            rewardCurrency: platformCurrency.toUpperCase(),
             requiredCompletedTrips:
               dbConfig.referral?.driver?.requiredCompletedTrips ??
               config.referral?.driver?.requiredCompletedTrips ??

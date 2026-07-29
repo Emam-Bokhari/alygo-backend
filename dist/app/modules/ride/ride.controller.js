@@ -18,7 +18,7 @@ const catchAsync_1 = __importDefault(require("../../../shared/catchAsync"));
 const sendResponse_1 = __importDefault(require("../../../shared/sendResponse"));
 const ride_service_1 = require("./ride.service");
 const pendingPayment_model_1 = require("../pendingPayment/pendingPayment.model");
-const config_1 = __importDefault(require("../../../config"));
+const platformSettings_service_1 = require("../platformSettings/platformSettings.service");
 const estimateFareAndRoute = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield ride_service_1.RideServices.estimateFareAndRoute(req.body);
     (0, sendResponse_1.default)(res, {
@@ -118,7 +118,6 @@ const confirmCashPayment = (0, catchAsync_1.default)((req, res) => __awaiter(voi
     });
 }));
 const cancelRide = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
     const userId = req.user.id;
     const role = req.user.role;
     const { id: rideId } = req.params;
@@ -143,7 +142,7 @@ const cancelRide = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, voi
                         status: "pending",
                         pendingPaymentId: pendingPayment._id.toString(),
                         amount: pendingPayment.amount,
-                        currency: ((_a = config_1.default.stripe.currency) === null || _a === void 0 ? void 0 : _a.toUpperCase()) || "USD",
+                        currency: (yield platformSettings_service_1.PlatformSettingsService.getPlatformCurrency()).toUpperCase(),
                         options: ["pay_now", "pay_later"],
                     },
                 },
