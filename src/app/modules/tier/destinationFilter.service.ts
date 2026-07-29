@@ -45,6 +45,13 @@ const activateFilter = async (
 
   // 3. Validate Tier availability
   if (!driver.currentTier) {
+    const defaultTier = await Tier.findOne({ level: 1 });
+    if (defaultTier) {
+      driver.currentTier = defaultTier as any;
+    }
+  }
+
+  if (!driver.currentTier) {
     throw new ApiError(
       StatusCodes.FORBIDDEN,
       "Driver has no reward tier assigned. Destination filter unavailable.",
@@ -235,7 +242,10 @@ const getFilterStatus = async (
 
   const resetThreshold = await getDailyResetThreshold(driverTimezone);
 
-  const currentTier: any = driver.currentTier;
+  let currentTier: any = driver.currentTier;
+  if (!currentTier) {
+    currentTier = await Tier.findOne({ level: 1 });
+  }
   let dailyLimit = 0;
   if (currentTier?.benefits?.destinationFilter?.enabled) {
     dailyLimit = currentTier.benefits.destinationFilter.dailyLimit || 0;

@@ -10,6 +10,8 @@ import QueryBuilder from "../../builder/queryBuilder";
 import { emailTemplate } from "../../../shared/emailTemplate";
 import { Driver } from "../driver/driver.model";
 import { Tier } from "../tier/tier.model";
+import { SUPPORT_PRIORITY } from "./support.constant";
+import { SUPPORT_LEVEL } from "../tier/tier.constant";
 
 const support = async (id: string, payload: TSupport) => {
   const user = await User.isExistUserById(id);
@@ -27,16 +29,21 @@ const support = async (id: string, payload: TSupport) => {
   // Map support level from driver tier to priority
   if (user.role === "driver") {
     const driver = await Driver.findOne({ userId: id });
-    if (driver && driver.currentTier) {
-      const activeTier = await Tier.findById(driver.currentTier);
+    if (driver) {
+      let activeTier = driver.currentTier
+        ? await Tier.findById(driver.currentTier)
+        : null;
+      if (!activeTier) {
+        activeTier = await Tier.findOne({ level: 1 });
+      }
       if (activeTier && activeTier.benefits?.vipSupport?.enabled) {
         const supportLevel = activeTier.benefits.vipSupport.supportLevel;
-        if (supportLevel === "vip") {
-          payload.priority = "urgent";
-        } else if (supportLevel === "premium") {
-          payload.priority = "high";
-        } else if (supportLevel === "basic") {
-          payload.priority = "medium";
+        if (supportLevel === SUPPORT_LEVEL.VIP) {
+          payload.priority = SUPPORT_PRIORITY.URGENT;
+        } else if (supportLevel === SUPPORT_LEVEL.PREMIUM) {
+          payload.priority = SUPPORT_PRIORITY.HIGH;
+        } else if (supportLevel === SUPPORT_LEVEL.BASIC) {
+          payload.priority = SUPPORT_PRIORITY.MEDIUM;
         }
       }
     }

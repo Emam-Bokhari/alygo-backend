@@ -1,6 +1,7 @@
 import { model, Schema } from "mongoose";
 import { TSupport, SupportModel } from "./support.interface";
 import { softDeletePlugin } from "../../../DB/plugins/softDeletePlugin";
+import { SUPPORT_PRIORITY } from "./support.constant";
 
 const supportSchema = new Schema<TSupport>(
   {
@@ -26,8 +27,8 @@ const supportSchema = new Schema<TSupport>(
     },
     priority: {
       type: String,
-      enum: ["low", "medium", "high", "urgent"],
-      default: "low",
+      enum: Object.values(SUPPORT_PRIORITY),
+      default: SUPPORT_PRIORITY.LOW,
     },
   },
   {

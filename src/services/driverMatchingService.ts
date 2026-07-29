@@ -65,7 +65,14 @@ export const findEligibleDriversInRadius = async ({
 
   const tierCache = new Map<string, any>();
   const getTier = async (tierId: string | Types.ObjectId | undefined) => {
-    if (!tierId) return null;
+    if (!tierId) {
+      const defaultTierKey = "level_1_default";
+      if (!tierCache.has(defaultTierKey)) {
+        const defaultTier = await Tier.findOne({ level: 1 });
+        tierCache.set(defaultTierKey, defaultTier);
+      }
+      return tierCache.get(defaultTierKey);
+    }
     const key = tierId.toString();
     if (!tierCache.has(key)) {
       const tierDoc = await Tier.findById(tierId);

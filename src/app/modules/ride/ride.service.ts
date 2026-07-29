@@ -936,7 +936,12 @@ const acceptRide = async (
 
   // Verify reservation access if ride is scheduled
   if (rideToAccept.rideType === RIDE_TYPE.SCHEDULED) {
-    const activeTier = await Tier.findById(driverDoc.currentTier);
+    let activeTier = driverDoc.currentTier
+      ? await Tier.findById(driverDoc.currentTier)
+      : null;
+    if (!activeTier) {
+      activeTier = await Tier.findOne({ level: 1 });
+    }
     if (!activeTier || !activeTier.benefits?.reservationAccess?.enabled) {
       throw new ApiError(
         403,
@@ -2207,6 +2212,7 @@ const completeRidePayment = async (
     }
 
     // 4. Credit Driver's Wallet automatically with Driver Earnings
+    let finalDriverEarning = ride.fare.driverEarning;
     if (ride.driverId) {
       const driverWallet = await WalletService.getOrCreateWallet(
         ride.driverId,
@@ -2223,14 +2229,20 @@ const completeRidePayment = async (
 
       // Apply tier bonus multiplier to driver earnings if enabled
       let multiplier = 1.0;
-      if (driverProfile && driverProfile.currentTier) {
-        const activeTier = await Tier.findById(driverProfile.currentTier);
+      if (driverProfile) {
+        let activeTier = driverProfile.currentTier
+          ? await Tier.findById(driverProfile.currentTier).session(session)
+          : null;
+        if (!activeTier) {
+          activeTier = await Tier.findOne({ level: 1 }).session(session);
+        }
         if (activeTier && activeTier.benefits?.bonusMultiplier?.enabled) {
           multiplier =
             activeTier.benefits.bonusMultiplier.multiplierValue || 1.0;
           driverEarning = parseFloat((driverEarning * multiplier).toFixed(2));
         }
       }
+      finalDriverEarning = driverEarning;
 
       driverWallet.balance = parseFloat(
         (driverWallet.balance + driverEarning).toFixed(2),
@@ -2350,7 +2362,7 @@ const completeRidePayment = async (
     if (ride.driverId) {
       await sendNotifications({
         title: "Earnings Received",
-        text: `Passenger paid ${ride.fare.total}. Your earning of ${ride.fare.driverEarning} has been added.`,
+        text: `Passenger paid ${ride.fare.total}. Your earning of ${finalDriverEarning} has been added.`,
         receiver: ride.driverId,
         type: NOTIFICATION_TYPE.DRIVER,
         referenceId: ride._id,

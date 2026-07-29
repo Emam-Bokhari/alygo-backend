@@ -1,5 +1,6 @@
 import { Types } from "mongoose";
 import { ISoftDeleteModel } from "../../../types/softDelete";
+import { SUPPORT_PRIORITY } from "./support.constant";
 
 export type TSupport = {
   userId: Types.ObjectId;
@@ -7,7 +8,7 @@ export type TSupport = {
   email: string;
   subject: string;
   message: string;
-  priority?: "low" | "medium" | "high" | "urgent";
+  priority?: SUPPORT_PRIORITY;
 };
 
 export type SupportModel = ISoftDeleteModel<TSupport>;
