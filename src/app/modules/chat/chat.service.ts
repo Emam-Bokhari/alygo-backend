@@ -3,7 +3,8 @@ import mongoose from "mongoose";
 import { User } from "../user/user.model";
 import { Message } from "../message/message.model";
 import ApiError from "../../../errors/ApiErrors";
-import { CHAT_COMMUNICATION_TYPE } from "./chat.constant";
+import { CHAT_COMMUNICATION_TYPE } from "../../../enums/chat";
+import { MESSAGE_TYPE } from "../../../enums/message";
 import { chatSocketHelper } from "./socket/chat.socket";
 
 const createChatIntoDB = async (
@@ -197,7 +198,7 @@ const getChatImagesFromDB = async (chatId: string, userId: string) => {
     chatId,
     sender: userId,
     isDeleted: { $ne: true },
-    $or: [{ type: "image" }, { type: "both" }],
+    $or: [{ type: MESSAGE_TYPE.IMAGE }, { type: MESSAGE_TYPE.BOTH }],
   })
     .sort({ createdAt: -1 })
     .select("image -_id")

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CHAT_COMMUNICATION_TYPE } from "./chat.constant";
+import { CHAT_COMMUNICATION_TYPE } from "../../../enums/chat";
 
 const createChatValidationSchema = z.object({
   body: z.object({

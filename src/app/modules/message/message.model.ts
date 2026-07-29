@@ -1,5 +1,6 @@
 import { Schema, model } from "mongoose";
 import { IMessage, MessageModel } from "./message.interface";
+import { MESSAGE_TYPE } from "../../../enums/message";
 
 const messageSchema = new Schema<IMessage, MessageModel>(
   {
@@ -26,8 +27,8 @@ const messageSchema = new Schema<IMessage, MessageModel>(
     },
     type: {
       type: String,
-      enum: ["TEXT", "IMAGE", "DOC", "BOTH"],
-      default: "TEXT",
+      enum: Object.values(MESSAGE_TYPE),
+      default: MESSAGE_TYPE.TEXT,
     },
     isDeleted: {
       type: Boolean,

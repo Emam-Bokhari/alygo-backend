@@ -1,5 +1,5 @@
 import { Types } from "mongoose";
-import { CHAT_COMMUNICATION_TYPE } from "./chat.constant";
+import { CHAT_COMMUNICATION_TYPE, CHAT_STATUS } from "../../../enums/chat";
 
 export type IChat = {
   participants: Types.ObjectId[];
@@ -8,7 +8,7 @@ export type IChat = {
   readBy: Types.ObjectId[];
   deletedBy: Types.ObjectId[];
   isDeleted: boolean;
-  status: "ACTIVE" | "DELETED";
+  status: CHAT_STATUS;
   pinnedMessages: Types.ObjectId[]; // Pinned message IDs
   communicationType?: CHAT_COMMUNICATION_TYPE;
   referenceId?: Types.ObjectId;

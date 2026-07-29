@@ -1,6 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import { IChat } from "./chat.interface";
-import { CHAT_COMMUNICATION_TYPE } from "./chat.constant";
+import { CHAT_COMMUNICATION_TYPE, CHAT_STATUS } from "../../../enums/chat";
 
 const chatSchema = new Schema<IChat>(
   {
@@ -13,7 +13,11 @@ const chatSchema = new Schema<IChat>(
     readBy: [{ type: Schema.Types.ObjectId, ref: "User" }],
     deletedBy: [{ type: Schema.Types.ObjectId, ref: "User" }],
     isDeleted: { type: Boolean, default: false },
-    status: { type: String, enum: ["ACTIVE", "DELETED"], default: "ACTIVE" },
+    status: {
+      type: String,
+      enum: Object.values(CHAT_STATUS),
+      default: CHAT_STATUS.ACTIVE,
+    },
     pinnedMessages: [{ type: Schema.Types.ObjectId, ref: "Message" }],
     communicationType: {
       type: String,

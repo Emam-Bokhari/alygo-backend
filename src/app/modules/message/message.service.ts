@@ -5,19 +5,20 @@ import { Message } from "./message.model";
 import { Types } from "mongoose";
 import { chatSocketHelper } from "../chat/socket/chat.socket";
 import { chatPermissionHelper } from "../chat/helpers/chatPermission.helper";
-import { CHAT_COMMUNICATION_TYPE } from "../chat/chat.constant";
+import { CHAT_COMMUNICATION_TYPE } from "../../../enums/chat";
+import { MESSAGE_TYPE } from "../../../enums/message";
 import { notificationHelper } from "../../builder/pushNotification";
 
 const detectMessageType = (
   payload: Partial<IMessage>,
-): "TEXT" | "IMAGE" | "DOC" | "BOTH" => {
+): MESSAGE_TYPE => {
   const hasText = !!payload.text && payload.text.trim().length > 0;
   const hasImage = payload.image;
 
-  if (hasText && hasImage) return "BOTH";
-  if (hasText) return "TEXT";
-  if (hasImage) return "IMAGE";
-  return "DOC";
+  if (hasText && hasImage) return MESSAGE_TYPE.BOTH;
+  if (hasText) return MESSAGE_TYPE.TEXT;
+  if (hasImage) return MESSAGE_TYPE.IMAGE;
+  return MESSAGE_TYPE.DOC;
 };
 
 // enhanced version with better error handling and logging

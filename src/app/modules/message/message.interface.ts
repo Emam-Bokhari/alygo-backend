@@ -1,4 +1,5 @@
 import { Model, Types } from "mongoose";
+import { MESSAGE_TYPE } from "../../../enums/message";
 
 export type IMessage = {
   chatId: Types.ObjectId;
@@ -7,7 +8,7 @@ export type IMessage = {
   image?: string;
   read: boolean;
   isDeleted: boolean;
-  type: "TEXT" | "IMAGE" | "DOC" | "BOTH";
+  type: MESSAGE_TYPE;
   isPinned: boolean;
   pinnedBy?: Types.ObjectId;
   pinnedAt?: Date;

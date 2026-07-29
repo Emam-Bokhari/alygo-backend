@@ -4,7 +4,7 @@ import { Driver } from "../../driver/driver.model";
 import { Ride } from "../../ride/ride.model";
 import { LostFound } from "../../lostAndFound/lostAndFound.model";
 import { Support } from "../../support/support.model";
-import { CHAT_COMMUNICATION_TYPE } from "../chat.constant";
+import { CHAT_COMMUNICATION_TYPE } from "../../../../enums/chat";
 import { STATUS } from "../../../../enums/user";
 import { RIDE_STATUS } from "../../ride/ride.constant";
 

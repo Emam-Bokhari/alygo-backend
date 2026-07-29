@@ -2,7 +2,7 @@ import catchAsync from "../../../shared/catchAsync";
 import sendResponse from "../../../shared/sendResponse";
 import { ChatService } from "./chat.service";
 import ApiError from "../../../errors/ApiErrors";
-import { CHAT_COMMUNICATION_TYPE } from "./chat.constant";
+import { CHAT_COMMUNICATION_TYPE } from "../../../enums/chat";
 import { chatPermissionHelper } from "./helpers/chatPermission.helper";
 
 const createChat = catchAsync(async (req, res) => {
