@@ -88,7 +88,9 @@ const createReview = catchAsync(async (req: Request, res: Response) => {
           status: "pending",
           pendingPaymentId: pendingPayment._id,
           amount: pendingPayment.amount,
-          currency: (await PlatformSettingsService.getPlatformCurrency()).toUpperCase(),
+          currency: (
+            await PlatformSettingsService.getPlatformCurrency()
+          ).toUpperCase(),
           options: ["pay_now", "skip"],
         },
       },

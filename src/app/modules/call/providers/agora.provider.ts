@@ -5,10 +5,7 @@ import crypto from "crypto";
 /**
  * Generate Agora RTC Token for standard publisher voice calls
  */
-const generateAgoraToken = (
-  channelName: string,
-  uid: number,
-): string => {
+const generateAgoraToken = (channelName: string, uid: number): string => {
   const appId = config.agora.appId;
   const appCertificate = config.agora.appCertificate;
 
@@ -30,7 +27,7 @@ const generateAgoraToken = (
     uid,
     rtcRole,
     privilegeExpiredTs,
-    privilegeExpiredTs // privilege expiration
+    privilegeExpiredTs, // privilege expiration
   );
 
   return token;

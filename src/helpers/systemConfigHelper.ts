@@ -20,7 +20,8 @@ export const getSystemConfig = async () => {
 
   try {
     const dbConfig = await SystemConfigurationService.getSystemConfig();
-    const platformCurrency = await PlatformSettingsService.getPlatformCurrency();
+    const platformCurrency =
+      await PlatformSettingsService.getPlatformCurrency();
 
     if (dbConfig) {
       cachedConfig = {

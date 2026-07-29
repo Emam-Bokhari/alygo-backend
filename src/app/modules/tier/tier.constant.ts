@@ -18,7 +18,6 @@ export enum POINT_EVENT_TYPE {
   ADMIN_OVERRIDE = "admin_override",
 }
 
-
 export const DEFAULT_TIER_BENEFITS: ITierBenefits = {
   destinationFilter: {
     enabled: false,

@@ -24,7 +24,8 @@ const getOrCreateWallet = async (
   );
 
   if (!wallet) {
-    const platformCurrency = await PlatformSettingsService.getPlatformCurrency();
+    const platformCurrency =
+      await PlatformSettingsService.getPlatformCurrency();
     const [newWallet] = await Wallet.create(
       [
         {

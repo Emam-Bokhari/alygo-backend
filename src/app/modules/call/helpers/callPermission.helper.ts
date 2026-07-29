@@ -36,7 +36,10 @@ export const checkCallPermission = async (
 
   // 2. Verify blocked status (User status)
   if (caller.status === STATUS.INACTIVE) {
-    return { allowed: false, reason: "Caller is currently suspended or blocked." };
+    return {
+      allowed: false,
+      reason: "Caller is currently suspended or blocked.",
+    };
   }
   if (receiver.status === STATUS.INACTIVE) {
     return { allowed: false, reason: "Receiver user is blocked or suspended." };
@@ -45,14 +48,26 @@ export const checkCallPermission = async (
   // 3. Verify driver blocked status if applicable
   if (caller.role === "driver") {
     const driver = await Driver.findOne({ userId: caller._id });
-    if (driver?.availability?.blockedUntil && new Date(driver.availability.blockedUntil) > new Date()) {
-      return { allowed: false, reason: `Caller is blocked from duty policy: ${driver.availability.blockedReason || "Suspended"}` };
+    if (
+      driver?.availability?.blockedUntil &&
+      new Date(driver.availability.blockedUntil) > new Date()
+    ) {
+      return {
+        allowed: false,
+        reason: `Caller is blocked from duty policy: ${driver.availability.blockedReason || "Suspended"}`,
+      };
     }
   }
   if (receiver.role === "driver") {
     const driver = await Driver.findOne({ userId: receiver._id });
-    if (driver?.availability?.blockedUntil && new Date(driver.availability.blockedUntil) > new Date()) {
-      return { allowed: false, reason: `Receiver driver is blocked: ${driver.availability.blockedReason || "Suspended"}` };
+    if (
+      driver?.availability?.blockedUntil &&
+      new Date(driver.availability.blockedUntil) > new Date()
+    ) {
+      return {
+        allowed: false,
+        reason: `Receiver driver is blocked: ${driver.availability.blockedReason || "Suspended"}`,
+      };
     }
   }
 
@@ -173,8 +188,7 @@ export const checkCallPermission = async (
       if (!isPassenger || !isDriver) {
         return {
           allowed: false,
-          reason:
-            "Participants are not assigned to this Lost & Found report.",
+          reason: "Participants are not assigned to this Lost & Found report.",
         };
       }
 
@@ -212,8 +226,7 @@ export const checkCallPermission = async (
       if (!isOwner || !isAdmin) {
         return {
           allowed: false,
-          reason:
-            "Support call requires the ticket owner and a support agent.",
+          reason: "Support call requires the ticket owner and a support agent.",
         };
       }
       break;

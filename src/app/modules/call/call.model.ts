@@ -119,7 +119,7 @@ const callSchema = new Schema<ICall, CallModel>(
   {
     timestamps: true,
     versionKey: false,
-  }
+  },
 );
 
 export const Call = model<ICall, CallModel>("Call", callSchema);

@@ -124,7 +124,10 @@ const driverPointHistorySchema = new Schema<IDriverPointHistory>(
   },
 );
 
-driverPointHistorySchema.index({ driverId: 1, eventType: 1, referenceId: 1 }, { unique: true });
+driverPointHistorySchema.index(
+  { driverId: 1, eventType: 1, referenceId: 1 },
+  { unique: true },
+);
 
 export const DriverPointHistory = model<IDriverPointHistory>(
   "DriverPointHistory",

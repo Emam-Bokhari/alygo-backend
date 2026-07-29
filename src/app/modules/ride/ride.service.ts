@@ -2614,7 +2614,9 @@ const cancelRide = async (
 
       let isRiderDriver = false;
       if (isDriverAccepted) {
-        const passengerDriver = await Driver.findOne({ userId: ride.userId }).session(session);
+        const passengerDriver = await Driver.findOne({
+          userId: ride.userId,
+        }).session(session);
         if (passengerDriver) {
           isRiderDriver = true;
         }
@@ -2730,9 +2732,12 @@ const cancelRide = async (
           POINT_EVENT_TYPE.ACCEPTED_RIDE_CANCELLED,
           "ride",
           ride._id,
-          { notes: `Rider Cancelled Accepted Ride ${ride._id}` }
+          { notes: `Rider Cancelled Accepted Ride ${ride._id}` },
         ).catch((err) =>
-          logger.error(`[Point Processing Failed] Error deducting points for Rider cancellation:`, err)
+          logger.error(
+            `[Point Processing Failed] Error deducting points for Rider cancellation:`,
+            err,
+          ),
         );
       }
 

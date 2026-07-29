@@ -25,7 +25,12 @@ const initiateCallToDB = async (
     callType?: CALL_TYPE;
   },
 ): Promise<any> => {
-  const { communicationType, referenceId, receiverId, callType = CALL_TYPE.VOICE } = payload;
+  const {
+    communicationType,
+    referenceId,
+    receiverId,
+    callType = CALL_TYPE.VOICE,
+  } = payload;
 
   if (callerId.toString() === receiverId) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "You cannot call yourself.");
@@ -55,10 +60,18 @@ const initiateCallToDB = async (
   const agoraUidCaller = agoraProvider.generateAgoraUid();
   const agoraUidReceiver = agoraProvider.generateAgoraUid();
 
-  const callerToken = agoraProvider.generateAgoraToken(channelName, agoraUidCaller);
-  const receiverToken = agoraProvider.generateAgoraToken(channelName, agoraUidReceiver);
+  const callerToken = agoraProvider.generateAgoraToken(
+    channelName,
+    agoraUidCaller,
+  );
+  const receiverToken = agoraProvider.generateAgoraToken(
+    channelName,
+    agoraUidReceiver,
+  );
 
-  const expiresAt = new Date(Date.now() + (config.agora.tokenExpireSeconds || 3600) * 1000);
+  const expiresAt = new Date(
+    Date.now() + (config.agora.tokenExpireSeconds || 3600) * 1000,
+  );
 
   // 3. Create Call record in DB
   const callData: Partial<ICall> = {
@@ -145,7 +158,9 @@ const initiateCallToDB = async (
     await notificationHelper.sendToUser(receiverId, {
       title: notificationTitle,
       body: notificationBody,
-      type: isReceiverDriver ? NOTIFICATION_TYPE.DRIVER : NOTIFICATION_TYPE.USER,
+      type: isReceiverDriver
+        ? NOTIFICATION_TYPE.DRIVER
+        : NOTIFICATION_TYPE.USER,
       data: {
         type: "incoming-call",
         callId: callRecord._id.toString(),
@@ -194,11 +209,20 @@ const answerCallInDB = async (
   }
 
   if (call.receiverId.toString() !== userId.toString()) {
-    throw new ApiError(StatusCodes.FORBIDDEN, "You are not authorized to answer this call.");
+    throw new ApiError(
+      StatusCodes.FORBIDDEN,
+      "You are not authorized to answer this call.",
+    );
   }
 
-  if (call.status !== CALL_STATUS.INITIATED && call.status !== CALL_STATUS.RINGING) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, `Cannot answer call in status: ${call.status}`);
+  if (
+    call.status !== CALL_STATUS.INITIATED &&
+    call.status !== CALL_STATUS.RINGING
+  ) {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      `Cannot answer call in status: ${call.status}`,
+    );
   }
 
   const now = new Date();
@@ -207,8 +231,12 @@ const answerCallInDB = async (
   call.startedAt = now;
   await call.save();
 
-  const callerUser = await User.findById(call.callerId).select("name profileImage");
-  const receiverUser = await User.findById(call.receiverId).select("name profileImage");
+  const callerUser = await User.findById(call.callerId).select(
+    "name profileImage",
+  );
+  const receiverUser = await User.findById(call.receiverId).select(
+    "name profileImage",
+  );
 
   // Emit accepted/connected socket events
   const payload = {
@@ -244,7 +272,10 @@ const rejectCallInDB = async (
   }
 
   if (call.receiverId.toString() !== userId.toString()) {
-    throw new ApiError(StatusCodes.FORBIDDEN, "You are not authorized to reject this call.");
+    throw new ApiError(
+      StatusCodes.FORBIDDEN,
+      "You are not authorized to reject this call.",
+    );
   }
 
   const now = new Date();
@@ -255,8 +286,12 @@ const rejectCallInDB = async (
   call.endReason = reason || "rejected";
   await call.save();
 
-  const callerUser = await User.findById(call.callerId).select("name profileImage");
-  const receiverUser = await User.findById(call.receiverId).select("name profileImage");
+  const callerUser = await User.findById(call.callerId).select(
+    "name profileImage",
+  );
+  const receiverUser = await User.findById(call.receiverId).select(
+    "name profileImage",
+  );
 
   // Emit socket events
   const payload = {
@@ -306,11 +341,20 @@ const cancelCallInDB = async (
   }
 
   if (call.callerId.toString() !== userId.toString()) {
-    throw new ApiError(StatusCodes.FORBIDDEN, "You are not authorized to cancel this call.");
+    throw new ApiError(
+      StatusCodes.FORBIDDEN,
+      "You are not authorized to cancel this call.",
+    );
   }
 
-  if (call.status === CALL_STATUS.ACCEPTED || call.status === CALL_STATUS.CONNECTED) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "Call is already answered. Please end the call instead.");
+  if (
+    call.status === CALL_STATUS.ACCEPTED ||
+    call.status === CALL_STATUS.CONNECTED
+  ) {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      "Call is already answered. Please end the call instead.",
+    );
   }
 
   const now = new Date();
@@ -321,8 +365,12 @@ const cancelCallInDB = async (
   call.endReason = "cancelled";
   await call.save();
 
-  const callerUser = await User.findById(call.callerId).select("name profileImage");
-  const receiverUser = await User.findById(call.receiverId).select("name profileImage");
+  const callerUser = await User.findById(call.callerId).select(
+    "name profileImage",
+  );
+  const receiverUser = await User.findById(call.receiverId).select(
+    "name profileImage",
+  );
 
   // Emit socket events
   const payload = {
@@ -344,7 +392,9 @@ const cancelCallInDB = async (
     await notificationHelper.sendToUser(call.receiverId.toString(), {
       title: "Call Cancelled",
       body: `The incoming call was cancelled.`,
-      type: isReceiverDriver ? NOTIFICATION_TYPE.DRIVER : NOTIFICATION_TYPE.USER,
+      type: isReceiverDriver
+        ? NOTIFICATION_TYPE.DRIVER
+        : NOTIFICATION_TYPE.USER,
       data: {
         type: "call-cancelled",
         callId,
@@ -375,20 +425,32 @@ const endCallInDB = async (
   const userIdStr = userId.toString();
 
   if (callerStr !== userIdStr && receiverStr !== userIdStr) {
-    throw new ApiError(StatusCodes.FORBIDDEN, "You are not a participant in this call.");
+    throw new ApiError(
+      StatusCodes.FORBIDDEN,
+      "You are not a participant in this call.",
+    );
   }
 
   // If already ended, just return
-  const finalStatuses = [CALL_STATUS.ENDED, CALL_STATUS.REJECTED, CALL_STATUS.CANCELLED, CALL_STATUS.TIMEOUT, CALL_STATUS.FAILED];
+  const finalStatuses = [
+    CALL_STATUS.ENDED,
+    CALL_STATUS.REJECTED,
+    CALL_STATUS.CANCELLED,
+    CALL_STATUS.TIMEOUT,
+    CALL_STATUS.FAILED,
+  ];
   if (finalStatuses.includes(call.status)) {
     return call;
   }
 
   const now = new Date();
   const callStartTime = call.startedAt || call.answeredAt || call.createdAt;
-  const durationSec = Math.floor((now.getTime() - callStartTime.getTime()) / 1000);
+  const durationSec = Math.floor(
+    (now.getTime() - callStartTime.getTime()) / 1000,
+  );
 
-  const endingUserRole = (userIdStr === callerStr ? call.callerRole : call.receiverRole) || "user";
+  const endingUserRole =
+    (userIdStr === callerStr ? call.callerRole : call.receiverRole) || "user";
 
   call.status = CALL_STATUS.ENDED;
   call.endedAt = now;
@@ -397,8 +459,12 @@ const endCallInDB = async (
   call.endReason = `ended_by_${endingUserRole}`;
   await call.save();
 
-  const callerUser = await User.findById(call.callerId).select("name profileImage");
-  const receiverUser = await User.findById(call.receiverId).select("name profileImage");
+  const callerUser = await User.findById(call.callerId).select(
+    "name profileImage",
+  );
+  const receiverUser = await User.findById(call.receiverId).select(
+    "name profileImage",
+  );
 
   // Emit socket events
   const payload = {
@@ -418,11 +484,15 @@ const endCallInDB = async (
   // Send FCM notifications if necessary
   try {
     const peerId = callerStr === userIdStr ? receiverStr : callerStr;
-    const peerRole = callerStr === userIdStr ? call.receiverRole : call.callerRole;
+    const peerRole =
+      callerStr === userIdStr ? call.receiverRole : call.callerRole;
     await notificationHelper.sendToUser(peerId, {
       title: "Call Ended",
       body: `Call duration: ${Math.floor(durationSec / 60)}m ${durationSec % 60}s.`,
-      type: peerRole === "driver" ? NOTIFICATION_TYPE.DRIVER : NOTIFICATION_TYPE.USER,
+      type:
+        peerRole === "driver"
+          ? NOTIFICATION_TYPE.DRIVER
+          : NOTIFICATION_TYPE.USER,
       data: {
         type: "call-ended",
         callId,
@@ -453,20 +523,38 @@ const getTokenFromDB = async (
   const userIdStr = userId.toString();
 
   if (callerStr !== userIdStr && receiverStr !== userIdStr) {
-    throw new ApiError(StatusCodes.FORBIDDEN, "You are not a participant in this call.");
+    throw new ApiError(
+      StatusCodes.FORBIDDEN,
+      "You are not a participant in this call.",
+    );
   }
 
-  const activeStatuses = [CALL_STATUS.INITIATED, CALL_STATUS.RINGING, CALL_STATUS.ACCEPTED, CALL_STATUS.CONNECTED];
+  const activeStatuses = [
+    CALL_STATUS.INITIATED,
+    CALL_STATUS.RINGING,
+    CALL_STATUS.ACCEPTED,
+    CALL_STATUS.CONNECTED,
+  ];
   if (!activeStatuses.includes(call.status)) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "Cannot refresh token for inactive calls.");
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      "Cannot refresh token for inactive calls.",
+    );
   }
 
-  const userUid = callerStr === userIdStr ? call.agoraUidCaller : call.agoraUidReceiver;
+  const userUid =
+    callerStr === userIdStr ? call.agoraUidCaller : call.agoraUidReceiver;
   const token = agoraProvider.generateAgoraToken(call.channelName, userUid);
-  const expiresAt = new Date(Date.now() + (config.agora.tokenExpireSeconds || 3600) * 1000);
+  const expiresAt = new Date(
+    Date.now() + (config.agora.tokenExpireSeconds || 3600) * 1000,
+  );
 
-  const callerUser = await User.findById(call.callerId).select("name profileImage");
-  const receiverUser = await User.findById(call.receiverId).select("name profileImage");
+  const callerUser = await User.findById(call.callerId).select(
+    "name profileImage",
+  );
+  const receiverUser = await User.findById(call.receiverId).select(
+    "name profileImage",
+  );
 
   // Emit refreshed socket
   callSocketHelper.emitCallTokenRefreshed(userIdStr, {
@@ -574,13 +662,23 @@ const getCallFromDB = async (
   const userIdStr = userId.toString();
 
   // Participant or Admin check
-  const isAdmin = ["admin", "superAdmin"].includes(call.callerRole) || ["admin", "superAdmin"].includes(call.receiverRole);
+  const isAdmin =
+    ["admin", "superAdmin"].includes(call.callerRole) ||
+    ["admin", "superAdmin"].includes(call.receiverRole);
   // Wait, let's fetch the actual requesting user role
   const user = await User.findById(userIdStr);
-  const isRequestingUserAdmin = user && ["admin", "superAdmin"].includes(user.role);
+  const isRequestingUserAdmin =
+    user && ["admin", "superAdmin"].includes(user.role);
 
-  if (callerStr !== userIdStr && receiverStr !== userIdStr && !isRequestingUserAdmin) {
-    throw new ApiError(StatusCodes.FORBIDDEN, "You do not have access to this call history.");
+  if (
+    callerStr !== userIdStr &&
+    receiverStr !== userIdStr &&
+    !isRequestingUserAdmin
+  ) {
+    throw new ApiError(
+      StatusCodes.FORBIDDEN,
+      "You do not have access to this call history.",
+    );
   }
 
   return call;

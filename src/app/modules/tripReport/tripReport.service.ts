@@ -324,7 +324,10 @@ const updateTripReport = async (
         rideId: updatedReport.rideId,
       },
     ).catch((err) =>
-      logger.error(`[Point Processing Failed] Error deducting points for policy violation:`, err),
+      logger.error(
+        `[Point Processing Failed] Error deducting points for policy violation:`,
+        err,
+      ),
     );
   }
 

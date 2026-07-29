@@ -192,7 +192,8 @@ const overrideDriverPoints = catchAsync(async (req: Request, res: Response) => {
       "admin",
       undefined,
       {
-        notes: notes || `Admin Manual override deducted ${Math.abs(change)} points`,
+        notes:
+          notes || `Admin Manual override deducted ${Math.abs(change)} points`,
         overridePoints: change,
         adminId: adminUserId,
       },

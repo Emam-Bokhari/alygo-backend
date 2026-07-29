@@ -50,16 +50,8 @@ router.post(
   CallController.getToken,
 );
 
-router.get(
-  "/history",
-  isAuthenticated,
-  CallController.getHistory,
-);
+router.get("/history", isAuthenticated, CallController.getHistory);
 
-router.get(
-  "/:id",
-  isAuthenticated,
-  CallController.getCall,
-);
+router.get("/:id", isAuthenticated, CallController.getCall);
 
 export const CallRoutes = router;

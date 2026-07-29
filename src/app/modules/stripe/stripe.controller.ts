@@ -196,7 +196,8 @@ const createCheckoutSession = catchAsync(
     const successUrl = `${config.client_url || "http://localhost:3000"}/payment/success?session_id={CHECKOUT_SESSION_ID}&rideId=${rideId}`;
     const cancelUrl = `${config.client_url || "http://localhost:3000"}/payment/cancel?session_id={CHECKOUT_SESSION_ID}&rideId=${rideId}`;
 
-    const platformCurrency = await PlatformSettingsService.getPlatformCurrency();
+    const platformCurrency =
+      await PlatformSettingsService.getPlatformCurrency();
 
     const session = await stripeService.createCheckoutSession(
       chargeAmount,

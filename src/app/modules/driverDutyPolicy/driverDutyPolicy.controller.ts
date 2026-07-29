@@ -152,7 +152,9 @@ const getZoneRules = catchAsync(async (req, res) => {
 });
 
 const getAirportRules = catchAsync(async (req, res) => {
-  const result = await DriverDutyPolicyServices.getAirportRulesFromDB(req.query);
+  const result = await DriverDutyPolicyServices.getAirportRulesFromDB(
+    req.query,
+  );
 
   sendResponse(res, {
     success: true,
@@ -175,7 +177,9 @@ const getMonitoringCards = catchAsync(async (req, res) => {
 });
 
 const getDriverMonitoringList = catchAsync(async (req, res) => {
-  const result = await DriverDutyPolicyServices.getDriverMonitoringListFromDB(req.query);
+  const result = await DriverDutyPolicyServices.getDriverMonitoringListFromDB(
+    req.query,
+  );
 
   sendResponse(res, {
     success: true,
@@ -202,5 +206,3 @@ export const DriverDutyPolicyController = {
   getMonitoringCards,
   getDriverMonitoringList,
 };
-
-

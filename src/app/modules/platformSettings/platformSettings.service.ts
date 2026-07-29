@@ -14,7 +14,8 @@ const getPlatformCurrency = async (): Promise<string> => {
   }
   const settings = await PlatformSettings.findOne({});
   const rawCurrency = settings?.currency;
-  cachedCurrency = (rawCurrency && rawCurrency.toLowerCase() !== "myr") ? rawCurrency : "usd";
+  cachedCurrency =
+    rawCurrency && rawCurrency.toLowerCase() !== "myr" ? rawCurrency : "usd";
   cacheExpiry = now + CACHE_DURATION_MS;
   return cachedCurrency;
 };

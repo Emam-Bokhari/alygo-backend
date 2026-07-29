@@ -31,7 +31,9 @@ const processCallCleanup = async (): Promise<void> => {
 
   // 1. Expire Ring Timeout (mark calls as TIMEOUT / MISSED after CALL_RING_TIMEOUT_SECONDS)
   const ringTimeoutSeconds = config.agora.ringTimeoutSeconds || 30;
-  const ringTimeoutThreshold = new Date(now.getTime() - ringTimeoutSeconds * 1000);
+  const ringTimeoutThreshold = new Date(
+    now.getTime() - ringTimeoutSeconds * 1000,
+  );
 
   const timedOutCalls = await Call.find({
     status: { $in: [CALL_STATUS.INITIATED, CALL_STATUS.RINGING] },
@@ -51,8 +53,12 @@ const processCallCleanup = async (): Promise<void> => {
       ),
     );
 
-    const callerUser = await User.findById(call.callerId).select("name profileImage");
-    const receiverUser = await User.findById(call.receiverId).select("name profileImage");
+    const callerUser = await User.findById(call.callerId).select(
+      "name profileImage",
+    );
+    const receiverUser = await User.findById(call.receiverId).select(
+      "name profileImage",
+    );
 
     // Emit WebSockets events
     const payload = {
@@ -128,8 +134,12 @@ const processCallCleanup = async (): Promise<void> => {
       ),
     );
 
-    const callerUser = await User.findById(call.callerId).select("name profileImage");
-    const receiverUser = await User.findById(call.receiverId).select("name profileImage");
+    const callerUser = await User.findById(call.callerId).select(
+      "name profileImage",
+    );
+    const receiverUser = await User.findById(call.receiverId).select(
+      "name profileImage",
+    );
 
     // Emit socket events
     const payload = {
@@ -172,9 +182,7 @@ callCleanupWorker.on("completed", (job) => {
 });
 
 callCleanupWorker.on("failed", (job, err) => {
-  logger.error(
-    `[Call Cleanup Worker] Job ${job?.id} failed: ${err.message}`,
-  );
+  logger.error(`[Call Cleanup Worker] Job ${job?.id} failed: ${err.message}`);
 });
 
 export const callWorker = {

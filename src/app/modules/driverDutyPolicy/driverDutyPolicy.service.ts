@@ -846,7 +846,6 @@ const updateDriverAvailability = async (driverId: string) => {
   };
 };
 
-
 const parseSort = (sortStr?: string) => {
   if (!sortStr) return { createdAt: -1 };
   const sortObj: any = {};
@@ -1263,9 +1262,7 @@ const getZoneRulesFromDB = async (query: Record<string, unknown>) => {
       $lookup: {
         from: "serviceareas",
         let: { stateId: { $ifNull: ["$stateId", "$cityDoc.stateId"] } },
-        pipeline: [
-          { $match: { $expr: { $eq: ["$_id", "$$stateId"] } } },
-        ],
+        pipeline: [{ $match: { $expr: { $eq: ["$_id", "$$stateId"] } } }],
         as: "stateDoc",
       },
     },
@@ -1576,9 +1573,7 @@ const getAirportRulesFromDB = async (query: Record<string, unknown>) => {
       $lookup: {
         from: "serviceareas",
         let: { stateId: { $ifNull: ["$stateId", "$cityDoc.stateId"] } },
-        pipeline: [
-          { $match: { $expr: { $eq: ["$_id", "$$stateId"] } } },
-        ],
+        pipeline: [{ $match: { $expr: { $eq: ["$_id", "$$stateId"] } } }],
         as: "stateDoc",
       },
     },
@@ -1936,19 +1931,20 @@ const getAirportRulesFromDB = async (query: Record<string, unknown>) => {
 };
 
 const getMonitoringCardsFromDB = async () => {
-  const [totalDrivers, activeDrivers, onBreakDrivers, restrictedDrivers] = await Promise.all([
-    Driver.countDocuments({}),
-    Driver.countDocuments({
-      driverAvailabilityStatus: "online",
-      "availability.canReceiveRide": true,
-    }),
-    Driver.countDocuments({
-      driverAvailabilityStatus: "break",
-    }),
-    Driver.countDocuments({
-      "availability.canReceiveRide": false,
-    }),
-  ]);
+  const [totalDrivers, activeDrivers, onBreakDrivers, restrictedDrivers] =
+    await Promise.all([
+      Driver.countDocuments({}),
+      Driver.countDocuments({
+        driverAvailabilityStatus: "online",
+        "availability.canReceiveRide": true,
+      }),
+      Driver.countDocuments({
+        driverAvailabilityStatus: "break",
+      }),
+      Driver.countDocuments({
+        "availability.canReceiveRide": false,
+      }),
+    ]);
 
   return {
     totalDrivers,
@@ -1958,7 +1954,9 @@ const getMonitoringCardsFromDB = async () => {
   };
 };
 
-const getDriverMonitoringListFromDB = async (query: Record<string, unknown>) => {
+const getDriverMonitoringListFromDB = async (
+  query: Record<string, unknown>,
+) => {
   const page = Number(query.page) || 1;
   const limit = Number(query.limit) || 10;
   const skip = (page - 1) * limit;
@@ -1966,14 +1964,22 @@ const getDriverMonitoringListFromDB = async (query: Record<string, unknown>) => 
   // 1. Build user query for searchTerm
   const userConditions: any[] = [];
   if (query.searchTerm) {
-    userConditions.push({ name: { $regex: query.searchTerm as string, $options: "i" } });
-    userConditions.push({ email: { $regex: query.searchTerm as string, $options: "i" } });
-    userConditions.push({ phone: { $regex: query.searchTerm as string, $options: "i" } });
+    userConditions.push({
+      name: { $regex: query.searchTerm as string, $options: "i" },
+    });
+    userConditions.push({
+      email: { $regex: query.searchTerm as string, $options: "i" },
+    });
+    userConditions.push({
+      phone: { $regex: query.searchTerm as string, $options: "i" },
+    });
   }
 
   let matchedUserIds: any[] = [];
   if (userConditions.length > 0) {
-    const matchingUsers = await User.find({ $or: userConditions }).select("_id");
+    const matchingUsers = await User.find({ $or: userConditions }).select(
+      "_id",
+    );
     matchedUserIds = matchingUsers.map((u) => u._id);
   }
 
@@ -2032,13 +2038,13 @@ const getDriverMonitoringListFromDB = async (query: Record<string, unknown>) => 
           populate: {
             path: "stateId",
             select: "state type",
-          }
+          },
         },
         {
           path: "stateId",
           select: "state type",
-        }
-      ]
+        },
+      ],
     })
     .sort(sortObj)
     .skip(skip)
@@ -2059,10 +2065,14 @@ const getDriverMonitoringListFromDB = async (query: Record<string, unknown>) => 
       } else if (serviceArea.type === "state") {
         city = "";
         state = serviceArea.state || "";
-      } else if (serviceArea.type === "airport" || serviceArea.type === "zone") {
+      } else if (
+        serviceArea.type === "airport" ||
+        serviceArea.type === "zone"
+      ) {
         const parentCity = serviceArea.cityId as any;
         city = parentCity?.city || "";
-        const parentState = serviceArea.stateId as any || parentCity?.stateId as any;
+        const parentState =
+          (serviceArea.stateId as any) || (parentCity?.stateId as any);
         state = parentState?.state || "";
       }
     }
@@ -2084,14 +2094,20 @@ const getDriverMonitoringListFromDB = async (query: Record<string, unknown>) => 
     let policy = null;
     if (driver.location && driver.location.coordinates) {
       const [lon, lat] = driver.location.coordinates;
-      const driverLocServiceArea = await ServiceAreaServices.findServiceAreaByCoordinates(lon, lat);
+      const driverLocServiceArea =
+        await ServiceAreaServices.findServiceAreaByCoordinates(lon, lat);
       if (driverLocServiceArea) {
         const pQuery: any = { status: "active" };
-        if (driverLocServiceArea.type === "city") pQuery.cityId = driverLocServiceArea._id;
-        else if (driverLocServiceArea.type === "zone") pQuery.zoneId = driverLocServiceArea._id;
-        else if (driverLocServiceArea.type === "airport") pQuery.airportId = driverLocServiceArea._id;
-        else if (driverLocServiceArea.type === "state") pQuery.stateId = driverLocServiceArea._id;
-        else if (driverLocServiceArea.type === "country") pQuery.countryId = driverLocServiceArea._id;
+        if (driverLocServiceArea.type === "city")
+          pQuery.cityId = driverLocServiceArea._id;
+        else if (driverLocServiceArea.type === "zone")
+          pQuery.zoneId = driverLocServiceArea._id;
+        else if (driverLocServiceArea.type === "airport")
+          pQuery.airportId = driverLocServiceArea._id;
+        else if (driverLocServiceArea.type === "state")
+          pQuery.stateId = driverLocServiceArea._id;
+        else if (driverLocServiceArea.type === "country")
+          pQuery.countryId = driverLocServiceArea._id;
         policy = await DriverDutyPolicy.findOne(pQuery);
       }
     }
@@ -2100,10 +2116,14 @@ const getDriverMonitoringListFromDB = async (query: Record<string, unknown>) => 
     if (!policy && driver.serviceAreaId) {
       const pQuery: any = { status: "active" };
       if (serviceArea?.type === "city") pQuery.cityId = driver.serviceAreaId;
-      else if (serviceArea?.type === "zone") pQuery.zoneId = driver.serviceAreaId;
-      else if (serviceArea?.type === "airport") pQuery.airportId = driver.serviceAreaId;
-      else if (serviceArea?.type === "state") pQuery.stateId = driver.serviceAreaId;
-      else if (serviceArea?.type === "country") pQuery.countryId = driver.serviceAreaId;
+      else if (serviceArea?.type === "zone")
+        pQuery.zoneId = driver.serviceAreaId;
+      else if (serviceArea?.type === "airport")
+        pQuery.airportId = driver.serviceAreaId;
+      else if (serviceArea?.type === "state")
+        pQuery.stateId = driver.serviceAreaId;
+      else if (serviceArea?.type === "country")
+        pQuery.countryId = driver.serviceAreaId;
       policy = await DriverDutyPolicy.findOne(pQuery);
     }
 
@@ -2133,7 +2153,9 @@ const getDriverMonitoringListFromDB = async (query: Record<string, unknown>) => 
 
     for (const ride of completedRides) {
       if (ride.startedAt && ride.completedAt) {
-        const durationHrs = (ride.completedAt.getTime() - ride.startedAt.getTime()) / (1000 * 60 * 60);
+        const durationHrs =
+          (ride.completedAt.getTime() - ride.startedAt.getTime()) /
+          (1000 * 60 * 60);
         drivingHoursToday += durationHrs;
       }
     }
@@ -2146,8 +2168,12 @@ const getDriverMonitoringListFromDB = async (query: Record<string, unknown>) => 
       for (let i = completedRides.length - 1; i >= 0; i--) {
         const ride = completedRides[i];
         if (ride.startedAt && ride.completedAt) {
-          const rideDuration = (ride.completedAt.getTime() - ride.startedAt.getTime()) / (1000 * 60 * 60);
-          const gapHours = (lastRideEndTime.getTime() - ride.completedAt.getTime()) / (1000 * 60 * 60);
+          const rideDuration =
+            (ride.completedAt.getTime() - ride.startedAt.getTime()) /
+            (1000 * 60 * 60);
+          const gapHours =
+            (lastRideEndTime.getTime() - ride.completedAt.getTime()) /
+            (1000 * 60 * 60);
 
           if (gapHours > policy.breakAfterHours) {
             break;

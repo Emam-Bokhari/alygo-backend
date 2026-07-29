@@ -23,7 +23,7 @@ class StripeService {
     });
 
     user.stripeCustomerId = customer.id;
-    await user.save(); 
+    await user.save();
     return customer.id;
   }
 
@@ -36,8 +36,13 @@ class StripeService {
     successUrl?: string,
     cancelUrl?: string,
   ): Promise<Stripe.Checkout.Session> {
-    const platformCurrency = await PlatformSettingsService.getPlatformCurrency();
-    const stripeCurrency = (currency || platformCurrency || "usd").toLowerCase();
+    const platformCurrency =
+      await PlatformSettingsService.getPlatformCurrency();
+    const stripeCurrency = (
+      currency ||
+      platformCurrency ||
+      "usd"
+    ).toLowerCase();
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       mode: "payment",
       line_items: [
