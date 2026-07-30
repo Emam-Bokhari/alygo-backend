@@ -6,32 +6,35 @@ import { RBACService } from "./rbac.service";
 import { USER_ROLES } from "../../../enums/user";
 
 const getPermissions = catchAsync(async (req: Request, res: Response) => {
-  const result = await RBACService.getAllPermissions();
+  const result = await RBACService.getAllPermissions(req.query);
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
     message: "Permissions retrieved successfully",
-    data: result,
+    data: result.data,
+    meta: result.meta,
   });
 });
 
 const getGroupedPermissions = catchAsync(async (req: Request, res: Response) => {
-  const result = await RBACService.getGroupedPermissions();
+  const result = await RBACService.getGroupedPermissions(req.query);
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
     message: "Grouped permissions retrieved successfully",
-    data: result,
+    data: result.data,
+    meta: result.meta,
   });
 });
 
 const getModules = catchAsync(async (req: Request, res: Response) => {
-  const result = await RBACService.getModules();
+  const result = await RBACService.getModules(req.query);
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
     message: "Modules retrieved successfully",
-    data: result,
+    data: result.data,
+    meta: result.meta,
   });
 });
 

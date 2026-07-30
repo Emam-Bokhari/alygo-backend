@@ -1,10 +1,15 @@
 export type IPermission = {
   name: string;
-  key: string;
-  module: string;
-  group: string;
+  resource: string;
+  action: string;
   description: string;
-  status: "active" | "inactive";
+  module: string;
+  isActive: boolean;
+  isSystem: boolean;
   createdAt?: Date;
   updatedAt?: Date;
+
+  // Backward compatibility fields
+  key?: string;
+  status?: "active" | "inactive";
 };
