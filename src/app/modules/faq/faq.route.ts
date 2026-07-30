@@ -1,19 +1,30 @@
 import express from "express";
-import { USER_ROLES } from "../../../enums/user";
 import { FaqController } from "./faq.controller";
 import auth from "../../middlewares/auth";
-import { isAdmin } from "../../../helpers/authHelper";
+import { requirePermission } from "../../middlewares/requirePermission";
 
 const router = express.Router();
 
 router
   .route("/")
-  .post(isAdmin, FaqController.createFaq)
+  .post(
+    auth(),
+    requirePermission("faq.create"),
+    FaqController.createFaq
+  )
   .get(FaqController.getFaqs);
 
 router
   .route("/:id")
-  .patch(isAdmin, FaqController.updateFaq)
-  .delete(isAdmin, FaqController.deleteFaq);
+  .patch(
+    auth(),
+    requirePermission("faq.update"),
+    FaqController.updateFaq
+  )
+  .delete(
+    auth(),
+    requirePermission("faq.delete"),
+    FaqController.deleteFaq
+  );
 
 export const FaqRoutes = router;

@@ -63,10 +63,15 @@ import { DashboardRoutes } from "../modules/dashboard/dashboard.route";
 import { CancellationAnalyticsRoutes } from "../modules/cancellationAnalytics/cancellationAnalytics.route";
 import { LiveTripsRoutes } from "../modules/liveTrips/liveTrips.route";
 import { CallRoutes } from "../modules/call/call.route";
+import { RbacRoutes } from "../modules/rbac/rbac.route";
 
 const router = express.Router();
 
 const apiRoutes = [
+  {
+    path: "/rbac",
+    route: RbacRoutes,
+  },
   {
     path: "/users",
     route: UserRoutes,

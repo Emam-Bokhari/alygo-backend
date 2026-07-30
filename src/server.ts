@@ -15,6 +15,7 @@ import {
   driverRewardsQueue,
 } from "./config/bullmq";
 import { PointsService } from "./app/modules/tier/points.service";
+import { RBACService } from "./app/modules/rbac/rbac.service";
 
 //uncaught exception
 process.on("uncaughtException", (error) => {
@@ -58,6 +59,7 @@ async function main() {
 
     // Seed default point rules
     await PointsService.seedDefaultPointRules();
+    await RBACService.seedPermissions();
 
     // Schedule recurring driver availability check job (every minute)
     await driverAvailabilityCheckQueue.add(

@@ -5,7 +5,7 @@ import config from "../../config";
 import { User } from "../modules/user/user.model";
 import ApiError from "../../errors/ApiErrors";
 import { verifyToken } from "../../util/verifyToken";
-import { STATUS } from "../../enums/user";
+import { STATUS, USER_ROLES } from "../../enums/user";
 
 const auth =
   (...roles: string[]) =>
@@ -52,8 +52,20 @@ const auth =
           throw new ApiError(StatusCodes.FORBIDDEN, "This user is blocked !!");
         }
 
+        // Attach roleId to req.user for permission checking
+        if (user.roleId) {
+          verifyUser.roleId = user.roleId.toString();
+        }
+
+        // Map custom roles to "admin" for standard auth checks (backward compatibility)
+        let checkedRole = verifyUser?.role;
+        if (user.roleId && checkedRole !== USER_ROLES.SUPER_ADMIN) {
+          checkedRole = USER_ROLES.ADMIN;
+          verifyUser.role = USER_ROLES.ADMIN;
+        }
+
         //guard user
-        if (roles.length && !roles.includes(verifyUser?.role)) {
+        if (roles.length && !roles.includes(checkedRole)) {
           throw new ApiError(
             StatusCodes.FORBIDDEN,
             "You don't have permission to access this api !!",

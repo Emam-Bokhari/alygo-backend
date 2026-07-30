@@ -5,6 +5,7 @@ import { ISoftDeleteModel } from "../../../types/softDelete";
 export type IUser = {
   name: string;
   role: USER_ROLES;
+  roleId?: Types.ObjectId;
   email: string;
   profileImage?: string;
   password?: string;

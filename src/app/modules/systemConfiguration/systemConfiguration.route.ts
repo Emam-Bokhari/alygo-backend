@@ -1,6 +1,8 @@
 import express from "express";
 import { SystemConfigurationController } from "./systemConfiguration.controller";
-import { isAdmin, isAuthenticated } from "../../../helpers/authHelper";
+import { isAuthenticated } from "../../../helpers/authHelper";
+import auth from "../../middlewares/auth";
+import { requirePermission } from "../../middlewares/requirePermission";
 
 const router = express.Router();
 
@@ -8,8 +10,9 @@ router
   .route("/")
   .get(isAuthenticated, SystemConfigurationController.getSystemConfiguration)
   .patch(
-    isAdmin,
-    SystemConfigurationController.createOrUpdateSystemConfiguration,
+    auth(),
+    requirePermission("systemConfiguration.update"),
+    SystemConfigurationController.createOrUpdateSystemConfiguration
   );
 
 export const SystemConfigurationRoutes = router;

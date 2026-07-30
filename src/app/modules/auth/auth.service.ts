@@ -65,7 +65,12 @@ const loginUserFromDB = async (payload: ILoginData) => {
 
   // create token
   const createToken = jwtHelper.createToken(
-    { id: isExistUser._id, role: isExistUser.role, email: isExistUser.email },
+    {
+      id: isExistUser._id,
+      role: isExistUser.role,
+      email: isExistUser.email,
+      roleId: isExistUser.roleId ? isExistUser.roleId.toString() : undefined,
+    },
     config.jwt.jwt_secret as Secret,
     config.jwt.jwt_expire_in as string,
   );
@@ -288,7 +293,12 @@ const newAccessTokenToUser = async (token: string) => {
 
   // create token
   const accessToken = jwtHelper.createToken(
-    { id: isExistUser._id, role: isExistUser.role, email: isExistUser.email },
+    {
+      id: isExistUser._id,
+      role: isExistUser.role,
+      email: isExistUser.email,
+      roleId: isExistUser.roleId ? isExistUser.roleId.toString() : undefined,
+    },
     config.jwt.jwt_secret as Secret,
     config.jwt.jwt_expire_in as string,
   );
@@ -463,7 +473,12 @@ const googleLoginService = async (payload: {
 
   // create token
   const createToken = jwtHelper.createToken(
-    { id: user._id, role: user.role, email: user.email },
+    {
+      id: user._id,
+      role: user.role,
+      email: user.email,
+      roleId: user.roleId ? user.roleId.toString() : undefined,
+    },
     config.jwt.jwt_secret as Secret,
     config.jwt.jwt_expire_in as string,
   );
