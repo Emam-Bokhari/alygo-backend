@@ -16,7 +16,7 @@ class GoogleMapsHelper {
   }> {
     return GoogleRouteService.calculateRoute(origin, destination, stops);
   }
-
+  
   async getRouteWithETA(
     origin: string | ICoordinate,
     destination: string | ICoordinate,

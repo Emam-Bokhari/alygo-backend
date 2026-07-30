@@ -1,0 +1,6144 @@
+openapi: 3.0.0
+info:
+  title: Alygo
+  version: 1.0.0
+  description: ""
+servers:
+  - url: "{{base_url}}"
+paths:
+  /users:
+    post:
+      summary: Register
+      responses: {}
+      tags:
+        - Auth
+        - User
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+            example: "{\r\n    \"name\": \"Test User\",\r\n    \"email\": \"sehefo5367@besteya.com\",\r\n    \"phone\":\"1315773424\",\r\n    \"countryCode\":\"+880\",\r\n    \"password\": \"hello123\",\r\n    \"role\":\"user\"\r\n}\r\n// {\r\n//     \"name\": \"Referral Test User\",\r\n//     \"email\": \"test@gmail.com\",\r\n//     \"phone\":\"1315773424\",\r\n//     \"countryCode\":\"+880\",\r\n//     \"password\": \"hello123\",\r\n//     \"role\":\"user\",\r\n//     \"referredByCode\":\"ALYTEST885\"\r\n// }"
+    patch:
+      summary: Update Profile By ID
+      responses: {}
+      tags:
+        - App
+        - Common
+        - Profile
+      security:
+        - BearerAuth: []
+  /auth/login:
+    post:
+      summary: Login
+      responses: {}
+      tags:
+        - Auth
+        - User
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+            example: "{\r\n    \"email\":\"moshfiqurrahman37@gmail.com\",\r\n    \"password\":\"hello@123\"\r\n}\r\n// {\r\n//     \"email\":\"test@gmail.com\",\r\n//     \"password\":\"hello123\"\r\n// }\r\n// {\r\n//     \"email\":\"sehefo5367@besteya.com\",\r\n//     \"password\":\"hello123\"\r\n// }\r\n\r\n// {\r\n//     \"email\":\"one@gmail.com\",\r\n//     \"password\":\"hello123\"\r\n// }\r\n\r\n// {\r\n//     \"email\":\"two@gmail.com\",\r\n//     \"password\":\"hello123\"\r\n// }"
+  /auth/forget-password:
+    post:
+      summary: Forget Password
+      responses: {}
+      tags:
+        - Auth
+        - User
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+            example:
+              email: moshfiqurrahman37@gmail.com
+  /auth/verify-email:
+    post:
+      summary: Forget Password Verify Otp
+      responses: {}
+      tags:
+        - Auth
+        - User
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                oneTimeCode:
+                  type: string
+                  format: color
+            example:
+              email: moshfiqurrahman37@gmail.com
+              oneTimeCode: "300251"
+  /auth/reset-password:
+    post:
+      summary: Reset Password
+      parameters:
+        - name: 0a8285e9-ea17-4d34-bf9b-8e9abd076cd2
+          in: query
+          schema:
+            type: string
+          example: ""
+        - name: resettoken
+          in: header
+          schema:
+            type: string
+          example: 06aa5bd6354924a1a1a21e6a1185a4cf8312e1d6f288fc141b1dbf150037b9df
+      responses: {}
+      tags:
+        - Auth
+        - User
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newPassword:
+                  type: string
+                confirmPassword:
+                  type: string
+            example:
+              newPassword: hello@123
+              confirmPassword: hello@123
+  /auth/resend-otp:
+    post:
+      summary: Resend Otp
+      responses: {}
+      tags:
+        - Auth
+        - User
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+            example:
+              email: moshfiqurrahman37@gmail.com
+  /auth/verify-account:
+    post:
+      summary: Forget Password Verify Otp
+      responses: {}
+      tags:
+        - Auth
+        - Driver
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                identifier:
+                  type: string
+                  format: email
+                code:
+                  type: string
+                  format: color
+            example:
+              identifier: moshfiqurrahman37@gmail.com
+              code: "477740"
+  /auth/change-password:
+    post:
+      summary: Change Password
+      responses: {}
+      tags:
+        - App
+        - Common
+        - Profile
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                currentPassword:
+                  type: string
+                newPassword:
+                  type: string
+                confirmPassword:
+                  type: string
+            example:
+              currentPassword: hello@123
+              newPassword: hello123
+              confirmPassword: hello123
+  /users/profile:
+    delete:
+      summary: Delete My Account
+      responses: {}
+      tags:
+        - App
+        - Common
+        - Profile
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+            example:
+              password: user@1234
+    get:
+      summary: Get Profile
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          example: b1ee0ddb16ddfdcc4fbddd21e66975ef1520cbf440d353ea90cb0b537dd5cbbb
+      responses: {}
+      tags:
+        - Dashboard
+        - Settings
+      security:
+        - BearerAuth: []
+  /rules/terms:
+    get:
+      summary: Get Rules
+      responses: {}
+      tags:
+        - App
+        - Common
+        - Rule
+    delete:
+      summary: Delete Rules
+      responses: {}
+      tags:
+        - Dashboard
+        - CMS
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+            example:
+              content: privacy test 1
+  /supports:
+    post:
+      summary: Send Email
+      responses: {}
+      tags:
+        - App
+        - Common
+        - Help And Supports
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                subject:
+                  type: string
+                message:
+                  type: string
+            example:
+              subject: Test help and supports
+              message: Test message
+    get:
+      summary: Get All Supports
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+          example: 2
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          example: 0
+        - name: searchTerm
+          in: query
+          description: name, email, subject
+          schema:
+            type: string
+          example: moshfiq
+      responses: {}
+      tags:
+        - Dashboard
+        - Help & Support
+      security:
+        - BearerAuth: []
+  /faqs:
+    get:
+      summary: Get All Faqs
+      responses: {}
+      tags:
+        - App
+        - Common
+        - Faq
+      security:
+        - BearerAuth: []
+    post:
+      summary: Create Faq
+      responses: {}
+      tags:
+        - Dashboard
+        - Faq
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                question:
+                  type: string
+                answer:
+                  type: string
+            example:
+              question: Q1
+              answer: A1
+  /banners:
+    get:
+      summary: Get Banners
+      responses: {}
+      tags:
+        - App
+        - Common
+        - Banner
+      security:
+        - BearerAuth: []
+    post:
+      summary: Create Banner
+      responses: {}
+      tags:
+        - Dashboard
+        - Banner
+      security:
+        - BearerAuth: []
+  /notification-preferences:
+    patch:
+      summary: Create Or Update Notification Preference
+      responses: {}
+      tags:
+        - App
+        - Common
+        - Notification Preference
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: boolean
+                push:
+                  type: boolean
+                newRideRequests:
+                  type: boolean
+                rideUpdates:
+                  type: boolean
+                chatMessages:
+                  type: boolean
+                paymentUpdates:
+                  type: boolean
+                promotions:
+                  type: boolean
+                emergencyAlerts:
+                  type: boolean
+            example:
+              email: true
+              push: true
+              newRideRequests: true
+              rideUpdates: true
+              chatMessages: true
+              paymentUpdates: true
+              promotions: false
+              emergencyAlerts: true
+    get:
+      summary: Get Notification Preference
+      responses: {}
+      tags:
+        - App
+        - Common
+        - Notification Preference
+      security:
+        - BearerAuth: []
+  /emergency-contacts:
+    post:
+      summary: Create Emergency Contacts
+      responses: {}
+      tags:
+        - App
+        - Common
+        - Emergency SOS
+        - Emergency Contacts
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                phone:
+                  type: string
+                  format: utc-millisec
+                relationship:
+                  type: string
+            example:
+              name: John Doe
+              phone: "+12025550123"
+              relationship: Spouse
+    get:
+      summary: Get Emergency Contacts
+      responses: {}
+      tags:
+        - App
+        - Common
+        - Emergency SOS
+        - Emergency Contacts
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+  /emergency-contacts/{contactId}:
+    patch:
+      summary: Update Emergency Contact By ID
+      responses: {}
+      tags:
+        - App
+        - Common
+        - Emergency SOS
+        - Emergency Contacts
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+            example:
+              name: Emam Bokhari
+    parameters:
+      - name: contactId
+        in: path
+        required: true
+        deprecated: false
+        schema: {}
+        example: 6a5761bd1e80fa9ccbf4fa2d
+    delete:
+      summary: Delete Emergency Contact By ID
+      responses: {}
+      tags:
+        - App
+        - Common
+        - Emergency SOS
+        - Emergency Contacts
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                phone:
+                  type: string
+                  format: utc-millisec
+                relationship:
+                  type: string
+            example:
+              name: John Doe
+              phone: "+12025550123"
+              relationship: Spouse
+  /emergency-helplines:
+    patch:
+      summary: Create Or Update Emergency Helpline
+      responses: {}
+      tags:
+        - App
+        - Common
+        - Emergency SOS
+        - Emergency Helpline
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                callNumber:
+                  type: string
+                  format: color
+                textNumber:
+                  type: string
+                  format: color
+            example:
+              callNumber: "999"
+              textNumber: "101"
+    get:
+      summary: Get Emergency Helpline
+      responses: {}
+      tags:
+        - App
+        - Common
+        - Emergency SOS
+        - Emergency Helpline
+  /calls/initiate:
+    post:
+      summary: Call Initiate
+      responses: {}
+      tags:
+        - App
+        - Common
+        - Call
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+            example: "{\r\n  \"communicationType\": \"lost_found\", \r\n  \"referenceId\": \"6a60674aac0870ea4c1b665a\", // rideId/lost and found id/ reservation ride id/ support id\r\n  \"receiverId\": \"6a59af155d294c2c4111585d\", // userId\r\n  \"callType\": \"voice\" // constant value\r\n}\r\n\r\n// communicationType: lost_found, regular_ride, scheduled_ride, reservation, support, other"
+  /calls/answer:
+    post:
+      summary: Answer
+      responses: {}
+      tags:
+        - App
+        - Common
+        - Call
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                callId:
+                  type: string
+            example:
+              callId: 6a69885e0ab33203378f6fd6
+  /calls/reject:
+    post:
+      summary: Reject
+      responses: {}
+      tags:
+        - App
+        - Common
+        - Call
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+            example: "{\r\n  \"callId\": \"64c8f2b3e4b0c2a1a8c11111\",\r\n  \"reason\": \"busy\" // optional\r\n}\r\n"
+  /calls/cancel:
+    post:
+      summary: Cancel
+      responses: {}
+      tags:
+        - App
+        - Common
+        - Call
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                callId:
+                  type: string
+            example:
+              callId: 6a69885e0ab33203378f6fd6
+  /calls/end:
+    post:
+      summary: End
+      responses: {}
+      tags:
+        - App
+        - Common
+        - Call
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                callId:
+                  type: string
+            example:
+              callId: 6a69885e0ab33203378f6fd6
+  /calls/token:
+    post:
+      summary: Refresh/Regenerate Token
+      responses: {}
+      tags:
+        - App
+        - Common
+        - Call
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                callId:
+                  type: string
+            example:
+              callId: 64c8f2b3e4b0c2a1a8c11111
+  /calls/history:
+    get:
+      summary: Call History
+      responses: {}
+      tags:
+        - App
+        - Common
+        - Call
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                callId:
+                  type: string
+            example:
+              callId: 64c8f2b3e4b0c2a1a8c11111
+  /calls/history/{id}:
+    get:
+      summary: Call History By ID
+      responses: {}
+      tags:
+        - App
+        - Common
+        - Call
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                callId:
+                  type: string
+            example:
+              callId: 64c8f2b3e4b0c2a1a8c11111
+    parameters:
+      - name: id
+        in: path
+        required: true
+        deprecated: false
+        schema: {}
+        example: ""
+  /chats/create-chat:
+    post:
+      summary: Create Chat
+      responses: {}
+      tags:
+        - App
+        - Common
+        - Chat
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+            example: "{\r\n    \"participant\": \"66a01f4c7d54023456789abc\", // User ID\r\n    \"communicationType\": \"regular_ride\", // (Optional) Enum: \"regular_ride\", \"scheduled_ride\", \"lost_found\", \"reservation\", \"support\", \"other\"\r\n    \"referenceId\": \"66a01f4c7d54023456789abd\" // (Optional) Ride ID, Reservation ID বা Support Ticket ID\r\n}"
+  /chats:
+    get:
+      summary: Get Chat
+      responses: {}
+      tags:
+        - App
+        - Common
+        - Chat
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+            example: "{\r\n    \"participant\": \"66a01f4c7d54023456789abc\", // User ID\r\n    \"communicationType\": \"regular_ride\", // (Optional) Enum: \"regular_ride\", \"scheduled_ride\", \"lost_found\", \"reservation\", \"support\", \"other\"\r\n    \"referenceId\": \"66a01f4c7d54023456789abd\" // (Optional) Ride ID, Reservation ID বা Support Ticket ID\r\n}"
+  /chats/{chatId}/images:
+    get:
+      summary: Get Chat Image
+      responses: {}
+      tags:
+        - App
+        - Common
+        - Chat
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+            example: "{\r\n    \"participant\": \"66a01f4c7d54023456789abc\", // User ID\r\n    \"communicationType\": \"regular_ride\", // (Optional) Enum: \"regular_ride\", \"scheduled_ride\", \"lost_found\", \"reservation\", \"support\", \"other\"\r\n    \"referenceId\": \"66a01f4c7d54023456789abd\" // (Optional) Ride ID, Reservation ID বা Support Ticket ID\r\n}"
+    parameters:
+      - name: chatId
+        in: path
+        required: true
+        deprecated: false
+        schema: {}
+        example: ""
+  /chats/mark-chat-as-read/{id}:
+    get:
+      summary: Mark Chat As Read By Chat ID
+      responses: {}
+      tags:
+        - App
+        - Common
+        - Chat
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+            example: "{\r\n    \"participant\": \"66a01f4c7d54023456789abc\", // User ID\r\n    \"communicationType\": \"regular_ride\", // (Optional) Enum: \"regular_ride\", \"scheduled_ride\", \"lost_found\", \"reservation\", \"support\", \"other\"\r\n    \"referenceId\": \"66a01f4c7d54023456789abd\" // (Optional) Ride ID, Reservation ID বা Support Ticket ID\r\n}"
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        example: ""
+  /chats/delete/{chatId}:
+    delete:
+      summary: Delete Chat By Chat ID
+      responses: {}
+      tags:
+        - App
+        - Common
+        - Chat
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+            example: "{\r\n    \"participant\": \"66a01f4c7d54023456789abc\", // User ID\r\n    \"communicationType\": \"regular_ride\", // (Optional) Enum: \"regular_ride\", \"scheduled_ride\", \"lost_found\", \"reservation\", \"support\", \"other\"\r\n    \"referenceId\": \"66a01f4c7d54023456789abd\" // (Optional) Ride ID, Reservation ID বা Support Ticket ID\r\n}"
+    parameters:
+      - name: chatId
+        in: path
+        required: true
+        schema:
+          type: string
+        example: ""
+  /messages/send-message/{chatId}:
+    post:
+      summary: Send Message
+      responses: {}
+      tags:
+        - App
+        - Common
+        - Message
+      security:
+        - BearerAuth: []
+    parameters:
+      - name: chatId
+        in: path
+        required: true
+        deprecated: false
+        schema: {}
+        example: ""
+  /messages/{chatId}:
+    get:
+      summary: Get Messages
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: string
+      responses: {}
+      tags:
+        - App
+        - Common
+        - Message
+      security:
+        - BearerAuth: []
+    parameters:
+      - name: chatId
+        in: path
+        required: true
+        schema:
+          type: string
+        example: ""
+  /messages/delete/{messageId}:
+    delete:
+      summary: Delete Message
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: string
+      responses: {}
+      tags:
+        - App
+        - Common
+        - Message
+      security:
+        - BearerAuth: []
+    parameters:
+      - name: messageId
+        in: path
+        required: true
+        schema:
+          type: string
+        example: ""
+  /messages/pin-unpin/{messageId}:
+    patch:
+      summary: Pin/UnPin Message
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: string
+      responses: {}
+      tags:
+        - App
+        - Common
+        - Message
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+            example: "{\r\n  \"action\": \"pin\" \r\n}\r\n\r\n// pin ,unpin"
+    parameters:
+      - name: messageId
+        in: path
+        required: true
+        schema:
+          type: string
+        example: ""
+  /notifications:
+    get:
+      summary: Get User Notifications
+      responses: {}
+      tags:
+        - App
+        - Notifications
+      security:
+        - BearerAuth: []
+    patch:
+      summary: Read Notifications
+      responses: {}
+      tags:
+        - App
+        - Notifications
+      security:
+        - BearerAuth: []
+  /notifications/{id}:
+    get:
+      summary: Get User Notification By ID
+      responses: {}
+      tags:
+        - App
+        - Notifications
+      security:
+        - BearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        example: ""
+  /notifications/{id}/read:
+    patch:
+      summary: Read Notification By ID
+      responses: {}
+      tags:
+        - App
+        - Notifications
+      security:
+        - BearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        example: ""
+  /service-categories/active:
+    get:
+      summary: Get Active Service Categories
+      parameters:
+        - name: searchTerm
+          in: query
+          description: name, description
+          schema:
+            type: string
+          example: home
+        - name: page
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: active, inactive
+          schema:
+            type: string
+      responses: {}
+      tags:
+        - App
+        - User
+        - Service Category
+      security:
+        - BearerAuth: []
+  /recent-destinations:
+    get:
+      summary: Get All Recent Destinations
+      responses: {}
+      tags:
+        - App
+        - User
+        - Recent Destinations
+      security:
+        - BearerAuth: []
+  /recent-destinations/{id}:
+    delete:
+      summary: Delete a single recent destination By Destination ID
+      responses: {}
+      tags:
+        - App
+        - User
+        - Recent Destinations
+      security:
+        - BearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        deprecated: false
+        schema: {}
+        example: ""
+  /recent-destinations/clear-all:
+    delete:
+      summary: Clear All Destinations
+      responses: {}
+      tags:
+        - App
+        - User
+        - Recent Destinations
+      security:
+        - BearerAuth: []
+  /rides/estimate:
+    post:
+      summary: Create Estimate Fare And Route
+      responses: {}
+      tags:
+        - App
+        - User
+        - Estimate Budget
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+            example: "{\r\n  \"pickup\": {\r\n    \"address\": \"Hazrat Shahjalal International Airport, Dhaka\",\r\n    \"location\": {\r\n      \"type\": \"Point\",\r\n      \"coordinates\": [90.3978, 23.8433]\r\n    }\r\n  },\r\n  \"stops\": [\r\n    {\r\n      \"order\": 1,\r\n      \"address\": \"Jamuna Future Park, Dhaka\",\r\n      \"location\": {\r\n        \"type\": \"Point\",\r\n        \"coordinates\": [90.4255, 23.8145]\r\n      }\r\n    },\r\n    {\r\n      \"order\": 2,\r\n      \"address\": \"Banani 11, Dhaka\",\r\n      \"location\": {\r\n        \"type\": \"Point\",\r\n        \"coordinates\": [90.4066, 23.7937]\r\n      }\r\n    }\r\n  ],\r\n  \"destination\": {\r\n    \"address\": \"Dhanmondi 27, Dhaka\",\r\n    \"location\": {\r\n      \"type\": \"Point\",\r\n      \"coordinates\": [90.3742, 23.7461]\r\n    }\r\n  }\r\n//   \"rideCategoryId\": \"6a59b093ec029a501f10cd62\"\r\n}"
+  /rides/{id}/verify-start:
+    post:
+      summary: Otp Verify & Trip Start
+      responses: {}
+      tags:
+        - App
+        - User
+        - Otp Verify
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                otp:
+                  type: string
+                  format: color
+            example:
+              otp: "690758"
+    parameters:
+      - name: id
+        in: path
+        required: true
+        deprecated: false
+        schema: {}
+        example: 6a5dd4ed1eaba04427ae9aa4
+  /rides/{id}/verify-end:
+    post:
+      summary: Otp Verify & Trip End
+      responses: {}
+      tags:
+        - App
+        - User
+        - Otp Verify
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                otp:
+                  type: string
+                  format: color
+            example:
+              otp: "341674"
+    parameters:
+      - name: id
+        in: path
+        required: true
+        deprecated: false
+        schema: {}
+        example: 6a5dd4ed1eaba04427ae9aa4
+  /rides/{id}/request-start-verification:
+    post:
+      summary: Request Start Verification & Send Otp
+      responses: {}
+      tags:
+        - App
+        - User
+        - Otp Verify
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+    parameters:
+      - name: id
+        in: path
+        required: true
+        deprecated: false
+        schema: {}
+        example: 6a5dd4ed1eaba04427ae9aa4
+  /rides/{id}/request-end-verification:
+    post:
+      summary: Request End Verification & Send Otp
+      responses: {}
+      tags:
+        - App
+        - User
+        - Otp Verify
+      security:
+        - BearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        deprecated: false
+        schema: {}
+        example: 6a5dd4ed1eaba04427ae9aa4
+  /rides/{id}/add-stops:
+    post:
+      summary: Add New Stopage
+      responses: {}
+      tags:
+        - App
+        - User
+        - Ride Execution
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                stops:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      order:
+                        type: integer
+                      address:
+                        type: string
+                      location:
+                        type: object
+                        properties:
+                          type:
+                            type: string
+                          coordinates:
+                            type: array
+                            items:
+                              type: number
+            example:
+              stops:
+                - order: 3
+                  address: Mirpur 10 Roundabout, Dhaka
+                  location:
+                    type: Point
+                    coordinates:
+                      - 90.3667
+                      - 23.8067
+    parameters:
+      - name: id
+        in: path
+        required: true
+        deprecated: false
+        schema: {}
+        example: 6a5b0354f715743679c9a8db
+  /rides/{id}/cancel:
+    post:
+      summary: Cancel Ride By ID
+      responses: {}
+      tags:
+        - App
+        - User
+        - Ride Execution
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+            example: "{\r\n  \"cancellationReasonId\":\"6a5862596e3b304bd932fb81\",\r\n   \"paymentTiming\": \"now\" // now, latter\r\n}"
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 6a5c70b2935ce366cf679da4
+  /rides/user/history:
+    get:
+      summary: Get All User Ride History
+      parameters:
+        - name: rideType
+          in: query
+          description: instant, scheduled
+          schema:
+            type: string
+          example: scheduled
+        - name: status
+          in: query
+          description: cancelled_by_driver, cancelled_by_user, completed, cancelled
+          schema:
+            type: string
+          example: ""
+        - name: paymentStatus
+          in: query
+          description: paid, pending, failed
+          schema:
+            type: string
+          example: ""
+        - name: fromDate
+          in: query
+          description: 2024-01-15, today, yesterday, last_7_days, last_30_days
+          schema:
+            type: string
+          example: ""
+        - name: toDate
+          in: query
+          description: "2026-07-21"
+          schema:
+            type: string
+          example: ""
+        - name: searchTerm
+          in: query
+          description: pickup address, destnation address, passenger name
+          schema:
+            type: string
+          example: ""
+        - name: sortBy
+          in: query
+          description: createdAt, scheduledAt,completedAt
+          schema:
+            type: string
+          example: ""
+        - name: sortOrder
+          in: query
+          description: asc, desc
+          schema:
+            type: string
+          example: ""
+      responses: {}
+      tags:
+        - App
+        - User
+        - User Ride History
+      security:
+        - BearerAuth: []
+  /rides/user/history/{id}:
+    get:
+      summary: Get User Ride History By Ride ID
+      responses: {}
+      tags:
+        - App
+        - User
+        - User Ride History
+      security:
+        - BearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        deprecated: false
+        schema: {}
+        example: 6a5c70b2935ce366cf679da4
+  /rides/{rideId}/report:
+    post:
+      summary: Create Trip Report
+      responses: {}
+      tags:
+        - App
+        - User
+        - Trip Report
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                issueId:
+                  type: string
+                providedSummaryDetails:
+                  type: string
+            example:
+              issueId: 6a57658eab997b799a46dd05
+              providedSummaryDetails: This driver is rode behave.
+    parameters:
+      - name: rideId
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 6a5b1bb45f1d05b265f82d10
+  /reviews/{rideId}:
+    post:
+      summary: Create Review & Payment With Stripe/Wallet
+      responses: {}
+      tags:
+        - App
+        - User
+        - Review & Payment For Review
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+            example: "{\r\n  \"rating\": 5,\r\n  \"reviewText\": \"Great ride\",\r\n  \"selectedTags\":\"polite\",\r\n  \"appreciation\": 2,\r\n  \"paymentMethod\": \"wallet\" // \"stripe\" or \"wallet\" or \"skip\"\r\n}"
+    parameters:
+      - name: rideId
+        in: path
+        required: true
+        deprecated: false
+        schema: {}
+        example: 6a5b1bb45f1d05b265f82d10
+  /rides:
+    post:
+      summary: Create Request Ride
+      responses: {}
+      tags:
+        - App
+        - User
+        - Ride Request
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pickup:
+                  type: object
+                  properties:
+                    address:
+                      type: string
+                    location:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                        coordinates:
+                          type: array
+                          items:
+                            type: number
+                stops:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      order:
+                        type: integer
+                      address:
+                        type: string
+                      location:
+                        type: object
+                        properties:
+                          type:
+                            type: string
+                          coordinates:
+                            type: array
+                            items:
+                              type: number
+                destination:
+                  type: object
+                  properties:
+                    address:
+                      type: string
+                    location:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                        coordinates:
+                          type: array
+                          items:
+                            type: number
+                rideCategoryId:
+                  type: string
+                rideType:
+                  type: string
+            example:
+              pickup:
+                address: Gulshan 2 Circle, Dhaka 1212, Bangladesh
+                location:
+                  type: Point
+                  coordinates:
+                    - 90.415452
+                    - 23.792548
+              stops:
+                - order: 1
+                  address: Banani 11, Dhaka
+                  location:
+                    type: Point
+                    coordinates:
+                      - 90.402764
+                      - 23.794784
+                - order: 2
+                  address: Farmgate, Dhaka
+                  location:
+                    type: Point
+                    coordinates:
+                      - 90.387976
+                      - 23.757514
+              destination:
+                address: Dhanmondi 27, Dhaka 1209, Bangladesh
+                location:
+                  type: Point
+                  coordinates:
+                    - 90.368864
+                    - 23.746466
+              rideCategoryId: 6a59b093ec029a501f10cd62
+              rideType: instant
+  /pending-payments/{pendingPaymentId}/pay-stripe:
+    post:
+      summary: Pay Cancellation Payment Via Stripe
+      responses: {}
+      tags:
+        - App
+        - User
+        - Payment
+        - Cancellation Payment
+      security:
+        - BearerAuth: []
+    parameters:
+      - name: pendingPaymentId
+        in: path
+        required: true
+        deprecated: false
+        schema: {}
+        example: 6a5c70cd935ce366cf679dce
+  /pending-payments/{pendingPaymentId}/pay-wallet:
+    post:
+      summary: Pay Cancellation Payment Via Wallet
+      responses: {}
+      tags:
+        - App
+        - User
+        - Payment
+        - Cancellation Payment
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+    parameters:
+      - name: pendingPaymentId
+        in: path
+        required: true
+        deprecated: false
+        schema: {}
+        example: 6a5c6fc87a1edd1b1ed4d6d3
+  /pending-payments:
+    get:
+      summary: Get All Pending Payment
+      responses: {}
+      tags:
+        - App
+        - User
+        - Payment
+        - Cancellation Payment
+      security:
+        - BearerAuth: []
+  /stripe/create-checkout-session:
+    post:
+      summary: Payment For Ride Wallet & Stripe
+      responses: {}
+      tags:
+        - App
+        - User
+        - Payment
+        - Ride Payment
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rideId:
+                  type: string
+                useWallet:
+                  type: boolean
+            example:
+              rideId: 6a5dd4ed1eaba04427ae9aa4
+              useWallet: false
+  /wallet/transactions:
+    get:
+      summary: Get Wallet History
+      parameters:
+        - name: filter
+          in: query
+          description: add_money, spend
+          schema:
+            type: string
+          example: add_money
+      responses: {}
+      tags:
+        - App
+        - User
+        - Payment
+      security:
+        - BearerAuth: []
+  /wallet:
+    get:
+      summary: Get Wallet Summary
+      responses: {}
+      tags:
+        - App
+        - User
+        - Payment
+      security:
+        - BearerAuth: []
+  /wallet/top-up:
+    post:
+      summary: Create TopUp
+      responses: {}
+      tags:
+        - App
+        - User
+        - Payment
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: integer
+            example:
+              amount: 199
+  /rides/active:
+    get:
+      summary: Get Active Ride
+      responses: {}
+      tags:
+        - App
+        - User
+        - Active Ride
+      security:
+        - BearerAuth: []
+  /rides/user/reservations:
+    get:
+      summary: Get My All Reservation
+      responses: {}
+      tags:
+        - App
+        - User
+        - My Reservation
+      security:
+        - BearerAuth: []
+  /rides/user/reservations/{id}:
+    get:
+      summary: Get My Reservation By Ride ID
+      responses: {}
+      tags:
+        - App
+        - User
+        - My Reservation
+      security:
+        - BearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        deprecated: false
+        schema: {}
+        example: 6a5f4f36ca0c7946326787b1
+  /lost-found:
+    post:
+      summary: Create Lost & Found
+      responses: {}
+      tags:
+        - App
+        - User
+        - Lost & Found
+      security:
+        - BearerAuth: []
+  /lost-found/my:
+    get:
+      summary: Get My All Lost & Founds
+      responses: {}
+      tags:
+        - App
+        - User
+        - Lost & Found
+      security:
+        - BearerAuth: []
+  /lost-found/{id}:
+    get:
+      summary: Get Lost & Found Details By ID
+      responses: {}
+      tags:
+        - App
+        - User
+        - Lost & Found
+      security:
+        - BearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 6a60674aac0870ea4c1b665a
+  /lost-found/{id}/pay:
+    post:
+      summary: Pay For Lost & Found By ID
+      responses: {}
+      tags:
+        - App
+        - User
+        - Lost & Found
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+    parameters:
+      - name: id
+        in: path
+        required: true
+        deprecated: false
+        schema: {}
+        example: 6a60674aac0870ea4c1b665a
+  /lost-found/{id}/confirm:
+    patch:
+      summary: Verify Handover Completed By ID
+      responses: {}
+      tags:
+        - App
+        - User
+        - Lost & Found
+      security:
+        - BearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        deprecated: false
+        schema: {}
+        example: 6a60674aac0870ea4c1b665a
+  /lost-found/{id}/rating:
+    post:
+      summary: Create Review For Lost & Found By ID
+      responses: {}
+      tags:
+        - App
+        - User
+        - Lost & Found
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rating:
+                  type: integer
+                review:
+                  type: string
+            example:
+              rating: 3
+              review: Good, and thanks for safe delivery my lost item
+    parameters:
+      - name: id
+        in: path
+        required: true
+        deprecated: false
+        schema: {}
+        example: 6a60674aac0870ea4c1b665a
+  /lost-found/{id}/track:
+    get:
+      summary: Get Track Status By ID
+      responses: {}
+      tags:
+        - App
+        - User
+        - Lost & Found
+      security:
+        - BearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        deprecated: false
+        schema: {}
+        example: 6a60674aac0870ea4c1b665a
+  /referrals/verify:
+    post:
+      summary: Verify Refferals
+      responses: {}
+      tags:
+        - App
+        - User
+        - Refferals
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+            example:
+              code: ALYTEST885
+  /referrals/user/history:
+    get:
+      summary: User Referral History
+      responses: {}
+      tags:
+        - App
+        - User
+        - Refferals
+      security:
+        - BearerAuth: []
+  /referrals/user/reward-history:
+    get:
+      summary: User Referral Reward History
+      responses: {}
+      tags:
+        - App
+        - User
+        - Refferals
+      security:
+        - BearerAuth: []
+  /referrals/rules:
+    get:
+      summary: Get Referral Rules For User
+      parameters:
+        - name: role
+          in: query
+          required: false
+          deprecated: false
+          schema: {}
+          example: user
+      responses: {}
+      tags:
+        - App
+        - User
+        - Refferals
+      security:
+        - BearerAuth: []
+  /referrals/user/dashboard:
+    get:
+      summary: User Referral Dashboard
+      responses: {}
+      tags:
+        - App
+        - User
+        - Refferals
+      security:
+        - BearerAuth: []
+  /drivers:
+    post:
+      summary: Create Driver Account
+      responses: {}
+      tags:
+        - App
+        - Driver
+        - Driver Account
+      security:
+        - BearerAuth: []
+    patch:
+      summary: Update Driver Account
+      parameters:
+        - name: data
+          in: query
+          schema:
+            type: string
+          example: '{ "ssn": "123-45-6799",}'
+        - name: taxDocuments
+          in: query
+          schema:
+            type: string
+        - name: liveSelfie
+          in: query
+          schema:
+            type: string
+        - name: drivingLicense
+          in: query
+          schema:
+            type: string
+      responses: {}
+      tags:
+        - App
+        - Driver
+        - Driver Account
+      security:
+        - BearerAuth: []
+    get:
+      summary: Get Driver Profile
+      responses: {}
+      tags:
+        - App
+        - Driver
+        - Driver Account
+      security:
+        - BearerAuth: []
+  /cars:
+    post:
+      summary: Create Car
+      responses: {}
+      tags:
+        - App
+        - Driver
+        - Car Add
+      security:
+        - BearerAuth: []
+    get:
+      summary: Get My Car
+      responses: {}
+      tags:
+        - App
+        - Driver
+        - Car Add
+      security:
+        - BearerAuth: []
+  /cars/{carId}:
+    patch:
+      summary: Update Car
+      responses: {}
+      tags:
+        - App
+        - Driver
+        - Car Add
+      security:
+        - BearerAuth: []
+    parameters:
+      - name: carId
+        in: path
+        required: true
+        deprecated: false
+        schema: {}
+        example: 6a572413775a85fdd7e74546
+  /rides/driver/history:
+    get:
+      summary: Get All Driver History
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: string
+          example: ""
+        - name: limit
+          in: query
+          schema:
+            type: string
+          example: ""
+        - name: rideType
+          in: query
+          description: instant, scheduled
+          schema:
+            type: string
+          example: instant
+        - name: status
+          in: query
+          description: cancelled_by_driver, cancelled_by_user, completed, cancelled
+          schema:
+            type: string
+          example: completed
+        - name: fromDate
+          in: query
+          description: 2024-01-15, today, yesterday, last_7_days, last_30_days
+          schema:
+            type: string
+          example: last_7_days
+        - name: toDate
+          in: query
+          description: "2024-01-15"
+          schema:
+            type: string
+          example: "2024-01-15"
+        - name: sortBy
+          in: query
+          description: createdAt, scheduledAt,completedAt
+          schema:
+            type: string
+          example: createdAt
+        - name: sortOrder
+          in: query
+          description: asc, desc
+          schema:
+            type: string
+          example: asc
+        - name: searchTerm
+          in: query
+          description: pickup address, destnation address, passenger name
+          schema:
+            type: string
+          example: moshfiq
+      responses: {}
+      tags:
+        - App
+        - Driver
+        - Driver Ride History
+      security:
+        - BearerAuth: []
+  /rides/driver/history/{id}:
+    get:
+      summary: Get Driver History By Ride ID
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: string
+        - name: rideType
+          in: query
+          description: instant, scheduled
+          schema:
+            type: string
+          example: instant
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: fromDate
+          in: query
+          description: 2024-01-15, today, yesterday, last_7_days, last_30_days
+          schema:
+            type: string
+          example: yesterday
+        - name: toDate
+          in: query
+          description: "2024-01-15"
+          schema:
+            type: string
+          example: "2024-01-15"
+        - name: sortBy
+          in: query
+          description: createdAt, scheduledAt,completedAt
+          schema:
+            type: string
+          example: createdAt
+        - name: sortOrder
+          in: query
+          description: asc, desc
+          schema:
+            type: string
+          example: asc
+        - name: searchTerm
+          in: query
+          description: pickup address, destnation address, passenger name
+          schema:
+            type: string
+          example: moshfiq
+      responses: {}
+      tags:
+        - App
+        - Driver
+        - Driver Ride History
+      security:
+        - BearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        deprecated: false
+        schema: {}
+        example: 6a5c70b2935ce366cf679da4
+  /drivers/me/availability:
+    get:
+      summary: Check Availability
+      responses: {}
+      tags:
+        - App
+        - Driver
+        - Driver Availability Check
+      security:
+        - BearerAuth: []
+  /stripe/connect-account:
+    post:
+      summary: Connect Stripe
+      responses: {}
+      tags:
+        - App
+        - Driver
+        - Payment
+        - Stripe Connected Account
+      security:
+        - BearerAuth: []
+  /stripe/account-details:
+    get:
+      summary: Only For Testing Stripe Account Details
+      responses: {}
+      tags:
+        - App
+        - Driver
+        - Payment
+        - Stripe Connected Account
+      security:
+        - BearerAuth: []
+  /driver/wallet/transactions:
+    get:
+      summary: Get Wallet History
+      parameters:
+        - name: filter
+          in: query
+          description: ride_payment, withdrawal, bonus
+          schema:
+            type: string
+          example: ride_payment
+        - name: page
+          in: query
+          schema:
+            type: integer
+          example: 2
+      responses: {}
+      tags:
+        - App
+        - Driver
+        - Payment
+      security:
+        - BearerAuth: []
+  /driver/wallet:
+    get:
+      summary: Get Wallet Summary
+      parameters:
+        - name: filter
+          in: query
+          description: ride_payment, withdrawal, bonus
+          schema:
+            type: string
+          example: withdrawal
+      responses: {}
+      tags:
+        - App
+        - Driver
+        - Payment
+      security:
+        - BearerAuth: []
+  /payout/withdraw:
+    post:
+      summary: Create Withdraw
+      responses: {}
+      tags:
+        - App
+        - Driver
+        - Payment
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: integer
+            example:
+              amount: 100
+  /payout/history:
+    get:
+      summary: Get Withdraw History
+      responses: {}
+      tags:
+        - App
+        - Driver
+        - Payment
+      security:
+        - BearerAuth: []
+  /lost-found/driver:
+    get:
+      summary: Get Lost & Found Requests
+      responses: {}
+      tags:
+        - App
+        - Driver
+        - Lost & Found
+      security:
+        - BearerAuth: []
+  /lost-found/{id}/found:
+    patch:
+      summary: Mark Item Is Found By ID
+      responses: {}
+      tags:
+        - App
+        - Driver
+        - Lost & Found
+      security:
+        - BearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 6a60674aac0870ea4c1b665a
+  /lost-found/{id}/not-found:
+    patch:
+      summary: Mark Item Not Found By ID
+      responses: {}
+      tags:
+        - App
+        - Driver
+        - Lost & Found
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+                driverNotes:
+                  type: string
+            example:
+              reason: not_in_vehicle
+              driverNotes: This is unbeliveable
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 6a60674aac0870ea4c1b665a
+  /lost-found/{id}/recovery:
+    patch:
+      summary: Configure Return Details
+      responses: {}
+      tags:
+        - App
+        - Driver
+        - Lost & Found
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+            example: "// driver delivery\r\n\r\n{\r\n  \"recoveryMethod\": \"driver_delivery\",\r\n  \"address\": \"Starbucks Hub - 4th St\",\r\n  \"coordinates\": [-73.935242, 40.73061],\r\n  \"deliveryFee\": 15,\r\n  \"scheduledAt\": \"2026-07-25T15:00:00.000Z\"\r\n}\r\n\r\n\r\n// passenger pickup\r\n// {\r\n//   \"recoveryMethod\": \"passenger_pickup\",\r\n//   \"address\": \"Starbucks Hub - 4th St\",\r\n//   \"coordinates\": [-73.935242, 40.73061],\r\n//   \"scheduledAt\": \"2026-07-25T15:00:00.000Z\"\r\n// }\r\n"
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 6a60674aac0870ea4c1b665a
+  /lost-found/{id}/returned:
+    patch:
+      summary: Return Confirmed By ID
+      responses: {}
+      tags:
+        - App
+        - Driver
+        - Lost & Found
+      security:
+        - BearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 6a60674aac0870ea4c1b665a
+  /referrals/driver/dashboard:
+    get:
+      summary: Driver Referral Dashboard
+      responses: {}
+      tags:
+        - App
+        - Driver
+        - Referral
+      security:
+        - BearerAuth: []
+  /referrals/driver/reward-history:
+    get:
+      summary: Driver Referral History
+      responses: {}
+      tags:
+        - App
+        - Driver
+        - Referral
+      security:
+        - BearerAuth: []
+  /referrals/driver/progress:
+    get:
+      summary: Driver Referral Progress
+      responses: {}
+      tags:
+        - App
+        - Driver
+        - Referral
+      security:
+        - BearerAuth: []
+  /driver/tier/dashboard:
+    get:
+      summary: Tier Dashboard
+      responses: {}
+      tags:
+        - App
+        - Driver
+        - Tier Rewards & Points
+      security:
+        - BearerAuth: []
+  /driver/tier/benefits:
+    get:
+      summary: Tier Benefits
+      responses: {}
+      tags:
+        - App
+        - Driver
+        - Tier Rewards & Points
+      security:
+        - BearerAuth: []
+  /driver/points/history:
+    get:
+      summary: Points History
+      responses: {}
+      tags:
+        - App
+        - Driver
+        - Tier Rewards & Points
+      security:
+        - BearerAuth: []
+  /driver/destination-filter:
+    post:
+      summary: Add Destination Filter
+      responses: {}
+      tags:
+        - App
+        - Driver
+        - Destination Filter
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                destination:
+                  type: object
+                  properties:
+                    address:
+                      type: string
+                    coordinates:
+                      type: array
+                      items:
+                        type: number
+                arrivalTime:
+                  type: string
+                  format: date-time
+                radiusKm:
+                  type: integer
+            example:
+              destination:
+                address: Banani, Dhaka
+                coordinates:
+                  - 90.4026
+                  - 23.7937
+              arrivalTime: "2026-07-23T15:00:00.000Z"
+              radiusKm: 5
+    get:
+      summary: Get Remaining Destination Filter
+      responses: {}
+      tags:
+        - App
+        - Driver
+        - Destination Filter
+      security:
+        - BearerAuth: []
+  /driver/destination-filter/cancel:
+    patch:
+      summary: Cancel Destination Filter
+      responses: {}
+      tags:
+        - App
+        - Driver
+        - Destination Filter
+      security:
+        - BearerAuth: []
+  /rides/{id}/arrive:
+    post:
+      summary: Arrived At Pickup
+      responses: {}
+      tags:
+        - App
+        - Driver
+        - Ride Execution
+      security:
+        - BearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 6a5dc3c80fbdc9bbf9f1ab8e
+  /rides/{id}/accept:
+    post:
+      summary: Ride Accept Driver By Ride ID
+      responses: {}
+      tags:
+        - App
+        - Driver
+        - Ride Execution
+      security:
+        - BearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 6a619404b2849dbf9e3e4090
+  /driver/ai-support/suggested-questions:
+    get:
+      summary: Get Ai Support Suggested Questions
+      responses: {}
+      tags:
+        - App
+        - Driver
+        - Ai Support
+      security:
+        - BearerAuth: []
+  /driver/ai-support/conversations:
+    get:
+      summary: Get Ai Support Conversations
+      responses: {}
+      tags:
+        - App
+        - Driver
+        - Ai Support
+      security:
+        - BearerAuth: []
+    post:
+      summary: Create Ai Support Conversations
+      responses: {}
+      tags:
+        - App
+        - Driver
+        - Ai Support
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+  /driver/ai-support/conversations/{id}:
+    patch:
+      summary: Edit Conversation Title By ID
+      responses: {}
+      tags:
+        - App
+        - Driver
+        - Ai Support
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+            example:
+              title: Referral
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 6a61a609ddfab6c0db7450e1
+    delete:
+      summary: Delete Conversation By ID
+      responses: {}
+      tags:
+        - App
+        - Driver
+        - Ai Support
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+            example:
+              title: Referral
+  /driver/ai-support/chat:
+    post:
+      summary: Start Chat
+      responses: {}
+      tags:
+        - App
+        - Driver
+        - Ai Support
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                conversationId:
+                  type: string
+                question:
+                  type: string
+            example:
+              conversationId: 6a61a609ddfab6c0db7450e1
+              question: what is reward?
+  /driver/ai-support/history:
+    get:
+      summary: Ai Support  & Chat History
+      responses: {}
+      tags:
+        - App
+        - Driver
+        - Ai Support
+      security:
+        - BearerAuth: []
+  /driver/ai-support/history/{id}:
+    get:
+      summary: Ai Support & Chat History Details By ID
+      responses: {}
+      tags:
+        - App
+        - Driver
+        - Ai Support
+      security:
+        - BearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        deprecated: false
+        schema: {}
+        example: 6a61ac7f0fa07a2f633b3c82
+  /driver/ai-support/history/{id}/feedback:
+    patch:
+      summary: Create Ai Support Feedback
+      responses: {}
+      tags:
+        - App
+        - Driver
+        - Ai Support
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+            example: "{\r\n    \"feedback\": \"helpful\"\r\n}\r\n// not_helpful, helpful"
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 6a61ac7f0fa07a2f633b3c82
+  /faqs/{id}:
+    patch:
+      summary: Update Faq
+      responses: {}
+      tags:
+        - Dashboard
+        - Faq
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                question:
+                  type: string
+                answer:
+                  type: string
+            example:
+              question: question 2
+              answer: answer 2
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 6a4dd41c13339886c741ccb0
+    delete:
+      summary: Delete Faq by ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Faq
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                question:
+                  type: string
+                answer:
+                  type: string
+            example:
+              question: question 2
+              answer: answer 2
+  /supports/{id}:
+    get:
+      summary: Get Support By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Help & Support
+      security:
+        - BearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 69ed8b8f753e04fb6059a36f
+    delete:
+      summary: Delete Support By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Help & Support
+      security:
+        - BearerAuth: []
+  /supports/{id}/review:
+    patch:
+      summary: Update Support Status By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Help & Support
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+            example: "{\r\n    \"status\":\"RESOLVED\"\r\n}\r\n\r\n// RESOLVED"
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 69ed8df7c27a510d13ca2868
+  /users/create-admin:
+    post:
+      summary: Create admin
+      responses: {}
+      tags:
+        - Dashboard
+        - Admin
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                countryCode:
+                  type: string
+                  format: utc-millisec
+                phone:
+                  type: string
+                  format: utc-millisec
+                password:
+                  type: string
+                role:
+                  type: string
+            example:
+              name: Emam Bokhari
+              email: emam@gmail.com
+              countryCode: "+880"
+              phone: "01315773424"
+              password: admin123
+              role: admin
+  /users/admins:
+    get:
+      summary: Get all admins
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+          example: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          example: 1
+        - name: searchTerm
+          in: query
+          description: name, email
+          schema:
+            type: string
+          example: emam
+      responses: {}
+      tags:
+        - Dashboard
+        - Admin
+      security:
+        - BearerAuth: []
+  /users/admins/692d68e8f74f4f292fcd7727:
+    delete:
+      summary: Delete admin
+      responses: {}
+      tags:
+        - Dashboard
+        - Admin
+      security:
+        - BearerAuth: []
+  /users/{id}:
+    get:
+      summary: Get user by ID
+      responses: {}
+      tags:
+        - Dashboard
+        - User
+      security:
+        - BearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 6a673a92ec0500b94a674afd
+  /users/status/{id}:
+    patch:
+      summary: Update user status by ID
+      responses: {}
+      tags:
+        - Dashboard
+        - User
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+            example: "{\r\n    \"status\":\"ACTIVE\"\r\n}\r\n\r\n// INACTIVE, ACTIVE"
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 69ec97116dec7ef37e29f1c4
+  /users/69db25dc5862691a48946352:
+    delete:
+      summary: Delete user by ID
+      responses: {}
+      tags:
+        - Dashboard
+        - User
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+  /notifications/admin:
+    get:
+      summary: Get Notifications
+      responses: {}
+      tags:
+        - Dashboard
+        - Notifications
+      security:
+        - BearerAuth: []
+    patch:
+      summary: Read Admin Notifications
+      responses: {}
+      tags:
+        - Dashboard
+        - Notifications
+      security:
+        - BearerAuth: []
+  /notifications/admin/{id}:
+    get:
+      summary: Get Single Notification By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Notifications
+      security:
+        - BearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 69edde1b9cde9d18a5b71b93
+  /notifications/admin/{id}/read:
+    patch:
+      summary: Read Admin Single Notification By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Notifications
+      security:
+        - BearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 69edde1b9cde9d18a5b71b93
+  /banners/68da6f920f7b30b0f1f48bb2:
+    patch:
+      summary: Update Banner
+      responses: {}
+      tags:
+        - Dashboard
+        - Banner
+      security:
+        - BearerAuth: []
+    delete:
+      summary: Delete Banner
+      responses: {}
+      tags:
+        - Dashboard
+        - Banner
+      security:
+        - BearerAuth: []
+  /banners/status/68da6f920f7b30b0f1f48bb2:
+    patch:
+      summary: Change Banner Status
+      responses: {}
+      tags:
+        - Dashboard
+        - Banner
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: boolean
+            example:
+              status: true
+  /tiers:
+    post:
+      summary: Create Tier
+      responses: {}
+      tags:
+        - Dashboard
+        - Tier
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+            example: "{\r\n    \"name\": \"Bronze\",\r\n    \"code\": \"B\",\r\n    \"level\": 1,\r\n    \"requirements\": {\r\n        \"pointsRequired\": 0,\r\n        \"tripsRequired\": 0,\r\n        \"ratingRequired\": 0,\r\n        \"acceptanceRateRequired\": 0\r\n    },\r\n    \"benefits\": {\r\n        \"destinationFilter\": {\r\n            \"enabled\": true,\r\n            \"dailyLimit\": 2\r\n        },\r\n        \"priorityDispatch\": {\r\n            \"enabled\": false,\r\n            \"boostMultiplier\": 1.0\r\n        },\r\n        \"reservationAccess\": {\r\n            \"enabled\": false,\r\n            \"maxAdvanceHours\": 0\r\n        },\r\n        \"premiumRideAccess\": {\r\n            \"enabled\": false,\r\n            \"allowedCategories\": []\r\n        },\r\n        \"airportQueuePriority\": {\r\n            \"enabled\": false,\r\n            \"priorityPosition\": 0\r\n        },\r\n        \"bonusMultiplier\": {\r\n            \"enabled\": false,\r\n            \"multiplierValue\": 1.0\r\n        },\r\n        \"vipSupport\": {\r\n            \"enabled\": false,\r\n            \"supportLevel\": \"basic\"\r\n        }\r\n    }\r\n}\r\n// supportLevel: basic, vip, premium"
+    get:
+      summary: Get All Tier
+      parameters:
+        - name: searchTerm
+          in: query
+          description: name, code
+          schema:
+            type: string
+          example: platinum
+        - name: page
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: active,inactive
+          schema:
+            type: string
+      responses: {}
+      tags:
+        - Dashboard
+        - Tier
+      security:
+        - BearerAuth: []
+  /tiers/{tierId}:
+    get:
+      summary: Get Tier By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Tier
+      security:
+        - BearerAuth: []
+    parameters:
+      - name: tierId
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 6a58495f13f6023532f78f05
+    patch:
+      summary: Update Tier By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Tier
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                code:
+                  type: string
+            example:
+              name: Platinum
+              code: platinum
+    delete:
+      summary: Delete Tier By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Tier
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                code:
+                  type: string
+            example:
+              name: Platinum
+              code: platinum
+  /report-issue-categories:
+    post:
+      summary: Create Report Issue Category
+      responses: {}
+      tags:
+        - Dashboard
+        - Report Issue Category
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                issueName:
+                  type: string
+                description:
+                  type: string
+                estimatedResolutionTime:
+                  type: integer
+            example:
+              issueName: Driver Misconduct
+              description: >-
+                Report inappropriate driver behavior, harassment, or
+                unprofessional conduct.
+              estimatedResolutionTime: 15
+    get:
+      summary: Get All Report Issue Categories
+      parameters:
+        - name: searchTerm
+          in: query
+          description: description, issueName
+          schema:
+            type: string
+          example: rider
+        - name: status
+          in: query
+          description: active,inactive
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: string
+      responses: {}
+      tags:
+        - Dashboard
+        - Report Issue Category
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                issueName:
+                  type: string
+                description:
+                  type: string
+                estimatedResolutionTime:
+                  type: integer
+            example:
+              issueName: Driver Misconduct
+              description: >-
+                Report inappropriate driver behavior, harassment, or
+                unprofessional conduct.
+              estimatedResolutionTime: 15
+  /report-issue-categories/active:
+    get:
+      summary: Get Active Report Issue Categories
+      parameters:
+        - name: searchTerm
+          in: query
+          description: description, issueName
+          schema:
+            type: string
+          example: rider
+        - name: status
+          in: query
+          description: active,inactive
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: string
+      responses: {}
+      tags:
+        - Dashboard
+        - Report Issue Category
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                issueName:
+                  type: string
+                description:
+                  type: string
+                estimatedResolutionTime:
+                  type: integer
+            example:
+              issueName: Driver Misconduct
+              description: >-
+                Report inappropriate driver behavior, harassment, or
+                unprofessional conduct.
+              estimatedResolutionTime: 15
+  /report-issue-categories/{categoryId}:
+    get:
+      summary: Get Report Issue Category By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Report Issue Category
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                issueName:
+                  type: string
+                description:
+                  type: string
+                estimatedResolutionTime:
+                  type: integer
+            example:
+              issueName: Driver Misconduct
+              description: >-
+                Report inappropriate driver behavior, harassment, or
+                unprofessional conduct.
+              estimatedResolutionTime: 15
+    parameters:
+      - name: categoryId
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 6a5764e5ab997b799a46dcf2
+    patch:
+      summary: Update Report Issue Category By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Report Issue Category
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                issueName:
+                  type: string
+            example:
+              issueName: Driver Misleading
+    delete:
+      summary: Delete Report Issue Category By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Report Issue Category
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                issueName:
+                  type: string
+            example:
+              issueName: Driver Misleading
+  /report-issue-categories/status/{categoryId}:
+    patch:
+      summary: Update Report Issue Category Status By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Report Issue Category
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+            example:
+              status: active
+    parameters:
+      - name: categoryId
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 6a57658eab997b799a46dd05
+  /fare-configurations:
+    post:
+      summary: Create Fare Configuration
+      responses: {}
+      tags:
+        - Dashboard
+        - Fare Configurations
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+            example: "{\r\n  \"serviceAreaId\": \"6a5b0c44ae072853104f8357\",\r\n//   \"serviceCategoryId\": \"6a584507898eb1856eef14af\",\r\n  \"rideCategoryId\": \"6895d8f2c123456789abcdf1\",\r\n  \"baseFare\": 9.0,\r\n  \"perKmFare\": 3.5,\r\n  \"perMinuteFare\": 0.75,\r\n  \"waitingFeePerMinute\": 0.3,\r\n  \"minimumFare\": 10.0\r\n}"
+    get:
+      summary: Get All Fare Configurations
+      responses: {}
+      tags:
+        - Dashboard
+        - Fare Configurations
+      security:
+        - BearerAuth: []
+  /fare-configurations/active:
+    get:
+      summary: Get Active Fare Configurations
+      responses: {}
+      tags:
+        - Dashboard
+        - Fare Configurations
+      security:
+        - BearerAuth: []
+  /fare-configurations/category/{serviceCategoryId}/{rideCategoryId}:
+    get:
+      summary: Get Fare Configurations By Category ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Fare Configurations
+      security:
+        - BearerAuth: []
+    parameters:
+      - name: serviceCategoryId
+        in: path
+        required: true
+        deprecated: false
+        schema: {}
+        example: 6a584507898eb1856eef14af
+      - name: rideCategoryId
+        in: path
+        required: true
+        deprecated: false
+        schema: {}
+        example: 6a585249b1829d9a19a6af7c
+  /fare-configurations/{fareConfigurationId}:
+    get:
+      summary: Get Fare Configuration By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Fare Configurations
+      security:
+        - BearerAuth: []
+    parameters:
+      - name: fareConfigurationId
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 6a5858324a505cf9fa70ccfe
+    patch:
+      summary: Update Fare Configuration By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Fare Configurations
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                minimumFare:
+                  type: integer
+            example:
+              minimumFare: 8
+    delete:
+      summary: Delete Fare Configuration By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Fare Configurations
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                minimumFare:
+                  type: integer
+            example:
+              minimumFare: 8
+  /fare-configurations/status/{fareConfigurationId}:
+    patch:
+      summary: Update Fare Configuration Status By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Fare Configurations
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+            example:
+              status: active
+    parameters:
+      - name: fareConfigurationId
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 6a5858324a505cf9fa70ccfe
+  /surge-rules:
+    post:
+      summary: Create Surge Rule
+      responses: {}
+      tags:
+        - Dashboard
+        - Surge Rule
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ruleName:
+                  type: string
+                ruleType:
+                  type: string
+                demandThreshold:
+                  type: integer
+                supplyThreshold:
+                  type: integer
+                minMultiplier:
+                  type: number
+                maxMultiplier:
+                  type: number
+            example:
+              ruleName: Holiday Hour Surge
+              ruleType: holiday_surge
+              demandThreshold: 80
+              supplyThreshold: 40
+              minMultiplier: 1.2
+              maxMultiplier: 3.5
+    get:
+      summary: Get All Surge Rules
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+          example: 2
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          example: 1
+        - name: searchTerm
+          in: query
+          description: ruleName
+          schema:
+            type: string
+          example: peak
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses: {}
+      tags:
+        - Dashboard
+        - Surge Rule
+      security:
+        - BearerAuth: []
+  /surge-rules/active:
+    get:
+      summary: Get Active Surge Rules
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+          example: 2
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          example: 1
+        - name: searchTerm
+          in: query
+          description: ruleName
+          schema:
+            type: string
+          example: peak
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses: {}
+      tags:
+        - Dashboard
+        - Surge Rule
+      security:
+        - BearerAuth: []
+  /surge-rules/{surgeRuleId}:
+    get:
+      summary: Get Surge Rule By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Surge Rule
+      security:
+        - BearerAuth: []
+    parameters:
+      - name: surgeRuleId
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 6a5853cb749feee5339fb13e
+    patch:
+      summary: Update Surge Rule By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Surge Rule
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                minMultiplier:
+                  type: number
+                maxMultiplier:
+                  type: number
+            example:
+              minMultiplier: 1.3
+              maxMultiplier: 4.5
+    delete:
+      summary: Delete Surge Rule By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Surge Rule
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                minMultiplier:
+                  type: number
+                maxMultiplier:
+                  type: number
+            example:
+              minMultiplier: 1.3
+              maxMultiplier: 4.5
+  /surge-rules/status/{surgeRuleId}:
+    patch:
+      summary: Update Surge Rule Status By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Surge Rule
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+            example:
+              status: active
+    parameters:
+      - name: surgeRuleId
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 6a58713c664a86721c1ea8d9
+  /service-areas:
+    post:
+      summary: Create Service Area
+      responses: {}
+      tags:
+        - Dashboard
+        - Service Area
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                cityId:
+                  type: string
+                airport:
+                  type: string
+                type:
+                  type: string
+                location:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+                    coordinates:
+                      type: array
+                      items:
+                        type: number
+                coverageRadiusKm:
+                  type: integer
+                timezone:
+                  type: string
+            example:
+              cityId: 6a5b0c7fae072853104f835f
+              airport: Hazrat Shahjalal International Airport
+              type: airport
+              location:
+                type: Point
+                coordinates:
+                  - 90.3978
+                  - 23.8433
+              coverageRadiusKm: 10
+              timezone: Asia/Dhaka
+  /service-areas/{serviceAreaId}:
+    patch:
+      summary: Update Service Area By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Service Area
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                state:
+                  type: string
+            example:
+              state: New York
+    parameters:
+      - name: serviceAreaId
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 6a5756e5c8f7a0e6e84e91d7
+    get:
+      summary: Get Service Area By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Service Area
+      security:
+        - BearerAuth: []
+    delete:
+      summary: Delete Service Area By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Service Area
+      security:
+        - BearerAuth: []
+  /service-areas/countries:
+    get:
+      summary: Get Countries
+      responses: {}
+      tags:
+        - Dashboard
+        - Service Area
+      security:
+        - BearerAuth: []
+  /service-areas/states:
+    get:
+      summary: Get States
+      responses: {}
+      tags:
+        - Dashboard
+        - Service Area
+      security:
+        - BearerAuth: []
+  /service-areas/states/{countryId}:
+    get:
+      summary: Get States By Country ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Service Area
+      security:
+        - BearerAuth: []
+    parameters:
+      - name: countryId
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 6a5756e5c8f7a0e6e84e91d7
+  /service-areas/cities/{stateId}:
+    get:
+      summary: Get Cities By State ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Service Area
+      security:
+        - BearerAuth: []
+    parameters:
+      - name: stateId
+        in: path
+        required: true
+        deprecated: false
+        schema: {}
+        example: 6a5b0c54ae072853104f835a
+  /service-areas/zones/{cityId}:
+    get:
+      summary: Get Zones By City ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Service Area
+      security:
+        - BearerAuth: []
+    parameters:
+      - name: cityId
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 6a57572ac8f7a0e6e84e91dd
+  /service-areas/airports/{cityId}:
+    get:
+      summary: Get Airports By City ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Service Area
+      security:
+        - BearerAuth: []
+    parameters:
+      - name: cityId
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 6a5b0c7fae072853104f835f
+  /service-categories:
+    post:
+      summary: Create Service Category
+      responses: {}
+      tags:
+        - Dashboard
+        - Service Category
+      security:
+        - BearerAuth: []
+    get:
+      summary: Get All Service Categories
+      parameters:
+        - name: searchTerm
+          in: query
+          description: name, description
+          schema:
+            type: string
+          example: home
+        - name: page
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: active, inactive
+          schema:
+            type: string
+      responses: {}
+      tags:
+        - Dashboard
+        - Service Category
+      security:
+        - BearerAuth: []
+  /service-categories/{serviceCategoryId}:
+    get:
+      summary: Get Service Category By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Service Category
+      security:
+        - BearerAuth: []
+    parameters:
+      - name: serviceCategoryId
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 6a584507898eb1856eef14af
+    patch:
+      summary: Update Service Category By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Service Category
+      security:
+        - BearerAuth: []
+    delete:
+      summary: Delete Service Category By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Service Category
+      security:
+        - BearerAuth: []
+  /service-categories/status/{serviceCategoryId}:
+    patch:
+      summary: Update Service Category Status By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Service Category
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+            example:
+              status: active
+    parameters:
+      - name: serviceCategoryId
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 6a584507898eb1856eef14af
+  /ride-categories:
+    post:
+      summary: Create Ride Category
+      responses: {}
+      tags:
+        - Dashboard
+        - Ride Category
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+            example: "{\r\n  // \"serviceCategoryId\": \"6a586a978571b23c1e37fe3c\",\r\n  \"name\": \"Alygo Standard\",\r\n  \"description\": \"Premium ride service with experienced drivers and high-quality vehicles.\",\r\n  \"commissionRate\": 20,\r\n  \"minimumDriverRating\": 0,\r\n  \"vehicleRequirements\": {\r\n    \"vehicleTypes\": [\r\n      \"Car\",\r\n      \"Bike\"\r\n    ],\r\n    \"minimumSeats\": 1\r\n  }\r\n}"
+    get:
+      summary: Get All Ride Categories
+      parameters:
+        - name: searchTerm
+          in: query
+          description: name, description
+          schema:
+            type: string
+          example: pre
+        - name: page
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: active, inactive
+          schema:
+            type: string
+      responses: {}
+      tags:
+        - Dashboard
+        - Ride Category
+      security:
+        - BearerAuth: []
+  /ride-categories/active:
+    get:
+      summary: Get Active Ride Categories
+      parameters:
+        - name: searchTerm
+          in: query
+          description: name, description
+          schema:
+            type: string
+          example: pre
+        - name: page
+          in: query
+          schema:
+            type: integer
+          example: 1
+        - name: limit
+          in: query
+          schema:
+            type: string
+          example: ""
+        - name: status
+          in: query
+          description: active, inactive
+          schema:
+            type: string
+          example: ""
+      responses: {}
+      tags:
+        - Dashboard
+        - Ride Category
+      security:
+        - BearerAuth: []
+  /ride-categories/{rideCategoryId}:
+    get:
+      summary: Get Ride Category By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Ride Category
+      security:
+        - BearerAuth: []
+    parameters:
+      - name: rideCategoryId
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 6a585126b1829d9a19a6af60
+    patch:
+      summary: Update Ride Category By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Ride Category
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                commissionRate:
+                  type: integer
+                minimumDriverRating:
+                  type: integer
+                vehicleRequirements:
+                  type: object
+                  properties:
+                    minimumSeats:
+                      type: integer
+            example:
+              commissionRate: 10
+              minimumDriverRating: 4
+              vehicleRequirements:
+                minimumSeats: 12
+    delete:
+      summary: Delete Ride Category By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Ride Category
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+            example:
+              status: active
+  /ride-categories//status/{rideCategoryId}:
+    patch:
+      summary: Update Ride Category Status By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Ride Category
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+            example:
+              status: active
+    parameters:
+      - name: rideCategoryId
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 6a585126b1829d9a19a6af60
+  /platform-settings:
+    patch:
+      summary: Create Or Update Platform Settings
+      responses: {}
+      tags:
+        - Dashboard
+        - Platform Settings
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                platformName:
+                  type: string
+                currency:
+                  type: string
+                isMaintenanceMode:
+                  type: boolean
+                supportEmail:
+                  type: string
+                  format: email
+                contactNumber:
+                  type: string
+                  format: utc-millisec
+            example:
+              platformName: RideConnect BD
+              currency: usd
+              isMaintenanceMode: false
+              supportEmail: support@rideconnectbd.com
+              contactNumber: "+8801712345678"
+    get:
+      summary: Get  Platform Setting
+      responses: {}
+      tags:
+        - Dashboard
+        - Platform Settings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+  /holidays:
+    post:
+      summary: Create Holiday
+      responses: {}
+      tags:
+        - Dashboard
+        - Holiday
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                holidayName:
+                  type: string
+                timezone:
+                  type: string
+                startDate:
+                  type: string
+                  format: date-time
+                endDate:
+                  type: string
+                  format: date-time
+                description:
+                  type: string
+                  format: style
+            example:
+              holidayName: Special Holiday - Today
+              timezone: Asia/Dhaka
+              startDate: "2026-07-19T02:00:00.000Z"
+              endDate: "2026-07-20T02:00:00.000Z"
+              description: >-
+                Special holiday active from 8:00 AM today to 8:00 AM tomorrow
+                (Bangladesh Time).
+    get:
+      summary: Get All Holidays
+      responses: {}
+      tags:
+        - Dashboard
+        - Holiday
+      security:
+        - BearerAuth: []
+  /holidays/active:
+    get:
+      summary: Get Active Holidays
+      responses: {}
+      tags:
+        - Dashboard
+        - Holiday
+      security:
+        - BearerAuth: []
+  /holidays/{holidayId}:
+    get:
+      summary: Get Holiday By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Holiday
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                holidayName:
+                  type: string
+            example:
+              holidayName: Special Holiday
+    parameters:
+      - name: holidayId
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 6a5c38a6404c6448737a0605
+    patch:
+      summary: Update Holiday By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Holiday
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                holidayName:
+                  type: string
+            example:
+              holidayName: Special Holiday
+    delete:
+      summary: Delete Holiday By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Holiday
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+            example:
+              status: active
+  /events:
+    post:
+      summary: Create event
+      responses: {}
+      tags:
+        - Dashboard
+        - Event
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                eventName:
+                  type: string
+                description:
+                  type: string
+                timezone:
+                  type: string
+                startDateTime:
+                  type: string
+                  format: date-time
+                endDateTime:
+                  type: string
+                  format: date-time
+                serviceAreaId:
+                  type: string
+                location:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+                    coordinates:
+                      type: array
+                      items:
+                        type: number
+                coverageRadiusKm:
+                  type: integer
+                status:
+                  type: string
+            example:
+              eventName: Airport Passenger Rush
+              description: >-
+                High passenger demand around Hazrat Shahjalal International
+                Airport.
+              timezone: Asia/Dhaka
+              startDateTime: "2026-07-21T02:00:00.000Z"
+              endDateTime: "2026-07-22T02:00:00.000Z"
+              serviceAreaId: 6a5b0ca5ae072853104f8362
+              location:
+                type: Point
+                coordinates:
+                  - 90.3978
+                  - 23.8433
+              coverageRadiusKm: 10
+              status: active
+    get:
+      summary: Get All Events
+      responses: {}
+      tags:
+        - Dashboard
+        - Event
+      security:
+        - BearerAuth: []
+  /events/active:
+    get:
+      summary: Get Active Events
+      responses: {}
+      tags:
+        - Dashboard
+        - Event
+      security:
+        - BearerAuth: []
+  /events/{eventId}:
+    get:
+      summary: Get Event By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Event
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                holidayName:
+                  type: string
+            example:
+              holidayName: Special Holiday
+    parameters:
+      - name: eventId
+        in: path
+        required: true
+        schema:
+          type: string
+        example: ""
+    patch:
+      summary: Update Event By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Event
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                holidayName:
+                  type: string
+            example:
+              holidayName: Special Holiday
+    delete:
+      summary: Delete Event By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Event
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+            example:
+              status: active
+  /peak-hours:
+    post:
+      summary: Create Peak Hour
+      responses: {}
+      tags:
+        - Dashboard
+        - Peak Hour
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                startTime:
+                  type: string
+                  format: style
+                endTime:
+                  type: string
+                timezone:
+                  type: string
+                applicableDays:
+                  type: array
+                  items:
+                    type: string
+            example:
+              name: Evening Peak Hour
+              startTime: "17:00"
+              endTime: "20:00"
+              timezone: Asia/Dhaka
+              applicableDays:
+                - monday
+                - tuesday
+                - wednesday
+                - thursday
+                - friday
+    get:
+      summary: Get All Peak Hours
+      responses: {}
+      tags:
+        - Dashboard
+        - Peak Hour
+      security:
+        - BearerAuth: []
+  /peak-hours/active:
+    get:
+      summary: Get Active Peak Hours
+      responses: {}
+      tags:
+        - Dashboard
+        - Peak Hour
+      security:
+        - BearerAuth: []
+  /peak-hours/{peakHourId}:
+    get:
+      summary: Get Peak Hour By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Peak Hour
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                holidayName:
+                  type: string
+            example:
+              holidayName: Special Holiday
+    parameters:
+      - name: peakHourId
+        in: path
+        required: true
+        schema:
+          type: string
+        example: ""
+    patch:
+      summary: Update Peak Hour By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Peak Hour
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                holidayName:
+                  type: string
+            example:
+              holidayName: Special Holiday
+    delete:
+      summary: Delete Peak Hour By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Peak Hour
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+            example:
+              status: active
+  /surge-rules/test/{serviceAreaId}:
+    get:
+      summary: Test Peak Hours
+      responses: {}
+      tags:
+        - Dashboard
+        - Test Peak Hours | Only For Testing Purpose
+      security:
+        - BearerAuth: []
+    parameters:
+      - name: serviceAreaId
+        in: path
+        required: true
+        deprecated: false
+        schema: {}
+        example: 6a5b0ca5ae072853104f8362
+  /trip-reports/admin/trip-reports:
+    get:
+      summary: ❌ Get Admin Trip Reports
+      responses: {}
+      tags:
+        - Dashboard
+        - Trip Reports
+      security:
+        - BearerAuth: []
+  /trip-reports/admin/trip-reports/{reportId}:
+    get:
+      summary: ❌ Get Admin Trip Report By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Trip Reports
+      security:
+        - BearerAuth: []
+    parameters:
+      - name: reportId
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 6a5c9d49a312fa00e872374c
+    patch:
+      summary: ❌ Update Admin Trip Report By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Trip Reports
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+            example: "{\r\n    \"status\":\"resolved\",\r\n    \"resolutionNotes\":\"We resolve this issue, thanks a lot for report this issue and stay with us.\"\r\n}\r\n\r\n// resolved, investigating, open"
+  /admin/trip-completion-complaints/dashboard/cards:
+    get:
+      summary: Get Trip Report Overview
+      responses: {}
+      tags:
+        - Dashboard
+        - Trip Reports
+      security:
+        - BearerAuth: []
+  /admin/trip-completion-complaints/analytics/trend:
+    get:
+      summary: Trends
+      responses: {}
+      tags:
+        - Dashboard
+        - Trip Reports
+      security:
+        - BearerAuth: []
+  /admin/trip-completion-complaints/:
+    get:
+      summary: Get All Trip Reports
+      parameters:
+        - name: status
+          in: query
+          description: resolved, investigating, open
+          schema:
+            type: string
+        - name: startDate
+          in: query
+          schema:
+            type: string
+        - name: endDate
+          in: query
+          schema:
+            type: string
+        - name: searchTerm
+          in: query
+          description: passenger name, driver name
+          schema:
+            type: string
+      responses: {}
+      tags:
+        - Dashboard
+        - Trip Reports
+      security:
+        - BearerAuth: []
+  /admin/trip-completion-complaints/{complaintId}:
+    get:
+      summary: Get Trip Report By Complaint ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Trip Reports
+      security:
+        - BearerAuth: []
+    parameters:
+      - name: complaintId
+        in: path
+        required: true
+        deprecated: false
+        schema: {}
+        example: TRP-20260719-000001
+  /admin/trip-completion-complaints/status/{complaintId}:
+    patch:
+      summary: Update Admin Trip Status By Complaint ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Trip Reports
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+            example: "{\r\n    \"status\":\"resolved\",\r\n    \"adminNote\":\"We resolve this issue, thanks a lot for report this issue and stay with us.\"\r\n}\r\n\r\n// resolved, investigating, open"
+    parameters:
+      - name: complaintId
+        in: path
+        required: true
+        deprecated: false
+        schema: {}
+        example: TRP-20260719-000001
+  /system-configurations:
+    patch:
+      summary: Create Or Update System Configuration
+      responses: {}
+      tags:
+        - Dashboard
+        - System Configuration
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                driverMatching:
+                  type: object
+                  properties:
+                    initialSearchRadiusKm:
+                      type: integer
+                    radiusExpansionDistanceKm:
+                      type: integer
+                    driverVisibilityDurationSeconds:
+                      type: integer
+                    rideRequestLifetimeSeconds:
+                      type: integer
+                    maxSearchRadiusKm:
+                      type: integer
+                tracking:
+                  type: object
+                  properties:
+                    minLocationUpdateIntervalSeconds:
+                      type: integer
+                    minMovementDistanceMeters:
+                      type: integer
+                    maxGpsAccuracyToleranceMeters:
+                      type: integer
+                    arrivalRadiusMeters:
+                      type: integer
+                    etaRefreshIntervalSeconds:
+                      type: integer
+                    averageSpeedKmh:
+                      type: integer
+                    enableSocketOptimization:
+                      type: boolean
+                reservation:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                    minAdvanceMinutes:
+                      type: integer
+                    maxAdvanceDays:
+                      type: integer
+                    driverVisibleBeforeMinutes:
+                      type: integer
+                    driverAssignmentTimeoutMinutes:
+                      type: integer
+                    reminder24h:
+                      type: boolean
+                    reminder1h:
+                      type: boolean
+                    reminder30m:
+                      type: boolean
+                    reminder15m:
+                      type: boolean
+                lostFound:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                    reportWindowDays:
+                      type: integer
+                    maxFiles:
+                      type: integer
+                    maxFileSizeMb:
+                      type: integer
+                    defaultDeliveryFee:
+                      type: integer
+                    returnConfirmationHours:
+                      type: integer
+                    autoCloseDays:
+                      type: integer
+                referral:
+                  type: object
+                  properties:
+                    passenger:
+                      type: object
+                      properties:
+                        enabled:
+                          type: boolean
+                        rewardAmount:
+                          type: integer
+                        rewardCurrency:
+                          type: string
+                        qualificationType:
+                          type: string
+                        requiredCompletedTrips:
+                          type: integer
+                        qualificationDays:
+                          type: integer
+                        allowMultipleRewards:
+                          type: boolean
+                        maximumRewardsPerUser:
+                          type: integer
+                        autoRewardEnabled:
+                          type: boolean
+                        shareInstructions:
+                          type: string
+                        rewardTerms:
+                          type: string
+                        generalNotes:
+                          type: string
+                    driver:
+                      type: object
+                      properties:
+                        enabled:
+                          type: boolean
+                        rewardAmount:
+                          type: integer
+                        rewardCurrency:
+                          type: string
+                        requiredCompletedTrips:
+                          type: integer
+                        qualificationDays:
+                          type: integer
+                        payoutDelayHours:
+                          type: integer
+                        autoRewardEnabled:
+                          type: boolean
+                        maximumRewardsPerDriver:
+                          type: integer
+                        shareInstructions:
+                          type: string
+                        termsAndConditions:
+                          type: string
+                        generalNotes:
+                          type: string
+                driverRewards:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                    tierPromotion:
+                      type: boolean
+                    autoDowngrade:
+                      type: boolean
+                    dailyQuotaResetTime:
+                      type: string
+                      format: style
+                    timezone:
+                      type: string
+                    destinationFilterRadiusDefault:
+                      type: integer
+            example:
+              driverMatching:
+                initialSearchRadiusKm: 5
+                radiusExpansionDistanceKm: 3
+                driverVisibilityDurationSeconds: 60
+                rideRequestLifetimeSeconds: 300
+                maxSearchRadiusKm: 50
+              tracking:
+                minLocationUpdateIntervalSeconds: 2
+                minMovementDistanceMeters: 10
+                maxGpsAccuracyToleranceMeters: 50
+                arrivalRadiusMeters: 30
+                etaRefreshIntervalSeconds: 10
+                averageSpeedKmh: 40
+                enableSocketOptimization: true
+              reservation:
+                enabled: true
+                minAdvanceMinutes: 30
+                maxAdvanceDays: 30
+                driverVisibleBeforeMinutes: 60
+                driverAssignmentTimeoutMinutes: 5
+                reminder24h: true
+                reminder1h: true
+                reminder30m: true
+                reminder15m: true
+              lostFound:
+                enabled: true
+                reportWindowDays: 7
+                maxFiles: 5
+                maxFileSizeMb: 10
+                defaultDeliveryFee: 0
+                returnConfirmationHours: 48
+                autoCloseDays: 30
+              referral:
+                passenger:
+                  enabled: true
+                  rewardAmount: 20
+                  rewardCurrency: USD
+                  qualificationType: rides
+                  requiredCompletedTrips: 1
+                  qualificationDays: 30
+                  allowMultipleRewards: false
+                  maximumRewardsPerUser: 5
+                  autoRewardEnabled: true
+                  shareInstructions: Send your unique referral code or link to friends.
+                  rewardTerms: >-
+                    Reward is granted once the referred passenger completes 1
+                    trip.
+                  generalNotes: Referrals are subject to verification.
+                driver:
+                  enabled: true
+                  rewardAmount: 100
+                  rewardCurrency: USD
+                  requiredCompletedTrips: 10
+                  qualificationDays: 30
+                  payoutDelayHours: 0
+                  autoRewardEnabled: true
+                  maximumRewardsPerDriver: 10
+                  shareInstructions: Send your unique referral code or link to drivers.
+                  termsAndConditions: The referee driver must complete 10 rides within 30 days.
+                  generalNotes: Payouts are processed within 24 hours.
+              driverRewards:
+                enabled: true
+                tierPromotion: true
+                autoDowngrade: true
+                dailyQuotaResetTime: "00:00"
+                timezone: Asia/Dhaka
+                destinationFilterRadiusDefault: 5
+    get:
+      summary: Get System Configuration
+      responses: {}
+      tags:
+        - Dashboard
+        - System Configuration
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                driverMatching:
+                  type: object
+                  properties:
+                    initialSearchRadiusKm:
+                      type: integer
+                    radiusExpansionDistanceKm:
+                      type: integer
+                    driverVisibilityDurationSeconds:
+                      type: integer
+                    rideRequestLifetimeSeconds:
+                      type: integer
+                    maxSearchRadiusKm:
+                      type: integer
+                tracking:
+                  type: object
+                  properties:
+                    minLocationUpdateIntervalSeconds:
+                      type: integer
+                    minMovementDistanceMeters:
+                      type: integer
+                    maxGpsAccuracyToleranceMeters:
+                      type: integer
+                    arrivalRadiusMeters:
+                      type: integer
+                    etaRefreshIntervalSeconds:
+                      type: integer
+                    averageSpeedKmh:
+                      type: integer
+                    enableSocketOptimization:
+                      type: boolean
+                reservation:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                    minAdvanceMinutes:
+                      type: integer
+                    maxAdvanceDays:
+                      type: integer
+                    driverVisibleBeforeMinutes:
+                      type: integer
+                    driverAssignmentTimeoutMinutes:
+                      type: integer
+                    reminder24h:
+                      type: boolean
+                    reminder1h:
+                      type: boolean
+                    reminder30m:
+                      type: boolean
+                    reminder15m:
+                      type: boolean
+            example:
+              driverMatching:
+                initialSearchRadiusKm: 3
+                radiusExpansionDistanceKm: 2
+                driverVisibilityDurationSeconds: 20
+                rideRequestLifetimeSeconds: 120
+                maxSearchRadiusKm: 15
+              tracking:
+                minLocationUpdateIntervalSeconds: 5
+                minMovementDistanceMeters: 10
+                maxGpsAccuracyToleranceMeters: 50
+                arrivalRadiusMeters: 100
+                etaRefreshIntervalSeconds: 30
+                averageSpeedKmh: 35
+                enableSocketOptimization: true
+              reservation:
+                enabled: true
+                minAdvanceMinutes: 30
+                maxAdvanceDays: 30
+                driverVisibleBeforeMinutes: 30
+                driverAssignmentTimeoutMinutes: 10
+                reminder24h: true
+                reminder1h: true
+                reminder30m: true
+                reminder15m: true
+  /rules:
+    post:
+      summary: Create Rule
+      responses: {}
+      tags:
+        - Dashboard
+        - CMS
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+            example: "{\r\n    \"type\":\"terms\",\r\n    \"content\":\"this is terms of service\"\r\n}\r\n\r\n// about, terms, privacy"
+  /rules/{type}:
+    get:
+      summary: Get Rules
+      responses: {}
+      tags:
+        - Dashboard
+        - CMS
+    parameters:
+      - name: type
+        in: path
+        required: true
+        description: about, terms, privacy
+        deprecated: false
+        schema: {}
+        example: about
+    patch:
+      summary: Update Rules
+      responses: {}
+      tags:
+        - Dashboard
+        - CMS
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+            example:
+              content: this is about us for applications
+  /rewards/override-points:
+    post:
+      summary: Override Points
+      responses: {}
+      tags:
+        - Dashboard
+        - Point Rule & Rewards
+        - Points Ovverride
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                driverUserId:
+                  type: string
+                points:
+                  type: integer
+                notes:
+                  type: string
+            example:
+              driverUserId: 66a0123456789abcdef01234
+              points: 450
+              notes: Compensated for system outage
+  /rewards/override-tier:
+    post:
+      summary: Override Tier
+      responses: {}
+      tags:
+        - Dashboard
+        - Point Rule & Rewards
+        - Points Ovverride
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                driverUserId:
+                  type: string
+                tierId:
+                  type: string
+                reason:
+                  type: string
+            example:
+              driverUserId: 66a0123456789abcdef01234
+              tierId: 66b123456789abcdef012345
+              reason: VIP Support Manual Promotion
+  /rewards/export:
+    get:
+      summary: Rewards Export
+      responses: {}
+      tags:
+        - Dashboard
+        - Point Rule & Rewards
+        - Points Ovverride
+      security:
+        - BearerAuth: []
+  /rewards/point-rules:
+    post:
+      summary: Create Point Rule
+      responses: {}
+      tags:
+        - Dashboard
+        - Point Rule & Rewards
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                eventType:
+                  type: string
+                points:
+                  type: integer
+                actionType:
+                  type: string
+                status:
+                  type: string
+            example:
+              name: Ride Completed Bonus
+              eventType: ride_completed
+              points: 5
+              actionType: earning
+              status: active
+    get:
+      summary: Get All Point Rules
+      responses: {}
+      tags:
+        - Dashboard
+        - Point Rule & Rewards
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                eventType:
+                  type: string
+                points:
+                  type: integer
+                actionType:
+                  type: string
+                status:
+                  type: string
+            example:
+              name: Ride Completed Bonus
+              eventType: ride_completed
+              points: 5
+              actionType: earning
+              status: active
+  /rewards/point-rules/{id}:
+    patch:
+      summary: Update Point Rule By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Point Rule & Rewards
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                eventType:
+                  type: string
+                points:
+                  type: integer
+                actionType:
+                  type: string
+            example:
+              name: Peak Hour Ride
+              eventType: peak_hour_ride
+              points: 2
+              actionType: earning
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 6a61833430fa9227340d2129
+    delete:
+      summary: Delete Point Rule By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Point Rule & Rewards
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                eventType:
+                  type: string
+                points:
+                  type: integer
+                actionType:
+                  type: string
+            example:
+              name: Peak Hour Ride
+              eventType: peak_hour_ride
+              points: 2
+              actionType: earning
+  /rewards/dashboard:
+    get:
+      summary: Rewards Dashboard
+      responses: {}
+      tags:
+        - Dashboard
+        - Point Rule & Rewards
+      security:
+        - BearerAuth: []
+  /admin/ai-support/knowledge:
+    post:
+      summary: Create Ai Support Knowledge
+      responses: {}
+      tags:
+        - Dashboard
+        - Ai Support
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                module:
+                  type: string
+                category:
+                  type: string
+                content:
+                  type: string
+                tags:
+                  type: array
+                  items:
+                    type: string
+                keywords:
+                  type: array
+                  items:
+                    type: string
+                language:
+                  type: string
+                priority:
+                  type: integer
+                isActive:
+                  type: boolean
+                aiEnabled:
+                  type: boolean
+                visibility:
+                  type: string
+                status:
+                  type: string
+                allowedRoles:
+                  type: array
+                  items:
+                    type: string
+                changeLog:
+                  type: string
+            example:
+              title: Driver Referral Reward Program
+              module: Referral
+              category: Rewards
+              content: >-
+                Drivers can earn referral rewards by inviting new drivers to
+                join the platform. A referral reward is issued only after the
+                referred driver completes the required number of rides within
+                the qualification period. The reward amount, qualification
+                rules, and payout timing are determined by the platform
+                administrator. If the qualification requirements are not met
+                within the allowed period, the referral becomes ineligible for
+                rewards.
+              tags:
+                - referral
+                - driver
+                - reward
+                - bonus
+                - earnings
+              keywords:
+                - driver referral
+                - invite driver
+                - referral reward
+                - bonus
+                - reward policy
+                - qualification
+              language: en
+              priority: 10
+              isActive: true
+              aiEnabled: true
+              visibility: driver
+              status: published
+              allowedRoles:
+                - driver
+              changeLog: Initial knowledge article for Driver Referral Reward Program.
+    get:
+      summary: Get Ai Support Knowledge
+      responses: {}
+      tags:
+        - Dashboard
+        - Ai Support
+      security:
+        - BearerAuth: []
+  /admin/ai-support/knowledge/{id}:
+    patch:
+      summary: Update Ai Support Knowledge By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Ai Support
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                module:
+                  type: string
+                category:
+                  type: string
+                content:
+                  type: string
+                tags:
+                  type: array
+                  items:
+                    type: string
+                keywords:
+                  type: array
+                  items:
+                    type: string
+                language:
+                  type: string
+                priority:
+                  type: integer
+                isActive:
+                  type: boolean
+                aiEnabled:
+                  type: boolean
+                visibility:
+                  type: string
+                status:
+                  type: string
+                allowedRoles:
+                  type: array
+                  items:
+                    type: string
+                changeLog:
+                  type: string
+            example:
+              title: Driver Referral Reward Program
+              module: Referral
+              category: Rewards
+              content: >-
+                Drivers can earn referral rewards by inviting new drivers to
+                join the platform. A referral reward is issued only after the
+                referred driver completes the required number of rides within
+                the qualification period. The reward amount, qualification
+                rules, and payout timing are determined by the platform
+                administrator. If the qualification requirements are not met
+                within the allowed period, the referral becomes ineligible for
+                rewards.
+              tags:
+                - referral
+                - driver
+                - reward
+                - bonus
+                - earnings
+              keywords:
+                - driver referral
+                - invite driver
+                - referral reward
+                - bonus
+                - reward policy
+                - qualification
+              language: en
+              priority: 10
+              isActive: true
+              aiEnabled: true
+              visibility: driver
+              status: published
+              allowedRoles:
+                - driver
+              changeLog: Initial knowledge article for Driver Referral Reward Program.
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 6a61a421ddfab6c0db7450ad
+    delete:
+      summary: Delete Ai Support Knowledge By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Ai Support
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+  /admin/ai-support/knowledge/import:
+    post:
+      summary: Ai Knowledge Import
+      responses: {}
+      tags:
+        - Dashboard
+        - Ai Support
+  /admin/ai-support/dashboard/stats:
+    get:
+      summary: Ai Support Dashboard Stats
+      responses: {}
+      tags:
+        - Dashboard
+        - Ai Support
+      security:
+        - BearerAuth: []
+  //admin/dashboard/summary:
+    get:
+      summary: Get Dashboard Summary
+      responses: {}
+      tags:
+        - Dashboard
+        - Dashboard Overview
+      security:
+        - BearerAuth: []
+  /admin/dashboard/revenue-chart:
+    get:
+      summary: Revenue Chart
+      responses: {}
+      tags:
+        - Dashboard
+        - Dashboard Overview
+      security:
+        - BearerAuth: []
+  /admin/dashboard/demand-chart:
+    get:
+      summary: Demand Chart
+      responses: {}
+      tags:
+        - Dashboard
+        - Dashboard Overview
+      security:
+        - BearerAuth: []
+  /admin/dashboard/driver-growth:
+    get:
+      summary: Driver Growth
+      responses: {}
+      tags:
+        - Dashboard
+        - Dashboard Overview
+      security:
+        - BearerAuth: []
+  /admin/dashboard/passenger-growth:
+    get:
+      summary: Passenger Growth
+      responses: {}
+      tags:
+        - Dashboard
+        - Dashboard Overview
+      security:
+        - BearerAuth: []
+  /admin/dashboard/category-usage:
+    get:
+      summary: Category Usage
+      responses: {}
+      tags:
+        - Dashboard
+        - Dashboard Overview
+      security:
+        - BearerAuth: []
+  /admin/dashboard/top-cities:
+    get:
+      summary: Top Cities
+      responses: {}
+      tags:
+        - Dashboard
+        - Dashboard Overview
+      security:
+        - BearerAuth: []
+  /admin/dashboard/top-airports:
+    get:
+      summary: Top Airports
+      responses: {}
+      tags:
+        - Dashboard
+        - Dashboard Overview
+      security:
+        - BearerAuth: []
+  /cancellation-reasons:
+    post:
+      summary: Create Cancellation Reason
+      responses: {}
+      tags:
+        - Dashboard
+        - Cancellation Management
+        - Cancellation Reason
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+            example: "{\r\n  \"reasonName\": \"Driver is taking too long\",\r\n  \"description\": \"The driver is delayed beyond the acceptable waiting time.\",\r\n  \"userType\": \"driver\",\r\n  \"sortOrder\": 1\r\n}\r\n\r\n// userType: driver, passenger"
+    get:
+      summary: Get All Cancellation Reason
+      parameters:
+        - name: userType
+          in: query
+          description: passenger, driver
+          schema:
+            type: string
+          example: driver
+        - name: page
+          in: query
+          schema:
+            type: integer
+          example: 1
+        - name: limit
+          in: query
+          schema:
+            type: string
+        - name: searchTerm
+          in: query
+          description: reasoneName, description
+          schema:
+            type: string
+          example: driver
+        - name: status
+          in: query
+          description: active, inactive
+          schema:
+            type: string
+      responses: {}
+      tags:
+        - Dashboard
+        - Cancellation Management
+        - Cancellation Reason
+      security:
+        - BearerAuth: []
+  /cancellation-reasons/active:
+    get:
+      summary: Get Active Cancellation Reason
+      parameters:
+        - name: userType
+          in: query
+          description: passenger, driver
+          schema:
+            type: string
+          example: driver
+        - name: page
+          in: query
+          schema:
+            type: integer
+          example: 1
+        - name: limit
+          in: query
+          schema:
+            type: string
+        - name: searchTerm
+          in: query
+          description: reasoneName, description
+          schema:
+            type: string
+          example: driver
+      responses: {}
+      tags:
+        - Dashboard
+        - Cancellation Management
+        - Cancellation Reason
+      security:
+        - BearerAuth: []
+  /cancellation-reasons/{cancellationReasonId}:
+    get:
+      summary: Get Cancellation Reason By ID
+      parameters:
+        - name: userType
+          in: query
+          description: passenger, driver
+          schema:
+            type: string
+          example: driver
+      responses: {}
+      tags:
+        - Dashboard
+        - Cancellation Management
+        - Cancellation Reason
+      security:
+        - BearerAuth: []
+    parameters:
+      - name: cancellationReasonId
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 6a574ab749a0d38c01e6f8da
+    patch:
+      summary: Update Cancellation Reason By ID
+      parameters:
+        - name: userType
+          in: query
+          description: passenger, driver
+          schema:
+            type: string
+          example: driver
+      responses: {}
+      tags:
+        - Dashboard
+        - Cancellation Management
+        - Cancellation Reason
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sortOrder:
+                  type: integer
+            example:
+              sortOrder: 2
+    delete:
+      summary: Delete Cancellation Reason By ID
+      parameters:
+        - name: userType
+          in: query
+          description: passenger, driver
+          schema:
+            type: string
+          example: driver
+      responses: {}
+      tags:
+        - Dashboard
+        - Cancellation Management
+        - Cancellation Reason
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sortOrder:
+                  type: integer
+            example:
+              sortOrder: 2
+  /cancellation-reasons/status/{cancellationReasonId}:
+    patch:
+      summary: Update Cancellation Reason Status By ID
+      parameters:
+        - name: userType
+          in: query
+          description: passenger, driver
+          schema:
+            type: string
+          example: driver
+      responses: {}
+      tags:
+        - Dashboard
+        - Cancellation Management
+        - Cancellation Reason
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+            example:
+              status: inactive
+    parameters:
+      - name: cancellationReasonId
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 6a5862596e3b304bd932fb81
+  /cancellation-policies:
+    post:
+      summary: Create Or Update Cancellation Policy
+      responses: {}
+      tags:
+        - Dashboard
+        - Cancellation Management
+        - Cancellation Policy
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                passenger:
+                  type: object
+                  properties:
+                    beforeDriverAccepted:
+                      type: object
+                      properties:
+                        cancellationFee:
+                          type: integer
+                        platformShare:
+                          type: integer
+                        driverCompensation:
+                          type: integer
+                    afterDriverAccepted:
+                      type: object
+                      properties:
+                        cancellationFee:
+                          type: integer
+                        platformShare:
+                          type: integer
+                        driverCompensation:
+                          type: integer
+                    afterDriverArrived:
+                      type: object
+                      properties:
+                        cancellationFee:
+                          type: integer
+                        platformShare:
+                          type: integer
+                        driverCompensation:
+                          type: integer
+                driver:
+                  type: object
+                  properties:
+                    afterAccept:
+                      type: object
+                      properties:
+                        cancellationFee:
+                          type: integer
+                        platformShare:
+                          type: integer
+                    excessiveCancellation:
+                      type: object
+                      properties:
+                        cancellationFee:
+                          type: integer
+                        platformShare:
+                          type: integer
+                    excessiveCancellationThreshold:
+                      type: integer
+            example:
+              passenger:
+                beforeDriverAccepted:
+                  cancellationFee: 0
+                  platformShare: 0
+                  driverCompensation: 0
+                afterDriverAccepted:
+                  cancellationFee: 10
+                  platformShare: 3
+                  driverCompensation: 7
+                afterDriverArrived:
+                  cancellationFee: 15
+                  platformShare: 4
+                  driverCompensation: 11
+              driver:
+                afterAccept:
+                  cancellationFee: 5
+                  platformShare: 5
+                excessiveCancellation:
+                  cancellationFee: 20
+                  platformShare: 20
+                excessiveCancellationThreshold: 3
+  /cancellation-policies/active:
+    get:
+      summary: Get Cancellation Policies
+      parameters:
+        - name: searchTerm
+          in: query
+          description: triggerType, actorType, description, policyName
+          schema:
+            type: string
+          example: Rider late
+        - name: page
+          in: query
+          schema:
+            type: integer
+          example: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          example: 5
+        - name: actorType
+          in: query
+          description: driver, passenger
+          schema:
+            type: string
+          example: driver
+        - name: triggerType
+          in: query
+          description: standrd, excessive
+          schema:
+            type: string
+          example: standrd
+      responses: {}
+      tags:
+        - Dashboard
+        - Cancellation Management
+        - Cancellation Policy
+      security:
+        - BearerAuth: []
+  /admin/analytics/admin/analytics/cancellations/summary:
+    get:
+      summary: Cancellation Summary
+      responses: {}
+      tags:
+        - Dashboard
+        - Cancellation Management
+        - Cancellation Analytics
+      security:
+        - BearerAuth: []
+  /admin/analytics/admin/analytics/cancellations/trend:
+    get:
+      summary: Cancellation Trend
+      responses: {}
+      tags:
+        - Dashboard
+        - Cancellation Management
+        - Cancellation Analytics
+      security:
+        - BearerAuth: []
+  /admin/analytics/admin/analytics/cancellations/reasons:
+    get:
+      summary: Cancellation Reason
+      responses: {}
+      tags:
+        - Dashboard
+        - Cancellation Management
+        - Cancellation Analytics
+      security:
+        - BearerAuth: []
+  /admin/analytics/admin/analytics/cancellations/cities:
+    get:
+      summary: Cancellation Rate By Cities
+      responses: {}
+      tags:
+        - Dashboard
+        - Cancellation Management
+        - Cancellation Analytics
+      security:
+        - BearerAuth: []
+  /admin/analytics/admin/analytics/cancellations/categories:
+    get:
+      summary: Cancellation Categories
+      responses: {}
+      tags:
+        - Dashboard
+        - Cancellation Management
+        - Cancellation Analytics
+      security:
+        - BearerAuth: []
+  /live-trips:
+    get:
+      summary: Get Live Trips
+      parameters:
+        - name: searchTerm
+          in: query
+          description: tripId, passenger name, driver name
+          schema:
+            type: string
+        - name: rideType
+          in: query
+          description: instant, scheduled
+          schema:
+            type: string
+          example: instant
+        - name: status
+          in: query
+          description: >-
+            completed, expired, cancelled_by_user, cancelled_by_driver,
+            driver_arrived, started, cancelled, driver_on_the_way
+          schema:
+            type: string
+          example: completed
+        - name: startDate
+          in: query
+          schema:
+            type: string
+        - name: endDate
+          in: query
+          schema:
+            type: string
+        - name: sortOrder
+          in: query
+          description: asc, desc
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+          example: 1
+      responses: {}
+      tags:
+        - Dashboard
+        - Live Trips
+      security:
+        - BearerAuth: []
+  /lost-and-found-item-categories:
+    post:
+      summary: Create Lost And Found Item Category
+      responses: {}
+      tags:
+        - Dashboard
+        - Lost & Found
+        - Lost And Found Item Category
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+            example:
+              name: iPhone
+    get:
+      summary: Get All Lost And Found Item Categories
+      parameters:
+        - name: searchTerm
+          in: query
+          description: name
+          schema:
+            type: string
+          example: iphone
+        - name: page
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: active, inactive
+          schema:
+            type: string
+          example: active
+      responses: {}
+      tags:
+        - Dashboard
+        - Lost & Found
+        - Lost And Found Item Category
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+            example:
+              name: iPhone
+  /lost-and-found-item-categories/active:
+    get:
+      summary: Get Active Lost And Found Item Categories
+      parameters:
+        - name: searchTerm
+          in: query
+          description: name
+          schema:
+            type: string
+          example: iphone
+        - name: page
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: active, inactive
+          schema:
+            type: string
+          example: active
+      responses: {}
+      tags:
+        - Dashboard
+        - Lost & Found
+        - Lost And Found Item Category
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+            example:
+              name: iPhone
+  /lost-and-found-item-categories/{lostAndFoundItemCategoryId}:
+    get:
+      summary: Get Lost And Found Item Category By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Lost & Found
+        - Lost And Found Item Category
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+            example:
+              name: iPhone
+    parameters:
+      - name: lostAndFoundItemCategoryId
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 6a58a6ee1c44f647b20053cb
+    patch:
+      summary: Update Lost And Found Item Category By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Lost & Found
+        - Lost And Found Item Category
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+            example:
+              name: Tablet
+    delete:
+      summary: Delete Lost And Found Item Category By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Lost & Found
+        - Lost And Found Item Category
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+            example:
+              name: Tablet
+  //admin/lost-found/dashboard/cards:
+    get:
+      summary: Lost & Found Dashboard Overview
+      responses: {}
+      tags:
+        - Dashboard
+        - Lost & Found
+      security:
+        - BearerAuth: []
+  /admin/lost-found/reports:
+    get:
+      summary: Lost & Found Reports
+      responses: {}
+      tags:
+        - Dashboard
+        - Lost & Found
+      security:
+        - BearerAuth: []
+  /admin/lost-found/returns:
+    get:
+      summary: Lost & Found Returns
+      responses: {}
+      tags:
+        - Dashboard
+        - Lost & Found
+      security:
+        - BearerAuth: []
+  /admin/lost-found/delivery-fee:
+    get:
+      summary: Delivery Fee
+      responses: {}
+      tags:
+        - Dashboard
+        - Lost & Found
+      security:
+        - BearerAuth: []
+    patch:
+      summary: Update Delivery Fee
+      responses: {}
+      tags:
+        - Dashboard
+        - Lost & Found
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                enabled:
+                  type: boolean
+                reportWindowDays:
+                  type: integer
+                maxFiles:
+                  type: integer
+                maxFileSizeMb:
+                  type: integer
+                defaultDeliveryFee:
+                  type: integer
+                returnConfirmationHours:
+                  type: integer
+                autoCloseDays:
+                  type: integer
+            example:
+              enabled: true
+              reportWindowDays: 7
+              maxFiles: 5
+              maxFileSizeMb: 10
+              defaultDeliveryFee: 0
+              returnConfirmationHours: 48
+              autoCloseDays: 30
+  /admin/lost-found/item-categories:
+    get:
+      summary: Lost & Found Categories
+      responses: {}
+      tags:
+        - Dashboard
+        - Lost & Found
+      security:
+        - BearerAuth: []
+  /admin/lost-found/driver-compensation:
+    get:
+      summary: Driver Compensation
+      responses: {}
+      tags:
+        - Dashboard
+        - Lost & Found
+      security:
+        - BearerAuth: []
+  /admin/lost-found/disputes:
+    get:
+      summary: Dispute
+      responses: {}
+      tags:
+        - Dashboard
+        - Lost & Found
+      security:
+        - BearerAuth: []
+  /admin/lost-found/analytics/overview:
+    get:
+      summary: Analytics Overview
+      responses: {}
+      tags:
+        - Dashboard
+        - Lost & Found
+      security:
+        - BearerAuth: []
+  /admin/lost-found/analytics/report-trend:
+    get:
+      summary: Analytics Report Trend
+      responses: {}
+      tags:
+        - Dashboard
+        - Lost & Found
+      security:
+        - BearerAuth: []
+  /admin/lost-found/analytics/most-lost-items:
+    get:
+      summary: Most Lost Items
+      responses: {}
+      tags:
+        - Dashboard
+        - Lost & Found
+      security:
+        - BearerAuth: []
+  /admin/lost-found/analytics/city-reports:
+    get:
+      summary: City Reports
+      responses: {}
+      tags:
+        - Dashboard
+        - Lost & Found
+      security:
+        - BearerAuth: []
+  /admin/lost-found/analytics/category-distribution:
+    get:
+      summary: Category Distrubution
+      responses: {}
+      tags:
+        - Dashboard
+        - Lost & Found
+      security:
+        - BearerAuth: []
+  /driver-duty-policies:
+    post:
+      summary: Create Driver Duty Policy
+      responses: {}
+      tags:
+        - Dashboard
+        - Driving Hours
+        - Driver Duty Policy
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+            example: "{\r\n  \"name\": \"Buffalo Airport Driver Duty Policy\",\r\n  \"scopeType\": \"airport\", \r\n  \"airportId\": \"6a5b0ca5ae072853104f8362\",\r\n  \"maxDrivingHoursPerDay\": 8,\r\n  \"maxContinuousDrivingHours\": 4,\r\n  \"breakAfterHours\": 4,\r\n  \"breakDurationMinutes\": 30,\r\n  \"maxTripsPerDay\": 20,\r\n  \"minimumRestHours\": 8 \r\n}\r\n\r\n// scopeType: airport, zone, city, state, global\r\n// countryId, stateId, cityId, zoneId, airportId\r\n\r\n// global json data format\r\n// {\r\n//   \"name\": \"Global Driver Duty Policy\",\r\n//   \"scopeType\": \"global\", \r\n//   \"maxDrivingHoursPerDay\": 8,\r\n//   \"maxContinuousDrivingHours\": 4,\r\n//   \"breakAfterHours\": 4,\r\n//   \"breakDurationMinutes\": 30,\r\n//   \"maxTripsPerDay\": 20,\r\n//   \"minimumRestHours\": 8\r\n// }\r\n"
+    get:
+      summary: Get All Driver Duty Policies
+      parameters:
+        - name: searchTerm
+          in: query
+          description: name, country, state, city, zone, airport
+          schema:
+            type: string
+          example: united
+        - name: page
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: active, inactive
+          schema:
+            type: string
+      responses: {}
+      tags:
+        - Dashboard
+        - Driving Hours
+        - Driver Duty Policy
+      security:
+        - BearerAuth: []
+  /driver-duty-policies/active:
+    get:
+      summary: Get Active Driver Duty Policies
+      parameters:
+        - name: searchTerm
+          in: query
+          description: name, country, state, city, zone, airport
+          schema:
+            type: string
+          example: united
+        - name: page
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: active, inactive
+          schema:
+            type: string
+      responses: {}
+      tags:
+        - Dashboard
+        - Driving Hours
+        - Driver Duty Policy
+      security:
+        - BearerAuth: []
+  /driver-duty-policies/{driverDutyPolicyId}:
+    get:
+      summary: Get Driver Duty Policy By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Driving Hours
+        - Driver Duty Policy
+      security:
+        - BearerAuth: []
+    parameters:
+      - name: driverDutyPolicyId
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 6a5758c6c8f7a0e6e84e91f2
+    delete:
+      summary: Delete Driver Duty Policy By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Driving Hours
+        - Driver Duty Policy
+      security:
+        - BearerAuth: []
+  /driver-duty-policies/status/{driverDutyPolicyId}:
+    patch:
+      summary: Update Driver Duty Policy Status By ID
+      responses: {}
+      tags:
+        - Dashboard
+        - Driving Hours
+        - Driver Duty Policy
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+            example:
+              status: active
+    parameters:
+      - name: driverDutyPolicyId
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 6a589cd98c6e254a2f7b5213
+  /admin/duty-hour/global:
+    get:
+      summary: Global
+      responses: {}
+      tags:
+        - Dashboard
+        - Driving Hours
+      security:
+        - BearerAuth: []
+  /admin/duty-hour/states:
+    get:
+      summary: States
+      responses: {}
+      tags:
+        - Dashboard
+        - Driving Hours
+      security:
+        - BearerAuth: []
+  /admin/duty-hour/cities:
+    get:
+      summary: Cities
+      responses: {}
+      tags:
+        - Dashboard
+        - Driving Hours
+      security:
+        - BearerAuth: []
+  /admin/duty-hour/zones:
+    get:
+      summary: Zones
+      responses: {}
+      tags:
+        - Dashboard
+        - Driving Hours
+      security:
+        - BearerAuth: []
+  /admin/duty-hour/airports:
+    get:
+      summary: Airports
+      responses: {}
+      tags:
+        - Dashboard
+        - Driving Hours
+      security:
+        - BearerAuth: []
+  /admin/duty-hour/cards:
+    get:
+      summary: Driving Hours Overview
+      responses: {}
+      tags:
+        - Dashboard
+        - Driving Hours
+      security:
+        - BearerAuth: []
+  /admin/duty-hour/monitoring/drivers:
+    get:
+      summary: Driver Monitoring
+      responses: {}
+      tags:
+        - Dashboard
+        - Driving Hours
+      security:
+        - BearerAuth: []
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer

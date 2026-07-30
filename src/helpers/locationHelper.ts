@@ -17,6 +17,8 @@ export const isValidCoordinates = (
   );
 };
 
+      
+
 /**
  * Check if coordinates are duplicates (exactly matching)
  */
