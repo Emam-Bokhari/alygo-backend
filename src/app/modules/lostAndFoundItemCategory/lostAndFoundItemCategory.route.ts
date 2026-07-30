@@ -1,17 +1,21 @@
 import express from "express";
 import { LostAndFoundItemCategoryController } from "./lostAndFoundItemCategory.controller";
 import { isAdmin, isAuthenticated } from "../../../helpers/authHelper";
+import auth from "../../middlewares/auth";
+import { requirePermission } from "../../middlewares/requirePermission";
 
 const router = express.Router();
 
 router
   .route("/")
   .post(
-    isAdmin,
+    auth(),
+    requirePermission("lostandfounditemcategory.create"),
     LostAndFoundItemCategoryController.createLostAndFoundItemCategory,
   )
   .get(
-    isAdmin,
+    auth(),
+    requirePermission("lostandfounditemcategory.read"),
     LostAndFoundItemCategoryController.getAllLostAndFoundItemCategories,
   );
 
@@ -23,7 +27,8 @@ router.get(
 
 router.patch(
   "/status/:lostAndFoundItemCategoryId",
-  isAdmin,
+  auth(),
+  requirePermission("lostandfounditemcategory.update"),
   LostAndFoundItemCategoryController.updateLostAndFoundItemCategoryStatus,
 );
 
@@ -34,11 +39,13 @@ router
     LostAndFoundItemCategoryController.getLostAndFoundItemCategory,
   )
   .patch(
-    isAdmin,
+    auth(),
+    requirePermission("lostandfounditemcategory.update"),
     LostAndFoundItemCategoryController.updateLostAndFoundItemCategory,
   )
   .delete(
-    isAdmin,
+    auth(),
+    requirePermission("lostandfounditemcategory.delete"),
     LostAndFoundItemCategoryController.deleteLostAndFoundItemCategory,
   );
 

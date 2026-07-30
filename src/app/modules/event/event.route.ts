@@ -3,35 +3,49 @@ import { EventController } from "./event.controller";
 import validateRequest from "../../middlewares/validateRequest";
 import { EventZodValidation } from "./event.validation";
 import { isAdmin } from "../../../helpers/authHelper";
+import auth from "../../middlewares/auth";
+import { requirePermission } from "../../middlewares/requirePermission";
 
 const router = express.Router();
 
 router
   .route("/")
   .post(
-    isAdmin,
+    auth(),
+    requirePermission("event.create"),
     validateRequest(EventZodValidation.createEventValidationSchema),
     EventController.createEvent,
   )
-  .get(isAdmin, EventController.getAllEvent);
+  .get(auth(),
+    requirePermission("event.read"),
+    EventController.getAllEvent);
 
-router.get("/active", isAdmin, EventController.getActiveEvent);
+router.get("/active",
+  auth(),
+  requirePermission("event.read"),
+  EventController.getActiveEvent);
 
 router.patch(
   "/status/:eventId",
-  isAdmin,
+  auth(),
+  requirePermission("event.update"),
   validateRequest(EventZodValidation.updateEventStatusValidationSchema),
   EventController.updateEventStatus,
 );
 
 router
   .route("/:eventId")
-  .get(isAdmin, EventController.getEvent)
+  .get(auth(),
+    requirePermission("event.read"),
+    EventController.getEvent)
   .patch(
-    isAdmin,
+    auth(),
+    requirePermission("event.update"),
     validateRequest(EventZodValidation.updateEventValidationSchema),
     EventController.updateEvent,
   )
-  .delete(isAdmin, EventController.deleteEvent);
+  .delete(auth(),
+    requirePermission("event.delete"),
+    EventController.deleteEvent);
 
 export const EventRoutes = router;

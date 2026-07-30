@@ -5,6 +5,8 @@ export const isUser = auth(USER_ROLES.USER);
 
 export const isDriver = auth(USER_ROLES.DRIVER);
 
+export const isUserOrDriver=auth(USER_ROLES.USER, USER_ROLES.DRIVER);
+
 export const isAdmin = auth(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN);
 
 export const isSuperAdmin = auth(USER_ROLES.SUPER_ADMIN);

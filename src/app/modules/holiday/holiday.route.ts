@@ -3,35 +3,38 @@ import { HolidayController } from "./holiday.controller";
 import validateRequest from "../../middlewares/validateRequest";
 import { HolidayZodValidation } from "./holiday.validation";
 import { isAdmin } from "../../../helpers/authHelper";
+import auth from "../../middlewares/auth";
+import { requirePermission } from "../../middlewares/requirePermission";
 
 const router = express.Router();
 
 router
   .route("/")
   .post(
-    isAdmin,
+    auth(),
+    requirePermission("holiday.create"),
     validateRequest(HolidayZodValidation.createHolidayValidationSchema),
     HolidayController.createHoliday,
   )
-  .get(isAdmin, HolidayController.getAllHoliday);
+  .get(auth(),requirePermission("holiday.read"), HolidayController.getAllHoliday);
 
-router.get("/active", isAdmin, HolidayController.getActiveHoliday);
+router.get("/active", auth(),requirePermission("holiday.read"), HolidayController.getActiveHoliday);
 
 router.patch(
   "/status/:holidayId",
-  isAdmin,
+  auth(),requirePermission("holiday.update"),
   validateRequest(HolidayZodValidation.updateHolidayStatusValidationSchema),
   HolidayController.updateHolidayStatus,
 );
 
 router
   .route("/:holidayId")
-  .get(isAdmin, HolidayController.getHoliday)
+  .get(auth(),requirePermission("holiday.read"), HolidayController.getHoliday)
   .patch(
-    isAdmin,
+    auth(),requirePermission("holiday.update"),
     validateRequest(HolidayZodValidation.updateHolidayValidationSchema),
     HolidayController.updateHoliday,
   )
-  .delete(isAdmin, HolidayController.deleteHoliday);
+  .delete(auth(),requirePermission("holiday.delete"), HolidayController.deleteHoliday);
 
 export const HolidayRoutes = router;

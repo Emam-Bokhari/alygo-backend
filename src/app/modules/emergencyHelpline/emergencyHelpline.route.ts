@@ -2,14 +2,16 @@ import express from "express";
 import { EmergencyHelplineController } from "./emergencyHelpline.controller";
 import validateRequest from "../../middlewares/validateRequest";
 import { EmergencyHelplineZodValidation } from "./emergencyHelpline.validation";
-import { isAdmin } from "../../../helpers/authHelper";
+import auth from "../../middlewares/auth";
+import { requirePermission } from "../../middlewares/requirePermission";
 
 const router = express.Router();
 
 router
   .route("/")
   .patch(
-    isAdmin,
+    auth(),
+    requirePermission("emergencyHelpline.update"),  
     validateRequest(
       EmergencyHelplineZodValidation.updateEmergencyHelplineValidationSchema,
     ),

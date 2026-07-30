@@ -2,10 +2,7 @@ import express from "express";
 import { EmergencyContactController } from "./emergencyContact.controller";
 import validateRequest from "../../middlewares/validateRequest";
 import { EmergencyContactZodValidation } from "./emergencyContact.validation";
-import auth from "../../middlewares/auth";
-import { USER_ROLES } from "../../../enums/user";
-
-const isUserOrDriver = auth(USER_ROLES.USER, USER_ROLES.DRIVER);
+import { isUserOrDriver } from "../../../helpers/authHelper";
 
 const router = express.Router();
 

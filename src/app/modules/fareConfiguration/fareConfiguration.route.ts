@@ -1,13 +1,15 @@
 import express from "express";
 import { FareConfigurationController } from "./fareConfiguration.controller";
 import { isAdmin, isAuthenticated } from "../../../helpers/authHelper";
+import auth from "../../middlewares/auth";
+import { requirePermission } from "../../middlewares/requirePermission";
 
 const router = express.Router();
 
 router
   .route("/")
-  .post(isAdmin, FareConfigurationController.createFareConfiguration)
-  .get(isAdmin, FareConfigurationController.getAllFareConfiguration);
+  .post(auth(),requirePermission("fareconfiguration.create"), FareConfigurationController.createFareConfiguration)
+  .get(auth(),requirePermission("fareconfiguration.read"), FareConfigurationController.getAllFareConfiguration);
 
 router.get(
   "/active",
@@ -23,14 +25,15 @@ router.get(
 
 router.patch(
   "/status/:fareConfigurationId",
-  isAdmin,
+  auth(),
+  requirePermission("fareconfiguration.update"),
   FareConfigurationController.updateFareConfigurationStatus,
 );
 
 router
   .route("/:fareConfigurationId")
   .get(isAuthenticated, FareConfigurationController.getFareConfiguration)
-  .patch(isAdmin, FareConfigurationController.updateFareConfiguration)
-  .delete(isAdmin, FareConfigurationController.deleteFareConfiguration);
+  .patch(auth(),requirePermission("fareconfiguration.update"), FareConfigurationController.updateFareConfiguration)
+  .delete(auth(),requirePermission("fareconfiguration.delete"), FareConfigurationController.deleteFareConfiguration);
 
 export const FareConfigurationRoutes = router;
