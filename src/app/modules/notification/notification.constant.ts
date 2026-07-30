@@ -1,7 +1,7 @@
 export enum NOTIFICATION_TYPE {
-  SUPER_ADMIN = "SUPER_ADMIN",
-  ADMIN = "ADMIN",
-  USER = "USER",
-  DRIVER = "DRIVER",
-  MESSAGE_NEW = "MESSAGE_NEW",
+  SUPER_ADMIN = "super_admin",
+  ADMIN = "admin",
+  USER = "user",
+  DRIVER = "driver",
+  MESSAGE_NEW = "message_new",
 }

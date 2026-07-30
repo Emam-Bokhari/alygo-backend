@@ -2,11 +2,11 @@ import { ISoftDeleteModel } from "../../../types/softDelete";
 import { Model, Types } from "mongoose";
 
 export enum REFERRAL_STATUS {
-  PENDING = "PENDING",
-  ACTIVE = "ACTIVE",
-  COMPLETED = "COMPLETED",
-  EXPIRED = "EXPIRED",
-  CANCELLED = "CANCELLED",
+  PENDING = "pending",
+  ACTIVE = "active",
+  COMPLETED = "completed",
+  EXPIRED = "expired",
+  CANCELLED = "cancelled",
 }
 
 export enum REWARD_STATUS {
