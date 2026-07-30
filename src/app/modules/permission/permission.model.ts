@@ -1,7 +1,8 @@
+import { softDeletePlugin } from "../../../DB/plugins/softDeletePlugin";
 import { Schema, model } from "mongoose";
-import { IPermission } from "./permission.interface";
+import { IPermission, PermissionModel } from "./permission.interface";
 
-const permissionSchema = new Schema<IPermission>(
+const permissionSchema = new Schema<IPermission, PermissionModel>(
   {
     name: {
       type: String,
@@ -124,4 +125,6 @@ permissionSchema.index({ action: 1 });
 permissionSchema.index({ key: 1 });
 permissionSchema.index({ status: 1 });
 
-export const Permission = model<IPermission>("Permission", permissionSchema);
+permissionSchema.plugin(softDeletePlugin);
+
+export const Permission = model<IPermission, PermissionModel>("Permission", permissionSchema);

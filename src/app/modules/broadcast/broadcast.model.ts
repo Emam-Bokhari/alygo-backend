@@ -1,3 +1,4 @@
+import { softDeletePlugin } from "../../../DB/plugins/softDeletePlugin";
 import { model, Schema } from "mongoose";
 import { IBroadcast, BroadcastModel } from "./broadcast.interface";
 import {
@@ -96,7 +97,6 @@ const broadcastSchema = new Schema<IBroadcast, BroadcastModel>(
 // Indexes to speed up retrieving scheduled messages and active broadcasts
 broadcastSchema.index({ status: 1, scheduledAt: 1 });
 
-export const Broadcast = model<IBroadcast, BroadcastModel>(
-  "Broadcast",
-  broadcastSchema,
-);
+broadcastSchema.plugin(softDeletePlugin);
+
+export const Broadcast = model<IBroadcast, BroadcastModel>("Broadcast", broadcastSchema);

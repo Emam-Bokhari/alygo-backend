@@ -1,3 +1,4 @@
+import { ISoftDeleteModel } from "../../../types/softDelete";
 import { Model, Types } from "mongoose";
 
 export interface ITracking {
@@ -50,4 +51,4 @@ export interface ITracking {
   polyline?: string;
 }
 
-export type TrackingModel = Model<ITracking>;
+export type TrackingModel = ISoftDeleteModel<ITracking>;

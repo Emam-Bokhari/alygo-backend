@@ -1,3 +1,4 @@
+import { ISoftDeleteModel } from "../../../types/softDelete";
 import { Model, Types } from "mongoose";
 
 export type IResetToken = {

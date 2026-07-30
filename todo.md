@@ -18,13 +18,13 @@
 <!--
 1. Broadcast
 2. Notification
-3. Admin Role Enforcement
+3. Some Get Routes in App
+4. Some Get Routes in Admin Dashboard
 -->
 
 <!--
 1. id bananor jonno sob kiso ak jaiga theke use hobe
 2. sobgular khetre e custom Id make korbe but mongodb query ar jnno sobsomai e _id use korbe
-3. somosto jaigai soft delete use korte hobe, ak e sathe kono data jadi delete orthat soft delete e kora hoi ta o jeno agaer data te ba id te null show na kore, ager existing data jeno sothik vabe e populate hoi
 -->
 
 <!--

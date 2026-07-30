@@ -1,3 +1,5 @@
+import { softDeletePlugin } from "../../../DB/plugins/softDeletePlugin";
+import { ISoftDeleteModel } from "../../../types/softDelete";
 import { model, Schema, Types } from "mongoose";
 import { POINT_EVENT_TYPE } from "./tier.constant";
 
@@ -31,7 +33,9 @@ export interface IDriverPointHistory {
   };
 }
 
-const driverPointHistorySchema = new Schema<IDriverPointHistory>(
+export type DriverPointHistoryModel = ISoftDeleteModel<IDriverPointHistory>;
+
+const driverPointHistorySchema = new Schema<IDriverPointHistory, DriverPointHistoryModel>(
   {
     driverId: {
       type: Schema.Types.ObjectId,
@@ -129,7 +133,6 @@ driverPointHistorySchema.index(
   { unique: true },
 );
 
-export const DriverPointHistory = model<IDriverPointHistory>(
-  "DriverPointHistory",
-  driverPointHistorySchema,
-);
+driverPointHistorySchema.plugin(softDeletePlugin);
+
+export const DriverPointHistory = model<IDriverPointHistory, DriverPointHistoryModel>("DriverPointHistory", driverPointHistorySchema);

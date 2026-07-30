@@ -1,3 +1,4 @@
+import { ISoftDeleteModel } from "../../../types/softDelete";
 import { Model, Types } from "mongoose";
 import {
   REPORT_STATUS,
@@ -78,4 +79,4 @@ export interface ILostFound {
   updatedAt: Date;
 }
 
-export type LostFoundModel = Model<ILostFound>;
+export type LostFoundModel = ISoftDeleteModel<ILostFound>;

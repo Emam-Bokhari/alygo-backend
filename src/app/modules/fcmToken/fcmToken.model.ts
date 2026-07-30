@@ -1,7 +1,8 @@
+import { softDeletePlugin } from "../../../DB/plugins/softDeletePlugin";
 import mongoose, { Schema, Document } from "mongoose";
-import { IDeviceTokenModel } from "./fcmToken.interface";
+import { IDeviceTokenModel, DeviceTokenModelModel } from "./fcmToken.interface";
 
-const deviceTokenSchema = new Schema<IDeviceTokenModel>(
+const deviceTokenSchema = new Schema<IDeviceTokenModel, DeviceTokenModelModel>(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -37,7 +38,6 @@ deviceTokenSchema.index({ userId: 1, deviceId: 1 }, { unique: true });
 // 15552000 seconds = 180 days
 deviceTokenSchema.index({ updatedAt: 1 }, { expireAfterSeconds: 15552000 });
 deviceTokenSchema.index({ fcmToken: 1 });
-export const DeviceToken = mongoose.model<IDeviceTokenModel>(
-  "DeviceToken",
-  deviceTokenSchema,
-);
+deviceTokenSchema.plugin(softDeletePlugin);
+
+export const DeviceToken = mongoose.model<IDeviceTokenModel, DeviceTokenModelModel>("DeviceToken", deviceTokenSchema);

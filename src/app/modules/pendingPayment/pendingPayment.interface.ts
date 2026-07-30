@@ -1,3 +1,4 @@
+import { ISoftDeleteModel } from "../../../types/softDelete";
 import { Model, Types } from "mongoose";
 
 export interface IPendingPayment {
@@ -18,4 +19,4 @@ export interface IPendingPayment {
   updatedAt?: Date;
 }
 
-export type PendingPaymentModel = Model<IPendingPayment>;
+export type PendingPaymentModel = ISoftDeleteModel<IPendingPayment>;

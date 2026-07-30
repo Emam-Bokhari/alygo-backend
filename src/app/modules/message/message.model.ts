@@ -1,3 +1,4 @@
+import { softDeletePlugin } from "../../../DB/plugins/softDeletePlugin";
 import { Schema, model } from "mongoose";
 import { IMessage, MessageModel } from "./message.interface";
 import { MESSAGE_TYPE } from "../../../enums/message";
@@ -52,5 +53,7 @@ const messageSchema = new Schema<IMessage, MessageModel>(
     versionKey: false,
   },
 );
+
+messageSchema.plugin(softDeletePlugin);
 
 export const Message = model<IMessage, MessageModel>("Message", messageSchema);

@@ -1,3 +1,4 @@
+import { softDeletePlugin } from "../../../DB/plugins/softDeletePlugin";
 import { model, Schema } from "mongoose";
 import { ITracking, TrackingModel } from "./tracking.interface";
 
@@ -152,7 +153,6 @@ const trackingSchema = new Schema<ITracking, TrackingModel>(
   },
 );
 
-export const Tracking = model<ITracking, TrackingModel>(
-  "Tracking",
-  trackingSchema,
-);
+trackingSchema.plugin(softDeletePlugin);
+
+export const Tracking = model<ITracking, TrackingModel>("Tracking", trackingSchema);

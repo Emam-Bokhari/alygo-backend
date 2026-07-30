@@ -1,3 +1,5 @@
+import { softDeletePlugin } from "../../../DB/plugins/softDeletePlugin";
+import { ISoftDeleteModel } from "../../../types/softDelete";
 import { model, Schema, Types } from "mongoose";
 
 export interface IDestinationFilter {
@@ -22,7 +24,9 @@ export interface IDestinationFilter {
   updatedAt?: Date;
 }
 
-const destinationFilterSchema = new Schema<IDestinationFilter>(
+export type DestinationFilterModel = ISoftDeleteModel<IDestinationFilter>;
+
+const destinationFilterSchema = new Schema<IDestinationFilter, DestinationFilterModel>(
   {
     driverId: {
       type: Schema.Types.ObjectId,
@@ -93,7 +97,6 @@ const destinationFilterSchema = new Schema<IDestinationFilter>(
   },
 );
 
-export const DestinationFilter = model<IDestinationFilter>(
-  "DestinationFilter",
-  destinationFilterSchema,
-);
+destinationFilterSchema.plugin(softDeletePlugin);
+
+export const DestinationFilter = model<IDestinationFilter, DestinationFilterModel>("DestinationFilter", destinationFilterSchema);

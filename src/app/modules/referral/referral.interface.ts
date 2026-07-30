@@ -1,3 +1,4 @@
+import { ISoftDeleteModel } from "../../../types/softDelete";
 import { Model, Types } from "mongoose";
 
 export enum REFERRAL_STATUS {
@@ -49,4 +50,4 @@ export interface IReferral {
   updatedAt: Date;
 }
 
-export type ReferralModel = Model<IReferral>;
+export type ReferralModel = ISoftDeleteModel<IReferral>;

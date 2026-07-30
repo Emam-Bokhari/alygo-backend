@@ -1,3 +1,4 @@
+import { ISoftDeleteModel } from "../../../types/softDelete";
 import { Types } from "mongoose";
 import { CHAT_COMMUNICATION_TYPE, CHAT_STATUS } from "../../../enums/chat";
 
@@ -13,3 +14,5 @@ export type IChat = {
   communicationType?: CHAT_COMMUNICATION_TYPE;
   referenceId?: Types.ObjectId;
 };
+
+export type ChatModel = ISoftDeleteModel<IChat>;

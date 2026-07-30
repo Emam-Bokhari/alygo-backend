@@ -1,3 +1,4 @@
+import { softDeletePlugin } from "../../../DB/plugins/softDeletePlugin";
 import { model, Schema } from "mongoose";
 import { IWallet, WalletModel, WALLET_STATUS } from "./wallet.interface";
 
@@ -47,5 +48,7 @@ const walletSchema = new Schema<IWallet, WalletModel>(
     },
   },
 );
+
+walletSchema.plugin(softDeletePlugin);
 
 export const Wallet = model<IWallet, WalletModel>("Wallet", walletSchema);

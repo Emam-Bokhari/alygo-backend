@@ -1,3 +1,4 @@
+import { ISoftDeleteModel } from "../../../types/softDelete";
 import { Types } from "mongoose";
 import {
   CLASSIFICATION,
@@ -114,3 +115,5 @@ export type IDriver = {
   progressPercentage?: number;
   tierAchievedAt?: Date;
 };
+
+export type DriverModel = ISoftDeleteModel<IDriver>;

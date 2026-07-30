@@ -1,3 +1,5 @@
+import { softDeletePlugin } from "../../../DB/plugins/softDeletePlugin";
+import { ISoftDeleteModel } from "../../../types/softDelete";
 import { model, Schema, Types } from "mongoose";
 
 export interface ITierHistory {
@@ -10,7 +12,9 @@ export interface ITierHistory {
   updatedAt?: Date;
 }
 
-const tierHistorySchema = new Schema<ITierHistory>(
+export type TierHistoryModel = ISoftDeleteModel<ITierHistory>;
+
+const tierHistorySchema = new Schema<ITierHistory, TierHistoryModel>(
   {
     driverId: {
       type: Schema.Types.ObjectId,
@@ -43,7 +47,6 @@ const tierHistorySchema = new Schema<ITierHistory>(
   },
 );
 
-export const TierHistory = model<ITierHistory>(
-  "TierHistory",
-  tierHistorySchema,
-);
+tierHistorySchema.plugin(softDeletePlugin);
+
+export const TierHistory = model<ITierHistory, TierHistoryModel>("TierHistory", tierHistorySchema);

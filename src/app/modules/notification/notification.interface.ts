@@ -1,3 +1,4 @@
+import { ISoftDeleteModel } from "../../../types/softDelete";
 import { Model, Types } from "mongoose";
 
 export type INotification = {
@@ -18,4 +19,4 @@ export type INotification = {
   type?: string;
 };
 
-export type NotificationModel = Model<INotification>;
+export type NotificationModel = ISoftDeleteModel<INotification>;

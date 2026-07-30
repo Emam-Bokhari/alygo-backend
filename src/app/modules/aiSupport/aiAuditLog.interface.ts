@@ -1,3 +1,4 @@
+import { ISoftDeleteModel } from "../../../types/softDelete";
 import { Model, Types } from "mongoose";
 
 export interface IAiAuditLog {
@@ -10,4 +11,4 @@ export interface IAiAuditLog {
   updatedAt: Date;
 }
 
-export type AiAuditLogModel = Model<IAiAuditLog>;
+export type AiAuditLogModel = ISoftDeleteModel<IAiAuditLog>;

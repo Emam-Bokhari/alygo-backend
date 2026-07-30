@@ -1,3 +1,4 @@
+import { softDeletePlugin } from "../../../DB/plugins/softDeletePlugin";
 import { model, Schema } from "mongoose";
 import {
   IPayout,
@@ -80,5 +81,7 @@ const payoutSchema = new Schema<IPayout, PayoutModel>(
     },
   },
 );
+
+payoutSchema.plugin(softDeletePlugin);
 
 export const Payout = model<IPayout, PayoutModel>("Payout", payoutSchema);

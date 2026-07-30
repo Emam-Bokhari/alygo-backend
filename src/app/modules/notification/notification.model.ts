@@ -1,3 +1,4 @@
+import { softDeletePlugin } from "../../../DB/plugins/softDeletePlugin";
 import { model, Schema } from "mongoose";
 import { INotification, NotificationModel } from "./notification.interface";
 import { NOTIFICATION_TYPE } from "./notification.constant";
@@ -47,7 +48,6 @@ const notificationSchema = new Schema<INotification, NotificationModel>(
   },
 );
 
-export const Notification = model<INotification, NotificationModel>(
-  "Notification",
-  notificationSchema,
-);
+notificationSchema.plugin(softDeletePlugin);
+
+export const Notification = model<INotification, NotificationModel>("Notification", notificationSchema);

@@ -1,3 +1,4 @@
+import { ISoftDeleteModel } from "../../../types/softDelete";
 import { Document, Model, Types } from "mongoose";
 
 export interface IRecentDestination {
@@ -14,7 +15,7 @@ export interface IRecentDestination {
   updatedAt: Date;
 }
 
-export interface IRecentDestinationModel extends Model<IRecentDestination> {
+export interface IRecentDestinationModel extends ISoftDeleteModel<IRecentDestination> {
   // Add any static methods here if needed
 }
 

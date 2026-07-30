@@ -1,3 +1,4 @@
+import { ISoftDeleteModel } from "../../../types/softDelete";
 import { Model } from "mongoose";
 
 export interface IEmergencyHelpline {
@@ -7,4 +8,4 @@ export interface IEmergencyHelpline {
   updatedAt: Date;
 }
 
-export type EmergencyHelplineModel = Model<IEmergencyHelpline>;
+export type EmergencyHelplineModel = ISoftDeleteModel<IEmergencyHelpline>;

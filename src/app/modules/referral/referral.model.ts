@@ -1,3 +1,4 @@
+import { softDeletePlugin } from "../../../DB/plugins/softDeletePlugin";
 import { model, Schema } from "mongoose";
 import {
   IReferral,
@@ -142,7 +143,6 @@ const referralSchema = new Schema<IReferral, ReferralModel>(
   },
 );
 
-export const Referral = model<IReferral, ReferralModel>(
-  "Referral",
-  referralSchema,
-);
+referralSchema.plugin(softDeletePlugin);
+
+export const Referral = model<IReferral, ReferralModel>("Referral", referralSchema);

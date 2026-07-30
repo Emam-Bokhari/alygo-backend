@@ -1,7 +1,8 @@
+import { softDeletePlugin } from "../../../DB/plugins/softDeletePlugin";
 import { Schema, model } from "mongoose";
-import { IRole } from "./role.interface";
+import { IRole, RoleModel } from "./role.interface";
 
-const roleSchema = new Schema<IRole>(
+const roleSchema = new Schema<IRole, RoleModel>(
   {
     name: {
       type: String,
@@ -70,4 +71,6 @@ const roleSchema = new Schema<IRole>(
 roleSchema.index({ name: 1 }, { unique: true });
 roleSchema.index({ slug: 1 }, { unique: true });
 
-export const Role = model<IRole>("Role", roleSchema);
+roleSchema.plugin(softDeletePlugin);
+
+export const Role = model<IRole, RoleModel>("Role", roleSchema);

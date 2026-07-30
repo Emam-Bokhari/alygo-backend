@@ -1,3 +1,4 @@
+import { ISoftDeleteModel } from "../../../types/softDelete";
 import { Model, Types } from "mongoose";
 import { REVIEW_STATUS } from "./review.constant";
 
@@ -28,7 +29,7 @@ export interface IReview {
   updatedAt?: Date;
 }
 
-export type ReviewModel = Model<IReview>;
+export type ReviewModel = ISoftDeleteModel<IReview>;
 
 // Backward compatibility enum for user.service.ts
 export enum REVIEW_TARGET_TYPE {

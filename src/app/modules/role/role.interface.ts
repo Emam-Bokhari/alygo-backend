@@ -1,3 +1,4 @@
+import { ISoftDeleteModel } from "../../../types/softDelete";
 import { Types } from "mongoose";
 import { IPermission } from "../permission/permission.interface";
 
@@ -13,3 +14,5 @@ export type IRole = {
   createdAt?: Date;
   updatedAt?: Date;
 };
+
+export type RoleModel = ISoftDeleteModel<IRole>;

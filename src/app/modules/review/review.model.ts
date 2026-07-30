@@ -1,3 +1,4 @@
+import { softDeletePlugin } from "../../../DB/plugins/softDeletePlugin";
 import mongoose, { model, Schema } from "mongoose";
 import { IReview, ReviewModel } from "./review.interface";
 import { REVIEW_STATUS } from "./review.constant";
@@ -99,6 +100,8 @@ const reviewSchema = new Schema<IReview, ReviewModel>(
 
 // Prevent duplicate review: one reviewer can only review once per ride
 reviewSchema.index({ rideId: 1, reviewerId: 1 }, { unique: true });
+
+reviewSchema.plugin(softDeletePlugin);
 
 export const Review = model<IReview, ReviewModel>("Review", reviewSchema);
 

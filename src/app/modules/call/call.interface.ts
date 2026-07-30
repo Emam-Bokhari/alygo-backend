@@ -1,3 +1,4 @@
+import { ISoftDeleteModel } from "../../../types/softDelete";
 import { Model, Types } from "mongoose";
 import { CALL_STATUS, CALL_TYPE, COMMUNICATION_TYPE } from "./call.constant";
 
@@ -32,4 +33,4 @@ export interface ICall {
   updatedAt: Date;
 }
 
-export type CallModel = Model<ICall>;
+export type CallModel = ISoftDeleteModel<ICall>;

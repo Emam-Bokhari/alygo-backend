@@ -1,3 +1,4 @@
+import { ISoftDeleteModel } from "../../../types/softDelete";
 import { Model, Types } from "mongoose";
 import {
   CANCELLED_BY,
@@ -343,4 +344,4 @@ export interface IRide {
   updatedAt: Date;
 }
 
-export type RideModel = Model<IRide>;
+export type RideModel = ISoftDeleteModel<IRide>;

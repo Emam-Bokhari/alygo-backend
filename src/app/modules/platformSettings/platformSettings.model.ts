@@ -1,3 +1,4 @@
+import { softDeletePlugin } from "../../../DB/plugins/softDeletePlugin";
 import { model, Schema } from "mongoose";
 import {
   IPlatformSettings,
@@ -6,9 +7,7 @@ import {
 import { PLATFORM_CURRENCY } from "./platformSettings.constant";
 
 const platformSettingsSchema = new Schema<
-  IPlatformSettings,
-  PlatformSettingsModel
->(
+  IPlatformSettings, PlatformSettingsModel>(
   {
     platformName: {
       type: String,
@@ -57,7 +56,6 @@ const platformSettingsSchema = new Schema<
   },
 );
 
-export const PlatformSettings = model<IPlatformSettings, PlatformSettingsModel>(
-  "PlatformSettings",
-  platformSettingsSchema,
-);
+platformSettingsSchema.plugin(softDeletePlugin);
+
+export const PlatformSettings = model<IPlatformSettings, PlatformSettingsModel>("PlatformSettings", platformSettingsSchema);

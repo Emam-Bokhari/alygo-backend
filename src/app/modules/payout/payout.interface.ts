@@ -1,3 +1,4 @@
+import { ISoftDeleteModel } from "../../../types/softDelete";
 import { Model, Types } from "mongoose";
 import { PAYOUT_STATUS, PAYOUT_METHOD } from "./payout.constant";
 
@@ -18,4 +19,4 @@ export interface IPayout {
   updatedAt: Date;
 }
 
-export type PayoutModel = Model<IPayout>;
+export type PayoutModel = ISoftDeleteModel<IPayout>;

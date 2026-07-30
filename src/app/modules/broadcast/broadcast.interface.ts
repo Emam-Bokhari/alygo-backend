@@ -1,3 +1,4 @@
+import { ISoftDeleteModel } from "../../../types/softDelete";
 import { Model, Types } from "mongoose";
 import {
   BROADCAST_DELIVERY_TYPE,
@@ -29,4 +30,4 @@ export interface IBroadcast {
   updatedAt: Date;
 }
 
-export type BroadcastModel = Model<IBroadcast>;
+export type BroadcastModel = ISoftDeleteModel<IBroadcast>;

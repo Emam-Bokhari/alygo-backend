@@ -1,3 +1,4 @@
+import { ISoftDeleteModel } from "../../../types/softDelete";
 import { Model, Types } from "mongoose";
 import { TRIP_REPORT_STATUS } from "./tripReport.constant";
 
@@ -49,4 +50,4 @@ export interface ITripReport {
   updatedAt: Date;
 }
 
-export type TripReportModel = Model<ITripReport>;
+export type TripReportModel = ISoftDeleteModel<ITripReport>;

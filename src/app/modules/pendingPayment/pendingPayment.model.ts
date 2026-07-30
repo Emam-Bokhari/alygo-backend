@@ -1,3 +1,4 @@
+import { softDeletePlugin } from "../../../DB/plugins/softDeletePlugin";
 import { Schema, model } from "mongoose";
 import {
   IPendingPayment,
@@ -70,7 +71,6 @@ const pendingPaymentSchema = new Schema<IPendingPayment, PendingPaymentModel>(
   },
 );
 
-export const PendingPayment = model<IPendingPayment, PendingPaymentModel>(
-  "PendingPayment",
-  pendingPaymentSchema,
-);
+pendingPaymentSchema.plugin(softDeletePlugin);
+
+export const PendingPayment = model<IPendingPayment, PendingPaymentModel>("PendingPayment", pendingPaymentSchema);

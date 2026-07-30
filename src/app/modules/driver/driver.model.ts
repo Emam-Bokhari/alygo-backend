@@ -1,5 +1,6 @@
+import { softDeletePlugin } from "../../../DB/plugins/softDeletePlugin";
 import { model, Schema } from "mongoose";
-import { IDriver } from "./driver.interface";
+import { IDriver, DriverModel } from "./driver.interface";
 import {
   CLASSIFICATION,
   DOCUMENT_TYPE,
@@ -10,7 +11,7 @@ import {
   VERIFICATION_STATUS,
 } from "./driver.constant";
 
-const driverSchema = new Schema<IDriver>(
+const driverSchema = new Schema<IDriver, DriverModel>(
   {
     userId: {
       type: Schema.Types.ObjectId,
@@ -389,4 +390,6 @@ driverSchema.index({
   taxVerified: 1,
 });
 
-export const Driver = model("Driver", driverSchema);
+driverSchema.plugin(softDeletePlugin);
+
+export const Driver = model<IDriver, DriverModel>("Driver", driverSchema);

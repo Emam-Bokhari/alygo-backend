@@ -1,7 +1,8 @@
+import { softDeletePlugin } from "../../../DB/plugins/softDeletePlugin";
 import { Schema, model } from "mongoose";
-import { IAuditLog } from "./auditLog.interface";
+import { IAuditLog, AuditLogModel } from "./auditLog.interface";
 
-const auditLogSchema = new Schema<IAuditLog>(
+const auditLogSchema = new Schema<IAuditLog, AuditLogModel>(
   {
     action: {
       type: String,
@@ -46,4 +47,6 @@ const auditLogSchema = new Schema<IAuditLog>(
   },
 );
 
-export const AuditLog = model<IAuditLog>("AuditLog", auditLogSchema);
+auditLogSchema.plugin(softDeletePlugin);
+
+export const AuditLog = model<IAuditLog, AuditLogModel>("AuditLog", auditLogSchema);

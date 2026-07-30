@@ -1,3 +1,4 @@
+import { softDeletePlugin } from "../../../DB/plugins/softDeletePlugin";
 import { model, Schema } from "mongoose";
 import {
   IRecentDestination,
@@ -5,9 +6,7 @@ import {
 } from "./recentDestination.interface";
 
 const recentDestinationSchema = new Schema<
-  IRecentDestination,
-  IRecentDestinationModel
->(
+  IRecentDestination, IRecentDestinationModel>(
   {
     userId: {
       type: Schema.Types.ObjectId,
@@ -73,7 +72,6 @@ recentDestinationSchema.index({ location: "2dsphere" });
 // Compound index for efficient queries: userId + lastUsedAt
 recentDestinationSchema.index({ userId: 1, lastUsedAt: -1 });
 
-export const RecentDestination = model<
-  IRecentDestination,
-  IRecentDestinationModel
->("RecentDestination", recentDestinationSchema);
+recentDestinationSchema.plugin(softDeletePlugin);
+
+export const RecentDestination = model<IRecentDestination, IRecentDestinationModel>("RecentDestination", recentDestinationSchema);

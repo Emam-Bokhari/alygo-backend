@@ -1,3 +1,4 @@
+import { softDeletePlugin } from "../../../DB/plugins/softDeletePlugin";
 import { model, Schema } from "mongoose";
 import { ITripReport, TripReportModel } from "./tripReport.interface";
 import { TRIP_REPORT_STATUS } from "./tripReport.constant";
@@ -173,7 +174,6 @@ const tripReportSchema = new Schema<ITripReport, TripReportModel>(
 // Unique index on rideId to ensure only one report per ride
 tripReportSchema.index({ rideId: 1 }, { unique: true });
 
-export const TripReport = model<ITripReport, TripReportModel>(
-  "TripReport",
-  tripReportSchema,
-);
+tripReportSchema.plugin(softDeletePlugin);
+
+export const TripReport = model<ITripReport, TripReportModel>("TripReport", tripReportSchema);

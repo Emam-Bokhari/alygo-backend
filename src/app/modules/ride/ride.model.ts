@@ -1,3 +1,4 @@
+import { softDeletePlugin } from "../../../DB/plugins/softDeletePlugin";
 import { model, Schema } from "mongoose";
 import { IRide, RideModel } from "./rider.interface";
 import {
@@ -632,5 +633,7 @@ rideSchema.virtual("scheduledAtDisplay").get(function (this: IRide) {
   // For now, return the UTC time - client should handle timezone conversion
   return this.scheduledAt;
 });
+
+rideSchema.plugin(softDeletePlugin);
 
 export const Ride = model<IRide, RideModel>("Ride", rideSchema);

@@ -1,3 +1,4 @@
+import { softDeletePlugin } from "../../../DB/plugins/softDeletePlugin";
 import { model, Schema } from "mongoose";
 import { ILostFound, LostFoundModel } from "./lostAndFound.interface";
 import {
@@ -244,7 +245,6 @@ const lostFoundSchema = new Schema<ILostFound, LostFoundModel>(
   },
 );
 
-export const LostFound = model<ILostFound, LostFoundModel>(
-  "LostFound",
-  lostFoundSchema,
-);
+lostFoundSchema.plugin(softDeletePlugin);
+
+export const LostFound = model<ILostFound, LostFoundModel>("LostFound", lostFoundSchema);

@@ -1,3 +1,4 @@
+import { ISoftDeleteModel } from "../../../types/softDelete";
 import { Model, Types } from "mongoose";
 import { PAYMENT_METHOD, PAYMENT_STATUS } from "../ride/ride.constant";
 import { TRANSACTION_TYPE } from "./transaction.constant";
@@ -36,4 +37,4 @@ export interface ITransaction {
   updatedAt: Date;
 }
 
-export type TransactionModel = Model<ITransaction>;
+export type TransactionModel = ISoftDeleteModel<ITransaction>;

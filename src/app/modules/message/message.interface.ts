@@ -1,3 +1,4 @@
+import { ISoftDeleteModel } from "../../../types/softDelete";
 import { Model, Types } from "mongoose";
 import { MESSAGE_TYPE } from "../../../enums/message";
 
@@ -14,4 +15,4 @@ export type IMessage = {
   pinnedAt?: Date;
 };
 
-export type MessageModel = Model<IMessage, Record<string, unknown>>;
+export type MessageModel = ISoftDeleteModel<IMessage>;

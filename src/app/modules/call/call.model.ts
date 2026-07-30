@@ -1,3 +1,4 @@
+import { softDeletePlugin } from "../../../DB/plugins/softDeletePlugin";
 import { Schema, model } from "mongoose";
 import { ICall, CallModel } from "./call.interface";
 import { CALL_STATUS, CALL_TYPE, COMMUNICATION_TYPE } from "./call.constant";
@@ -121,5 +122,7 @@ const callSchema = new Schema<ICall, CallModel>(
     versionKey: false,
   },
 );
+
+callSchema.plugin(softDeletePlugin);
 
 export const Call = model<ICall, CallModel>("Call", callSchema);

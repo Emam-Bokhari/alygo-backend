@@ -1,8 +1,9 @@
+import { softDeletePlugin } from "../../../DB/plugins/softDeletePlugin";
 import mongoose, { Schema } from "mongoose";
-import { IChat } from "./chat.interface";
+import { IChat, ChatModel } from "./chat.interface";
 import { CHAT_COMMUNICATION_TYPE, CHAT_STATUS } from "../../../enums/chat";
 
-const chatSchema = new Schema<IChat>(
+const chatSchema = new Schema<IChat, ChatModel>(
   {
     participants: [{ type: Schema.Types.ObjectId, ref: "User" }],
     lastMessage: { type: Schema.Types.ObjectId, ref: "Message", default: null },
@@ -35,4 +36,6 @@ const chatSchema = new Schema<IChat>(
   },
 );
 
-export const Chat = mongoose.model<IChat>("Chat", chatSchema);
+chatSchema.plugin(softDeletePlugin);
+
+export const Chat = mongoose.model<IChat, ChatModel>("Chat", chatSchema);

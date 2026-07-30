@@ -1,3 +1,4 @@
+import { softDeletePlugin } from "../../../DB/plugins/softDeletePlugin";
 import { model, Schema } from "mongoose";
 import { IResetToken, ResetTokenModel } from "./resetToken.interface";
 
@@ -36,7 +37,6 @@ resetTokenSchema.statics.isExpireToken = async (token: string) => {
   return !!resetToken;
 };
 
-export const ResetToken = model<IResetToken, ResetTokenModel>(
-  "Token",
-  resetTokenSchema,
-);
+resetTokenSchema.plugin(softDeletePlugin);
+
+export const ResetToken = model<IResetToken, ResetTokenModel>("Token", resetTokenSchema);

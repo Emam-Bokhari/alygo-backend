@@ -1,3 +1,4 @@
+import { ISoftDeleteModel } from "../../../types/softDelete";
 import { Model, Types } from "mongoose";
 import { PLATFORM_CURRENCY } from "./platformSettings.constant";
 
@@ -11,4 +12,4 @@ export interface IPlatformSettings {
   updatedAt: Date;
 }
 
-export type PlatformSettingsModel = Model<IPlatformSettings>;
+export type PlatformSettingsModel = ISoftDeleteModel<IPlatformSettings>;

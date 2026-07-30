@@ -1,3 +1,4 @@
+import { ISoftDeleteModel } from "../../../types/softDelete";
 import { Types } from "mongoose";
 export interface IDeviceToken {
   userId: Types.ObjectId;
@@ -24,3 +25,5 @@ export interface IDeviceTokenModel extends IDeviceToken, Document {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export type DeviceTokenModelModel = ISoftDeleteModel<IDeviceTokenModel>;

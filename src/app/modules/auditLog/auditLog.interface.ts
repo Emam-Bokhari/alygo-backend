@@ -1,3 +1,4 @@
+import { ISoftDeleteModel } from "../../../types/softDelete";
 import { Types } from "mongoose";
 
 export type IAuditLog = {
@@ -9,3 +10,5 @@ export type IAuditLog = {
   createdAt?: Date;
   updatedAt?: Date;
 };
+
+export type AuditLogModel = ISoftDeleteModel<IAuditLog>;

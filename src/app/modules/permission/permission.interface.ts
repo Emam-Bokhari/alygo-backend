@@ -1,3 +1,4 @@
+import { ISoftDeleteModel } from "../../../types/softDelete";
 export type IPermission = {
   name: string;
   resource: string;
@@ -13,3 +14,5 @@ export type IPermission = {
   key?: string;
   status?: "active" | "inactive";
 };
+
+export type PermissionModel = ISoftDeleteModel<IPermission>;

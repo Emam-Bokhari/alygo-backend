@@ -1,3 +1,4 @@
+import { ISoftDeleteModel } from "../../../types/softDelete";
 import { Model, Types } from "mongoose";
 import { WALLET_STATUS } from "./wallet.constant";
 
@@ -12,4 +13,4 @@ export interface IWallet {
   updatedAt: Date;
 }
 
-export type WalletModel = Model<IWallet>;
+export type WalletModel = ISoftDeleteModel<IWallet>;
