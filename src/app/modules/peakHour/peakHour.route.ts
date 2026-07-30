@@ -3,35 +3,43 @@ import { PeakHourController } from "./peakHour.controller";
 import validateRequest from "../../middlewares/validateRequest";
 import { PeakHourZodValidation } from "./peakHour.validation";
 import { isAdmin } from "../../../helpers/authHelper";
+import auth from "../../middlewares/auth";
+import { requirePermission } from "../../middlewares/requirePermission";
 
 const router = express.Router();
 
 router
   .route("/")
   .post(
-    isAdmin,
+    auth(),
+    requirePermission("peakhour.create"),
     validateRequest(PeakHourZodValidation.createPeakHourValidationSchema),
     PeakHourController.createPeakHour,
   )
-  .get(isAdmin, PeakHourController.getAllPeakHour);
+  .get(
+    auth(),
+    requirePermission("peakhour.read"),
+    PeakHourController.getAllPeakHour);
 
-router.get("/active", isAdmin, PeakHourController.getActivePeakHour);
+router.get("/active", auth(), requirePermission("peakhour.read"), PeakHourController.getActivePeakHour);
 
 router.patch(
   "/status/:peakHourId",
-  isAdmin,
+  auth(),
+  requirePermission("peakhour.update"),
   validateRequest(PeakHourZodValidation.updatePeakHourStatusValidationSchema),
   PeakHourController.updatePeakHourStatus,
 );
 
 router
   .route("/:peakHourId")
-  .get(isAdmin, PeakHourController.getPeakHour)
+  .get(auth(), requirePermission("peakhour.read"), PeakHourController.getPeakHour)
   .patch(
-    isAdmin,
+    auth(),
+    requirePermission("peakhour.update"),
     validateRequest(PeakHourZodValidation.updatePeakHourValidationSchema),
     PeakHourController.updatePeakHour,
   )
-  .delete(isAdmin, PeakHourController.deletePeakHour);
+  .delete(auth(), requirePermission("peakhour.delete"), PeakHourController.deletePeakHour);
 
 export const PeakHourRoutes = router;

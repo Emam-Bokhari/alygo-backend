@@ -1,28 +1,34 @@
 import express from "express";
 import { TripReportController } from "./tripReport.controller";
 import { isAdmin } from "../../../helpers/authHelper";
+import auth from "../../middlewares/auth";
+import { requirePermission } from "../../middlewares/requirePermission";
 
 const router = express.Router();
 
 // Admin routes for trip reports
 router.get(
   "/admin/trip-reports",
-  isAdmin,
+  auth(),
+  requirePermission("tripReport.read"),
   TripReportController.getAllTripReports,
 );
 router.get(
   "/admin/trip-reports/dashboard/cards",
-  isAdmin,
+  auth(),
+  requirePermission("tripReport.read"),
   TripReportController.getDashboardCards,
 );
 router.get(
   "/admin/trip-reports/:reportId",
-  isAdmin,
+  auth(),
+  requirePermission("tripReport.read"),
   TripReportController.getTripReportById,
 );
 router.patch(
   "/admin/trip-reports/:reportId",
-  isAdmin,
+  auth(),
+  requirePermission("tripReport.update"),
   TripReportController.updateTripReport,
 );
 
@@ -33,27 +39,36 @@ const complaintRouter = express.Router();
 
 complaintRouter.get(
   "/dashboard/cards",
-  isAdmin,
+  auth(),
+  requirePermission("tripreport.read"),
   TripReportController.getDashboardCards,
 );
 
 complaintRouter.get(
   "/analytics/trend",
-  isAdmin,
+  auth(),
+  requirePermission("tripreport.read"),
   TripReportController.getComplaintTrend,
 );
 
-complaintRouter.get("/", isAdmin, TripReportController.getAllComplaints);
+complaintRouter.get(
+  "/", 
+  auth(),
+  requirePermission("tripreport.read"),
+  TripReportController.getAllComplaints
+);
 
 complaintRouter.get(
   "/:complaintId",
-  isAdmin,
+  auth(),
+  requirePermission("tripreport.read"),
   TripReportController.getComplaintDetails,
 );
 
 complaintRouter.patch(
   "/status/:complaintId",
-  isAdmin,
+  auth(),
+  requirePermission("tripreport.update"),
   TripReportController.updateComplaintStatus,
 );
 

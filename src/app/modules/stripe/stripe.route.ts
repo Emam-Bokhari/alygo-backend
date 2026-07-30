@@ -8,6 +8,7 @@ import {
   isDriver,
   isUser,
 } from "../../../helpers/authHelper";
+import { requirePermission } from "../../middlewares/requirePermission";
 
 const router = express.Router();
 
@@ -45,7 +46,7 @@ router.get(
 );
 
 // Refund (Admins only)
-router.post("/refund", isAdmin, StripeControllers.refundTransaction);
+router.post("/refund", auth(), requirePermission("stripe.refund"), StripeControllers.refundTransaction);
 
 // Stripe Webhook Endpoint (No Auth, verified cryptographically inside controller)
 router.post("/webhook", StripeControllers.handleWebhook);

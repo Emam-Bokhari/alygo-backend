@@ -16,10 +16,10 @@ const driverRouter = express.Router();
 
 adminRouter
   .route("/knowledge")
-  .get(auth(), requirePermission("aiSupport.read"), AiSupportController.getKnowledgeList)
+  .get(auth(), requirePermission("aisupport.read"), AiSupportController.getKnowledgeList)
   .post(
     auth(),
-    requirePermission("aiSupport.create"),
+    requirePermission("aisupport.create"),
     validateRequest(AiKnowledgeValidation.createKnowledgeValidationSchema),
     AiSupportController.createKnowledge,
   );
@@ -28,23 +28,23 @@ adminRouter
   .route("/knowledge/:id")
   .patch(
     auth(),
-    requirePermission("aiSupport.update"),
+    requirePermission("aisupport.update"),
     validateRequest(AiKnowledgeValidation.updateKnowledgeValidationSchema),
     AiSupportController.updateKnowledge,
   )
-  .delete(auth(), requirePermission("aiSupport.delete"), AiSupportController.deleteKnowledge);
+  .delete(auth(), requirePermission("aisupport.delete"), AiSupportController.deleteKnowledge);
 
 adminRouter.post(
   "/knowledge/import",
   auth(),
-  requirePermission("aiSupport.create"),
+  requirePermission("aisupport.create"),
   AiSupportController.importKnowledge,
 );
 
 adminRouter.patch(
   "/config",
   auth(),
-  requirePermission("aiSupport.update"),
+  requirePermission("aisupport.update"),
   validateRequest(AiSupportValidation.updateConfigValidationSchema),
   AiSupportController.updateConfig,
 );
@@ -52,7 +52,7 @@ adminRouter.patch(
 adminRouter.get(
   "/dashboard/stats",
   auth(),
-  requirePermission("aiSupport.read"),
+  requirePermission("aisupport.read"),
   AiSupportController.getDashboardStats,
 );
 

@@ -2,32 +2,37 @@ import express from "express";
 import auth from "../../middlewares/auth";
 import { USER_ROLES } from "../../../enums/user";
 import { AdminRewardsController } from "./adminRewards.controller";
+import { requirePermission } from "../../middlewares/requirePermission";
 
 const router = express.Router();
 
 // Dashboard and CSV export
 router.get(
   "/dashboard",
-  auth(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+  auth(),
+  requirePermission("adminrewards.read"),
   AdminRewardsController.getAdminRewardsDashboard,
 );
 
 router.get(
   "/export",
-  auth(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+  auth(),
+  requirePermission("adminrewards.export"),
   AdminRewardsController.exportRewardsCSV,
 );
 
 // Manual override targets
 router.post(
   "/override-points",
-  auth(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+  auth(),
+  requirePermission("adminrewards.override"),
   AdminRewardsController.overrideDriverPoints,
 );
 
 router.post(
   "/override-tier",
-  auth(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+  auth(),
+  requirePermission("adminrewards.override"),
   AdminRewardsController.overrideDriverTier,
 );
 
@@ -35,22 +40,26 @@ router.post(
 router
   .route("/point-rules")
   .post(
-    auth(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+    auth(),
+    requirePermission("adminrewards.create"),
     AdminRewardsController.createPointRule,
   )
   .get(
-    auth(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+    auth(),
+    requirePermission("adminrewards.read"),
     AdminRewardsController.getPointRules,
   );
 
 router
   .route("/point-rules/:id")
   .patch(
-    auth(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+    auth(),
+    requirePermission("adminrewards.update"),
     AdminRewardsController.updatePointRule,
   )
   .delete(
-    auth(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+    auth(),
+    requirePermission("adminrewards.delete"),
     AdminRewardsController.deletePointRule,
   );
 

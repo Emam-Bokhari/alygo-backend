@@ -1,12 +1,14 @@
 import express from "express";
 import { isAdmin, isAuthenticated } from "../../../helpers/authHelper";
 import { ServiceAreaController } from "./serviceArea.controller";
+import auth from "../../middlewares/auth";
+import { requirePermission } from "../../middlewares/requirePermission";
 
 const router = express.Router();
 
 router
   .route("/")
-  .post(isAdmin, ServiceAreaController.createServiceArea)
+  .post(auth(),requirePermission("servicearea.create"), ServiceAreaController.createServiceArea)
   .get(isAuthenticated, ServiceAreaController.getAllServiceAreas);
 
 router
@@ -46,7 +48,7 @@ router
 router
   .route("/:serviceAreaId")
   .get(isAuthenticated, ServiceAreaController.getServiceArea)
-  .patch(isAdmin, ServiceAreaController.updateServiceArea)
-  .delete(isAdmin, ServiceAreaController.deleteServiceArea);
+  .patch(auth(),requirePermission("servicearea.update"), ServiceAreaController.updateServiceArea)
+  .delete(auth(),requirePermission("servicearea.delete"), ServiceAreaController.deleteServiceArea);
 
 export const ServiceAreaRoutes = router;

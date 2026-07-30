@@ -3,13 +3,16 @@ import { ServiceCategoryController } from "./serviceCategory.controller";
 import { isAdmin, isAuthenticated } from "../../../helpers/authHelper";
 import { parseFileData } from "../../middlewares/parseFileData";
 import fileUploadHandler from "../../middlewares/flieUploadHandler";
+import auth from "../../middlewares/auth";
+import { requirePermission } from "../../middlewares/requirePermission";
 
 const router = express.Router();
 
 router
   .route("/")
   .post(
-    isAdmin,
+    auth(),
+    requirePermission("servicecategory.create"),
     fileUploadHandler(),
     parseFileData({
       fieldName: "image",
@@ -17,7 +20,7 @@ router
     }),
     ServiceCategoryController.createServiceCategory,
   )
-  .get(isAdmin, ServiceCategoryController.getAllServiceCategory);
+  .get(auth(), requirePermission("servicecategory.read"), ServiceCategoryController.getAllServiceCategory);
 
 router.get(
   "/active",
@@ -27,19 +30,21 @@ router.get(
 
 router.patch(
   "/status/:serviceCategoryId",
-  isAdmin,
+  auth(),
+  requirePermission("servicecategory.update"),
   ServiceCategoryController.updateServiceCategoryStatus,
 );
 
 router
   .route("/:serviceCategoryId")
-  .get(isAuthenticated, ServiceCategoryController.getServiceCategory)
+  .get(auth(), requirePermission("servicecategory.read"), ServiceCategoryController.getServiceCategory)
   .patch(
-    isAdmin,
+    auth(),
+    requirePermission("servicecategory.update"),
     fileUploadHandler(),
     parseFileData({ fieldName: "image", mode: "single" }),
     ServiceCategoryController.updateServiceCategory,
   )
-  .delete(isAdmin, ServiceCategoryController.deleteServiceCategory);
+  .delete(auth(), requirePermission("servicecategory.delete"), ServiceCategoryController.deleteServiceCategory);
 
 export const ServiceCategoryRoutes = router;

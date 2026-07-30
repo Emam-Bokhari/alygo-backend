@@ -33,18 +33,6 @@ router.post(
 router.get("/admins", isSuperAdmin, UserController.getAdmin);
 router.delete("/admins/:id", isSuperAdmin, UserController.deleteAdmin);
 
-/* ---------------------------- HOST LIST ------------------------------ */
-router.post("/create-host", isSuperAdmin, UserController.createHost);
-
-router.post(
-  "/ghost-login/:hostId",
-  isSuperAdmin,
-  UserController.ghostLoginAsHost,
-);
-
-router.delete("/hosts/:id", isAdmin, UserController.deleteHostById);
-
-router.get("/total-users-hosts", isAdmin, UserController.getTotalUsersAndHosts);
 
 /* ---------------------------- USER CREATE & UPDATE ---------------------- */
 router
@@ -66,9 +54,6 @@ router
     ),
     UserController.updateProfile,
   );
-
-/* ---------------------------- SWITCH PROFILE ---------------------------- */
-router.patch("/switch-profile", isAuthenticated, UserController.switchProfile);
 
 /* ---------------------------- STATUS UPDATE ----------------------------- */
 router.patch(

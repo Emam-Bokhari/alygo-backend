@@ -89,68 +89,8 @@ const updateProfile = catchAsync(async (req, res) => {
   });
 });
 
-//register host
-const createHost = catchAsync(async (req, res) => {
-  const userData = req.body;
-  console.log(userData, "payload");
-  const result = await UserService.createHostToDB(userData);
 
-  sendResponse(res, {
-    success: true,
-    statusCode: StatusCodes.OK,
-    message: "Host created successfully",
-    data: result,
-  });
-});
 
-const ghostLoginAsHost = catchAsync(async (req, res) => {
-  const { hostId } = req.params;
-  const user: any = req.user;
-  const result = await UserService.ghostLoginAsHost(user, hostId);
-
-  sendResponse(res, {
-    success: true,
-    statusCode: StatusCodes.OK,
-    message: "Ghost Host logged in successfully",
-    data: result,
-  });
-});
-
-const deleteHostById = catchAsync(async (req, res) => {
-  const { id } = req.params;
-
-  const result = await UserService.deleteHostByIdFromD(id);
-
-  sendResponse(res, {
-    success: true,
-    statusCode: 200,
-    message: "Host is deleted successfully",
-    data: result,
-  });
-});
-
-const getTotalUsersAndHosts = catchAsync(async (req, res) => {
-  const result = await UserService.getTotalUsersAndHostsFromDB();
-  sendResponse(res, {
-    success: true,
-    statusCode: 200,
-    message: "Successfully retrieved total users and hosts",
-    data: result,
-  });
-});
-
-const switchProfile = catchAsync(async (req, res) => {
-  const { role } = req.body;
-  const { id: userId } = req.user;
-  const result = await UserService.switchProfileToDB(userId, role);
-
-  sendResponse(res, {
-    success: true,
-    statusCode: 200,
-    message: "Successfully switch the accounts",
-    data: result,
-  });
-});
 
 const getUserById = catchAsync(async (req, res) => {
   const { id } = req.params;
@@ -227,17 +167,8 @@ export const UserController = {
   createAdmin,
   getAdmin,
   deleteAdmin,
-
   updateProfile,
-  switchProfile,
-
   getUserById,
-
-  deleteHostById,
-  getTotalUsersAndHosts,
-  createHost,
-  ghostLoginAsHost,
-
   updateUserStatusById,
   updateAdminStatusById,
   deleteUserById,

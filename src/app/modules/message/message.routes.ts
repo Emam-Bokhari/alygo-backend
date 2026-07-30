@@ -8,18 +8,14 @@ import { messageValidation } from "./message.validation";
 
 import { parseFileData } from "../../middlewares/parseFileData";
 import fileUploadHandler from "../../middlewares/flieUploadHandler";
+import { isAuthenticated } from "../../../helpers/authHelper";
 
 const router = express.Router();
 
 // Existing routes
 router.post(
   "/send-message/:chatId",
-  auth(
-    USER_ROLES.USER,
-    USER_ROLES.DRIVER,
-    USER_ROLES.SUPER_ADMIN,
-    USER_ROLES.ADMIN,
-  ),
+  isAuthenticated,
   fileUploadHandler(),
   parseFileData({ fieldName: FOLDER_NAMES.IMAGE, mode: "single" }),
   validateRequest(messageValidation.sendMessageValidationSchema),
@@ -28,35 +24,20 @@ router.post(
 
 router.get(
   "/:chatId",
-  auth(
-    USER_ROLES.USER,
-    USER_ROLES.DRIVER,
-    USER_ROLES.SUPER_ADMIN,
-    USER_ROLES.ADMIN,
-  ),
+  isAuthenticated,
   MessageController.getMessages,
 );
 
 router.delete(
   "/delete/:messageId",
-  auth(
-    USER_ROLES.USER,
-    USER_ROLES.DRIVER,
-    USER_ROLES.SUPER_ADMIN,
-    USER_ROLES.ADMIN,
-  ),
+  isAuthenticated,
   MessageController.deleteMessage,
 );
 
 // New route for pin/unpin message
 router.patch(
   "/pin-unpin/:messageId",
-  auth(
-    USER_ROLES.USER,
-    USER_ROLES.DRIVER,
-    USER_ROLES.SUPER_ADMIN,
-    USER_ROLES.ADMIN,
-  ),
+  isAuthenticated,
   validateRequest(messageValidation.pinUnpinMessageValidationSchema),
   MessageController.pinUnpinMessage,
 );

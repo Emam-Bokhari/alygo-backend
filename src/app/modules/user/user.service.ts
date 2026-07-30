@@ -275,26 +275,6 @@ const deleteProfileFromDB = async (id: string, password: string) => {
   return result;
 };
 
-const createHostToDB = async (payload: any) => {
-  return {};
-};
-
-const ghostLoginAsHost = async (user: any, hostId: string) => {
-  return {};
-};
-
-const deleteHostByIdFromD = async (id: string) => {
-  return {};
-};
-
-const getTotalUsersAndHostsFromDB = async () => {
-  return {};
-};
-
-const switchProfileToDB = async (userId: string, role: string) => {
-  return {};
-};
-
 export const UserService = {
   createUserToDB,
   getAdminFromDB,
@@ -306,9 +286,4 @@ export const UserService = {
   updateAdminStatusByIdToDB,
   deleteUserByIdFromD,
   deleteProfileFromDB,
-  createHostToDB,
-  ghostLoginAsHost,
-  deleteHostByIdFromD,
-  getTotalUsersAndHostsFromDB,
-  switchProfileToDB,
 };
