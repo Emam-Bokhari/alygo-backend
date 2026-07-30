@@ -18,7 +18,7 @@ router
   .post(
     // isAdmin,
     auth(),
-     requirePermission("banner.create"),
+    requirePermission("banner.create"),
     fileUploadHandler(),
     parseFileData({
       fieldName: "image",
@@ -34,7 +34,8 @@ router.patch(
   // isAdmin,
   auth(),
   requirePermission("banner.update"),
-  BannerController.updateBannerStatus);
+  BannerController.updateBannerStatus,
+);
 
 router
   .route("/:id")
@@ -50,11 +51,14 @@ router
     // isAdmin,
     auth(),
     requirePermission("banner.delete"),
-    BannerController.deleteBanner);
+    BannerController.deleteBanner,
+  );
 
-router.get("/all",
+router.get(
+  "/all",
   auth(),
   requirePermission("banner.read"),
-  BannerController.getAllBanner);
+  BannerController.getAllBanner,
+);
 
 export const BannerRoutes = router;

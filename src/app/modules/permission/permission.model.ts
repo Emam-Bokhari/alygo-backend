@@ -69,18 +69,22 @@ const permissionSchema = new Schema<IPermission>(
         return ret;
       },
     },
-  }
+  },
 );
 
 // Pre-validate hook to auto-populate and normalize fields for compatibility
 permissionSchema.pre("validate", function (next) {
   let lookupName = this.name || this.key || "";
-  
+
   // Prefer key if name has spaces or is not dotted, and key is dotted
-  if (this.key && this.key.includes(".") && (!this.name || !this.name.includes("."))) {
+  if (
+    this.key &&
+    this.key.includes(".") &&
+    (!this.name || !this.name.includes("."))
+  ) {
     lookupName = this.key;
   }
-  
+
   if (lookupName) {
     const parts = lookupName.split(".");
     if (parts.length >= 2) {
@@ -90,7 +94,7 @@ permissionSchema.pre("validate", function (next) {
       if (!this.resource) this.resource = lookupName;
       if (!this.action) this.action = "read";
     }
-    
+
     // Enforce lowercase name format (resource.action)
     this.name = `${this.resource}.${this.action}`.toLowerCase();
     this.key = this.name;

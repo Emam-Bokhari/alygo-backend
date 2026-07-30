@@ -112,10 +112,7 @@ const sendReminderNotifications = async (ride: any, intervalLabel: string) => {
   };
 
   // Socket notification to passenger
-  rideUserSocketHelper.emitReservationReminder(
-    ride.userId.toString(),
-    payload,
-  );
+  rideUserSocketHelper.emitReservationReminder(ride.userId.toString(), payload);
 
   // Push notification to passenger
   await sendNotifications({

@@ -16,7 +16,7 @@ export const seedPermissions = async (): Promise<void> => {
     for (const perm of permissions) {
       // Find if permission already exists by name
       const existing = await Permission.findOne({ name: perm.name });
-      
+
       if (existing) {
         skippedCount++;
         continue;
@@ -43,7 +43,9 @@ export const seedPermissions = async (): Promise<void> => {
     console.log(`Completed Successfully`);
     console.log(`========================================\n`);
 
-    logger.info(`✔ Permission Seeding Completed: Scanned ${modulesScannedCount} modules, Discovered ${discoveredCount}, Inserted ${insertedCount}, Skipped ${skippedCount} in ${executionTime}ms.`);
+    logger.info(
+      `✔ Permission Seeding Completed: Scanned ${modulesScannedCount} modules, Discovered ${discoveredCount}, Inserted ${insertedCount}, Skipped ${skippedCount} in ${executionTime}ms.`,
+    );
   } catch (error) {
     logger.error("❌ Permission seeding failed:", error);
     throw error;

@@ -117,7 +117,10 @@ export const checkChatPermission = async (
 
     case CHAT_COMMUNICATION_TYPE.LOST_FOUND: {
       if (!referenceId) {
-        return { allowed: false, reason: "Lost & Found reference ID is required." };
+        return {
+          allowed: false,
+          reason: "Lost & Found reference ID is required.",
+        };
       }
       const lostFound = await LostFound.findById(referenceId);
       if (!lostFound) {
@@ -158,7 +161,10 @@ export const checkChatPermission = async (
 
     case CHAT_COMMUNICATION_TYPE.SUPPORT: {
       if (!referenceId) {
-        return { allowed: false, reason: "Support ticket reference ID is required." };
+        return {
+          allowed: false,
+          reason: "Support ticket reference ID is required.",
+        };
       }
       const ticket = await Support.findById(referenceId);
       if (!ticket) {

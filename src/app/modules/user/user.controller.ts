@@ -89,9 +89,6 @@ const updateProfile = catchAsync(async (req, res) => {
   });
 });
 
-
-
-
 const getUserById = catchAsync(async (req, res) => {
   const { id } = req.params;
   const result = await UserService.getUserByIdFromDB(id);

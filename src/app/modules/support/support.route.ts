@@ -10,11 +10,23 @@ const router = express.Router();
 router
   .route("/")
   .post(isAuthenticated, SupportControllers.submitSupportRequest)
-  .get(auth(), requirePermission("support.read"), SupportControllers.getAllSupports);
+  .get(
+    auth(),
+    requirePermission("support.read"),
+    SupportControllers.getAllSupports,
+  );
 
 router
   .route("/:id")
-  .get(auth(), requirePermission("support.read"), SupportControllers.getSupportById)
-  .delete(auth(), requirePermission("support.delete"), SupportControllers.deleteSupportById);
+  .get(
+    auth(),
+    requirePermission("support.read"),
+    SupportControllers.getSupportById,
+  )
+  .delete(
+    auth(),
+    requirePermission("support.delete"),
+    SupportControllers.deleteSupportById,
+  );
 
 export const SupportRoutes = router;

@@ -16,7 +16,11 @@ const driverRouter = express.Router();
 
 adminRouter
   .route("/knowledge")
-  .get(auth(), requirePermission("aisupport.read"), AiSupportController.getKnowledgeList)
+  .get(
+    auth(),
+    requirePermission("aisupport.read"),
+    AiSupportController.getKnowledgeList,
+  )
   .post(
     auth(),
     requirePermission("aisupport.create"),
@@ -32,7 +36,11 @@ adminRouter
     validateRequest(AiKnowledgeValidation.updateKnowledgeValidationSchema),
     AiSupportController.updateKnowledge,
   )
-  .delete(auth(), requirePermission("aisupport.delete"), AiSupportController.deleteKnowledge);
+  .delete(
+    auth(),
+    requirePermission("aisupport.delete"),
+    AiSupportController.deleteKnowledge,
+  );
 
 adminRouter.post(
   "/knowledge/import",

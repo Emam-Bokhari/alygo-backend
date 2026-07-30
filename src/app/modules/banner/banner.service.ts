@@ -53,9 +53,15 @@ const updateBannerToDB = async (id: string, payload: TBanner) => {
   return banner;
 };
 
-const updateBannerStatusToDB = async (id: string, status: "active" | "inactive") => {
+const updateBannerStatusToDB = async (
+  id: string,
+  status: "active" | "inactive",
+) => {
   if (status !== "active" && status !== "inactive") {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid status. Status must be active or inactive");
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      "Invalid status. Status must be active or inactive",
+    );
   }
 
   const banner = await Banner.findById(id);

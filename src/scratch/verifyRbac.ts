@@ -17,15 +17,23 @@ const assert = (condition: boolean, message: string) => {
   console.log(`PASS: ${message}`);
 };
 
-const assertThrows = async (fn: () => Promise<any>, expectedMessage: string, message: string) => {
+const assertThrows = async (
+  fn: () => Promise<any>,
+  expectedMessage: string,
+  message: string,
+) => {
   try {
     await fn();
-    throw new Error(`Expected error containing "${expectedMessage}", but no error was thrown`);
+    throw new Error(
+      `Expected error containing "${expectedMessage}", but no error was thrown`,
+    );
   } catch (err: any) {
     if (err.message && err.message.includes(expectedMessage)) {
       console.log(`PASS: ${message}`);
     } else {
-      throw new Error(`Assertion Failed: ${message}. Expected error containing "${expectedMessage}", got "${err.message}"`);
+      throw new Error(
+        `Assertion Failed: ${message}. Expected error containing "${expectedMessage}", got "${err.message}"`,
+      );
     }
   }
 };
@@ -53,27 +61,39 @@ async function runTests() {
     // 2. Test Role Creation and Duplication Guards
     console.log("\n--- Test 2: Role Creation & Validations ---");
     const adminUser = await User.findOne({});
-    const creatorId = adminUser ? adminUser._id.toString() : new mongoose.Types.ObjectId().toString();
+    const creatorId = adminUser
+      ? adminUser._id.toString()
+      : new mongoose.Types.ObjectId().toString();
 
-    const createdRole = await RBACService.createRole({
-      name: "Test Manager Role",
-      description: "A test role for managers",
-      permissions: [faqCreate!._id.toString()],
-      status: "active",
-    }, creatorId);
+    const createdRole = await RBACService.createRole(
+      {
+        name: "Test Manager Role",
+        description: "A test role for managers",
+        permissions: [faqCreate!._id.toString()],
+        status: "active",
+      },
+      creatorId,
+    );
 
     assert(createdRole.name === "Test Manager Role", "Role name matches");
-    assert(createdRole.slug === "test-manager-role", "Role slug generated and matches");
+    assert(
+      createdRole.slug === "test-manager-role",
+      "Role slug generated and matches",
+    );
 
     // Test Duplication Guard
     await assertThrows(
-      () => RBACService.createRole({
-        name: "Test Manager Role",
-        description: "A duplicate role",
-        permissions: [faqCreate!._id.toString()],
-      }, creatorId),
+      () =>
+        RBACService.createRole(
+          {
+            name: "Test Manager Role",
+            description: "A duplicate role",
+            permissions: [faqCreate!._id.toString()],
+          },
+          creatorId,
+        ),
       "Role with this name or slug already exists",
-      "Should prevent creating role with duplicate name"
+      "Should prevent creating role with duplicate name",
     );
 
     // Test Inactive Permission Assignment Guard
@@ -87,12 +107,16 @@ async function runTests() {
     });
 
     await assertThrows(
-      () => RBACService.createRole({
-        name: "Test Invalid Role",
-        permissions: [inactivePermission._id.toString()],
-      }, creatorId),
+      () =>
+        RBACService.createRole(
+          {
+            name: "Test Invalid Role",
+            permissions: [inactivePermission._id.toString()],
+          },
+          creatorId,
+        ),
       "One or more permissions are inactive or invalid",
-      "Should prevent creating role with inactive permissions"
+      "Should prevent creating role with inactive permissions",
     );
 
     // Clean up temporary inactive permission
@@ -112,12 +136,20 @@ async function runTests() {
 
       const cached = await redisClient.get(cacheKey);
       assert(!!cached, "Permissions saved to Redis cache");
-      assert(JSON.parse(cached!).includes("faq.create"), "Cached permissions match");
+      assert(
+        JSON.parse(cached!).includes("faq.create"),
+        "Cached permissions match",
+      );
 
       // Verify clear cache on role update
-      await RBACService.updateRole(createdRole._id.toString(), {
-        description: "Updated description",
-      }, creatorId, true);
+      await RBACService.updateRole(
+        createdRole._id.toString(),
+        {
+          description: "Updated description",
+        },
+        creatorId,
+        true,
+      );
 
       const cachedAfterUpdate = await redisClient.get(cacheKey);
       assert(!cachedAfterUpdate, "Redis cache cleared on role update");
@@ -137,7 +169,9 @@ async function runTests() {
     } as any;
 
     const res = {} as any;
-    const next = () => { nextCalled = true; };
+    const next = () => {
+      nextCalled = true;
+    };
 
     const middlewareFaqCreate = requirePermission("faq.create");
     await middlewareFaqCreate(reqSuperAdmin, res, next);
@@ -161,21 +195,34 @@ async function runTests() {
 
     // 4.3 Standard Admin Unauthorized Check (Forbidden)
     let errorThrown: any = null;
-    const nextWithError = (err: any) => { errorThrown = err; };
+    const nextWithError = (err: any) => {
+      errorThrown = err;
+    };
     const middlewareRideCreate = requirePermission("ride.create");
 
     await middlewareRideCreate(reqAdmin, res, nextWithError);
-    assert(!!errorThrown, "Unauthorized admin fails requirePermission check with error");
-    assert(errorThrown.statusCode === 403, "Access failure returns 403 Forbidden");
+    assert(
+      !!errorThrown,
+      "Unauthorized admin fails requirePermission check with error",
+    );
+    assert(
+      errorThrown.statusCode === 403,
+      "Access failure returns 403 Forbidden",
+    );
 
     // 5. Verify Audit Logs
     console.log("\n--- Test 5: Audit Logs ---");
     const roleCreatedLog = await AuditLog.findOne({ action: "ROLE_CREATED" });
     assert(!!roleCreatedLog, "ROLE_CREATED audit log exists");
 
-    const failureLog = await AuditLog.findOne({ action: "PERMISSION_CHECK_FAILURE" });
+    const failureLog = await AuditLog.findOne({
+      action: "PERMISSION_CHECK_FAILURE",
+    });
     assert(!!failureLog, "PERMISSION_CHECK_FAILURE audit log exists");
-    assert(failureLog!.details.requestedPermissions.includes("ride.create"), "Logged incorrect permission target");
+    assert(
+      failureLog!.details.requestedPermissions.includes("ride.create"),
+      "Logged incorrect permission target",
+    );
 
     // Clean up test data
     console.log("\nCleaning up test data...");
@@ -186,7 +233,6 @@ async function runTests() {
     console.log("\n==================================");
     console.log("ALL RBAC TESTS COMPLETED SUCCESSFULLY!");
     console.log("==================================");
-
   } catch (err) {
     console.error("Test execution failed with error: ", err);
     process.exit(1);

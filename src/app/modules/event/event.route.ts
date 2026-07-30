@@ -16,14 +16,14 @@ router
     validateRequest(EventZodValidation.createEventValidationSchema),
     EventController.createEvent,
   )
-  .get(auth(),
-    requirePermission("event.read"),
-    EventController.getAllEvent);
+  .get(auth(), requirePermission("event.read"), EventController.getAllEvent);
 
-router.get("/active",
+router.get(
+  "/active",
   auth(),
   requirePermission("event.read"),
-  EventController.getActiveEvent);
+  EventController.getActiveEvent,
+);
 
 router.patch(
   "/status/:eventId",
@@ -35,17 +35,17 @@ router.patch(
 
 router
   .route("/:eventId")
-  .get(auth(),
-    requirePermission("event.read"),
-    EventController.getEvent)
+  .get(auth(), requirePermission("event.read"), EventController.getEvent)
   .patch(
     auth(),
     requirePermission("event.update"),
     validateRequest(EventZodValidation.updateEventValidationSchema),
     EventController.updateEvent,
   )
-  .delete(auth(),
+  .delete(
+    auth(),
     requirePermission("event.delete"),
-    EventController.deleteEvent);
+    EventController.deleteEvent,
+  );
 
 export const EventRoutes = router;

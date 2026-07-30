@@ -58,7 +58,7 @@ app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 
 // swagger docs
 const swaggerDocument = yaml.load(
-  path.join(__dirname, "..", "docs", "swagger", "index.yaml")
+  path.join(__dirname, "..", "docs", "swagger", "index.yaml"),
 );
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 

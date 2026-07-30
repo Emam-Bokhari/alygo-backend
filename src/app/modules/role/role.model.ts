@@ -64,7 +64,7 @@ const roleSchema = new Schema<IRole>(
         return ret;
       },
     },
-  }
+  },
 );
 
 roleSchema.index({ name: 1 }, { unique: true });

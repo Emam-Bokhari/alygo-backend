@@ -52,10 +52,10 @@ complaintRouter.get(
 );
 
 complaintRouter.get(
-  "/", 
+  "/",
   auth(),
   requirePermission("tripreport.read"),
-  TripReportController.getAllComplaints
+  TripReportController.getAllComplaints,
 );
 
 complaintRouter.get(

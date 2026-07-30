@@ -30,7 +30,9 @@ const slugify = (text: string): string => {
 /**
  * Fetch active permission keys for a given roleId, querying cache first.
  */
-const getRolePermissions = async (roleId: string | Types.ObjectId): Promise<string[]> => {
+const getRolePermissions = async (
+  roleId: string | Types.ObjectId,
+): Promise<string[]> => {
   const stringRoleId = roleId.toString();
   const cacheKey = `${CACHE_PREFIX}${stringRoleId}`;
 
@@ -62,7 +64,7 @@ const getRolePermissions = async (roleId: string | Types.ObjectId): Promise<stri
       await redisClient.setEx(
         cacheKey,
         DEFAULT_TTL,
-        JSON.stringify(permissionKeys)
+        JSON.stringify(permissionKeys),
       );
     }
   } catch (err) {
@@ -78,7 +80,7 @@ const getRolePermissions = async (roleId: string | Types.ObjectId): Promise<stri
 const checkPermissions = async (
   roleId: string | Types.ObjectId,
   requiredPermissions: string | string[],
-  strategy: "ALL" | "ANY" = "ALL"
+  strategy: "ALL" | "ANY" = "ALL",
 ): Promise<boolean> => {
   const keys = await getRolePermissions(roleId);
   const requiredList = Array.isArray(requiredPermissions)
@@ -99,7 +101,9 @@ const checkPermissions = async (
 /**
  * Clear permissions cache for a specific role.
  */
-const clearRoleCache = async (roleId: string | Types.ObjectId): Promise<void> => {
+const clearRoleCache = async (
+  roleId: string | Types.ObjectId,
+): Promise<void> => {
   const stringRoleId = roleId.toString();
   const cacheKey = `${CACHE_PREFIX}${stringRoleId}`;
   try {
@@ -107,14 +111,19 @@ const clearRoleCache = async (roleId: string | Types.ObjectId): Promise<void> =>
       await redisClient.del(cacheKey);
     }
   } catch (err) {
-    errorLogger.error(`Failed to clear Redis cache for role: ${stringRoleId}`, err);
+    errorLogger.error(
+      `Failed to clear Redis cache for role: ${stringRoleId}`,
+      err,
+    );
   }
 };
 
 /**
  * Refresh permissions cache for a specific role.
  */
-const refreshRoleCache = async (roleId: string | Types.ObjectId): Promise<void> => {
+const refreshRoleCache = async (
+  roleId: string | Types.ObjectId,
+): Promise<void> => {
   await clearRoleCache(roleId);
   await getRolePermissions(roleId);
 };
@@ -122,7 +131,10 @@ const refreshRoleCache = async (roleId: string | Types.ObjectId): Promise<void> 
 // --- PERMISSION APIS ---
 
 const getAllPermissions = async (query: Record<string, unknown>) => {
-  const permissionQuery = new QueryBuilder<IPermission>(Permission.find({}), query)
+  const permissionQuery = new QueryBuilder<IPermission>(
+    Permission.find({}),
+    query,
+  )
     .search(["name", "resource", "action", "module", "description"])
     .filter()
     .sort()
@@ -139,7 +151,10 @@ const getAllPermissions = async (query: Record<string, unknown>) => {
 };
 
 const getGroupedPermissions = async (query: Record<string, unknown>) => {
-  const permissionQuery = new QueryBuilder<IPermission>(Permission.find({}), query)
+  const permissionQuery = new QueryBuilder<IPermission>(
+    Permission.find({}),
+    query,
+  )
     .search(["name", "resource", "action", "module", "description"])
     .filter()
     .sort()
@@ -165,10 +180,12 @@ const getGroupedPermissions = async (query: Record<string, unknown>) => {
     });
   });
 
-  const groupedData = Object.entries(grouped).map(([moduleName, permissions]) => ({
-    module: moduleName,
-    permissions,
-  }));
+  const groupedData = Object.entries(grouped).map(
+    ([moduleName, permissions]) => ({
+      module: moduleName,
+      permissions,
+    }),
+  );
 
   // Sort alphabetically by module name
   groupedData.sort((a, b) => a.module.localeCompare(b.module));
@@ -180,7 +197,10 @@ const getGroupedPermissions = async (query: Record<string, unknown>) => {
 };
 
 const getModules = async (query: Record<string, unknown>) => {
-  const permissionQuery = new QueryBuilder<IPermission>(Permission.find({}), query)
+  const permissionQuery = new QueryBuilder<IPermission>(
+    Permission.find({}),
+    query,
+  )
     .search(["module"])
     .filter();
 
@@ -233,7 +253,10 @@ const createRole = async (payload: any, creatorId: string) => {
     $or: [{ name: payload.name }, { slug }],
   });
   if (exist) {
-    throw new ApiError(StatusCodes.CONFLICT, "Role with this name or slug already exists");
+    throw new ApiError(
+      StatusCodes.CONFLICT,
+      "Role with this name or slug already exists",
+    );
   }
 
   // Verify all permissions are active
@@ -242,7 +265,10 @@ const createRole = async (payload: any, creatorId: string) => {
     status: "active",
   });
   if (activePermissionsCount !== payload.permissions.length) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "One or more permissions are inactive or invalid");
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      "One or more permissions are inactive or invalid",
+    );
   }
 
   const role = await Role.create({
@@ -271,7 +297,7 @@ const updateRole = async (
   roleId: string,
   payload: any,
   updaterId: string,
-  isSuperAdmin: boolean
+  isSuperAdmin: boolean,
 ) => {
   const role = await Role.findById(roleId);
   if (!role) {
@@ -280,7 +306,10 @@ const updateRole = async (
 
   // Only Super Admin can edit system roles
   if (role.isSystem && !isSuperAdmin) {
-    throw new ApiError(StatusCodes.FORBIDDEN, "Only Super Admin can edit system roles");
+    throw new ApiError(
+      StatusCodes.FORBIDDEN,
+      "Only Super Admin can edit system roles",
+    );
   }
 
   const updateData: any = { ...payload };
@@ -293,7 +322,10 @@ const updateRole = async (
       $or: [{ name: payload.name }, { slug }],
     });
     if (exist) {
-      throw new ApiError(StatusCodes.CONFLICT, "Role with this name or slug already exists");
+      throw new ApiError(
+        StatusCodes.CONFLICT,
+        "Role with this name or slug already exists",
+      );
     }
     updateData.slug = slug;
   }
@@ -305,7 +337,10 @@ const updateRole = async (
       status: "active",
     });
     if (activePermissionsCount !== payload.permissions.length) {
-      throw new ApiError(StatusCodes.BAD_REQUEST, "One or more permissions are inactive or invalid");
+      throw new ApiError(
+        StatusCodes.BAD_REQUEST,
+        "One or more permissions are inactive or invalid",
+      );
     }
   }
 
@@ -340,7 +375,11 @@ const updateRole = async (
   return updatedRole;
 };
 
-const deleteRole = async (roleId: string, performerId: string, isSuperAdmin: boolean) => {
+const deleteRole = async (
+  roleId: string,
+  performerId: string,
+  isSuperAdmin: boolean,
+) => {
   const role = await Role.findById(roleId);
   if (!role) {
     throw new ApiError(StatusCodes.NOT_FOUND, "Role not found");
@@ -348,13 +387,21 @@ const deleteRole = async (roleId: string, performerId: string, isSuperAdmin: boo
 
   // Only Super Admin can delete system roles
   if (role.isSystem && !isSuperAdmin) {
-    throw new ApiError(StatusCodes.FORBIDDEN, "Only Super Admin can delete system roles");
+    throw new ApiError(
+      StatusCodes.FORBIDDEN,
+      "Only Super Admin can delete system roles",
+    );
   }
 
   // Validate that role is not assigned to any users
-  const assignedUsers = await User.findOne({ roleId: new Types.ObjectId(roleId) });
+  const assignedUsers = await User.findOne({
+    roleId: new Types.ObjectId(roleId),
+  });
   if (assignedUsers) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "Cannot delete role because it is assigned to one or more admin users");
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      "Cannot delete role because it is assigned to one or more admin users",
+    );
   }
 
   await Role.findByIdAndDelete(roleId);
@@ -371,7 +418,11 @@ const deleteRole = async (roleId: string, performerId: string, isSuperAdmin: boo
   return { success: true };
 };
 
-const assignRole = async (adminId: string, roleId: string, performerId: string) => {
+const assignRole = async (
+  adminId: string,
+  roleId: string,
+  performerId: string,
+) => {
   const targetAdmin = await User.findById(adminId);
   if (!targetAdmin) {
     throw new ApiError(StatusCodes.NOT_FOUND, "Admin user not found");
@@ -384,13 +435,16 @@ const assignRole = async (adminId: string, roleId: string, performerId: string) 
 
   // Validate role is active
   if (role.status === "inactive") {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "Cannot assign an inactive role");
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      "Cannot assign an inactive role",
+    );
   }
 
   const updatedUser = await User.findByIdAndUpdate(
     adminId,
     { roleId: new Types.ObjectId(roleId) },
-    { new: true }
+    { new: true },
   ).select("-password");
 
   // Log audit
@@ -405,7 +459,16 @@ const assignRole = async (adminId: string, roleId: string, performerId: string) 
 };
 
 const createAdminWithRole = async (payload: any, creatorId: string) => {
-  const { name, email, password, phone, countryCode, roleId, roleName, permissions } = payload;
+  const {
+    name,
+    email,
+    password,
+    phone,
+    countryCode,
+    roleId,
+    roleName,
+    permissions,
+  } = payload;
 
   // 1. Verify if email already exists
   const isExistUser = await User.findOne({ email });
@@ -424,7 +487,10 @@ const createAdminWithRole = async (payload: any, creatorId: string) => {
       throw new ApiError(StatusCodes.NOT_FOUND, "Specified Role not found");
     }
     if (role.status === "inactive") {
-      throw new ApiError(StatusCodes.BAD_REQUEST, "Cannot assign an inactive role");
+      throw new ApiError(
+        StatusCodes.BAD_REQUEST,
+        "Cannot assign an inactive role",
+      );
     }
     finalRoleId = role._id as Types.ObjectId;
     finalRoleName = role.name;
@@ -436,7 +502,10 @@ const createAdminWithRole = async (payload: any, creatorId: string) => {
 
     if (role) {
       if (role.status === "inactive") {
-        throw new ApiError(StatusCodes.BAD_REQUEST, "Cannot assign an inactive role");
+        throw new ApiError(
+          StatusCodes.BAD_REQUEST,
+          "Cannot assign an inactive role",
+        );
       }
       finalRoleId = role._id as Types.ObjectId;
       finalRoleName = role.name;
@@ -449,7 +518,10 @@ const createAdminWithRole = async (payload: any, creatorId: string) => {
           status: "active",
         });
         if (activePermissionsCount !== permissionIds.length) {
-          throw new ApiError(StatusCodes.BAD_REQUEST, "One or more permissions are inactive or invalid");
+          throw new ApiError(
+            StatusCodes.BAD_REQUEST,
+            "One or more permissions are inactive or invalid",
+          );
         }
       }
 
@@ -520,7 +592,9 @@ const createAdminWithRole = async (payload: any, creatorId: string) => {
 
   return {
     user: populatedUser,
-    roleCreated: isNewRoleCreated ? { id: finalRoleId, name: finalRoleName } : null,
+    roleCreated: isNewRoleCreated
+      ? { id: finalRoleId, name: finalRoleName }
+      : null,
   };
 };
 

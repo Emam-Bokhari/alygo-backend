@@ -8,8 +8,16 @@ const router = express.Router();
 
 router
   .route("/")
-  .post(auth(),requirePermission("fareconfiguration.create"), FareConfigurationController.createFareConfiguration)
-  .get(auth(),requirePermission("fareconfiguration.read"), FareConfigurationController.getAllFareConfiguration);
+  .post(
+    auth(),
+    requirePermission("fareconfiguration.create"),
+    FareConfigurationController.createFareConfiguration,
+  )
+  .get(
+    auth(),
+    requirePermission("fareconfiguration.read"),
+    FareConfigurationController.getAllFareConfiguration,
+  );
 
 router.get(
   "/active",
@@ -33,7 +41,15 @@ router.patch(
 router
   .route("/:fareConfigurationId")
   .get(isAuthenticated, FareConfigurationController.getFareConfiguration)
-  .patch(auth(),requirePermission("fareconfiguration.update"), FareConfigurationController.updateFareConfiguration)
-  .delete(auth(),requirePermission("fareconfiguration.delete"), FareConfigurationController.deleteFareConfiguration);
+  .patch(
+    auth(),
+    requirePermission("fareconfiguration.update"),
+    FareConfigurationController.updateFareConfiguration,
+  )
+  .delete(
+    auth(),
+    requirePermission("fareconfiguration.delete"),
+    FareConfigurationController.deleteFareConfiguration,
+  );
 
 export const FareConfigurationRoutes = router;

@@ -8,7 +8,7 @@ import { createAuditLog } from "../modules/rbac/rbac.utils";
 /**
  * Middleware to check user permissions.
  * Bypasses checks for SUPER_ADMIN.
- * 
+ *
  * Examples:
  * - requirePermission("faq.create")
  * - requirePermission(["faq.create", "faq.update"], "ANY")
@@ -16,7 +16,7 @@ import { createAuditLog } from "../modules/rbac/rbac.utils";
  */
 export const requirePermission = (
   permissions: string | string[],
-  strategy: "ALL" | "ANY" = "ALL"
+  strategy: "ALL" | "ANY" = "ALL",
 ) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -25,7 +25,7 @@ export const requirePermission = (
       if (!user) {
         throw new ApiError(
           StatusCodes.UNAUTHORIZED,
-          "User authentication required before permission check"
+          "User authentication required before permission check",
         );
       }
 
@@ -47,19 +47,19 @@ export const requirePermission = (
             path: req.originalUrl,
             method: req.method,
           },
-          req
+          req,
         );
 
         throw new ApiError(
           StatusCodes.FORBIDDEN,
-          "You do not have permission to access this api !!"
+          "You do not have permission to access this api !!",
         );
       }
 
       const hasPermission = await RBACService.checkPermissions(
         user.roleId,
         permissions,
-        strategy
+        strategy,
       );
 
       if (!hasPermission) {
@@ -75,12 +75,12 @@ export const requirePermission = (
             method: req.method,
             roleId: user.roleId,
           },
-          req
+          req,
         );
 
         throw new ApiError(
           StatusCodes.FORBIDDEN,
-          "You do not have permission to access this api !!"
+          "You do not have permission to access this api !!",
         );
       }
 

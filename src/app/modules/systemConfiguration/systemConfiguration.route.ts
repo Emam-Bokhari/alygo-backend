@@ -12,7 +12,7 @@ router
   .patch(
     auth(),
     requirePermission("systemconfiguration.update"),
-    SystemConfigurationController.createOrUpdateSystemConfiguration
+    SystemConfigurationController.createOrUpdateSystemConfiguration,
   );
 
 export const SystemConfigurationRoutes = router;

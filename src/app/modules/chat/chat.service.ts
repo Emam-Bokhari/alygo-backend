@@ -33,7 +33,9 @@ const createChatIntoDB = async (
     participants: participants,
     lastMessage: null,
     communicationType: communicationType || CHAT_COMMUNICATION_TYPE.OTHER,
-    referenceId: referenceId ? new mongoose.Types.ObjectId(referenceId) : undefined,
+    referenceId: referenceId
+      ? new mongoose.Types.ObjectId(referenceId)
+      : undefined,
   });
   if (!newChat) {
     throw new Error("Failed to create chat");
@@ -235,7 +237,10 @@ const softDeleteChatForUser = async (chatId: string, id: string) => {
   await chat.save();
 
   chat.participants.forEach((participant) => {
-    chatSocketHelper.emitChatDeleted(participant.toString(), { chatId, userId });
+    chatSocketHelper.emitChatDeleted(participant.toString(), {
+      chatId,
+      userId,
+    });
   });
 
   return chat;

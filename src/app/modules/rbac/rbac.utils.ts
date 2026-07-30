@@ -7,13 +7,16 @@ export const createAuditLog = async (
   action: string,
   performedBy?: string | Types.ObjectId,
   details: Record<string, any> = {},
-  req?: Request
+  req?: Request,
 ) => {
   try {
-    const ipAddress = req?.ip || (req?.headers?.["x-forwarded-for"] as string) || "";
+    const ipAddress =
+      req?.ip || (req?.headers?.["x-forwarded-for"] as string) || "";
     const userAgent = req?.headers?.["user-agent"] || "";
 
-    const parsedPerformedBy = performedBy ? new Types.ObjectId(performedBy.toString()) : undefined;
+    const parsedPerformedBy = performedBy
+      ? new Types.ObjectId(performedBy.toString())
+      : undefined;
 
     await AuditLog.create({
       action,
@@ -25,8 +28,13 @@ export const createAuditLog = async (
 
     const actor = performedBy ? `User(${performedBy})` : "System";
     const detailString = JSON.stringify(details);
-    logger.info(`[AUDIT] Action: ${action} | Actor: ${actor} | Details: ${detailString}`);
+    logger.info(
+      `[AUDIT] Action: ${action} | Actor: ${actor} | Details: ${detailString}`,
+    );
   } catch (error) {
-    errorLogger.error(`Failed to create audit log for action: ${action}`, error);
+    errorLogger.error(
+      `Failed to create audit log for action: ${action}`,
+      error,
+    );
   }
 };

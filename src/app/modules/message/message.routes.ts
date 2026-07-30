@@ -22,11 +22,7 @@ router.post(
   MessageController.sendMessage,
 );
 
-router.get(
-  "/:chatId",
-  isAuthenticated,
-  MessageController.getMessages,
-);
+router.get("/:chatId", isAuthenticated, MessageController.getMessages);
 
 router.delete(
   "/delete/:messageId",

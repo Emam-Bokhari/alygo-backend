@@ -6,6 +6,11 @@ import { requirePermission } from "../../middlewares/requirePermission";
 
 const router = express.Router();
 
-router.get("/", auth(),requirePermission("livetrips.read"), LiveTripsController.getLiveTrips);
+router.get(
+  "/",
+  auth(),
+  requirePermission("livetrips.read"),
+  LiveTripsController.getLiveTrips,
+);
 
 export const LiveTripsRoutes = router;

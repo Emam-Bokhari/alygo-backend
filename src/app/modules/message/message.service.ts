@@ -9,9 +9,7 @@ import { CHAT_COMMUNICATION_TYPE } from "../../../enums/chat";
 import { MESSAGE_TYPE } from "../../../enums/message";
 import { notificationHelper } from "../../builder/pushNotification";
 
-const detectMessageType = (
-  payload: Partial<IMessage>,
-): MESSAGE_TYPE => {
+const detectMessageType = (payload: Partial<IMessage>): MESSAGE_TYPE => {
   const hasText = !!payload.text && payload.text.trim().length > 0;
   const hasImage = payload.image;
 
@@ -39,7 +37,10 @@ const sendMessageToDB = async (payload: IMessage): Promise<IMessage> => {
   }
 
   // Validate contextual permission if the chat has a type other than OTHER
-  if (chat.communicationType && chat.communicationType !== CHAT_COMMUNICATION_TYPE.OTHER) {
+  if (
+    chat.communicationType &&
+    chat.communicationType !== CHAT_COMMUNICATION_TYPE.OTHER
+  ) {
     const receiverId = chat.participants.find(
       (p) => p.toString() !== payload.sender.toString(),
     );
@@ -137,7 +138,10 @@ const sendMessageToDB = async (payload: IMessage): Promise<IMessage> => {
       await notificationHelper.sendChatMessage(chat, populatedMessage);
     }
   } catch (error: any) {
-    console.error("FCM push notification failed for chat message:", error.message);
+    console.error(
+      "FCM push notification failed for chat message:",
+      error.message,
+    );
   }
 
   return response;

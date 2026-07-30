@@ -19,9 +19,15 @@ router
   .get(
     auth(),
     requirePermission("peakhour.read"),
-    PeakHourController.getAllPeakHour);
+    PeakHourController.getAllPeakHour,
+  );
 
-router.get("/active", auth(), requirePermission("peakhour.read"), PeakHourController.getActivePeakHour);
+router.get(
+  "/active",
+  auth(),
+  requirePermission("peakhour.read"),
+  PeakHourController.getActivePeakHour,
+);
 
 router.patch(
   "/status/:peakHourId",
@@ -33,13 +39,21 @@ router.patch(
 
 router
   .route("/:peakHourId")
-  .get(auth(), requirePermission("peakhour.read"), PeakHourController.getPeakHour)
+  .get(
+    auth(),
+    requirePermission("peakhour.read"),
+    PeakHourController.getPeakHour,
+  )
   .patch(
     auth(),
     requirePermission("peakhour.update"),
     validateRequest(PeakHourZodValidation.updatePeakHourValidationSchema),
     PeakHourController.updatePeakHour,
   )
-  .delete(auth(), requirePermission("peakhour.delete"), PeakHourController.deletePeakHour);
+  .delete(
+    auth(),
+    requirePermission("peakhour.delete"),
+    PeakHourController.deletePeakHour,
+  );
 
 export const PeakHourRoutes = router;

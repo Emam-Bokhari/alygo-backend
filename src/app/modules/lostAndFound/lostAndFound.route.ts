@@ -92,12 +92,18 @@ router.patch("/:id/returned", isDriver, LostAndFoundController.markReturned);
 // ----------------------------------------------------
 
 // Retrieve all reports in the system
-router.get("/admin/reports", auth(),requirePermission("lostandfound.read"), LostAndFoundController.getAllReports);
+router.get(
+  "/admin/reports",
+  auth(),
+  requirePermission("lostandfound.read"),
+  LostAndFoundController.getAllReports,
+);
 
 // Admin overrides / updates on reports
 router.patch(
   "/admin/reports/:id",
-  auth(),requirePermission("lostandfound.update"),
+  auth(),
+  requirePermission("lostandfound.update"),
   validateRequest(LostAndFoundValidation.adminUpdateSchema),
   LostAndFoundController.adminUpdateReport,
 );
@@ -116,59 +122,84 @@ const adminRouter = express.Router();
 
 adminRouter.get(
   "/dashboard/cards",
-  auth(),requirePermission("lostandfound.read"),
+  auth(),
+  requirePermission("lostandfound.read"),
   LostAndFoundController.getAdminDashboardCards,
 );
-adminRouter.get("/reports", auth(),requirePermission("lostandfound.read"), LostAndFoundController.getAdminReports);
-adminRouter.get("/returns", auth(),requirePermission("lostandfound.read"), LostAndFoundController.getAdminReturns);
+adminRouter.get(
+  "/reports",
+  auth(),
+  requirePermission("lostandfound.read"),
+  LostAndFoundController.getAdminReports,
+);
+adminRouter.get(
+  "/returns",
+  auth(),
+  requirePermission("lostandfound.read"),
+  LostAndFoundController.getAdminReturns,
+);
 
 adminRouter.get(
   "/delivery-fee",
-  auth(),requirePermission("lostandfound.read"),
+  auth(),
+  requirePermission("lostandfound.read"),
   LostAndFoundController.getDeliveryFeeSettings,
 );
 adminRouter.patch(
   "/delivery-fee",
-  auth(),requirePermission("lostandfound.update"),
+  auth(),
+  requirePermission("lostandfound.update"),
   validateRequest(LostAndFoundValidation.updateDeliveryFeeSettingsSchema),
   LostAndFoundController.updateDeliveryFeeSettings,
 );
 
 adminRouter.get(
   "/item-categories",
-  auth(),requirePermission("lostandfound.read"),
+  auth(),
+  requirePermission("lostandfound.read"),
   LostAndFoundController.getAdminItemCategories,
 );
 adminRouter.get(
   "/driver-compensation",
-  auth(),requirePermission("lostandfound.read"),
+  auth(),
+  requirePermission("lostandfound.read"),
   LostAndFoundController.getDriverCompensations,
 );
-adminRouter.get("/disputes", auth(),requirePermission("lostandfound.read"), LostAndFoundController.getAdminDisputes);
+adminRouter.get(
+  "/disputes",
+  auth(),
+  requirePermission("lostandfound.read"),
+  LostAndFoundController.getAdminDisputes,
+);
 
 adminRouter.get(
-  "/analytics/overview", 
-  auth(),requirePermission("lostandfound.read"),
+  "/analytics/overview",
+  auth(),
+  requirePermission("lostandfound.read"),
   LostAndFoundController.getAnalyticsOverview,
 );
 adminRouter.get(
   "/analytics/report-trend",
-  auth(),requirePermission("lostandfound.read"),
+  auth(),
+  requirePermission("lostandfound.read"),
   LostAndFoundController.getAnalyticsReportTrend,
 );
 adminRouter.get(
   "/analytics/most-lost-items",
-  auth(),requirePermission("lostandfound.read"),
+  auth(),
+  requirePermission("lostandfound.read"),
   LostAndFoundController.getAnalyticsMostLostItems,
 );
 adminRouter.get(
   "/analytics/city-reports",
-  auth(),requirePermission("lostandfound.read"),
+  auth(),
+  requirePermission("lostandfound.read"),
   LostAndFoundController.getAnalyticsCityReports,
 );
 adminRouter.get(
   "/analytics/category-distribution",
-  auth(),requirePermission("lostandfound.read"),
+  auth(),
+  requirePermission("lostandfound.read"),
   LostAndFoundController.getAnalyticsCategoryDistribution,
 );
 

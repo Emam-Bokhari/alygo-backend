@@ -2325,10 +2325,7 @@ const completeRidePayment = async (
       driver: driverSummary,
     };
 
-    rideUserSocketHelper.emitPaymentCompleted(
-      ride.userId.toString(),
-      receipt,
-    );
+    rideUserSocketHelper.emitPaymentCompleted(ride.userId.toString(), receipt);
     rideUserSocketHelper.emitPaymentSuccess(ride.userId.toString(), receipt);
 
     if (ride.driverId) {
@@ -2478,10 +2475,7 @@ const confirmCashPayment = async (
       user: passengerSummary,
     };
 
-    rideUserSocketHelper.emitPaymentCompleted(
-      ride.userId.toString(),
-      receipt,
-    );
+    rideUserSocketHelper.emitPaymentCompleted(ride.userId.toString(), receipt);
     rideDriverSocketHelper.emitPaymentCompleted(driverUserId, driverReceipt);
 
     await sendNotifications({
@@ -2823,13 +2817,10 @@ const cancelRide = async (
       // Notify all notified drivers whose status is "sent"
       ride.driverMatching?.notifiedDrivers?.forEach((d: any) => {
         if (d.status === DRIVER_MATCHING_STATUS.SENT) {
-          rideDriverSocketHelper.emitRideRequestExpired(
-            d.driverId.toString(),
-            {
-              rideId: ride._id,
-              message: "Ride request cancelled by passenger.",
-            },
-          );
+          rideDriverSocketHelper.emitRideRequestExpired(d.driverId.toString(), {
+            rideId: ride._id,
+            message: "Ride request cancelled by passenger.",
+          });
         }
       });
 
@@ -3076,20 +3067,17 @@ const cancelRide = async (
           const passengerSummary = buildPassengerSummary(userDoc);
 
           newDrivers.forEach((driver: any) => {
-            rideDriverSocketHelper.emitRideRequest(
-              driver.driverId.toString(),
-              {
-                rideId: ride._id,
-                ...getRideScheduleInfo(ride),
-                pickup: ride.pickup,
-                destination: ride.destination,
-                stops: ride.stops,
-                fare: ride.fare.total,
-                routeInfo: ride.routeInfo,
-                driverSearch: driverSearchTiming,
-                user: passengerSummary,
-              },
-            );
+            rideDriverSocketHelper.emitRideRequest(driver.driverId.toString(), {
+              rideId: ride._id,
+              ...getRideScheduleInfo(ride),
+              pickup: ride.pickup,
+              destination: ride.destination,
+              stops: ride.stops,
+              fare: ride.fare.total,
+              routeInfo: ride.routeInfo,
+              driverSearch: driverSearchTiming,
+              user: passengerSummary,
+            });
 
             driverVisibilityQueue.add(
               `driver-visibility-${ride._id}-${driver.driverId}`,

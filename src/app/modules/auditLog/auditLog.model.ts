@@ -43,7 +43,7 @@ const auditLogSchema = new Schema<IAuditLog>(
         return ret;
       },
     },
-  }
+  },
 );
 
 export const AuditLog = model<IAuditLog>("AuditLog", auditLogSchema);

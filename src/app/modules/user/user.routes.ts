@@ -33,7 +33,6 @@ router.post(
 router.get("/admins", isSuperAdmin, UserController.getAdmin);
 router.delete("/admins/:id", isSuperAdmin, UserController.deleteAdmin);
 
-
 /* ---------------------------- USER CREATE & UPDATE ---------------------- */
 router
   .route("/")

@@ -5,10 +5,14 @@ import auth from "../../middlewares/auth";
 import { requirePermission } from "../../middlewares/requirePermission";
 
 const router = express.Router();
- 
+
 router
   .route("/")
   .get(PlatformSettingsController.getPlatformSettings)
-  .patch(auth(), requirePermission("platformsettings.create"), PlatformSettingsController.createOrUpdatePlatformSettings);
+  .patch(
+    auth(),
+    requirePermission("platformsettings.create"),
+    PlatformSettingsController.createOrUpdatePlatformSettings,
+  );
 
 export const PlatformSettingsRoutes = router;

@@ -16,16 +16,18 @@ const getPermissions = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const getGroupedPermissions = catchAsync(async (req: Request, res: Response) => {
-  const result = await RBACService.getGroupedPermissions(req.query);
-  sendResponse(res, {
-    statusCode: StatusCodes.OK,
-    success: true,
-    message: "Grouped permissions retrieved successfully",
-    data: result.data,
-    meta: result.meta,
-  });
-});
+const getGroupedPermissions = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await RBACService.getGroupedPermissions(req.query);
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "Grouped permissions retrieved successfully",
+      data: result.data,
+      meta: result.meta,
+    });
+  },
+);
 
 const getModules = catchAsync(async (req: Request, res: Response) => {
   const result = await RBACService.getModules(req.query);
@@ -74,8 +76,13 @@ const updateRole = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
   const updaterId = req.user.id;
   const isSuperAdmin = req.user.role === USER_ROLES.SUPER_ADMIN;
-  
-  const result = await RBACService.updateRole(id, req.body, updaterId, isSuperAdmin);
+
+  const result = await RBACService.updateRole(
+    id,
+    req.body,
+    updaterId,
+    isSuperAdmin,
+  );
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,

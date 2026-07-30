@@ -15,19 +15,35 @@ router
 // admin routes
 router
   .route("/")
-  .post(auth(), requirePermission("surgerule.create"), SurgeRuleController.createSurgeRule)
+  .post(
+    auth(),
+    requirePermission("surgerule.create"),
+    SurgeRuleController.createSurgeRule,
+  )
   .get(isAuthenticated, SurgeRuleController.getAllSurgeRules);
 
 router
   .route("/:surgeRuleId")
   .get(isAuthenticated, SurgeRuleController.getSurgeRuleById)
-  .patch(auth(), requirePermission("surgerule.update"), SurgeRuleController.updateSurgeRule)
-  .delete(auth(), requirePermission("surgerule.delete"), SurgeRuleController.deleteSurgeRule);
+  .patch(
+    auth(),
+    requirePermission("surgerule.update"),
+    SurgeRuleController.updateSurgeRule,
+  )
+  .delete(
+    auth(),
+    requirePermission("surgerule.delete"),
+    SurgeRuleController.deleteSurgeRule,
+  );
 
 // update surge rule status
 router
   .route("/status/:surgeRuleId")
-  .patch(auth(), requirePermission("surgerule.update"), SurgeRuleController.updateSurgeRuleStatus);
+  .patch(
+    auth(),
+    requirePermission("surgerule.update"),
+    SurgeRuleController.updateSurgeRuleStatus,
+  );
 
 // test surge calculation
 router

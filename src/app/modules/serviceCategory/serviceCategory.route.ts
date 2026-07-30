@@ -20,7 +20,11 @@ router
     }),
     ServiceCategoryController.createServiceCategory,
   )
-  .get(auth(), requirePermission("servicecategory.read"), ServiceCategoryController.getAllServiceCategory);
+  .get(
+    auth(),
+    requirePermission("servicecategory.read"),
+    ServiceCategoryController.getAllServiceCategory,
+  );
 
 router.get(
   "/active",
@@ -37,7 +41,11 @@ router.patch(
 
 router
   .route("/:serviceCategoryId")
-  .get(auth(), requirePermission("servicecategory.read"), ServiceCategoryController.getServiceCategory)
+  .get(
+    auth(),
+    requirePermission("servicecategory.read"),
+    ServiceCategoryController.getServiceCategory,
+  )
   .patch(
     auth(),
     requirePermission("servicecategory.update"),
@@ -45,6 +53,10 @@ router
     parseFileData({ fieldName: "image", mode: "single" }),
     ServiceCategoryController.updateServiceCategory,
   )
-  .delete(auth(), requirePermission("servicecategory.delete"), ServiceCategoryController.deleteServiceCategory);
+  .delete(
+    auth(),
+    requirePermission("servicecategory.delete"),
+    ServiceCategoryController.deleteServiceCategory,
+  );
 
 export const ServiceCategoryRoutes = router;

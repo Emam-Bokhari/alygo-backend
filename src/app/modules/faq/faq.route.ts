@@ -7,24 +7,12 @@ const router = express.Router();
 
 router
   .route("/")
-  .post(
-    auth(),
-    requirePermission("faq.create"),
-    FaqController.createFaq
-  )
+  .post(auth(), requirePermission("faq.create"), FaqController.createFaq)
   .get(FaqController.getFaqs);
 
 router
   .route("/:id")
-  .patch(
-    auth(),
-    requirePermission("faq.update"),
-    FaqController.updateFaq
-  )
-  .delete(
-    auth(),
-    requirePermission("faq.delete"),
-    FaqController.deleteFaq
-  );
+  .patch(auth(), requirePermission("faq.update"), FaqController.updateFaq)
+  .delete(auth(), requirePermission("faq.delete"), FaqController.deleteFaq);
 
 export const FaqRoutes = router;

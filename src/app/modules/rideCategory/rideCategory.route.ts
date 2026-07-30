@@ -16,7 +16,11 @@ router
     validateRequest(RideCategoryValidation.createRideCategoryValidationSchema),
     RideCategoryController.createRideCategory,
   )
-  .get(auth(), requirePermission("ridecategory.read"), RideCategoryController.getAllRideCategories);
+  .get(
+    auth(),
+    requirePermission("ridecategory.read"),
+    RideCategoryController.getAllRideCategories,
+  );
 
 router.get(
   "/active",
@@ -40,6 +44,10 @@ router
     validateRequest(RideCategoryValidation.updateRideCategoryValidationSchema),
     RideCategoryController.updateRideCategory,
   )
-  .delete(auth(), requirePermission("ridecategory.delete"), RideCategoryController.deleteRideCategory);
+  .delete(
+    auth(),
+    requirePermission("ridecategory.delete"),
+    RideCategoryController.deleteRideCategory,
+  );
 
 export const RideCategoryRoutes = router;

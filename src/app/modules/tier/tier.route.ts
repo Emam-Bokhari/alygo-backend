@@ -17,6 +17,11 @@ router
   .patch(auth(), requirePermission("tier.update"), TierController.updateTier)
   .delete(auth(), requirePermission("tier.delete"), TierController.deleteTier);
 
-router.patch("/status/:tierId", auth(), requirePermission("tier.update"), TierController.updateTierStatus);
+router.patch(
+  "/status/:tierId",
+  auth(),
+  requirePermission("tier.update"),
+  TierController.updateTierStatus,
+);
 
 export const TierRoutes = router;

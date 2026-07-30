@@ -8,7 +8,11 @@ const router = express.Router();
 
 router
   .route("/")
-  .post(auth(),requirePermission("servicearea.create"), ServiceAreaController.createServiceArea)
+  .post(
+    auth(),
+    requirePermission("servicearea.create"),
+    ServiceAreaController.createServiceArea,
+  )
   .get(isAuthenticated, ServiceAreaController.getAllServiceAreas);
 
 router
@@ -48,7 +52,15 @@ router
 router
   .route("/:serviceAreaId")
   .get(isAuthenticated, ServiceAreaController.getServiceArea)
-  .patch(auth(),requirePermission("servicearea.update"), ServiceAreaController.updateServiceArea)
-  .delete(auth(),requirePermission("servicearea.delete"), ServiceAreaController.deleteServiceArea);
+  .patch(
+    auth(),
+    requirePermission("servicearea.update"),
+    ServiceAreaController.updateServiceArea,
+  )
+  .delete(
+    auth(),
+    requirePermission("servicearea.delete"),
+    ServiceAreaController.deleteServiceArea,
+  );
 
 export const ServiceAreaRoutes = router;

@@ -62,9 +62,9 @@ function getReadableResourcePlural(resource: string): string {
     .trim()
     .toLowerCase()
     .split(" ");
-    
+
   let lastWord = words[words.length - 1];
-  
+
   // Basic pluralization rules
   if (
     lastWord.endsWith("y") &&
@@ -77,7 +77,7 @@ function getReadableResourcePlural(resource: string): string {
   } else if (!lastWord.endsWith("s")) {
     lastWord = lastWord + "s";
   }
-  
+
   words[words.length - 1] = lastWord;
   return words.join(" ");
 }
@@ -132,7 +132,7 @@ function generateDescription(resource: string, action: string): string {
 function findRouteFiles(dir: string): string[] {
   let results: string[] = [];
   if (!fs.existsSync(dir)) return results;
-  
+
   const list = fs.readdirSync(dir);
   for (const file of list) {
     const filePath = path.join(dir, file);
@@ -162,25 +162,33 @@ export async function discoverPermissions(options?: DiscoveryOptions): Promise<{
   permissions: Omit<IPermission, "createdAt" | "updatedAt">[];
   modulesScannedCount: number;
 }> {
-  const modulesDir = options?.modulesDir || path.join(__dirname, "../../../app/modules");
-  const actionMapping = { ...DEFAULT_ACTION_MAPPING, ...(options?.actionMapping || {}) };
+  const modulesDir =
+    options?.modulesDir || path.join(__dirname, "../../../app/modules");
+  const actionMapping = {
+    ...DEFAULT_ACTION_MAPPING,
+    ...(options?.actionMapping || {}),
+  };
 
   const routeFiles = findRouteFiles(modulesDir);
-  
+
   // Track scanned module directories to count them
   const scannedModules = new Set<string>();
-  const discoveredPermissions: Omit<IPermission, "createdAt" | "updatedAt">[] = [];
+  const discoveredPermissions: Omit<IPermission, "createdAt" | "updatedAt">[] =
+    [];
   const permissionNames = new Set<string>();
 
   // Regular expression to match Controller.method references (allowing plural Controllers)
-  const controllerMethodRegex = /\b([A-Za-z0-9_]+Controllers?)\.([A-Za-z0-9_]+)\b/g;
+  const controllerMethodRegex =
+    /\b([A-Za-z0-9_]+Controllers?)\.([A-Za-z0-9_]+)\b/g;
 
   // Pre-sort keys of action mapping by length descending for greedy matching
-  const sortedActionKeys = Object.keys(actionMapping).sort((a, b) => b.length - a.length);
+  const sortedActionKeys = Object.keys(actionMapping).sort(
+    (a, b) => b.length - a.length,
+  );
 
   for (const routeFile of routeFiles) {
     const relativePath = path.relative(modulesDir, routeFile);
-    
+
     // Module name is the directory name
     const moduleName = relativePath.split(path.sep)[0];
     scannedModules.add(moduleName);
@@ -206,8 +214,10 @@ export async function discoverPermissions(options?: DiscoveryOptions): Promise<{
       let lastHttpMethod = "";
       let lastHttpMethodIndex = -1;
       let lastHttpMethodMatchStr = "";
-      
-      while ((httpMethodMatch = httpMethodRegex.exec(precedingContent)) !== null) {
+
+      while (
+        (httpMethodMatch = httpMethodRegex.exec(precedingContent)) !== null
+      ) {
         lastHttpMethod = httpMethodMatch[1].toLowerCase();
         lastHttpMethodIndex = httpMethodMatch.index;
         lastHttpMethodMatchStr = httpMethodMatch[0];
@@ -219,8 +229,14 @@ export async function discoverPermissions(options?: DiscoveryOptions): Promise<{
         const start = lastHttpMethodIndex + lastHttpMethodMatchStr.length;
         const middlewareStr = precedingContent.substring(start);
 
-        const hasUserOrDriver = /\b(isUser|isDriver|USER_ROLES\.USER|USER_ROLES\.DRIVER)\b/.test(middlewareStr);
-        const hasAdminOrAuth = /\b(isAdmin|isSuperAdmin|USER_ROLES\.ADMIN|USER_ROLES\.SUPER_ADMIN|isAuthenticated)\b/.test(middlewareStr);
+        const hasUserOrDriver =
+          /\b(isUser|isDriver|USER_ROLES\.USER|USER_ROLES\.DRIVER)\b/.test(
+            middlewareStr,
+          );
+        const hasAdminOrAuth =
+          /\b(isAdmin|isSuperAdmin|USER_ROLES\.ADMIN|USER_ROLES\.SUPER_ADMIN|isAuthenticated)\b/.test(
+            middlewareStr,
+          );
 
         if (hasUserOrDriver && !hasAdminOrAuth) {
           isUserOrDriverOnly = true;
@@ -234,7 +250,7 @@ export async function discoverPermissions(options?: DiscoveryOptions): Promise<{
       // Determine action from method prefix or HTTP fallback
       let action = "";
       const lowerMethodName = methodName.toLowerCase();
-      
+
       for (const prefix of sortedActionKeys) {
         if (lowerMethodName.startsWith(prefix.toLowerCase())) {
           action = actionMapping[prefix];
@@ -249,13 +265,13 @@ export async function discoverPermissions(options?: DiscoveryOptions): Promise<{
       // If action is resolved, construct permission object
       if (action) {
         const permissionName = `${resourceName}.${action}`.toLowerCase();
-        
+
         // Skip duplicate permissions in the local scan list
         if (!permissionNames.has(permissionName)) {
           permissionNames.add(permissionName);
-          
+
           const description = generateDescription(resourceName, action);
-          
+
           discoveredPermissions.push({
             name: permissionName,
             resource: resourceName,
