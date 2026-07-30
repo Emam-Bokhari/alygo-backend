@@ -1,13 +1,15 @@
 import express from "express";
 import { isAdmin, isAuthenticated } from "../../../helpers/authHelper";
 import { CancellationReasonController } from "./cancellationReason.controller";
+import auth from "../../middlewares/auth";
+import { requirePermission } from "../../middlewares/requirePermission";
 
 const router = express.Router();
 
 router
   .route("/")
-  .post(isAdmin, CancellationReasonController.createCancellationReason)
-  .get(isAdmin, CancellationReasonController.getAllCancellationReasons);
+  .post(auth(), requirePermission("cancellationreason.create"), CancellationReasonController.createCancellationReason)
+  .get(auth(), requirePermission("cancellationreason.read"), CancellationReasonController.getAllCancellationReasons);
 
 router.get(
   "/active",
@@ -18,12 +20,13 @@ router.get(
 router
   .route("/:cancellationReasonId")
   .get(isAuthenticated, CancellationReasonController.getCancellationReason)
-  .patch(isAdmin, CancellationReasonController.updateCancellationReason)
-  .delete(isAdmin, CancellationReasonController.deleteCancellationReason);
+  .patch(auth(), requirePermission("cancellationreason.update"), CancellationReasonController.updateCancellationReason)
+  .delete(auth(), requirePermission("cancellationreason.delete"), CancellationReasonController.deleteCancellationReason);
 
 router.patch(
   "/status/:cancellationReasonId",
-  isAdmin,
+  auth(),
+  requirePermission("cancellationreason.update"),
   CancellationReasonController.updateCancellationReasonStatus,
 );
 

@@ -4,6 +4,8 @@ import { AiSupportValidation } from "./aiSupport.validation";
 import { AiKnowledgeValidation } from "../aiKnowledge/aiKnowledge.validation";
 import validateRequest from "../../middlewares/validateRequest";
 import { isAdmin, isDriver } from "../../../helpers/authHelper";
+import auth from "../../middlewares/auth";
+import { requirePermission } from "../../middlewares/requirePermission";
 
 const adminRouter = express.Router();
 const driverRouter = express.Router();
@@ -14,9 +16,10 @@ const driverRouter = express.Router();
 
 adminRouter
   .route("/knowledge")
-  .get(isAdmin, AiSupportController.getKnowledgeList)
+  .get(auth(), requirePermission("aiSupport.read"), AiSupportController.getKnowledgeList)
   .post(
-    isAdmin,
+    auth(),
+    requirePermission("aiSupport.create"),
     validateRequest(AiKnowledgeValidation.createKnowledgeValidationSchema),
     AiSupportController.createKnowledge,
   );
@@ -24,28 +27,32 @@ adminRouter
 adminRouter
   .route("/knowledge/:id")
   .patch(
-    isAdmin,
+    auth(),
+    requirePermission("aiSupport.update"),
     validateRequest(AiKnowledgeValidation.updateKnowledgeValidationSchema),
     AiSupportController.updateKnowledge,
   )
-  .delete(isAdmin, AiSupportController.deleteKnowledge);
+  .delete(auth(), requirePermission("aiSupport.delete"), AiSupportController.deleteKnowledge);
 
 adminRouter.post(
   "/knowledge/import",
-  isAdmin,
+  auth(),
+  requirePermission("aiSupport.create"),
   AiSupportController.importKnowledge,
 );
 
 adminRouter.patch(
   "/config",
-  isAdmin,
+  auth(),
+  requirePermission("aiSupport.update"),
   validateRequest(AiSupportValidation.updateConfigValidationSchema),
   AiSupportController.updateConfig,
 );
 
 adminRouter.get(
   "/dashboard/stats",
-  isAdmin,
+  auth(),
+  requirePermission("aiSupport.read"),
   AiSupportController.getDashboardStats,
 );
 

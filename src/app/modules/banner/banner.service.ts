@@ -6,9 +6,8 @@ import { TBanner } from "./banner.interface";
 import ApiError from "../../../errors/ApiErrors";
 
 const createBannerToDB = async (payload: TBanner): Promise<TBanner> => {
-  // if the new banner is set to be active, deactivate all other banners first.
-  if (payload.status === true) {
-    await Banner.updateMany({}, { $set: { status: false } });
+  if (payload.status === undefined) {
+    payload.status = "active";
   }
 
   const createBanner: any = await Banner.create(payload);
@@ -23,8 +22,8 @@ const createBannerToDB = async (payload: TBanner): Promise<TBanner> => {
   return createBanner;
 };
 
-const getBannerFromDB = async (): Promise<TBanner | null> => {
-  return await Banner.findOne({ status: true });
+const getBannerFromDB = async (): Promise<TBanner[]> => {
+  return await Banner.find({ status: "active" });
 };
 
 const getAllBannerFromDB = async (): Promise<TBanner[]> => {
@@ -34,11 +33,6 @@ const getAllBannerFromDB = async (): Promise<TBanner[]> => {
 const updateBannerToDB = async (id: string, payload: TBanner) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
     throw new ApiError(StatusCodes.NOT_ACCEPTABLE, "Invalid ID");
-  }
-
-  // if the banner is being activated, deactivate all others first.
-  if (payload.status === true) {
-    await Banner.updateMany({ _id: { $ne: id } }, { $set: { status: false } });
   }
 
   const isBannerExist: any = await Banner.findById(id);
@@ -59,7 +53,11 @@ const updateBannerToDB = async (id: string, payload: TBanner) => {
   return banner;
 };
 
-const updateBannerStatusToDB = async (id: string, status: boolean) => {
+const updateBannerStatusToDB = async (id: string, status: "active" | "inactive") => {
+  if (status !== "active" && status !== "inactive") {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid status. Status must be active or inactive");
+  }
+
   const banner = await Banner.findById(id);
   if (!banner) {
     throw new ApiError(404, "No banner found in the database");

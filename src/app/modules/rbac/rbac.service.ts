@@ -5,6 +5,7 @@ import QueryBuilder from "../../builder/queryBuilder";
 import { Role } from "../role/role.model";
 import { seedPermissions as seedPermissionsToDB } from "../permission/permission.seed";
 import { User } from "../user/user.model";
+import { STATUS, USER_ROLES } from "../../../enums/user";
 import redisClient from "../../../shared/redisClient";
 import { logger, errorLogger } from "../../../shared/logger";
 import ApiError from "../../../errors/ApiErrors";
@@ -403,6 +404,126 @@ const assignRole = async (adminId: string, roleId: string, performerId: string) 
   return updatedUser;
 };
 
+const createAdminWithRole = async (payload: any, creatorId: string) => {
+  const { name, email, password, phone, countryCode, roleId, roleName, permissions } = payload;
+
+  // 1. Verify if email already exists
+  const isExistUser = await User.findOne({ email });
+  if (isExistUser) {
+    throw new ApiError(StatusCodes.CONFLICT, "This Email already taken");
+  }
+
+  let finalRoleId: Types.ObjectId | null = null;
+  let finalRoleName = "";
+  let isNewRoleCreated = false;
+
+  // 2. Resolve Role
+  if (roleId) {
+    const role = await Role.findById(roleId);
+    if (!role) {
+      throw new ApiError(StatusCodes.NOT_FOUND, "Specified Role not found");
+    }
+    if (role.status === "inactive") {
+      throw new ApiError(StatusCodes.BAD_REQUEST, "Cannot assign an inactive role");
+    }
+    finalRoleId = role._id as Types.ObjectId;
+    finalRoleName = role.name;
+  } else if (roleName) {
+    const slug = slugify(roleName);
+    const role = await Role.findOne({
+      $or: [{ name: roleName }, { slug }],
+    });
+
+    if (role) {
+      if (role.status === "inactive") {
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Cannot assign an inactive role");
+      }
+      finalRoleId = role._id as Types.ObjectId;
+      finalRoleName = role.name;
+    } else {
+      // Create a new role
+      const permissionIds = permissions || [];
+      if (permissionIds.length > 0) {
+        const activePermissionsCount = await Permission.countDocuments({
+          _id: { $in: permissionIds },
+          status: "active",
+        });
+        if (activePermissionsCount !== permissionIds.length) {
+          throw new ApiError(StatusCodes.BAD_REQUEST, "One or more permissions are inactive or invalid");
+        }
+      }
+
+      const newRole = await Role.create({
+        name: roleName,
+        slug,
+        permissions: permissionIds,
+        isSystem: false,
+        createdBy: new Types.ObjectId(creatorId),
+      });
+
+      finalRoleId = newRole._id as Types.ObjectId;
+      finalRoleName = newRole.name;
+      isNewRoleCreated = true;
+
+      // Log audit for new role creation
+      await createAuditLog("ROLE_CREATED", creatorId, {
+        roleId: newRole._id,
+        name: newRole.name,
+        permissions: permissionIds,
+      });
+    }
+  }
+
+  if (!finalRoleId) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Role resolution failed");
+  }
+
+  // 3. Create User (Admin)
+  const userPayload = {
+    name,
+    email,
+    password,
+    phone: phone || "",
+    countryCode: countryCode || "",
+    verified: true,
+    status: STATUS.ACTIVE,
+    role: USER_ROLES.ADMIN,
+    roleId: finalRoleId,
+  };
+
+  const createdUser = await User.create(userPayload);
+
+  // Log audit for admin user creation and role assignment
+  await createAuditLog("ADMIN_CREATED", creatorId, {
+    adminId: createdUser._id,
+    name: createdUser.name,
+    email: createdUser.email,
+  });
+
+  await createAuditLog("ROLE_ASSIGNED", creatorId, {
+    adminId: createdUser._id,
+    roleId: finalRoleId,
+    roleName: finalRoleName,
+    adminEmail: createdUser.email,
+  });
+
+  // Fetch populated user
+  const populatedUser = await User.findById(createdUser._id)
+    .populate({
+      path: "roleId",
+      populate: {
+        path: "permissions",
+        select: "name key description status",
+      },
+    })
+    .select("-password");
+
+  return {
+    user: populatedUser,
+    roleCreated: isNewRoleCreated ? { id: finalRoleId, name: finalRoleName } : null,
+  };
+};
+
 // --- SEEDER ---
 
 /**
@@ -431,5 +552,6 @@ export const RBACService = {
   updateRole,
   deleteRole,
   assignRole,
+  createAdminWithRole,
   seedPermissions,
 };

@@ -8,13 +8,17 @@ import { BannerZodValidation } from "./banner.validation";
 import { isAdmin } from "../../../helpers/authHelper";
 import { parseFileData } from "../../middlewares/parseFileData";
 import fileUploadHandler from "../../middlewares/flieUploadHandler";
+import { requirePermission } from "../../middlewares/requirePermission";
+import auth from "../../middlewares/auth";
 
 const router = express.Router();
 
 router
   .route("/")
   .post(
-    isAdmin,
+    // isAdmin,
+    auth(),
+     requirePermission("banner.create"),
     fileUploadHandler(),
     parseFileData({
       fieldName: "image",
@@ -25,18 +29,32 @@ router
   )
   .get(BannerController.getBannersFromDB);
 
-router.patch("/status/:id", isAdmin, BannerController.updateBannerStatus);
+router.patch(
+  "/status/:id",
+  // isAdmin,
+  auth(),
+  requirePermission("banner.update"),
+  BannerController.updateBannerStatus);
 
 router
   .route("/:id")
   .patch(
-    isAdmin,
+    // isAdmin,
+    auth(),
+    requirePermission("banner.update"),
     fileUploadHandler(),
     parseFileData({ fieldName: "image", mode: "single" }),
     BannerController.updateBanner,
   )
-  .delete(isAdmin, BannerController.deleteBanner);
+  .delete(
+    // isAdmin,
+    auth(),
+    requirePermission("banner.delete"),
+    BannerController.deleteBanner);
 
-router.get("/all", isAdmin, BannerController.getAllBanner);
+router.get("/all",
+  auth(),
+  requirePermission("banner.read"),
+  BannerController.getAllBanner);
 
 export const BannerRoutes = router;

@@ -3,36 +3,43 @@ import { isAdmin } from "../../../helpers/authHelper";
 import { CancellationAnalyticsController } from "./cancellationAnalytics.controller";
 import validateRequest from "../../middlewares/validateRequest";
 import { CancellationAnalyticsValidation } from "./cancellationAnalytics.validation";
+import auth from "../../middlewares/auth";
+import { requirePermission } from "../../middlewares/requirePermission";
 
 const router = express.Router();
 
 router.get(
   "/admin/analytics/cancellations/summary",
-  isAdmin,
+  auth(),
+  requirePermission("cancellationanalytics.read"),
   validateRequest(CancellationAnalyticsValidation.cancellationQuerySchema),
   CancellationAnalyticsController.getSummary,
 );
 router.get(
   "/admin/analytics/cancellations/trend",
-  isAdmin,
+  auth(),
+  requirePermission("cancellationanalytics.read"),
   validateRequest(CancellationAnalyticsValidation.cancellationQuerySchema),
   CancellationAnalyticsController.getTrend,
 );
 router.get(
   "/admin/analytics/cancellations/reasons",
-  isAdmin,
+  auth(),
+  requirePermission("cancellationanalytics.read"),
   validateRequest(CancellationAnalyticsValidation.cancellationQuerySchema),
   CancellationAnalyticsController.getReasons,
 );
 router.get(
   "/admin/analytics/cancellations/cities",
-  isAdmin,
+  auth(),
+  requirePermission("cancellationanalytics.read"),
   validateRequest(CancellationAnalyticsValidation.cancellationQuerySchema),
   CancellationAnalyticsController.getCities,
 );
 router.get(
   "/admin/analytics/cancellations/categories",
-  isAdmin,
+  auth(),
+  requirePermission("cancellationanalytics.read"),
   validateRequest(CancellationAnalyticsValidation.cancellationQuerySchema),
   CancellationAnalyticsController.getCategories,
 );

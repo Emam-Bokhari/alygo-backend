@@ -112,6 +112,17 @@ const assignRole = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const createAdminWithRole = catchAsync(async (req: Request, res: Response) => {
+  const creatorId = req.user.id;
+  const result = await RBACService.createAdminWithRole(req.body, creatorId);
+  sendResponse(res, {
+    statusCode: StatusCodes.CREATED,
+    success: true,
+    message: "Admin user created and role assigned successfully",
+    data: result,
+  });
+});
+
 export const RbacController = {
   getPermissions,
   getGroupedPermissions,
@@ -122,4 +133,5 @@ export const RbacController = {
   updateRole,
   deleteRole,
   assignRole,
+  createAdminWithRole,
 };

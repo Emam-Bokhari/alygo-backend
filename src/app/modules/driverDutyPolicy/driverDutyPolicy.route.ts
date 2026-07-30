@@ -1,12 +1,14 @@
 import express from "express";
 import { isAdmin, isAuthenticated } from "../../../helpers/authHelper";
 import { DriverDutyPolicyController } from "./driverDutyPolicy.controller";
+import auth from "../../middlewares/auth";
+import { requirePermission } from "../../middlewares/requirePermission";
 
 const router = express.Router();
 
 router
   .route("/")
-  .post(isAdmin, DriverDutyPolicyController.createDriverDutyPolicy)
+  .post(auth(), requirePermission("driverdutypolicy.create"), DriverDutyPolicyController.createDriverDutyPolicy)
   .get(isAuthenticated, DriverDutyPolicyController.getAllDriverDutyPolicies);
 
 router.get(
@@ -17,38 +19,42 @@ router.get(
 
 router.patch(
   "/status/:driverDutyPolicyId",
-  isAdmin,
+  auth(),
+  requirePermission("driverdutypolicy.update"),
   DriverDutyPolicyController.updateDriverDutyPolicyStatus,
 );
 
 router
   .route("/:driverDutyPolicyId")
   .get(isAuthenticated, DriverDutyPolicyController.getDriverDutyPolicy)
-  .patch(isAdmin, DriverDutyPolicyController.updateDriverDutyPolicy)
-  .delete(isAdmin, DriverDutyPolicyController.deleteDriverDutyPolicy);
+  .patch(auth(), requirePermission("driverdutypolicy.update"), DriverDutyPolicyController.updateDriverDutyPolicy)
+  .delete(auth(), requirePermission("driverdutypolicy.delete"), DriverDutyPolicyController.deleteDriverDutyPolicy);
 
 export const DriverDutyPolicyRoutes = router;
 
 // New router instance for Admin Driver Duty Hour Rules module
 const adminRouter = express.Router();
 
-adminRouter.get("/global", isAdmin, DriverDutyPolicyController.getGlobalRule);
-adminRouter.get("/states", isAdmin, DriverDutyPolicyController.getStateRules);
-adminRouter.get("/cities", isAdmin, DriverDutyPolicyController.getCityRules);
-adminRouter.get("/zones", isAdmin, DriverDutyPolicyController.getZoneRules);
+adminRouter.get("/global", auth(), requirePermission("driverdutypolicy.read"), DriverDutyPolicyController.getGlobalRule);
+adminRouter.get("/states", auth(), requirePermission("driverdutypolicy.read"), DriverDutyPolicyController.getStateRules);
+adminRouter.get("/cities", auth(), requirePermission("driverdutypolicy.read"), DriverDutyPolicyController.getCityRules);
+adminRouter.get("/zones", auth(), requirePermission("driverdutypolicy.read"), DriverDutyPolicyController.getZoneRules);
 adminRouter.get(
   "/airports",
-  isAdmin,
+  auth(),
+  requirePermission("driverdutypolicy.read"),
   DriverDutyPolicyController.getAirportRules,
 );
 adminRouter.get(
   "/cards",
-  isAdmin,
+  auth(),
+  requirePermission("driverdutypolicy.read"),
   DriverDutyPolicyController.getMonitoringCards,
 );
 adminRouter.get(
   "/monitoring/drivers",
-  isAdmin,
+  auth(),
+  requirePermission("driverdutypolicy.read"),
   DriverDutyPolicyController.getDriverMonitoringList,
 );
 

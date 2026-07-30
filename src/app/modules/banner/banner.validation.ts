@@ -5,7 +5,7 @@ const createBannerValidationSchema = z.object({
     name: z.string(),
     description: z.string(),
     image: z.string(),
-    status: z.boolean().default(true),
+    status: z.enum(["active", "inactive"]).default("active"),
   }),
 });
 

@@ -29,4 +29,12 @@ router.patch(
   RbacController.assignRole
 );
 
+// Create Admin User and Assign Role
+router.post(
+  "/admins/create-with-role",
+  isSuperAdmin,
+  validateRequest(RbacValidation.createAdminWithRoleZodSchema),
+  RbacController.createAdminWithRole
+);
+
 export const RbacRoutes = router;

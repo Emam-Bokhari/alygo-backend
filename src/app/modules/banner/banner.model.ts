@@ -17,7 +17,9 @@ const bannerSchema = new Schema<TBanner>(
       required: true,
     },
     status: {
-      type: Boolean,
+      type: String,
+      enum: ["active", "inactive"],
+      default: "active",
     },
   },
   {
