@@ -66,9 +66,21 @@ const getOverviewSummaryFromDB = async () => {
     Driver.countDocuments({ licenseExpiryDate: { $lte: now } }),
     Driver.countDocuments({
       $or: [
-        { taxVerificationStatus: { $in: [VERIFICATION_STATUS.PENDING, VERIFICATION_STATUS.REJECTED] } },
-        { backgroundCheckStatus: { $in: [VERIFICATION_STATUS.PENDING, VERIFICATION_STATUS.REJECTED] } },
-        { identityVerificationStatus: { $in: [VERIFICATION_STATUS.PENDING, VERIFICATION_STATUS.REJECTED] } },
+        {
+          taxVerificationStatus: {
+            $in: [VERIFICATION_STATUS.PENDING, VERIFICATION_STATUS.REJECTED],
+          },
+        },
+        {
+          backgroundCheckStatus: {
+            $in: [VERIFICATION_STATUS.PENDING, VERIFICATION_STATUS.REJECTED],
+          },
+        },
+        {
+          identityVerificationStatus: {
+            $in: [VERIFICATION_STATUS.PENDING, VERIFICATION_STATUS.REJECTED],
+          },
+        },
         { licenseExpiryDate: { $lte: thirtyDaysLater } },
       ],
     }),
@@ -115,8 +127,14 @@ const getOverviewSummaryFromDB = async () => {
 /**
  * Reusable helper to assemble paginated, filtered driver lists
  */
-const queryDriversList = async (queryParams: Record<string, any>, extraFilters: Record<string, any> = {}) => {
-  const queryBuilder = new DriverQueryBuilder({ ...queryParams, ...extraFilters });
+const queryDriversList = async (
+  queryParams: Record<string, any>,
+  extraFilters: Record<string, any> = {},
+) => {
+  const queryBuilder = new DriverQueryBuilder({
+    ...queryParams,
+    ...extraFilters,
+  });
   const filterQuery = await queryBuilder.build();
   const sort = queryBuilder.getSort();
   const { page, limit, skip } = queryBuilder.getPagination();
@@ -126,7 +144,10 @@ const queryDriversList = async (queryParams: Record<string, any>, extraFilters: 
     .sort(sort as any)
     .skip(skip)
     .limit(limit)
-    .populate("userId", "name email phone status averageRating totalRatings profileImage")
+    .populate(
+      "userId",
+      "name email phone status averageRating totalRatings profileImage",
+    )
     .populate("currentTier", "name")
     .populate("serviceAreaId", "name")
     .lean();
@@ -140,7 +161,9 @@ const queryDriversList = async (queryParams: Record<string, any>, extraFilters: 
   const formattedDrivers = drivers.map((d) => {
     const userObj = d.userId as any;
     if (userObj) {
-      userObj.averageRating = userObj.averageRating ? Math.round(userObj.averageRating) : 0;
+      userObj.averageRating = userObj.averageRating
+        ? Math.round(userObj.averageRating)
+        : 0;
     }
     const driverRating = d.averageRating ? Math.round(d.averageRating) : 0;
 
@@ -187,7 +210,9 @@ const getOnlineDriversFromDB = async (queryParams: Record<string, any>) => {
 /**
  * Pending Approval Drivers: waiting for admin approval
  */
-const getPendingApprovalDriversFromDB = async (queryParams: Record<string, any>) => {
+const getPendingApprovalDriversFromDB = async (
+  queryParams: Record<string, any>,
+) => {
   return queryDriversList(queryParams, {
     approvalStatus: DRIVER_STATUS.PENDING,
   });
@@ -237,11 +262,28 @@ const getDriverDetailsFromDB = async (driverId: string) => {
   const userId = driver.userId ? (driver.userId as any)._id : null;
 
   // Retrieve parallel details (Trips: limit last 10, Wallet Transactions: limit last 10)
-  const [vehicle, wallet, completedRides, cancelledRides, totalRides, recentTrips, recentTransactions] = await Promise.all([
+  const [
+    vehicle,
+    wallet,
+    completedRides,
+    cancelledRides,
+    totalRides,
+    recentTrips,
+    recentTransactions,
+  ] = await Promise.all([
     Car.findOne({ driverId: driver._id }).lean(),
     userId ? Wallet.findOne({ userId }).lean() : Promise.resolve(null),
-    userId ? Ride.countDocuments({ driverId: userId, status: RIDE_STATUS.COMPLETED }) : Promise.resolve(0),
-    userId ? Ride.countDocuments({ driverId: userId, status: { $in: [RIDE_STATUS.CANCELLED, RIDE_STATUS.CANCELLED_BY_DRIVER] } }) : Promise.resolve(0),
+    userId
+      ? Ride.countDocuments({ driverId: userId, status: RIDE_STATUS.COMPLETED })
+      : Promise.resolve(0),
+    userId
+      ? Ride.countDocuments({
+          driverId: userId,
+          status: {
+            $in: [RIDE_STATUS.CANCELLED, RIDE_STATUS.CANCELLED_BY_DRIVER],
+          },
+        })
+      : Promise.resolve(0),
     userId ? Ride.countDocuments({ driverId: userId }) : Promise.resolve(0),
     userId
       ? Ride.find({ driverId: userId })
@@ -258,14 +300,20 @@ const getDriverDetailsFromDB = async (driverId: string) => {
       : Promise.resolve([]),
   ]);
 
-  const acceptanceRate = userId ? await calculateDriverAcceptanceRate(userId) : 0;
-  const cancellationRate = totalRides > 0 ? (cancelledRides / totalRides) * 100 : 0;
+  const acceptanceRate = userId
+    ? await calculateDriverAcceptanceRate(userId)
+    : 0;
+  const cancellationRate =
+    totalRides > 0 ? (cancelledRides / totalRides) * 100 : 0;
 
   // Round rating scores only in response output DTO to preserve DB float value
-  const roundedRating = driver.averageRating ? Math.round(driver.averageRating) : 0;
-  const roundedUserRating = driver.userId && (driver.userId as any).averageRating
-    ? Math.round((driver.userId as any).averageRating)
+  const roundedRating = driver.averageRating
+    ? Math.round(driver.averageRating)
     : 0;
+  const roundedUserRating =
+    driver.userId && (driver.userId as any).averageRating
+      ? Math.round((driver.userId as any).averageRating)
+      : 0;
 
   const userWithRoundedRating = driver.userId
     ? { ...driver.userId, averageRating: roundedUserRating }
@@ -289,7 +337,9 @@ const getDriverDetailsFromDB = async (driverId: string) => {
       timestamp: t.createdAt,
     });
   });
-  activities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  activities.sort(
+    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+  );
 
   // Return clean, modular structured object
   return {
@@ -326,17 +376,25 @@ const getDriverDetailsFromDB = async (driverId: string) => {
     trips: recentTrips,
     compliance: {
       taxVerificationStatus: driver.taxVerificationStatus,
-      backgroundCheckStatus: driver.backgroundCheckStatus || VERIFICATION_STATUS.PENDING,
-      identityVerificationStatus: driver.identityVerificationStatus || VERIFICATION_STATUS.PENDING,
+      backgroundCheckStatus:
+        driver.backgroundCheckStatus || VERIFICATION_STATUS.PENDING,
+      identityVerificationStatus:
+        driver.identityVerificationStatus || VERIFICATION_STATUS.PENDING,
       licenseExpiryDate: driver.licenseExpiryDate || null,
     },
     backgroundCheck: {
       status: driver.backgroundCheckStatus || VERIFICATION_STATUS.PENDING,
-      verifiedAt: driver.backgroundCheckStatus === VERIFICATION_STATUS.VERIFIED ? (driver as any).updatedAt : null,
+      verifiedAt:
+        driver.backgroundCheckStatus === VERIFICATION_STATUS.VERIFIED
+          ? (driver as any).updatedAt
+          : null,
     },
     identityVerification: {
       status: driver.identityVerificationStatus || VERIFICATION_STATUS.PENDING,
-      verifiedAt: driver.identityVerificationStatus === VERIFICATION_STATUS.VERIFIED ? (driver as any).updatedAt : null,
+      verifiedAt:
+        driver.identityVerificationStatus === VERIFICATION_STATUS.VERIFIED
+          ? (driver as any).updatedAt
+          : null,
     },
     approvalInfo: {
       approvalStatus: driver.approvalStatus || DRIVER_STATUS.PENDING,
@@ -355,7 +413,11 @@ const getDriverDetailsFromDB = async (driverId: string) => {
 /**
  * Approve Driver
  */
-const approveDriverInDB = async (driverId: string, adminId: string, req?: Request) => {
+const approveDriverInDB = async (
+  driverId: string,
+  adminId: string,
+  req?: Request,
+) => {
   const driver = await Driver.findById(driverId);
   if (!driver) {
     throw new ApiError(404, "Driver not found");
@@ -424,7 +486,12 @@ const approveDriverInDB = async (driverId: string, adminId: string, req?: Reques
 /**
  * Reject Driver
  */
-const rejectDriverInDB = async (driverId: string, adminId: string, reason?: string, req?: Request) => {
+const rejectDriverInDB = async (
+  driverId: string,
+  adminId: string,
+  reason?: string,
+  req?: Request,
+) => {
   const driver = await Driver.findById(driverId);
   if (!driver) {
     throw new ApiError(404, "Driver not found");
@@ -485,7 +552,13 @@ const rejectDriverInDB = async (driverId: string, adminId: string, reason?: stri
 /**
  * Suspend Driver: mark User as inactive and write suspension details
  */
-const suspendDriverInDB = async (driverId: string, adminId: string, reason?: string, note?: string, req?: Request) => {
+const suspendDriverInDB = async (
+  driverId: string,
+  adminId: string,
+  reason?: string,
+  note?: string,
+  req?: Request,
+) => {
   const driver = await Driver.findById(driverId);
   if (!driver) {
     throw new ApiError(404, "Driver not found");
@@ -508,7 +581,12 @@ const suspendDriverInDB = async (driverId: string, adminId: string, reason?: str
   });
 
   // 1. Audit Log
-  await createAuditLog("DRIVER_SUSPENDED", adminId, { driverId, reason, note }, req);
+  await createAuditLog(
+    "DRIVER_SUSPENDED",
+    adminId,
+    { driverId, reason, note },
+    req,
+  );
 
   // 2. Push Notification
   await sendNotifications({
@@ -549,7 +627,11 @@ const suspendDriverInDB = async (driverId: string, adminId: string, reason?: str
 /**
  * Unsuspend Driver: mark User as active and clear suspension details
  */
-const unsuspendDriverInDB = async (driverId: string, adminId: string, req?: Request) => {
+const unsuspendDriverInDB = async (
+  driverId: string,
+  adminId: string,
+  req?: Request,
+) => {
   const driver = await Driver.findById(driverId);
   if (!driver) {
     throw new ApiError(404, "Driver not found");

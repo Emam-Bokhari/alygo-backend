@@ -15,7 +15,7 @@ export class DriverQueryBuilder {
 
   async build(): Promise<FilterQuery<IDriver>> {
     const {
-      search,
+      searchTerm,
       status,
       tier,
       city,
@@ -30,7 +30,7 @@ export class DriverQueryBuilder {
     // Copy unhandled parameter filters (like extraFilters passed from services)
     const queryObj = { ...this.queryParams };
     const excludeFields = [
-      "search",
+      "searchTerm",
       "status",
       "tier",
       "city",
@@ -49,8 +49,8 @@ export class DriverQueryBuilder {
     Object.assign(this.filterQuery, queryObj);
 
     // 1. Search term (Across User fields, Car fields, or IDs)
-    if (search) {
-      const term = search as string;
+    if (searchTerm) {
+      const term = searchTerm as string;
       const orConditions: any[] = [];
 
       // A. Query User model for name, email, phone match
@@ -159,7 +159,10 @@ export class DriverQueryBuilder {
         } else {
           this.filterQuery.$or = complianceOr;
         }
-      } else if (complianceStatus === "rejected" || complianceStatus === "failed") {
+      } else if (
+        complianceStatus === "rejected" ||
+        complianceStatus === "failed"
+      ) {
         const complianceOr: any[] = [
           { taxVerificationStatus: VERIFICATION_STATUS.REJECTED },
           { backgroundCheckStatus: VERIFICATION_STATUS.REJECTED },
@@ -174,11 +177,12 @@ export class DriverQueryBuilder {
       } else if (complianceStatus === "verified") {
         this.filterQuery.taxVerificationStatus = VERIFICATION_STATUS.VERIFIED;
         this.filterQuery.backgroundCheckStatus = VERIFICATION_STATUS.VERIFIED;
-        this.filterQuery.identityVerificationStatus = VERIFICATION_STATUS.VERIFIED;
-        
+        this.filterQuery.identityVerificationStatus =
+          VERIFICATION_STATUS.VERIFIED;
+
         const expiryOr = [
           { licenseExpiryDate: null },
-          { licenseExpiryDate: { $gt: now } }
+          { licenseExpiryDate: { $gt: now } },
         ];
         if (this.filterQuery.$or) {
           this.filterQuery.$and = this.filterQuery.$and || [];

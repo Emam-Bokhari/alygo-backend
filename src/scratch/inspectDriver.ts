@@ -13,10 +13,11 @@ async function inspect() {
     const driversCol = db.collection("drivers");
 
     const driverId = "6a59b25aec029a501f10cd9f";
-    const driver = await driversCol.findOne({ _id: new mongoose.Types.ObjectId(driverId) });
+    const driver = await driversCol.findOne({
+      _id: new mongoose.Types.ObjectId(driverId),
+    });
     console.log("--- RAW DRIVER DOCUMENT FROM DB ---");
     console.log(driver);
-
   } catch (error) {
     console.error("Error inspecting:", error);
   } finally {
@@ -25,5 +26,3 @@ async function inspect() {
 }
 
 inspect();
-
-

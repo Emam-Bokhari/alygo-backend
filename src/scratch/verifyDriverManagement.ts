@@ -32,7 +32,16 @@ async function runVerification() {
     await RideCategory.deleteMany({ name: "Test Category" });
     await Tier.deleteMany({ name: "Test Tier Level 1" });
     await Car.deleteMany({ licensePlate: "TESTPLATE" });
-    await AuditLog.deleteMany({ action: { $in: ["DRIVER_APPROVED", "DRIVER_REJECTED", "DRIVER_SUSPENDED", "DRIVER_UNSUSPENDED"] } });
+    await AuditLog.deleteMany({
+      action: {
+        $in: [
+          "DRIVER_APPROVED",
+          "DRIVER_REJECTED",
+          "DRIVER_SUSPENDED",
+          "DRIVER_UNSUSPENDED",
+        ],
+      },
+    });
 
     // 1. Setup Service Area
     console.log("Setting up Test Service Area...");
@@ -128,11 +137,17 @@ async function runVerification() {
     // Verification 1: Starts as Pending Approval and Not Approved
     console.log("\n--- Verification 1: Pending Approval Check ---");
     const freshDriver = await Driver.findById(driver._id);
-    assert(freshDriver?.approvalStatus === DRIVER_STATUS.PENDING, "Starts with approvalStatus = 'pending'");
+    assert(
+      freshDriver?.approvalStatus === DRIVER_STATUS.PENDING,
+      "Starts with approvalStatus = 'pending'",
+    );
 
     // Verification 2: Appears in Pending Approval list
-    const pendingList = await DriverManagementServices.getPendingApprovalDriversFromDB({});
-    const foundInPending = pendingList.data.some((d: any) => d._id.toString() === driver._id.toString());
+    const pendingList =
+      await DriverManagementServices.getPendingApprovalDriversFromDB({});
+    const foundInPending = pendingList.data.some(
+      (d: any) => d._id.toString() === driver._id.toString(),
+    );
     assert(foundInPending, "Driver appears in the Pending Approval API");
 
     // Verification 3: Driver must NOT enter ride matching queue
@@ -143,29 +158,55 @@ async function runVerification() {
       rideCategoryId: rideCategory._id.toString(),
       rideServiceAreaId: serviceArea._id.toString(),
     });
-    const foundInMatchingBefore = eligibleDrivers.some((d: any) => d.driverId.toString() === user._id.toString());
-    assert(!foundInMatchingBefore, "Unapproved driver is excluded from ride matching queue");
+    const foundInMatchingBefore = eligibleDrivers.some(
+      (d: any) => d.driverId.toString() === user._id.toString(),
+    );
+    assert(
+      !foundInMatchingBefore,
+      "Unapproved driver is excluded from ride matching queue",
+    );
 
     // Verification 4: Driver must NOT appear in Online Drivers
-    const onlineListBefore = await DriverManagementServices.getOnlineDriversFromDB({});
-    const foundInOnlineBefore = onlineListBefore.data.some((d: any) => d._id.toString() === driver._id.toString());
-    assert(!foundInOnlineBefore, "Unapproved driver is excluded from Online Drivers list");
+    const onlineListBefore =
+      await DriverManagementServices.getOnlineDriversFromDB({});
+    const foundInOnlineBefore = onlineListBefore.data.some(
+      (d: any) => d._id.toString() === driver._id.toString(),
+    );
+    assert(
+      !foundInOnlineBefore,
+      "Unapproved driver is excluded from Online Drivers list",
+    );
 
     // Verification 5: Admin Approves Driver
     console.log("\n--- Verification 3: Driver Approval Flow ---");
     // Mock user._id as the adminId executing this action
-    await DriverManagementServices.approveDriverInDB(driver._id.toString(), user._id.toString());
+    await DriverManagementServices.approveDriverInDB(
+      driver._id.toString(),
+      user._id.toString(),
+    );
     const approvedDriver = await Driver.findById(driver._id);
-    assert(approvedDriver?.approvalStatus === DRIVER_STATUS.APPROVED, "Updates approvalStatus to 'approved'");
+    assert(
+      approvedDriver?.approvalStatus === DRIVER_STATUS.APPROVED,
+      "Updates approvalStatus to 'approved'",
+    );
 
     // Verification 6: Disappears from Pending Approval
-    const pendingListAfter = await DriverManagementServices.getPendingApprovalDriversFromDB({});
-    const foundInPendingAfter = pendingListAfter.data.some((d: any) => d._id.toString() === driver._id.toString());
-    assert(!foundInPendingAfter, "Approved driver disappears from Pending Approval");
+    const pendingListAfter =
+      await DriverManagementServices.getPendingApprovalDriversFromDB({});
+    const foundInPendingAfter = pendingListAfter.data.some(
+      (d: any) => d._id.toString() === driver._id.toString(),
+    );
+    assert(
+      !foundInPendingAfter,
+      "Approved driver disappears from Pending Approval",
+    );
 
     // Verification 7: Appears in Online Drivers
-    const onlineListAfter = await DriverManagementServices.getOnlineDriversFromDB({});
-    const foundInOnlineAfter = onlineListAfter.data.some((d: any) => d._id.toString() === driver._id.toString());
+    const onlineListAfter =
+      await DriverManagementServices.getOnlineDriversFromDB({});
+    const foundInOnlineAfter = onlineListAfter.data.some(
+      (d: any) => d._id.toString() === driver._id.toString(),
+    );
     assert(foundInOnlineAfter, "Approved driver appears in Online Drivers");
 
     // Verification 8: Driver is now eligible for ride matching
@@ -175,24 +216,52 @@ async function runVerification() {
       rideCategoryId: rideCategory._id.toString(),
       rideServiceAreaId: serviceArea._id.toString(),
     });
-    const foundInMatchingAfter = eligibleDrivers.some((d: any) => d.driverId.toString() === user._id.toString());
-    assert(foundInMatchingAfter, "Approved driver is returned in the ride matching queue");
+    const foundInMatchingAfter = eligibleDrivers.some(
+      (d: any) => d.driverId.toString() === user._id.toString(),
+    );
+    assert(
+      foundInMatchingAfter,
+      "Approved driver is returned in the ride matching queue",
+    );
 
     // Verification 9: Driver Suspension
     console.log("\n--- Verification 4: Suspension Flow ---");
-    await DriverManagementServices.suspendDriverInDB(driver._id.toString(), user._id.toString(), "Fraud", "Suspended for testing");
+    await DriverManagementServices.suspendDriverInDB(
+      driver._id.toString(),
+      user._id.toString(),
+      "Fraud",
+      "Suspended for testing",
+    );
     const suspendedUser = await User.findById(user._id);
-    assert(suspendedUser?.status === STATUS.INACTIVE, "User status is updated to 'inactive'");
+    assert(
+      suspendedUser?.status === STATUS.INACTIVE,
+      "User status is updated to 'inactive'",
+    );
 
     const suspendedDriver = await Driver.findById(driver._id);
-    assert(suspendedDriver?.suspension?.isSuspended === true, "suspension.isSuspended is true");
-    assert(suspendedDriver?.suspension?.reason === "Fraud", "suspension.reason is saved");
-    assert(suspendedDriver?.suspension?.note === "Suspended for testing", "suspension.note is saved");
+    assert(
+      suspendedDriver?.suspension?.isSuspended === true,
+      "suspension.isSuspended is true",
+    );
+    assert(
+      suspendedDriver?.suspension?.reason === "Fraud",
+      "suspension.reason is saved",
+    );
+    assert(
+      suspendedDriver?.suspension?.note === "Suspended for testing",
+      "suspension.note is saved",
+    );
 
     // Verification 10: Suspended driver disappears from Online Drivers
-    const onlineListSuspended = await DriverManagementServices.getOnlineDriversFromDB({});
-    const foundInOnlineSuspended = onlineListSuspended.data.some((d: any) => d._id.toString() === driver._id.toString());
-    assert(!foundInOnlineSuspended, "Suspended driver disappears from Online Drivers list");
+    const onlineListSuspended =
+      await DriverManagementServices.getOnlineDriversFromDB({});
+    const foundInOnlineSuspended = onlineListSuspended.data.some(
+      (d: any) => d._id.toString() === driver._id.toString(),
+    );
+    assert(
+      !foundInOnlineSuspended,
+      "Suspended driver disappears from Online Drivers list",
+    );
 
     // Verification 11: Suspended driver disappears from matching queue
     eligibleDrivers = await findEligibleDriversInRadius({
@@ -201,48 +270,86 @@ async function runVerification() {
       rideCategoryId: rideCategory._id.toString(),
       rideServiceAreaId: serviceArea._id.toString(),
     });
-    const foundInMatchingSuspended = eligibleDrivers.some((d: any) => d.driverId.toString() === user._id.toString());
-    assert(!foundInMatchingSuspended, "Suspended driver is excluded from ride matching queue");
+    const foundInMatchingSuspended = eligibleDrivers.some(
+      (d: any) => d.driverId.toString() === user._id.toString(),
+    );
+    assert(
+      !foundInMatchingSuspended,
+      "Suspended driver is excluded from ride matching queue",
+    );
 
     // Verification 12: Appears in Suspended Drivers list
-    const suspendedList = await DriverManagementServices.getSuspendedDriversFromDB({});
-    const foundInSuspended = suspendedList.data.some((d: any) => d._id.toString() === driver._id.toString());
-    assert(foundInSuspended, "Suspended driver appears in Suspended Drivers list");
+    const suspendedList =
+      await DriverManagementServices.getSuspendedDriversFromDB({});
+    const foundInSuspended = suspendedList.data.some(
+      (d: any) => d._id.toString() === driver._id.toString(),
+    );
+    assert(
+      foundInSuspended,
+      "Suspended driver appears in Suspended Drivers list",
+    );
 
     // Unsuspend driver
-    await DriverManagementServices.unsuspendDriverInDB(driver._id.toString(), user._id.toString());
+    await DriverManagementServices.unsuspendDriverInDB(
+      driver._id.toString(),
+      user._id.toString(),
+    );
     const activeUser = await User.findById(user._id);
-    assert(activeUser?.status === STATUS.ACTIVE, "Unsuspend updates User status to 'active'");
+    assert(
+      activeUser?.status === STATUS.ACTIVE,
+      "Unsuspend updates User status to 'active'",
+    );
 
     // Verification 13: Compliance Filters
     console.log("\n--- Verification 5: Compliance Flow ---");
     // Set driving license to be expired
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    await Driver.findByIdAndUpdate(driver._id, { licenseExpiryDate: yesterday });
-
-    const complianceList = await DriverManagementServices.getComplianceDriversFromDB({
-      complianceStatus: "expired",
+    await Driver.findByIdAndUpdate(driver._id, {
+      licenseExpiryDate: yesterday,
     });
-    const foundInCompliance = complianceList.data.some((d: any) => d._id.toString() === driver._id.toString());
-    assert(foundInCompliance, "Driver appears in Compliance list under expired status");
+
+    const complianceList =
+      await DriverManagementServices.getComplianceDriversFromDB({
+        complianceStatus: "expired",
+      });
+    const foundInCompliance = complianceList.data.some(
+      (d: any) => d._id.toString() === driver._id.toString(),
+    );
+    assert(
+      foundInCompliance,
+      "Driver appears in Compliance list under expired status",
+    );
 
     // Verification 14: Details API rounded averageRating & raw float preserved
     console.log("\n--- Verification 6: Details API ---");
     // Set float rating in DB manually
     await Driver.findByIdAndUpdate(driver._id, { averageRating: 4.67 });
-    const details = await DriverManagementServices.getDriverDetailsFromDB(driver._id.toString());
-    assert(details.rating.averageRating === 5, "averageRating in API output is rounded to 5 (Integer)");
+    const details = await DriverManagementServices.getDriverDetailsFromDB(
+      driver._id.toString(),
+    );
+    assert(
+      details.rating.averageRating === 5,
+      "averageRating in API output is rounded to 5 (Integer)",
+    );
 
     const dbDriverAfter = await Driver.findById(driver._id);
-    assert(dbDriverAfter?.averageRating === 4.67, "averageRating in Database remains 4.67 (Float preserved)");
+    assert(
+      dbDriverAfter?.averageRating === 4.67,
+      "averageRating in Database remains 4.67 (Float preserved)",
+    );
 
     // Verification 15: Audit Logs
     console.log("\n--- Verification 7: Audit Logging Check ---");
     const auditLogs = await AuditLog.find({
-      action: { $in: ["DRIVER_APPROVED", "DRIVER_SUSPENDED", "DRIVER_UNSUSPENDED"] },
+      action: {
+        $in: ["DRIVER_APPROVED", "DRIVER_SUSPENDED", "DRIVER_UNSUSPENDED"],
+      },
     });
-    assert(auditLogs.length >= 3, `At least 3 admin actions recorded in AuditLog (Found: ${auditLogs.length})`);
+    assert(
+      auditLogs.length >= 3,
+      `At least 3 admin actions recorded in AuditLog (Found: ${auditLogs.length})`,
+    );
 
     console.log("\nALL VERIFICATIONS COMPLETED SUCCESSFULLY!");
   } catch (error: any) {
@@ -255,7 +362,16 @@ async function runVerification() {
     await RideCategory.deleteMany({ name: "Test Category" });
     await Tier.deleteMany({ name: "Test Tier Level 1" });
     await Car.deleteMany({ licensePlate: "TESTPLATE" });
-    await AuditLog.deleteMany({ action: { $in: ["DRIVER_APPROVED", "DRIVER_REJECTED", "DRIVER_SUSPENDED", "DRIVER_UNSUSPENDED"] } });
+    await AuditLog.deleteMany({
+      action: {
+        $in: [
+          "DRIVER_APPROVED",
+          "DRIVER_REJECTED",
+          "DRIVER_SUSPENDED",
+          "DRIVER_UNSUSPENDED",
+        ],
+      },
+    });
     await mongoose.disconnect();
     console.log("Disconnected from database.");
   }

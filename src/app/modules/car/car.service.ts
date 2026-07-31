@@ -2,7 +2,6 @@ import { Types } from "mongoose";
 import ApiError from "../../../errors/ApiErrors";
 import { Car } from "./car.model";
 import { ICar } from "./car.interface";
-import { User } from "../user/user.model";
 import { Driver } from "../driver/driver.model";
 
 const createCarToDB = async (userId: string, payload: Partial<ICar>) => {

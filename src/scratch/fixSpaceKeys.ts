@@ -12,10 +12,14 @@ async function fixKeys() {
     }
 
     const driversCol = db.collection("drivers");
-    
+
     // Find all drivers that have the field "approvalStatus " (with trailing space)
-    const driversWithTrailingSpace = await driversCol.find({ "approvalStatus ": { $exists: true } }).toArray();
-    console.log(`Found ${driversWithTrailingSpace.length} drivers with trailing space in "approvalStatus ".`);
+    const driversWithTrailingSpace = await driversCol
+      .find({ "approvalStatus ": { $exists: true } })
+      .toArray();
+    console.log(
+      `Found ${driversWithTrailingSpace.length} drivers with trailing space in "approvalStatus ".`,
+    );
 
     for (const driver of driversWithTrailingSpace) {
       console.log(`Fixing driver ID: ${driver._id}`);
@@ -24,8 +28,8 @@ async function fixKeys() {
         { _id: driver._id },
         {
           $set: { approvalStatus: driver["approvalStatus "] },
-          $unset: { "approvalStatus ": "" }
-        }
+          $unset: { "approvalStatus ": "" },
+        },
       );
       console.log("Update result:", res);
     }

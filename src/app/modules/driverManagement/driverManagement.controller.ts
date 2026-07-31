@@ -14,7 +14,9 @@ const getOverviewSummary = catchAsync(async (req, res) => {
 });
 
 const getOnlineDrivers = catchAsync(async (req, res) => {
-  const result = await DriverManagementServices.getOnlineDriversFromDB(req.query);
+  const result = await DriverManagementServices.getOnlineDriversFromDB(
+    req.query,
+  );
 
   sendResponse(res, {
     success: true,
@@ -26,7 +28,9 @@ const getOnlineDrivers = catchAsync(async (req, res) => {
 });
 
 const getPendingApprovalDrivers = catchAsync(async (req, res) => {
-  const result = await DriverManagementServices.getPendingApprovalDriversFromDB(req.query);
+  const result = await DriverManagementServices.getPendingApprovalDriversFromDB(
+    req.query,
+  );
 
   sendResponse(res, {
     success: true,
@@ -38,7 +42,9 @@ const getPendingApprovalDrivers = catchAsync(async (req, res) => {
 });
 
 const getSuspendedDrivers = catchAsync(async (req, res) => {
-  const result = await DriverManagementServices.getSuspendedDriversFromDB(req.query);
+  const result = await DriverManagementServices.getSuspendedDriversFromDB(
+    req.query,
+  );
 
   sendResponse(res, {
     success: true,
@@ -50,7 +56,9 @@ const getSuspendedDrivers = catchAsync(async (req, res) => {
 });
 
 const getComplianceDrivers = catchAsync(async (req, res) => {
-  const result = await DriverManagementServices.getComplianceDriversFromDB(req.query);
+  const result = await DriverManagementServices.getComplianceDriversFromDB(
+    req.query,
+  );
 
   sendResponse(res, {
     success: true,
@@ -63,7 +71,8 @@ const getComplianceDrivers = catchAsync(async (req, res) => {
 
 const getDriverDetails = catchAsync(async (req, res) => {
   const { driverId } = req.params;
-  const result = await DriverManagementServices.getDriverDetailsFromDB(driverId);
+  const result =
+    await DriverManagementServices.getDriverDetailsFromDB(driverId);
 
   sendResponse(res, {
     success: true,
@@ -76,7 +85,11 @@ const getDriverDetails = catchAsync(async (req, res) => {
 const createApproveDriver = catchAsync(async (req, res) => {
   const { driverId } = req.params;
   const adminId = req.user.id;
-  const result = await DriverManagementServices.approveDriverInDB(driverId, adminId, req);
+  const result = await DriverManagementServices.approveDriverInDB(
+    driverId,
+    adminId,
+    req,
+  );
 
   sendResponse(res, {
     success: true,
@@ -90,7 +103,12 @@ const createRejectDriver = catchAsync(async (req, res) => {
   const { driverId } = req.params;
   const { reason } = req.body;
   const adminId = req.user.id;
-  const result = await DriverManagementServices.rejectDriverInDB(driverId, adminId, reason, req);
+  const result = await DriverManagementServices.rejectDriverInDB(
+    driverId,
+    adminId,
+    reason,
+    req,
+  );
 
   sendResponse(res, {
     success: true,
@@ -104,7 +122,13 @@ const suspendDriver = catchAsync(async (req, res) => {
   const { driverId } = req.params;
   const { reason, note } = req.body;
   const adminId = req.user.id;
-  const result = await DriverManagementServices.suspendDriverInDB(driverId, adminId, reason, note, req);
+  const result = await DriverManagementServices.suspendDriverInDB(
+    driverId,
+    adminId,
+    reason,
+    note,
+    req,
+  );
 
   sendResponse(res, {
     success: true,
@@ -117,7 +141,11 @@ const suspendDriver = catchAsync(async (req, res) => {
 const unsuspendDriver = catchAsync(async (req, res) => {
   const { driverId } = req.params;
   const adminId = req.user.id;
-  const result = await DriverManagementServices.unsuspendDriverInDB(driverId, adminId, req);
+  const result = await DriverManagementServices.unsuspendDriverInDB(
+    driverId,
+    adminId,
+    req,
+  );
 
   sendResponse(res, {
     success: true,
