@@ -145,4 +145,7 @@ const referralSchema = new Schema<IReferral, ReferralModel>(
 
 referralSchema.plugin(softDeletePlugin);
 
-export const Referral = model<IReferral, ReferralModel>("Referral", referralSchema);
+export const Referral = model<IReferral, ReferralModel>(
+  "Referral",
+  referralSchema,
+);

@@ -49,4 +49,7 @@ const auditLogSchema = new Schema<IAuditLog, AuditLogModel>(
 
 auditLogSchema.plugin(softDeletePlugin);
 
-export const AuditLog = model<IAuditLog, AuditLogModel>("AuditLog", auditLogSchema);
+export const AuditLog = model<IAuditLog, AuditLogModel>(
+  "AuditLog",
+  auditLogSchema,
+);

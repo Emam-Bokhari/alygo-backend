@@ -133,6 +133,8 @@ export const findEligibleDriversInRadius = async ({
     driverAvailabilityStatus: "online",
     taxVerified: true,
     taxVerificationStatus: "verified",
+    approvalStatus: "approved",
+    "suspension.isSuspended": { $ne: true },
     serviceAreaId: new Types.ObjectId(resolvedRideServiceAreaId),
   });
 

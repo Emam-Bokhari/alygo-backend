@@ -7,7 +7,9 @@ import {
 import { PLATFORM_CURRENCY } from "./platformSettings.constant";
 
 const platformSettingsSchema = new Schema<
-  IPlatformSettings, PlatformSettingsModel>(
+  IPlatformSettings,
+  PlatformSettingsModel
+>(
   {
     platformName: {
       type: String,
@@ -58,4 +60,7 @@ const platformSettingsSchema = new Schema<
 
 platformSettingsSchema.plugin(softDeletePlugin);
 
-export const PlatformSettings = model<IPlatformSettings, PlatformSettingsModel>("PlatformSettings", platformSettingsSchema);
+export const PlatformSettings = model<IPlatformSettings, PlatformSettingsModel>(
+  "PlatformSettings",
+  platformSettingsSchema,
+);

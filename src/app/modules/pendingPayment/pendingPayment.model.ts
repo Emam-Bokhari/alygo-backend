@@ -73,4 +73,7 @@ const pendingPaymentSchema = new Schema<IPendingPayment, PendingPaymentModel>(
 
 pendingPaymentSchema.plugin(softDeletePlugin);
 
-export const PendingPayment = model<IPendingPayment, PendingPaymentModel>("PendingPayment", pendingPaymentSchema);
+export const PendingPayment = model<IPendingPayment, PendingPaymentModel>(
+  "PendingPayment",
+  pendingPaymentSchema,
+);

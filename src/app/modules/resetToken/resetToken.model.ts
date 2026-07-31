@@ -39,4 +39,7 @@ resetTokenSchema.statics.isExpireToken = async (token: string) => {
 
 resetTokenSchema.plugin(softDeletePlugin);
 
-export const ResetToken = model<IResetToken, ResetTokenModel>("Token", resetTokenSchema);
+export const ResetToken = model<IResetToken, ResetTokenModel>(
+  "Token",
+  resetTokenSchema,
+);

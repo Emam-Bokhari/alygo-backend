@@ -153,4 +153,7 @@ const transactionSchema = new Schema<ITransaction, TransactionModel>(
 
 transactionSchema.plugin(softDeletePlugin);
 
-export const Transaction = model<ITransaction, TransactionModel>("Transaction", transactionSchema);
+export const Transaction = model<ITransaction, TransactionModel>(
+  "Transaction",
+  transactionSchema,
+);

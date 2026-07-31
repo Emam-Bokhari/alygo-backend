@@ -10,6 +10,7 @@ import {
   TAX_ID_TYPE,
   VERIFICATION_STATUS,
 } from "./driver.constant";
+import { DRIVER_STATUS } from "../../../enums/user";
 
 const driverSchema = new Schema<IDriver, DriverModel>(
   {
@@ -373,6 +374,48 @@ const driverSchema = new Schema<IDriver, DriverModel>(
     tierAchievedAt: {
       type: Date,
       default: null,
+    },
+    approvalStatus: {
+      type: String,
+      enum: Object.values(DRIVER_STATUS),
+      default: DRIVER_STATUS.PENDING,
+    },
+    backgroundCheckStatus: {
+      type: String,
+      enum: Object.values(VERIFICATION_STATUS),
+      default: VERIFICATION_STATUS.PENDING,
+    },
+    identityVerificationStatus: {
+      type: String,
+      enum: Object.values(VERIFICATION_STATUS),
+      default: VERIFICATION_STATUS.PENDING,
+    },
+    licenseExpiryDate: {
+      type: Date,
+      default: null,
+    },
+    suspension: {
+      isSuspended: {
+        type: Boolean,
+        default: false,
+      },
+      suspendedBy: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        default: null,
+      },
+      suspendedAt: {
+        type: Date,
+        default: null,
+      },
+      reason: {
+        type: String,
+        default: "",
+      },
+      note: {
+        type: String,
+        default: "",
+      },
     },
   },
 

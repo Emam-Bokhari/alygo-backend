@@ -48,4 +48,7 @@ const aiAuditLogSchema = new Schema<IAiAuditLog, AiAuditLogModel>(
 
 aiAuditLogSchema.plugin(softDeletePlugin);
 
-export const AiAuditLog = model<IAiAuditLog, AiAuditLogModel>("AiAuditLog", aiAuditLogSchema);
+export const AiAuditLog = model<IAiAuditLog, AiAuditLogModel>(
+  "AiAuditLog",
+  aiAuditLogSchema,
+);

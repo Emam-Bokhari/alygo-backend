@@ -99,4 +99,7 @@ broadcastSchema.index({ status: 1, scheduledAt: 1 });
 
 broadcastSchema.plugin(softDeletePlugin);
 
-export const Broadcast = model<IBroadcast, BroadcastModel>("Broadcast", broadcastSchema);
+export const Broadcast = model<IBroadcast, BroadcastModel>(
+  "Broadcast",
+  broadcastSchema,
+);

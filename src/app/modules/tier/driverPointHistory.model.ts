@@ -35,7 +35,10 @@ export interface IDriverPointHistory {
 
 export type DriverPointHistoryModel = ISoftDeleteModel<IDriverPointHistory>;
 
-const driverPointHistorySchema = new Schema<IDriverPointHistory, DriverPointHistoryModel>(
+const driverPointHistorySchema = new Schema<
+  IDriverPointHistory,
+  DriverPointHistoryModel
+>(
   {
     driverId: {
       type: Schema.Types.ObjectId,
@@ -135,4 +138,7 @@ driverPointHistorySchema.index(
 
 driverPointHistorySchema.plugin(softDeletePlugin);
 
-export const DriverPointHistory = model<IDriverPointHistory, DriverPointHistoryModel>("DriverPointHistory", driverPointHistorySchema);
+export const DriverPointHistory = model<
+  IDriverPointHistory,
+  DriverPointHistoryModel
+>("DriverPointHistory", driverPointHistorySchema);

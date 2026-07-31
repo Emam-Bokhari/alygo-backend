@@ -26,7 +26,10 @@ export interface IDestinationFilter {
 
 export type DestinationFilterModel = ISoftDeleteModel<IDestinationFilter>;
 
-const destinationFilterSchema = new Schema<IDestinationFilter, DestinationFilterModel>(
+const destinationFilterSchema = new Schema<
+  IDestinationFilter,
+  DestinationFilterModel
+>(
   {
     driverId: {
       type: Schema.Types.ObjectId,
@@ -99,4 +102,7 @@ const destinationFilterSchema = new Schema<IDestinationFilter, DestinationFilter
 
 destinationFilterSchema.plugin(softDeletePlugin);
 
-export const DestinationFilter = model<IDestinationFilter, DestinationFilterModel>("DestinationFilter", destinationFilterSchema);
+export const DestinationFilter = model<
+  IDestinationFilter,
+  DestinationFilterModel
+>("DestinationFilter", destinationFilterSchema);

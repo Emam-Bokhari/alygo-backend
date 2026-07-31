@@ -6,7 +6,9 @@ import {
 } from "./emergencyHelpline.interface";
 
 const emergencyHelplineSchema = new Schema<
-  IEmergencyHelpline, EmergencyHelplineModel>(
+  IEmergencyHelpline,
+  EmergencyHelplineModel
+>(
   {
     callNumber: {
       type: String,
@@ -41,4 +43,7 @@ const emergencyHelplineSchema = new Schema<
 
 emergencyHelplineSchema.plugin(softDeletePlugin);
 
-export const EmergencyHelpline = model<IEmergencyHelpline, EmergencyHelplineModel>("EmergencyHelpline", emergencyHelplineSchema);
+export const EmergencyHelpline = model<
+  IEmergencyHelpline,
+  EmergencyHelplineModel
+>("EmergencyHelpline", emergencyHelplineSchema);

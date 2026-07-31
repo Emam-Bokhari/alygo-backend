@@ -127,4 +127,7 @@ permissionSchema.index({ status: 1 });
 
 permissionSchema.plugin(softDeletePlugin);
 
-export const Permission = model<IPermission, PermissionModel>("Permission", permissionSchema);
+export const Permission = model<IPermission, PermissionModel>(
+  "Permission",
+  permissionSchema,
+);

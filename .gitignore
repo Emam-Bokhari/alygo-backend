@@ -3,3 +3,5 @@ node_modules
 /winston
 .env
 dist
+practice.yaml
+practice

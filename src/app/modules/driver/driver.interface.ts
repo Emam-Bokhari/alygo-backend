@@ -9,6 +9,7 @@ import {
   TAX_ID_TYPE,
   VERIFICATION_STATUS,
 } from "./driver.constant";
+import { DRIVER_STATUS } from "../../../enums/user";
 
 export type IDriver = {
   userId: Types.ObjectId;
@@ -114,6 +115,19 @@ export type IDriver = {
   nextTier?: Types.ObjectId | null;
   progressPercentage?: number;
   tierAchievedAt?: Date;
+
+  // Driver approval and compliance
+  approvalStatus?: DRIVER_STATUS;
+  backgroundCheckStatus?: VERIFICATION_STATUS;
+  identityVerificationStatus?: VERIFICATION_STATUS;
+  licenseExpiryDate?: Date;
+  suspension?: {
+    isSuspended: boolean;
+    suspendedBy?: Types.ObjectId | null;
+    suspendedAt?: Date | null;
+    reason?: string;
+    note?: string;
+  };
 };
 
 export type DriverModel = ISoftDeleteModel<IDriver>;

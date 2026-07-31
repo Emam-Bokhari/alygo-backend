@@ -6,7 +6,9 @@ import {
 } from "./recentDestination.interface";
 
 const recentDestinationSchema = new Schema<
-  IRecentDestination, IRecentDestinationModel>(
+  IRecentDestination,
+  IRecentDestinationModel
+>(
   {
     userId: {
       type: Schema.Types.ObjectId,
@@ -74,4 +76,7 @@ recentDestinationSchema.index({ userId: 1, lastUsedAt: -1 });
 
 recentDestinationSchema.plugin(softDeletePlugin);
 
-export const RecentDestination = model<IRecentDestination, IRecentDestinationModel>("RecentDestination", recentDestinationSchema);
+export const RecentDestination = model<
+  IRecentDestination,
+  IRecentDestinationModel
+>("RecentDestination", recentDestinationSchema);

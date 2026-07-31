@@ -50,4 +50,7 @@ const notificationSchema = new Schema<INotification, NotificationModel>(
 
 notificationSchema.plugin(softDeletePlugin);
 
-export const Notification = model<INotification, NotificationModel>("Notification", notificationSchema);
+export const Notification = model<INotification, NotificationModel>(
+  "Notification",
+  notificationSchema,
+);

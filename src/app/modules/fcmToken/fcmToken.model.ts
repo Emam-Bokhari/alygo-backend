@@ -40,4 +40,7 @@ deviceTokenSchema.index({ updatedAt: 1 }, { expireAfterSeconds: 15552000 });
 deviceTokenSchema.index({ fcmToken: 1 });
 deviceTokenSchema.plugin(softDeletePlugin);
 
-export const DeviceToken = mongoose.model<IDeviceTokenModel, DeviceTokenModelModel>("DeviceToken", deviceTokenSchema);
+export const DeviceToken = mongoose.model<
+  IDeviceTokenModel,
+  DeviceTokenModelModel
+>("DeviceToken", deviceTokenSchema);

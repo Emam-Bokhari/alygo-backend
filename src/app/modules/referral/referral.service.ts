@@ -790,11 +790,13 @@ const getDriverReferralDashboard = async (userId: string) => {
   });
 
   const totalInvited = referrals.length;
+
   const active = referrals.filter(
     (r) =>
       r.status === REFERRAL_STATUS.ACTIVE ||
       r.status === REFERRAL_STATUS.PENDING,
   ).length;
+
   const completed = referrals.filter(
     (r) => r.status === REFERRAL_STATUS.COMPLETED,
   ).length;

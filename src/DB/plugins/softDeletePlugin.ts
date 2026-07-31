@@ -25,11 +25,11 @@ export function softDeletePlugin<T>(schema: Schema<T>) {
   const excludeDeletedFilter = function (this: Query<any, any>) {
     const filters = this.getFilter();
     const options = this.getOptions();
-    const isPopulate = options && (
-      'skip' in options ||
-      'limit' in options ||
-      'perDocumentLimit' in options
-    );
+    const isPopulate =
+      options &&
+      ("skip" in options ||
+        "limit" in options ||
+        "perDocumentLimit" in options);
     if (isPopulate) {
       return;
     }

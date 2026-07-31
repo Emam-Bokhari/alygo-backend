@@ -155,4 +155,7 @@ const trackingSchema = new Schema<ITracking, TrackingModel>(
 
 trackingSchema.plugin(softDeletePlugin);
 
-export const Tracking = model<ITracking, TrackingModel>("Tracking", trackingSchema);
+export const Tracking = model<ITracking, TrackingModel>(
+  "Tracking",
+  trackingSchema,
+);

@@ -176,4 +176,7 @@ tripReportSchema.index({ rideId: 1 }, { unique: true });
 
 tripReportSchema.plugin(softDeletePlugin);
 
-export const TripReport = model<ITripReport, TripReportModel>("TripReport", tripReportSchema);
+export const TripReport = model<ITripReport, TripReportModel>(
+  "TripReport",
+  tripReportSchema,
+);

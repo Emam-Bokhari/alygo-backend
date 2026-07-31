@@ -49,4 +49,7 @@ const tierHistorySchema = new Schema<ITierHistory, TierHistoryModel>(
 
 tierHistorySchema.plugin(softDeletePlugin);
 
-export const TierHistory = model<ITierHistory, TierHistoryModel>("TierHistory", tierHistorySchema);
+export const TierHistory = model<ITierHistory, TierHistoryModel>(
+  "TierHistory",
+  tierHistorySchema,
+);

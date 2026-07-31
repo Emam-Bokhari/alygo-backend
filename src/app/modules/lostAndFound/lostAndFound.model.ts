@@ -247,4 +247,7 @@ const lostFoundSchema = new Schema<ILostFound, LostFoundModel>(
 
 lostFoundSchema.plugin(softDeletePlugin);
 
-export const LostFound = model<ILostFound, LostFoundModel>("LostFound", lostFoundSchema);
+export const LostFound = model<ILostFound, LostFoundModel>(
+  "LostFound",
+  lostFoundSchema,
+);
