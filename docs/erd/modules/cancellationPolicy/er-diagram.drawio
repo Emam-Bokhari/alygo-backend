@@ -1,42 +1,84 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mxfile host="Electron" modified="2026-07-31T11:08:06.762Z" agent="Antigravity" version="24.0.0" type="device">
+<mxfile host="Electron" modified="2026-08-02T03:18:17.748Z" agent="Antigravity" version="24.0.0" type="device">
   <diagram id="Page-1" name="Page-1">
-    <mxGraphModel dx="1422" dy="804" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0" background="#0D0E15">
+    <mxGraphModel dx="1422" dy="804" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="600" pageHeight="1312" math="0" shadow="0" background="#FFFFFF">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="column_center" value="Core Module: CancellationPolicy" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#131522;strokeColor=#EC4899;strokeWidth=2.5;arcSize=6;align=left;verticalAlign=top;spacingLeft=15;spacingTop=12;fontColor=#FFFFFF;fontSize=14;fontStyle=1;container=1;collapsible=0;recursiveResize=0;" vertex="1" parent="1">
-          <mxGeometry x="50" y="50" width="390" height="445" as="geometry" />
+        <mxCell id="column_0" value="Core Module: CancellationPolicy" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;dashed=1;arcSize=6;align=left;verticalAlign=top;spacingLeft=15;spacingTop=12;fontColor=#000000;fontSize=14;fontStyle=1;container=1;collapsible=0;recursiveResize=0;" vertex="1" parent="1">
+          <mxGeometry x="100" y="100" width="400" height="1112" as="geometry" />
         </mxCell>
-        <mxCell id="table_CancellationPolicy" value="CancellationPolicy" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#301A24;strokeColor=#EC4899;strokeWidth=2;fontColor=#FFFFFF;fontSize=13;align=center;" vertex="1" parent="column_center">
-          <mxGeometry x="25" y="55" width="340" height="365" as="geometry" />
+        <mxCell id="table_CancellationPolicy" value="CancellationPolicy" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#000000;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=2;fontColor=#FFFFFF;fontSize=13;align=center;" vertex="1" parent="column_0">
+          <mxGeometry x="30" y="382" width="340" height="350" as="geometry" />
         </mxCell>
-        <mxCell id="field_CancellationPolicy__id" value="&lt;b&gt;_id&lt;/b&gt;: objectId &lt;font color=&quot;#FFA500&quot;&gt;&lt;b&gt;PK&lt;/b&gt;&lt;/font&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_CancellationPolicy">
+        <mxCell id="field_CancellationPolicy__id" value="&lt;b&gt;_id&lt;/b&gt;: &lt;b&gt;objectId&lt;/b&gt; &lt;span style=&quot;background-color:#000000;color:#FFFFFF;padding:1px 3px;font-size:9px;font-weight:bold;border-radius:2px;margin-left:4px;&quot;&gt;PK&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_CancellationPolicy">
           <mxGeometry y="38" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="field_CancellationPolicy_passenger_beforeDriverAccepted" value="&lt;b&gt;passenger_beforeDriverAccepted&lt;/b&gt;: passengerScenarioSchema &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_CancellationPolicy">
+        <mxCell id="field_CancellationPolicy_passenger_beforeDriverAccepted" value="&lt;b&gt;passenger_beforeDriverAccepted&lt;/b&gt;: passengerScenarioSchema" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_CancellationPolicy">
           <mxGeometry y="66" width="340" height="43" as="geometry" />
         </mxCell>
-        <mxCell id="field_CancellationPolicy_passenger_afterDriverAccepted" value="&lt;b&gt;passenger_afterDriverAccepted&lt;/b&gt;: passengerScenarioSchema &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_CancellationPolicy">
+        <mxCell id="field_CancellationPolicy_passenger_afterDriverAccepted" value="&lt;b&gt;passenger_afterDriverAccepted&lt;/b&gt;: passengerScenarioSchema" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_CancellationPolicy">
           <mxGeometry y="109" width="340" height="43" as="geometry" />
         </mxCell>
-        <mxCell id="field_CancellationPolicy_passenger_afterDriverArrived" value="&lt;b&gt;passenger_afterDriverArrived&lt;/b&gt;: passengerScenarioSchema &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_CancellationPolicy">
+        <mxCell id="field_CancellationPolicy_passenger_afterDriverArrived" value="&lt;b&gt;passenger_afterDriverArrived&lt;/b&gt;: passengerScenarioSchema" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_CancellationPolicy">
           <mxGeometry y="152" width="340" height="43" as="geometry" />
         </mxCell>
-        <mxCell id="field_CancellationPolicy_driver_afterAccept" value="&lt;b&gt;driver_afterAccept&lt;/b&gt;: driverScenarioSchema &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_CancellationPolicy">
+        <mxCell id="field_CancellationPolicy_driver_afterAccept" value="&lt;b&gt;driver_afterAccept&lt;/b&gt;: driverScenarioSchema" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_CancellationPolicy">
           <mxGeometry y="195" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="field_CancellationPolicy_driver_excessiveCancellation" value="&lt;b&gt;driver_excessiveCancellation&lt;/b&gt;: driverScenarioSchema &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_CancellationPolicy">
-          <mxGeometry y="223" width="340" height="43" as="geometry" />
+        <mxCell id="field_CancellationPolicy_driver_excessiveCancellation" value="&lt;b&gt;driver_excessiveCancellation&lt;/b&gt;: driverScenarioSchema" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_CancellationPolicy">
+          <mxGeometry y="223" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="field_CancellationPolicy_driver_excessiveCancellationThreshold" value="&lt;b&gt;driver_excessiveCancellationThreshold&lt;/b&gt;: number &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required, def: 3)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_CancellationPolicy">
-          <mxGeometry y="266" width="340" height="43" as="geometry" />
+        <mxCell id="field_CancellationPolicy_driver_excessiveCancellationThreshold" value="&lt;b&gt;driver_excessiveCancellationThreshold&lt;/b&gt;: number &lt;span style=&quot;color:#000000; font-size:10px; font-style:italic;&quot;&gt;(def: 3)&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_CancellationPolicy">
+          <mxGeometry y="251" width="340" height="43" as="geometry" />
         </mxCell>
-        <mxCell id="field_CancellationPolicy_createdAt" value="&lt;b&gt;createdAt&lt;/b&gt;: date &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(ts)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_CancellationPolicy">
-          <mxGeometry y="309" width="340" height="28" as="geometry" />
+        <mxCell id="field_CancellationPolicy_createdAt" value="&lt;b&gt;createdAt&lt;/b&gt;: date" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_CancellationPolicy">
+          <mxGeometry y="294" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="field_CancellationPolicy_updatedAt" value="&lt;b&gt;updatedAt&lt;/b&gt;: date &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(ts)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_CancellationPolicy">
-          <mxGeometry y="337" width="340" height="28" as="geometry" />
+        <mxCell id="field_CancellationPolicy_updatedAt" value="&lt;b&gt;updatedAt&lt;/b&gt;: date" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_CancellationPolicy">
+          <mxGeometry y="322" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="table_driverScenarioSchema" value="driverScenarioSchema" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#000000;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=2;fontColor=#FFFFFF;fontSize=13;align=center;" vertex="1" parent="column_0">
+          <mxGeometry x="30" y="60" width="340" height="122" as="geometry" />
+        </mxCell>
+        <mxCell id="field_driverScenarioSchema__id" value="&lt;b&gt;_id&lt;/b&gt;: &lt;b&gt;objectId&lt;/b&gt; &lt;span style=&quot;background-color:#000000;color:#FFFFFF;padding:1px 3px;font-size:9px;font-weight:bold;border-radius:2px;margin-left:4px;&quot;&gt;PK&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_driverScenarioSchema">
+          <mxGeometry y="38" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_driverScenarioSchema_cancellationFee" value="&lt;b&gt;cancellationFee&lt;/b&gt;: number &lt;span style=&quot;color:#000000; font-size:10px; font-style:italic;&quot;&gt;(def: 0)&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_driverScenarioSchema">
+          <mxGeometry y="66" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_driverScenarioSchema_platformShare" value="&lt;b&gt;platformShare&lt;/b&gt;: number &lt;span style=&quot;color:#000000; font-size:10px; font-style:italic;&quot;&gt;(def: 0)&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_driverScenarioSchema">
+          <mxGeometry y="94" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="table_passengerScenarioSchema" value="passengerScenarioSchema" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#000000;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=2;fontColor=#FFFFFF;fontSize=13;align=center;" vertex="1" parent="column_0">
+          <mxGeometry x="30" y="932" width="340" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="field_passengerScenarioSchema__id" value="&lt;b&gt;_id&lt;/b&gt;: &lt;b&gt;objectId&lt;/b&gt; &lt;span style=&quot;background-color:#000000;color:#FFFFFF;padding:1px 3px;font-size:9px;font-weight:bold;border-radius:2px;margin-left:4px;&quot;&gt;PK&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_passengerScenarioSchema">
+          <mxGeometry y="38" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_passengerScenarioSchema_cancellationFee" value="&lt;b&gt;cancellationFee&lt;/b&gt;: number &lt;span style=&quot;color:#000000; font-size:10px; font-style:italic;&quot;&gt;(def: 0)&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_passengerScenarioSchema">
+          <mxGeometry y="66" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_passengerScenarioSchema_platformShare" value="&lt;b&gt;platformShare&lt;/b&gt;: number &lt;span style=&quot;color:#000000; font-size:10px; font-style:italic;&quot;&gt;(def: 0)&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_passengerScenarioSchema">
+          <mxGeometry y="94" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_passengerScenarioSchema_driverCompensation" value="&lt;b&gt;driverCompensation&lt;/b&gt;: number &lt;span style=&quot;color:#000000; font-size:10px; font-style:italic;&quot;&gt;(def: 0)&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_passengerScenarioSchema">
+          <mxGeometry y="122" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_1" value="passenger.beforeDriverAccepted" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=2;startArrow=ERone;startFill=0;endArrow=ERone;endFill=0;fontSize=10;fontColor=#000000;" edge="1" parent="1" source="field_CancellationPolicy__id" target="table_passengerScenarioSchema">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_2" value="passenger.afterDriverAccepted" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=2;startArrow=ERone;startFill=0;endArrow=ERone;endFill=0;fontSize=10;fontColor=#000000;exitY=0.5;exitDx=0;exitDy=8;entryY=0.5;entryDx=0;entryDy=8;" edge="1" parent="1" source="field_CancellationPolicy__id" target="table_passengerScenarioSchema">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_3" value="passenger.afterDriverArrived" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=2;startArrow=ERone;startFill=0;endArrow=ERone;endFill=0;fontSize=10;fontColor=#000000;exitY=0.5;exitDx=0;exitDy=16;entryY=0.5;entryDx=0;entryDy=16;" edge="1" parent="1" source="field_CancellationPolicy__id" target="table_passengerScenarioSchema">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_4" value="driver.afterAccept" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=2;startArrow=ERone;startFill=0;endArrow=ERone;endFill=0;fontSize=10;fontColor=#000000;" edge="1" parent="1" source="field_CancellationPolicy__id" target="table_driverScenarioSchema">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_5" value="driver.excessiveCancellation" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=2;startArrow=ERone;startFill=0;endArrow=ERone;endFill=0;fontSize=10;fontColor=#000000;exitY=0.5;exitDx=0;exitDy=8;entryY=0.5;entryDx=0;entryDy=8;" edge="1" parent="1" source="field_CancellationPolicy__id" target="table_driverScenarioSchema">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>

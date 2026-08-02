@@ -1,4 +1,4 @@
-import { Project, Node, SourceFile, ObjectLiteralExpression, PropertyAssignment, ArrayLiteralExpression, CallExpression } from "ts-morph";
+import { Project, Node, SourceFile, ObjectLiteralExpression, PropertyAssignment, ArrayLiteralExpression, CallExpression, SyntaxKind } from "ts-morph";
 import * as path from "path";
 import * as fs from "fs";
 
@@ -10,6 +10,7 @@ interface ExtractedField {
   default?: string;
   enum?: string[];
   ref?: string;
+  refPath?: string;
   index?: string | boolean;
   isNested?: boolean;
   nestedFields?: ExtractedField[];
@@ -259,6 +260,8 @@ function parseFieldInitializer(
                   parsedArray.unique = initVal.getText() === "true";
                 } else if (name === "ref") {
                   parsedArray.ref = initVal.getText().replace(/['"]/g, "");
+                } else if (name === "refPath") {
+                  parsedArray.refPath = initVal.getText().replace(/['"]/g, "");
                 } else if (name === "default") {
                   parsedArray.default = initVal.getText();
                 } else if (name === "enum") {
@@ -298,6 +301,8 @@ function parseFieldInitializer(
             field.unique = initVal.getText() === "true";
           } else if (name === "ref") {
             field.ref = initVal.getText().replace(/['"]/g, "");
+          } else if (name === "refPath") {
+            field.refPath = initVal.getText().replace(/['"]/g, "");
           } else if (name === "default") {
             field.default = initVal.getText();
           } else if (name === "enum") {
@@ -501,6 +506,14 @@ function analyzeFile(sourceFile: SourceFile, moduleName: string): ExtractedSchem
     }
   }
 
+  // Export variable-based schemas that do not map to a top-level model (sub-schemas/embedded schemas)
+  for (const [schemaVar, schema] of modelToSchemaMap.entries()) {
+    if (!schemaVarToModelMap.has(schemaVar)) {
+      schema.name = schemaVar;
+      schemas.push(schema);
+    }
+  }
+
   return schemas;
 }
 
@@ -560,10 +573,17 @@ interface FieldLabelInfo {
 function getFieldLabels(schema: ExtractedSchema, entName: string): FieldLabelInfo[] {
   const list: FieldLabelInfo[] = [];
 
+  // Pure high-contrast black background badges with white text
+  const pkBadge = `<span style="background-color:#000000;color:#FFFFFF;padding:1px 3px;font-size:9px;font-weight:bold;border-radius:2px;margin-left:4px;">PK</span>`;
+  const fkBadge = `<span style="background-color:#000000;color:#FFFFFF;padding:1px 3px;font-size:9px;font-weight:bold;border-radius:2px;margin-left:4px;">FK</span>`;
+  const ukBadge = `<span style="background-color:#000000;color:#FFFFFF;padding:1px 3px;font-size:9px;font-weight:bold;border-radius:2px;margin-left:4px;">UK</span>`;
+  const idxBadge = `<span style="background-color:#000000;color:#FFFFFF;padding:1px 3px;font-size:9px;font-weight:bold;border-radius:2px;margin-left:4px;">IDX</span>`;
+  const enumBadge = `<span style="background-color:#000000;color:#FFFFFF;padding:1px 3px;font-size:9px;font-weight:bold;border-radius:2px;margin-left:4px;">ENUM</span>`;
+
   // 1. _id field
   list.push({
     id: `field_${entName}__id`,
-    labelHtml: `<b>_id</b>: objectId <font color="#FFA500"><b>PK</b></font>`
+    labelHtml: `<b>_id</b>: <b>objectId</b> ${pkBadge}`
   });
 
   // 2. Regular fields
@@ -577,18 +597,28 @@ function getFieldLabels(schema: ExtractedSchema, entName: string): FieldLabelInf
       }
 
       const cleanFieldName = `${prefix}${field.name}`.replace(/[^a-zA-Z0-9_]/g, "_");
-      const typeText = field.type;
       
-      let keysHtml = "";
+      // Required fields: Bold name
+      const nameHtml = field.required ? `<b>${cleanFieldName}</b>` : cleanFieldName;
+      
+      // Foreign Keys: Italic type
+      const typeText = field.ref ? `<i>${cleanType(field.type)}</i>` : cleanType(field.type);
+      
+      let badges = "";
       if (field.unique) {
-        keysHtml += ` <font color="#FFA500"><b>UK</b></font>`;
+        badges += ukBadge;
       }
-      if (field.ref) {
-        keysHtml += ` <font color="#8BE9FD"><b>FK</b></font>`;
+      if (field.ref || field.refPath) {
+        badges += fkBadge;
+      }
+      if (field.index) {
+        badges += idxBadge;
+      }
+      if (field.enum && field.enum.length > 0) {
+        badges += enumBadge;
       }
 
       const comments: string[] = [];
-      if (field.required) comments.push("required");
       if (field.default !== undefined) {
         comments.push(`def: ${field.default.replace(/"/g, "'")}`);
       }
@@ -596,10 +626,10 @@ function getFieldLabels(schema: ExtractedSchema, entName: string): FieldLabelInf
         const cleanEnums = field.enum.map(ev => ev.replace(/"/g, "'"));
         comments.push(`enum: ${cleanEnums.join("|")}`);
       }
-      if (field.index) comments.push("idx");
 
-      const commentStr = comments.length > 0 ? ` <i><font color="#8E94B7">(${comments.join(", ")})</font></i>` : "";
-      const labelHtml = `<b>${cleanFieldName}</b>: ${typeText}${keysHtml}${commentStr}`;
+      // Pure black high contrast color for italic comments
+      const commentStr = comments.length > 0 ? ` <span style="color:#000000; font-size:10px; font-style:italic;">(${comments.join(", ")})</span>` : "";
+      const labelHtml = `${nameHtml}: ${typeText}${badges}${commentStr}`;
 
       list.push({
         id: `field_${entName}_${cleanFieldName}`,
@@ -613,79 +643,437 @@ function getFieldLabels(schema: ExtractedSchema, entName: string): FieldLabelInf
   if (schema.timestamps) {
     list.push({
       id: `field_${entName}_createdAt`,
-      labelHtml: `<b>createdAt</b>: date <i><font color="#8E94B7">(ts)</font></i>`
+      labelHtml: `<b>createdAt</b>: date`
     });
     list.push({
       id: `field_${entName}_updatedAt`,
-      labelHtml: `<b>updatedAt</b>: date <i><font color="#8E94B7">(ts)</font></i>`
+      labelHtml: `<b>updatedAt</b>: date`
     });
   }
 
   return list;
 }
 
+// ----------------------------------------------------
+// GRAPH LAYOUT OPTIMIZATION (Crossing Reduction)
+// ----------------------------------------------------
+
+function ccw(A: {x: number, y: number}, B: {x: number, y: number}, C: {x: number, y: number}): boolean {
+  return (C.y - A.y) * (B.x - A.x) > (B.y - A.y) * (C.x - A.x);
+}
+
+function intersect(
+  A: {x: number, y: number},
+  B: {x: number, y: number},
+  C: {x: number, y: number},
+  D: {x: number, y: number}
+): boolean {
+  return ccw(A, C, D) !== ccw(B, C, D) && ccw(A, B, C) !== ccw(A, B, D);
+}
+
+function countCrossings(
+  positions: Map<string, {x: number, y: number}>,
+  edges: {source: string, target: string}[]
+): number {
+  let crossings = 0;
+  const edgeList = edges.map(e => {
+    const p1 = positions.get(e.source);
+    const p2 = positions.get(e.target);
+    return { p1, p2, source: e.source, target: e.target };
+  }).filter(e => e.p1 !== undefined && e.p2 !== undefined) as { p1: {x: number, y: number}, p2: {x: number, y: number}, source: string, target: string }[];
+
+  for (let i = 0; i < edgeList.length; i++) {
+    const e1 = edgeList[i];
+    for (let j = i + 1; j < edgeList.length; j++) {
+      const e2 = edgeList[j];
+      // Skip if sharing an endpoint
+      if (e1.source === e2.source || e1.source === e2.target || e1.target === e2.source || e1.target === e2.target) {
+        continue;
+      }
+      if (intersect(e1.p1, e1.p2, e2.p1, e2.p2)) {
+        crossings++;
+      }
+    }
+  }
+  return crossings;
+}
+
+function getLayoutPositions(
+  columns: string[][],
+  tableHeights: Map<string, number>,
+  colWidth: number,
+  horizontalSpacing: number,
+  verticalSpacing: number,
+  paddingX: number,
+  paddingTop: number
+): Map<string, {x: number, y: number}> {
+  const positions = new Map<string, {x: number, y: number}>();
+  const columnContainerWidth = colWidth + 2 * paddingX;
+
+  for (let colIdx = 0; colIdx < columns.length; colIdx++) {
+    const tables = columns[colIdx];
+    const colX = colIdx * (columnContainerWidth + horizontalSpacing);
+    let currentY = paddingTop;
+
+    for (const tableName of tables) {
+      const tHeight = tableHeights.get(tableName) || 100;
+      const centerX = colX + paddingX + colWidth / 2;
+      const centerY = currentY + tHeight / 2;
+      positions.set(tableName, { x: centerX, y: centerY });
+      currentY += tHeight + verticalSpacing;
+    }
+  }
+  return positions;
+}
+
+function optimizeLayout(
+  columns: string[][],
+  tableHeights: Map<string, number>,
+  edges: {source: string, target: string}[],
+  colWidth: number,
+  horizontalSpacing: number,
+  verticalSpacing: number,
+  paddingX: number,
+  paddingTop: number
+): string[][] {
+  const bestColumns = columns.map(col => [...col]);
+  let bestPositions = getLayoutPositions(bestColumns, tableHeights, colWidth, horizontalSpacing, verticalSpacing, paddingX, paddingTop);
+  
+  const getEdgeLength = (positions: Map<string, {x: number, y: number}>) => {
+    let length = 0;
+    for (const edge of edges) {
+      const p1 = positions.get(edge.source);
+      const p2 = positions.get(edge.target);
+      if (p1 && p2) {
+        length += Math.abs(p1.x - p2.x) + Math.abs(p1.y - p2.y);
+      }
+    }
+    return length;
+  };
+
+  const getCost = (positions: Map<string, {x: number, y: number}>) => {
+    const crossings = countCrossings(positions, edges);
+    const edgeLength = getEdgeLength(positions);
+    return crossings * 100000 + edgeLength;
+  };
+
+  let bestCost = getCost(bestPositions);
+  let improved = true;
+  let iterations = 0;
+  const maxIterations = 2000;
+
+  while (improved && iterations < maxIterations) {
+    improved = false;
+    iterations++;
+
+    const colIdx = Math.floor(Math.random() * bestColumns.length);
+    const col = bestColumns[colIdx];
+    if (col.length < 2) continue;
+
+    const idx1 = Math.floor(Math.random() * col.length);
+    let idx2 = Math.floor(Math.random() * col.length);
+    while (idx2 === idx1) {
+      idx2 = Math.floor(Math.random() * col.length);
+    }
+
+    const temp = col[idx1];
+    col[idx1] = col[idx2];
+    col[idx2] = temp;
+
+    const tempPositions = getLayoutPositions(bestColumns, tableHeights, colWidth, horizontalSpacing, verticalSpacing, paddingX, paddingTop);
+    const tempCost = getCost(tempPositions);
+
+    if (tempCost < bestCost) {
+      bestCost = tempCost;
+      bestPositions = tempPositions;
+      improved = true;
+    } else {
+      const temp2 = col[idx1];
+      col[idx1] = col[idx2];
+      col[idx2] = temp2;
+    }
+  }
+
+  return bestColumns;
+}
+
+// ----------------------------------------------------
+// BUSINESS DOMAIN CONFIGURATION
+// ----------------------------------------------------
+
+function getDomainGroupIndex(moduleName: string): number {
+  const normalized = moduleName.toLowerCase();
+  
+  // 0. Identity & Access
+  if (["auth", "user", "role", "permission", "rbac", "resettoken", "fcmtoken"].includes(normalized)) {
+    return 0;
+  }
+  // 1. Ride & Booking
+  if (["ride", "ridecategory", "tracking", "livetrips", "cancellationpolicy", "cancellationreason", "cancellationanalytics", "fareconfiguration", "peakhour", "surgerule"].includes(normalized)) {
+    return 1;
+  }
+  // 2. Driver & Fleet
+  if (["driver", "drivermanagement", "driverdutypolicy", "car", "tier", "servicearea", "servicecategory"].includes(normalized)) {
+    return 2;
+  }
+  // 3. Finance & Payment
+  if (["wallet", "transaction", "payout", "pendingpayment", "stripe"].includes(normalized)) {
+    return 3;
+  }
+  // 4. Communication & Engagement
+  if (["chat", "message", "notification", "notificationpreference", "broadcast", "banner", "referral", "review"].includes(normalized)) {
+    return 4;
+  }
+  // 5. Support & Operations
+  if (["support", "emergencycontact", "emergencyhelpline", "lostandfound", "lostandfounditemcategory", "reportissuecategory", "tripreport", "aisupport", "aiknowledge", "faq"].includes(normalized)) {
+    return 5;
+  }
+  // 6. System & Configuration
+  return 6;
+}
+
+const DOMAIN_NAMES = [
+  "Identity & Access Domain",
+  "Ride & Booking Domain",
+  "Driver & Fleet Domain",
+  "Finance & Payment Domain",
+  "Communication & Engagement Domain",
+  "Support & Operations Domain",
+  "System & Configuration Domain"
+];
+
+function findFieldByPath(fields: ExtractedField[], pathText: string): ExtractedField | undefined {
+  const parts = pathText.split(".");
+  let currentFields = fields;
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i];
+    const found = currentFields.find(f => f.name === part);
+    if (!found) return undefined;
+    if (i === parts.length - 1) return found;
+    if (found.nestedFields) {
+      currentFields = found.nestedFields;
+    } else {
+      return undefined;
+    }
+  }
+  return undefined;
+}
+
+function partitionSchemas(
+  nativeSchemas: ExtractedSchema[],
+  relations: Relationship[]
+): ExtractedSchema[][] {
+  const maxEntities = 15;
+  if (nativeSchemas.length <= maxEntities) {
+    return [nativeSchemas];
+  }
+
+  const adj = new Map<string, Set<string>>();
+  for (const s of nativeSchemas) {
+    adj.set(s.name, new Set());
+  }
+
+  for (const r of relations) {
+    if (adj.has(r.source) && adj.has(r.target)) {
+      adj.get(r.source)!.add(r.target);
+      adj.get(r.target)!.add(r.source);
+    }
+  }
+
+  const visited = new Set<string>();
+  const components: string[][] = [];
+
+  for (const s of nativeSchemas) {
+    if (!visited.has(s.name)) {
+      const comp: string[] = [];
+      const queue = [s.name];
+      visited.add(s.name);
+
+      while (queue.length > 0) {
+        const curr = queue.shift()!;
+        comp.push(curr);
+        for (const neighbor of adj.get(curr) || []) {
+          if (!visited.has(neighbor)) {
+            visited.add(neighbor);
+            queue.push(neighbor);
+          }
+        }
+      }
+      components.push(comp);
+    }
+  }
+
+  const finalGroups: ExtractedSchema[][] = [];
+  for (const comp of components) {
+    if (comp.length <= maxEntities) {
+      const schemas = comp.map(name => nativeSchemas.find(s => s.name === name)!);
+      finalGroups.push(schemas);
+    } else {
+      let currentChunk: string[] = [];
+      for (const name of comp) {
+        currentChunk.push(name);
+        if (currentChunk.length === maxEntities) {
+          finalGroups.push(currentChunk.map(n => nativeSchemas.find(s => s.name === n)!));
+          currentChunk = [];
+        }
+      }
+      if (currentChunk.length > 0) {
+        finalGroups.push(currentChunk.map(n => nativeSchemas.find(s => s.name === n)!));
+      }
+    }
+  }
+
+  return finalGroups;
+}
+
+
 function buildDrawioDiagram(
   moduleName: string,
   nativeSchemas: ExtractedSchema[],
   allSchemasMap: Map<string, ExtractedSchema>,
-  moduleMap: Map<string, string[]>
+  moduleMap: Map<string, string[]>,
+  codeRelations: Relationship[] = [],
+  isOverview: boolean = false
 ): string {
   const schemasToRender = new Map<string, ExtractedSchema>();
   const relationships: Relationship[] = [];
   const nativeNames = new Set(nativeSchemas.map(s => s.name));
 
+  const isWhole = moduleName === "whole-er-diagram";
+
   // Add all native schemas to render
   for (const schema of nativeSchemas) {
-    schemasToRender.set(schema.name, schema);
+    if (isOverview) {
+      // In overview diagrams, render all entities as lightweight (only PK)
+      schemasToRender.set(schema.name, {
+        ...schema,
+        fields: [{ name: "_id", type: "objectId", required: true, unique: true }],
+        timestamps: false,
+        indexes: [],
+        virtuals: []
+      });
+    } else {
+      schemasToRender.set(schema.name, schema);
+    }
   }
 
-  // Find Depth=1 related schemas and relationships
+  // Find Depth=1 related schemas and relationships recursively
+  const addTargetSchema = (targetName: string) => {
+    if (!schemasToRender.has(targetName)) {
+      const targetSchema = allSchemasMap.get(targetName);
+      if (targetSchema) {
+        // Shared entity from another module or overview: display only PK field
+        schemasToRender.set(targetName, {
+          ...targetSchema,
+          fields: [{ name: "_id", type: "objectId", required: true, unique: true }],
+          timestamps: false,
+          indexes: [],
+          virtuals: []
+        });
+      } else {
+        // Create a stub schema for boundary node
+        schemasToRender.set(targetName, {
+          name: targetName,
+          moduleName: "shared",
+          filePath: "",
+          fields: [{ name: "_id", type: "objectId", required: true, unique: true }],
+          plugins: [],
+          indexes: [],
+          virtuals: [],
+          timestamps: false
+        });
+      }
+    }
+  };
+
+  // Add code-level relations (e.g. populate, $lookup)
+  for (const rel of codeRelations) {
+    const isRelevant = isWhole || isOverview || nativeNames.has(rel.source) || nativeNames.has(rel.target);
+    if (isRelevant) {
+      relationships.push(rel);
+      if (isWhole || isOverview) {
+        addTargetSchema(rel.source);
+        addTargetSchema(rel.target);
+      } else {
+        if (nativeNames.has(rel.source)) addTargetSchema(rel.target);
+        if (nativeNames.has(rel.target)) addTargetSchema(rel.source);
+      }
+    }
+  }
+
   for (const nativeSchema of nativeSchemas) {
-    const checkFields = (fields: ExtractedField[], parentEntity: string) => {
+    const checkFields = (fields: ExtractedField[], parentEntity: string, prefix = "") => {
       for (const field of fields) {
+        const fieldPath = prefix ? `${prefix}.${field.name}` : field.name;
+
+        // 1. Direct references (ref)
         if (field.ref) {
           const targetName = field.ref;
           relationships.push({
             source: targetName,
             target: parentEntity,
             type: (field.unique && !field.type.endsWith("[]")) ? "one-to-one" : "one-to-many",
-            label: field.name
+            label: fieldPath
           });
+          addTargetSchema(targetName);
+        }
 
-          if (!schemasToRender.has(targetName)) {
-            const targetSchema = allSchemasMap.get(targetName);
-            if (targetSchema) {
-              schemasToRender.set(targetName, targetSchema);
-            } else {
-              // Create a stub schema for boundary node
-              schemasToRender.set(targetName, {
-                name: targetName,
-                moduleName: "shared",
-                filePath: "",
+        // 2. Dynamic references (refPath)
+        if (field.refPath) {
+          const pathField = findFieldByPath(nativeSchema.fields, field.refPath);
+          if (pathField && pathField.enum && pathField.enum.length > 0) {
+            for (const modelName of pathField.enum) {
+              relationships.push({
+                source: modelName,
+                target: parentEntity,
+                type: "one-to-many",
+                label: `${fieldPath} (refPath: ${field.refPath})`
+              });
+              addTargetSchema(modelName);
+            }
+          }
+        }
+
+        // 3. Embedded sub-schemas matching defined schemas
+        const cleanTypeVal = field.type.replace(/\[\]$/, "");
+        if (allSchemasMap.has(cleanTypeVal) && cleanTypeVal !== parentEntity) {
+          relationships.push({
+            source: parentEntity,
+            target: cleanTypeVal,
+            type: field.type.endsWith("[]") ? "one-to-many" : "one-to-one",
+            label: fieldPath
+          });
+          addTargetSchema(cleanTypeVal);
+        }
+
+        // Recurse into nested fields (e.g. nested objects or embedded schemas)
+        if (field.isNested && field.nestedFields) {
+          if (field.type === "object[]") {
+            const subEntityName = `${parentEntity}_${capitalize(field.name)}`;
+            
+            if (isOverview) {
+              schemasToRender.set(subEntityName, {
+                name: subEntityName,
+                moduleName: nativeSchema.moduleName,
+                filePath: nativeSchema.filePath,
                 fields: [{ name: "_id", type: "objectId", required: true, unique: true }],
                 plugins: [],
                 indexes: [],
                 virtuals: [],
                 timestamps: false
               });
+            } else {
+              schemasToRender.set(subEntityName, {
+                name: subEntityName,
+                moduleName: nativeSchema.moduleName,
+                filePath: nativeSchema.filePath,
+                fields: field.nestedFields,
+                plugins: [],
+                indexes: [],
+                virtuals: [],
+                timestamps: false
+              });
             }
-          }
-        }
-
-        // Handle embedded documents
-        if (field.isNested && field.nestedFields) {
-          if (field.type === "object[]") {
-            const subEntityName = `${parentEntity}_${capitalize(field.name)}`;
-            schemasToRender.set(subEntityName, {
-              name: subEntityName,
-              moduleName: nativeSchema.moduleName,
-              filePath: nativeSchema.filePath,
-              fields: field.nestedFields,
-              plugins: [],
-              indexes: [],
-              virtuals: [],
-              timestamps: false
-            });
 
             relationships.push({
               source: parentEntity,
@@ -693,6 +1081,12 @@ function buildDrawioDiagram(
               type: "one-to-many",
               label: field.name
             });
+
+            // Recurse inside the sub-entity fields
+            checkFields(field.nestedFields, subEntityName, "");
+          } else {
+            // Recurse within the same parent entity
+            checkFields(field.nestedFields, parentEntity, fieldPath);
           }
         }
       }
@@ -710,41 +1104,14 @@ function buildDrawioDiagram(
           type: virt.justOne ? "one-to-one" : "one-to-many",
           label: `${virt.name} (virtual)`
         });
-
-        if (!schemasToRender.has(targetName)) {
-          const targetSchema = allSchemasMap.get(targetName);
-          if (targetSchema) {
-            schemasToRender.set(targetName, targetSchema);
-          } else {
-            schemasToRender.set(targetName, {
-              name: targetName,
-              moduleName: "shared",
-              filePath: "",
-              fields: [{ name: "_id", type: "objectId", required: true, unique: true }],
-              plugins: [],
-              indexes: [],
-              virtuals: [],
-              timestamps: false
-            });
-          }
-        }
+        addTargetSchema(targetName);
       }
     }
   }
 
-  // Sort entities by module first, then alphabetically
-  const sortedEntityNames = Array.from(schemasToRender.keys()).sort((a, b) => {
-    const schemaA = schemasToRender.get(a)!;
-    const schemaB = schemasToRender.get(b)!;
-    if (schemaA.moduleName !== schemaB.moduleName) {
-      return schemaA.moduleName.localeCompare(schemaB.moduleName);
-    }
-    return a.localeCompare(b);
-  });
+  const sortedEntityNames = Array.from(schemasToRender.keys()).sort((a, b) => a.localeCompare(b));
 
-  const isWhole = moduleName === "whole-er-diagram";
-  const colWidth = 340; // Increased width for better readability
-
+  const colWidth = 340;
   const schemaInfos = new Map<string, {
     labels: FieldLabelInfo[];
     heights: number[];
@@ -759,96 +1126,50 @@ function buildDrawioDiagram(
     schemaInfos.set(entName, { labels, heights, totalHeight });
   }
 
-  // XML construction
-  let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
-  xml += `<mxfile host="Electron" modified="${new Date().toISOString()}" agent="Antigravity" version="24.0.0" type="device">\n`;
-  xml += `  <diagram id="Page-1" name="Page-1">\n`;
-  // Deep space dark theme canvas background
-  xml += `    <mxGraphModel dx="1422" dy="804" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0" background="#0D0E15">\n`;
-  xml += `      <root>\n`;
-  xml += `        <mxCell id="0" />\n`;
-  xml += `        <mxCell id="1" parent="0" />\n`;
+  // Calculate dynamic spacing rules based on sizing density
+  const totalEntities = sortedEntityNames.length;
+  const totalRels = relationships.length;
+  let scale = 1.0;
+  if (totalEntities > 30 || totalRels > 30) {
+    scale = 1.25;
+  }
+  if (totalEntities > 60 || totalRels > 60) {
+    scale = 1.5;
+  }
 
-  // Layout structures
-  const tableRelativePositions = new Map<string, { rx: number, ry: number }>();
-  const tableParentIds = new Map<string, string>();
+  const horizontalSpacing = Math.round(300 * scale);
+  const verticalSpacing = Math.round(200 * scale);
+
+  const paddingX = 30;
+  const paddingTop = 60;
+  const paddingBottom = 30;
+  const leftMargin = 100;
+  const topMargin = 100;
+  const bottomMargin = 100;
+
+  const columnContainerWidth = colWidth + 2 * paddingX;
+
+  // Initialize columns and filter active columns
+  let columns: string[][] = [];
+  let colTitles: string[] = [];
 
   if (isWhole) {
-    // ----------------------------------------------------
-    // PROJECT-WIDE DIAGRAM LAYOUT: Module Containers
-    // ----------------------------------------------------
-    const modulesWithTables = new Map<string, string[]>();
+    columns = Array.from({ length: 7 }, () => []);
+    colTitles = DOMAIN_NAMES;
+
     for (const entName of sortedEntityNames) {
       const schema = schemasToRender.get(entName)!;
-      const mName = schema.moduleName || "shared";
-      if (!modulesWithTables.has(mName)) {
-        modulesWithTables.set(mName, []);
-      }
-      modulesWithTables.get(mName)!.push(entName);
-    }
-
-    const sortedModuleNames = Array.from(modulesWithTables.keys()).sort();
-
-    const moduleCardPaddingX = 25;
-    const moduleCardPaddingTop = 55; // space for the header title of the container
-    const moduleCardPaddingBottom = 25;
-    const tableGap = 35;
-
-    const moduleCardWidth = colWidth + 2 * moduleCardPaddingX; // 390px
-    const moduleCardHeights = new Map<string, number>();
-
-    // Calculate height of each module container
-    for (const mName of sortedModuleNames) {
-      const tNames = modulesWithTables.get(mName)!;
-      let currentRelY = moduleCardPaddingTop;
-      for (let i = 0; i < tNames.length; i++) {
-        const tName = tNames[i];
-        tableRelativePositions.set(tName, { rx: moduleCardPaddingX, ry: currentRelY });
-        tableParentIds.set(tName, `module_${mName}`);
-        const tHeight = schemaInfos.get(tName)!.totalHeight;
-        currentRelY += tHeight;
-        if (i < tNames.length - 1) {
-          currentRelY += tableGap;
-        }
-      }
-      const cardHeight = currentRelY + moduleCardPaddingBottom;
-      moduleCardHeights.set(mName, cardHeight);
-    }
-
-    // Grid layout for module containers (5 columns, height-balanced)
-    const numColumns = 5;
-    const colGap = 140;
-    const rowGap = 100;
-    const colXs = Array.from({ length: numColumns }, (_, i) => 50 + i * (moduleCardWidth + colGap));
-    const colYs = Array.from({ length: numColumns }, () => 50);
-
-    for (const mName of sortedModuleNames) {
-      const cardHeight = moduleCardHeights.get(mName)!;
-      let minColIdx = 0;
-      for (let i = 1; i < numColumns; i++) {
-        if (colYs[i] < colYs[minColIdx]) {
-          minColIdx = i;
-        }
-      }
-
-      const x = colXs[minColIdx];
-      const y = colYs[minColIdx];
-      const cardId = `module_${mName}`;
-      const palette = getModulePalette(mName);
-      const title = `${capitalize(mName)} Module`;
-
-      // Modern container styled card (container=1 enables drag-together in Draw.io)
-      const cardStyle = `rounded=1;whiteSpace=wrap;html=1;fillColor=#131522;strokeColor=${palette.stroke};strokeWidth=2.5;arcSize=6;align=left;verticalAlign=top;spacingLeft=15;spacingTop=12;fontColor=#FFFFFF;fontSize=14;fontStyle=1;container=1;collapsible=0;recursiveResize=0;`;
-      xml += `        <mxCell id="${cardId}" value="${escapeXml(title)}" style="${cardStyle}" vertex="1" parent="1">\n`;
-      xml += `          <mxGeometry x="${x}" y="${y}" width="${moduleCardWidth}" height="${cardHeight}" as="geometry" />\n`;
-      xml += `        </mxCell>\n`;
-
-      colYs[minColIdx] = y + cardHeight + rowGap;
+      const colIdx = getDomainGroupIndex(schema.moduleName);
+      columns[colIdx].push(entName);
     }
   } else {
-    // ----------------------------------------------------
-    // SINGLE MODULE DIAGRAM LAYOUT: Column Separation
-    // ----------------------------------------------------
+    columns = Array.from({ length: 3 }, () => []);
+    colTitles = [
+      "Parent Lookups / External Dependencies",
+      isOverview ? `${capitalize(moduleName)} Core & Overview` : `Core Module: ${capitalize(moduleName)}`,
+      "Dependent Entities & Sub-Schemas"
+    ];
+
     const leftTables: string[] = [];
     const centerTables: string[] = [];
     const rightTables: string[] = [];
@@ -866,63 +1187,126 @@ function buildDrawioDiagram(
       }
     }
 
-    const singleModuleGapX = 220;
-    const singleModuleRowGap = 65;
-    const containerPaddingX = 25;
-    const containerPaddingTop = 55;
-    const containerPaddingBottom = 25;
+    columns[0] = leftTables;
+    columns[1] = centerTables;
+    columns[2] = rightTables;
 
-    const columnWidth = colWidth;
-    const containerWidth = columnWidth + 2 * containerPaddingX; // 390px
-
-    const columnsConfig = [
-      { type: "left" as const, title: "Parent Lookups / External Dependencies", tables: leftTables, color: "#4B5563" },
-      { type: "center" as const, title: `Core Module: ${capitalize(moduleName)}`, tables: centerTables, color: getModulePalette(moduleName).stroke },
-      { type: "right" as const, title: "Dependent Entities & Sub-Schemas", tables: rightTables, color: "#6B7280" }
-    ].filter(c => c.tables.length > 0);
-
-    const columnHeights = columnsConfig.map(col => {
-      let height = containerPaddingTop;
-      for (let i = 0; i < col.tables.length; i++) {
-        const tName = col.tables[i];
-        height += schemaInfos.get(tName)!.totalHeight;
-        if (i < col.tables.length - 1) {
-          height += singleModuleRowGap;
-        }
+    // Filter empty columns
+    const activeColumns: string[][] = [];
+    const activeTitles: string[] = [];
+    for (let i = 0; i < columns.length; i++) {
+      if (columns[i].length > 0) {
+        activeColumns.push(columns[i]);
+        activeTitles.push(colTitles[i]);
       }
-      height += containerPaddingBottom;
-      return height;
-    });
+    }
+    columns = activeColumns;
+    colTitles = activeTitles;
+  }
 
-    const maxHeight = Math.max(...columnHeights, 100);
+  // Optimize vertical layout of tables in each column to minimize crossing and length
+  columns = optimizeLayout(
+    columns,
+    new Map(Array.from(schemaInfos.entries()).map(([k, v]) => [k, v.totalHeight])),
+    relationships,
+    colWidth,
+    horizontalSpacing,
+    verticalSpacing,
+    paddingX,
+    paddingTop
+  );
 
-    let currentX = 50;
-    for (let idx = 0; idx < columnsConfig.length; idx++) {
-      const col = columnsConfig[idx];
-      const colHeight = columnHeights[idx];
-      const startY = 50 + (maxHeight - colHeight) / 2; // Vertically center column
-
-      const cardId = `column_${col.type}`;
-      const cardStyle = `rounded=1;whiteSpace=wrap;html=1;fillColor=#131522;strokeColor=${col.color};strokeWidth=2.5;arcSize=6;align=left;verticalAlign=top;spacingLeft=15;spacingTop=12;fontColor=#FFFFFF;fontSize=14;fontStyle=1;container=1;collapsible=0;recursiveResize=0;`;
-      
-      xml += `        <mxCell id="${cardId}" value="${escapeXml(col.title)}" style="${cardStyle}" vertex="1" parent="1">\n`;
-      xml += `          <mxGeometry x="${currentX}" y="${startY}" width="${containerWidth}" height="${colHeight}" as="geometry" />\n`;
-      xml += `        </mxCell>\n`;
-
-      let currentRelY = containerPaddingTop;
-      for (let i = 0; i < col.tables.length; i++) {
-        const tName = col.tables[i];
-        tableRelativePositions.set(tName, { rx: containerPaddingX, ry: currentRelY });
-        tableParentIds.set(tName, cardId);
-        const tHeight = schemaInfos.get(tName)!.totalHeight;
-        currentRelY += tHeight + singleModuleRowGap;
+  // Calculate layout coordinates
+  const columnHeights = columns.map(col => {
+    if (col.length === 0) return 0;
+    let h = paddingTop;
+    for (let i = 0; i < col.length; i++) {
+      const entName = col[i];
+      h += schemaInfos.get(entName)!.totalHeight;
+      if (i < col.length - 1) {
+        h += verticalSpacing;
       }
+    }
+    h += paddingBottom;
+    return h;
+  });
 
-      currentX += containerWidth + singleModuleGapX;
+  const maxHeight = Math.max(...columnHeights, 100);
+
+  const tableRelativePositions = new Map<string, { rx: number, ry: number }>();
+  const tableParentIds = new Map<string, string>();
+
+  // Determine dynamic canvas size
+  const numColumns = columns.length;
+  const pageWidth = leftMargin + numColumns * (columnContainerWidth + horizontalSpacing) - horizontalSpacing + leftMargin;
+  const pageHeight = topMargin + maxHeight + bottomMargin;
+
+  // XML construction
+  let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
+  xml += `<mxfile host="Electron" modified="${new Date().toISOString()}" agent="Antigravity" version="24.0.0" type="device">\n`;
+  xml += `  <diagram id="Page-1" name="Page-1">\n`;
+  xml += `    <mxGraphModel dx="1422" dy="804" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="${pageWidth}" pageHeight="${pageHeight}" math="0" shadow="0" background="#FFFFFF">\n`;
+  xml += `      <root>\n`;
+  xml += `        <mxCell id="0" />\n`;
+  xml += `        <mxCell id="1" parent="0" />\n`;
+
+  // Draw column containers (domains/categories)
+  for (let colIdx = 0; colIdx < numColumns; colIdx++) {
+    const title = colTitles[colIdx];
+    const colHeight = columnHeights[colIdx] || 100;
+    const startY = topMargin + (maxHeight - colHeight) / 2;
+    const colX = leftMargin + colIdx * (columnContainerWidth + horizontalSpacing);
+    const cardId = `column_${colIdx}`;
+
+    // Clean white column card with black dashed border representing domain structure
+    const containerStyle = `rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;dashed=1;arcSize=6;align=left;verticalAlign=top;spacingLeft=15;spacingTop=12;fontColor=#000000;fontSize=14;fontStyle=1;container=1;collapsible=0;recursiveResize=0;`;
+    
+    xml += `        <mxCell id="${cardId}" value="${escapeXml(title)}" style="${containerStyle}" vertex="1" parent="1">\n`;
+    xml += `          <mxGeometry x="${colX}" y="${startY}" width="${columnContainerWidth}" height="${colHeight}" as="geometry" />\n`;
+    xml += `        </mxCell>\n`;
+
+    const tables = columns[colIdx];
+    let currentRelY = paddingTop;
+    for (let i = 0; i < tables.length; i++) {
+      const tName = tables[i];
+      tableRelativePositions.set(tName, { rx: paddingX, ry: currentRelY });
+      tableParentIds.set(tName, cardId);
+      currentRelY += schemaInfos.get(tName)!.totalHeight + verticalSpacing;
     }
   }
 
-  // Draw tables and fields inside their containers
+  // Set of all defined cell IDs (for validation)
+  const definedCellIds = new Set<string>();
+  definedCellIds.add("0");
+  definedCellIds.add("1");
+  for (let colIdx = 0; colIdx < numColumns; colIdx++) {
+    definedCellIds.add(`column_${colIdx}`);
+  }
+
+  for (const entName of sortedEntityNames) {
+    const tableId = `table_${entName}`;
+    definedCellIds.add(tableId);
+    definedCellIds.add(`field_${entName}__id`);
+    definedCellIds.add(`field_${entName}_createdAt`);
+    definedCellIds.add(`field_${entName}_updatedAt`);
+
+    const schema = schemasToRender.get(entName)!;
+    const addFieldsToIds = (fields: ExtractedField[], prefix = "") => {
+      for (const field of fields) {
+        if (field.name === "_id") continue;
+        if (field.isNested && field.type === "object[]") continue;
+        if (field.isNested && field.type === "object" && field.nestedFields) {
+          addFieldsToIds(field.nestedFields, `${prefix}${field.name}_`);
+          continue;
+        }
+        const cleanFieldName = `${prefix}${field.name}`.replace(/[^a-zA-Z0-9_]/g, "_");
+        definedCellIds.add(`field_${entName}_${cleanFieldName}`);
+      }
+    };
+    addFieldsToIds(schema.fields);
+  }
+
+  // Draw tables and fields inside their column parents
   for (const entName of sortedEntityNames) {
     const schema = schemasToRender.get(entName)!;
     const rpos = tableRelativePositions.get(entName)!;
@@ -932,27 +1316,21 @@ function buildDrawioDiagram(
 
     const isNative = isWhole || nativeNames.has(entName);
     
-    let fill, stroke, fontColor;
-    if (!isNative) {
-      fill = "#1E1E28";
-      stroke = "#4B5563";
-      fontColor = "#9CA3AF";
+    let tableStyle = "";
+    if (isNative) {
+      // Solid black header background, white text, black border 2px
+      tableStyle = `swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#000000;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=2;fontColor=#FFFFFF;fontSize=13;align=center;`;
     } else {
-      const palette = getModulePalette(schema.moduleName);
-      fill = palette.fill;
-      stroke = palette.stroke;
-      fontColor = "#FFFFFF";
+      // Dashed border, white header background, black text, black border 2px for shared entities
+      tableStyle = `swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=2;dashed=1;fontColor=#000000;fontSize=13;align=center;`;
     }
-
-    const tableStyle = `swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=${fill};strokeColor=${stroke};strokeWidth=2;fontColor=${fontColor};fontSize=13;align=center;`;
     
     xml += `        <mxCell id="${tableId}" value="${escapeXml(entName)}" style="${tableStyle}" vertex="1" parent="${parentId}">\n`;
     xml += `          <mxGeometry x="${rpos.rx}" y="${rpos.ry}" width="${colWidth}" height="${info.totalHeight}" as="geometry" />\n`;
     xml += `        </mxCell>\n`;
 
     let currentY = 38;
-    const rowFontColor = isNative ? "#D0D2E6" : "#8E94B7";
-    const rowStyle = `text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=${rowFontColor};`;
+    const rowStyle = `text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;`;
 
     for (let i = 0; i < info.labels.length; i++) {
       const fLabel = info.labels[i];
@@ -968,60 +1346,72 @@ function buildDrawioDiagram(
   // Draw relationship connectors
   const renderedRelationships = new Set<string>();
   let edgeIdCounter = 1;
+  const pairConnectionCount = new Map<string, number>();
 
   for (const rel of relationships) {
     const hasNativeNode = nativeNames.has(rel.source) || nativeNames.has(rel.target);
-    if (!hasNativeNode) continue;
+    if (!isWhole && !isOverview && !hasNativeNode) continue;
+
+    if (!schemasToRender.has(rel.source) || !schemasToRender.has(rel.target)) {
+      continue;
+    }
 
     const key = `${rel.source}-${rel.target}-${rel.label}`;
     const reverseKey = `${rel.target}-${rel.source}-${rel.label}`;
     if (renderedRelationships.has(key) || renderedRelationships.has(reverseKey)) continue;
     renderedRelationships.add(key);
 
-    const edgeId = `edge_${edgeIdCounter++}`;
-    
-    const sourceSchema = schemasToRender.get(rel.source);
-    const targetSchema = schemasToRender.get(rel.target);
-
     let sourceCellId = `field_${rel.source}__id`;
-    if (!sourceSchema) {
+    if (!definedCellIds.has(sourceCellId)) {
       sourceCellId = `table_${rel.source}`;
     }
 
     const cleanTargetField = rel.label.replace(/[^a-zA-Z0-9_]/g, "_");
     let targetCellId = `field_${rel.target}_${cleanTargetField}`;
 
-    if (!targetSchema) {
+    if (!definedCellIds.has(targetCellId)) {
       targetCellId = `table_${rel.target}`;
-    } else {
-      const targetLabels = getFieldLabels(targetSchema, rel.target);
-      const fieldExists = targetLabels.some(l => l.id === targetCellId);
-      if (!fieldExists) {
-        targetCellId = `table_${rel.target}`;
-      }
     }
 
+    if (!definedCellIds.has(sourceCellId) || !definedCellIds.has(targetCellId)) {
+      continue;
+    }
+
+    const edgeId = `edge_${edgeIdCounter++}`;
     const startArrow = "ERone";
     const endArrow = rel.type === "one-to-one" ? "ERone" : "ERmany";
 
+    const sourceSchema = schemasToRender.get(rel.source);
+    const targetSchema = schemasToRender.get(rel.target);
     const sourceModule = sourceSchema ? sourceSchema.moduleName : "shared";
     const targetModule = targetSchema ? targetSchema.moduleName : "shared";
     const isIntraModule = sourceModule === targetModule;
 
+    // Offset multiple relationships between the same pair of entities to prevent overlaps
+    const pairKey = sourceCellId < targetCellId ? `${sourceCellId}-${targetCellId}` : `${targetCellId}-${sourceCellId}`;
+    const connIndex = pairConnectionCount.get(pairKey) || 0;
+    pairConnectionCount.set(pairKey, connIndex + 1);
+    
+    // Offset connections vertically by 8px
+    const offset = connIndex * 8;
+
     let edgeStyle = "";
-    if (isWhole) {
-      // Cross-module vs local relationship styling for the whole diagram
+    if (isWhole || isOverview) {
       if (isIntraModule && sourceModule && sourceModule !== "shared") {
-        const palette = getModulePalette(sourceModule);
-        edgeStyle = `edgeStyle=entityRelationEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=${palette.stroke};strokeWidth=2;startArrow=${startArrow};startFill=0;endArrow=${endArrow};endFill=0;fontSize=10;fontColor=#A0A5C0;`;
+        edgeStyle = `edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=2;startArrow=${startArrow};startFill=0;endArrow=${endArrow};endFill=0;fontSize=10;fontColor=#000000;`;
       } else {
-        // Inter-module relationships: dashed muted gray
-        edgeStyle = `edgeStyle=entityRelationEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#4B5563;strokeWidth=1.5;dashed=1;startArrow=${startArrow};startFill=0;endArrow=${endArrow};endFill=0;fontSize=9;fontColor=#8E94B7;`;
+        edgeStyle = `edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1.5;dashed=1;startArrow=${startArrow};startFill=0;endArrow=${endArrow};endFill=0;fontSize=9;fontColor=#000000;`;
       }
     } else {
-      // In single module view, make connections solid and colored based on module accent
-      const modulePalette = getModulePalette(moduleName);
-      edgeStyle = `edgeStyle=entityRelationEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=${modulePalette.stroke};strokeWidth=2;startArrow=${startArrow};startFill=0;endArrow=${endArrow};endFill=0;fontSize=10;fontColor=#A0A5C0;`;
+      if (isIntraModule) {
+        edgeStyle = `edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=2;startArrow=${startArrow};startFill=0;endArrow=${endArrow};endFill=0;fontSize=10;fontColor=#000000;`;
+      } else {
+        edgeStyle = `edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1.5;dashed=1;startArrow=${startArrow};startFill=0;endArrow=${endArrow};endFill=0;fontSize=9;fontColor=#000000;`;
+      }
+    }
+
+    if (offset !== 0) {
+      edgeStyle += `exitY=0.5;exitDx=0;exitDy=${offset};entryY=0.5;entryDx=0;entryDy=${offset};`;
     }
 
     xml += `        <mxCell id="${edgeId}" value="${escapeXml(rel.label)}" style="${edgeStyle}" edge="1" parent="1" source="${sourceCellId}" target="${targetCellId}">\n`;
@@ -1037,6 +1427,26 @@ function buildDrawioDiagram(
   return xml;
 }
 
+function buildOverviewDiagram(
+  moduleName: string,
+  partitionedSchemas: ExtractedSchema[][],
+  codeRelations: Relationship[]
+): string {
+  const allPartitionSchemas: ExtractedSchema[] = [];
+  for (const schemas of partitionedSchemas) {
+    allPartitionSchemas.push(...schemas);
+  }
+
+  const allSchemasMap = new Map<string, ExtractedSchema>();
+  for (const s of allPartitionSchemas) {
+    allSchemasMap.set(s.name, s);
+  }
+
+  const moduleMap = new Map<string, string[]>();
+  return buildDrawioDiagram(moduleName, allPartitionSchemas, allSchemasMap, moduleMap, codeRelations, true);
+}
+
+
 function deleteOldMmdFiles(dir: string) {
   if (!fs.existsSync(dir)) return;
   const list = fs.readdirSync(dir);
@@ -1049,6 +1459,211 @@ function deleteOldMmdFiles(dir: string) {
       fs.unlinkSync(filePath);
       console.log(`Deleted legacy Mermaid file: ${filePath}`);
     }
+  }
+}
+
+function getCollectionName(modelName: string): string {
+  const lower = modelName.toLowerCase();
+  if (lower.endsWith("y")) {
+    return lower.slice(0, -1) + "ies";
+  }
+  if (lower.endsWith("s")) {
+    return lower + "es";
+  }
+  return lower + "s";
+}
+
+function extractRelationshipsFromCode(project: Project, allSchemas: ExtractedSchema[]): Relationship[] {
+  const codeRelationships: Relationship[] = [];
+  const modelToCollectionMap = new Map<string, string>();
+  const collectionToModelMap = new Map<string, string>();
+
+  for (const s of allSchemas) {
+    const colName = s.collectionName || getCollectionName(s.name);
+    modelToCollectionMap.set(s.name, colName);
+    collectionToModelMap.set(colName, s.name);
+  }
+
+  const findModelByCollection = (coll: string): string | undefined => {
+    const cleaned = coll.replace(/['"]/g, "").trim();
+    if (collectionToModelMap.has(cleaned)) {
+      return collectionToModelMap.get(cleaned);
+    }
+    const lower = cleaned.toLowerCase();
+    for (const [col, model] of collectionToModelMap.entries()) {
+      if (col.toLowerCase() === lower) return model;
+    }
+    return undefined;
+  };
+
+  const sourceFiles = project.getSourceFiles();
+  for (const sf of sourceFiles) {
+    const filePath = sf.getFilePath();
+    if (!filePath.includes("src/app/modules")) continue;
+
+    const moduleMatch = filePath.match(/src\/app\/modules\/([^/]+)/);
+    if (!moduleMatch) continue;
+    const moduleName = moduleMatch[1];
+
+    const nativeSchemas = allSchemas.filter(s => s.moduleName === moduleName);
+    if (nativeSchemas.length === 0) continue;
+    const primaryModel = nativeSchemas[0].name;
+
+    // Scan for .populate() calls
+    const callExprs = sf.getDescendantsOfKind(SyntaxKind.CallExpression);
+    for (const call of callExprs) {
+      const expr = call.getExpression();
+      const exprText = expr.getText();
+
+      if (exprText.endsWith(".populate") || exprText === "populate") {
+        const args = call.getArguments();
+        if (args.length === 0) continue;
+
+        let sourceModel = primaryModel;
+        const chainText = exprText;
+        for (const s of nativeSchemas) {
+          if (chainText.startsWith(s.name + ".")) {
+            sourceModel = s.name;
+            break;
+          }
+        }
+
+        const parsePopulateArg = (arg: Node) => {
+          if (Node.isObjectLiteralExpression(arg)) {
+            const pathProp = arg.getProperty("path");
+            const modelProp = arg.getProperty("model");
+            if (pathProp && modelProp) {
+              const pathName = pathProp.getText().replace(/['"]/g, "").replace(/path:/, "").trim();
+              const targetModel = modelProp.getText().replace(/['"]/g, "").replace(/model:/, "").trim();
+              if (targetModel) {
+                codeRelationships.push({
+                  source: targetModel,
+                  target: sourceModel,
+                  type: "one-to-many",
+                  label: `${pathName} (populate)`
+                });
+              }
+            }
+          } else if (Node.isArrayLiteralExpression(arg)) {
+            for (const el of arg.getElements()) {
+              parsePopulateArg(el);
+            }
+          }
+        };
+
+        for (const arg of args) {
+          parsePopulateArg(arg);
+        }
+      }
+    }
+
+    // Scan for $lookup objects
+    const objLiterals = sf.getDescendantsOfKind(SyntaxKind.ObjectLiteralExpression);
+    for (const obj of objLiterals) {
+      const lookupProp = obj.getProperty("$lookup");
+      if (lookupProp && Node.isPropertyAssignment(lookupProp)) {
+        const init = lookupProp.getInitializer();
+        if (init && Node.isObjectLiteralExpression(init)) {
+          const fromProp = init.getProperty("from");
+          const localFieldProp = init.getProperty("localField");
+          const asProp = init.getProperty("as");
+
+          if (fromProp) {
+            const fromVal = fromProp.getText().replace(/['"]/g, "").replace(/from:/, "").trim();
+            const localFieldVal = localFieldProp ? localFieldProp.getText().replace(/['"]/g, "").replace(/localField:/, "").trim() : "";
+            const asVal = asProp ? asProp.getText().replace(/['"]/g, "").replace(/as:/, "").trim() : "";
+
+            const targetModel = findModelByCollection(fromVal);
+            if (targetModel) {
+              let sourceModel = primaryModel;
+              const parentCall = obj.getFirstAncestorByKind(SyntaxKind.CallExpression);
+              if (parentCall) {
+                const callText = parentCall.getExpression().getText();
+                for (const s of nativeSchemas) {
+                  if (callText.startsWith(s.name + ".")) {
+                    sourceModel = s.name;
+                    break;
+                  }
+                }
+              }
+
+              codeRelationships.push({
+                source: targetModel,
+                target: sourceModel,
+                type: "one-to-many",
+                label: `${asVal || localFieldVal} ($lookup)`
+              });
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return codeRelationships;
+}
+
+function validateDrawioXml(xmlContent: string, moduleName: string): string | null {
+  try {
+    const tags = ["mxfile", "diagram", "mxGraphModel", "root"];
+    for (const tag of tags) {
+      if (!xmlContent.includes(`<${tag}`) || !xmlContent.includes(`</${tag}>`)) {
+        return `Missing XML tag: <${tag}> or </${tag}>`;
+      }
+    }
+
+    const cellRegex = /<mxCell\s+id="([^"]+)"(?:[^>]*?parent="([^"]+)")?(?:[^>]*?source="([^"]+)")?(?:[^>]*?target="([^"]+)")?(?:[^>]*?edge="1")?/g;
+    const cellIds = new Set<string>();
+    const parentRefs = new Map<string, string>();
+    const edges: { id: string; source: string; target: string; parent: string }[] = [];
+
+    let match;
+    cellRegex.lastIndex = 0;
+    while ((match = cellRegex.exec(xmlContent)) !== null) {
+      const id = match[1];
+      const parent = match[2];
+      const source = match[3];
+      const target = match[4];
+      const isEdge = match[0].includes('edge="1"');
+
+      if (cellIds.has(id)) {
+        return `Duplicate cell ID detected: "${id}"`;
+      }
+      cellIds.add(id);
+
+      if (parent) {
+        parentRefs.set(id, parent);
+      }
+
+      if (isEdge) {
+        if (!source || !target) {
+          return `Edge cell "${id}" is missing source or target attribute`;
+        }
+        edges.push({ id, source, target, parent: parent || "1" });
+      }
+    }
+
+    // Check parent hierarchy
+    for (const [id, parent] of parentRefs.entries()) {
+      if (id === "0" || id === "1") continue;
+      if (!cellIds.has(parent)) {
+        return `Cell "${id}" references a parent ID "${parent}" which does not exist`;
+      }
+    }
+
+    // Check edge source and target exist
+    for (const edge of edges) {
+      if (!cellIds.has(edge.source)) {
+        return `Edge "${edge.id}" references a source ID "${edge.source}" which does not exist (Orphan connector)`;
+      }
+      if (!cellIds.has(edge.target)) {
+        return `Edge "${edge.id}" references a target ID "${edge.target}" which does not exist (Orphan connector)`;
+      }
+    }
+
+    return null;
+  } catch (err: any) {
+    return `XML parsing exception: ${err.message}`;
   }
 }
 
@@ -1100,6 +1715,11 @@ function main() {
 
   console.log(`Extracted ${allSchemas.length} models across modules.`);
 
+  // Extract relationships from the query and aggregation code
+  console.log("Scanning service and controller source code for .populate() and $lookup relations...");
+  const codeRelations = extractRelationshipsFromCode(project, allSchemas);
+  console.log(`Extracted ${codeRelations.length} relationships from codebase code parsing.`);
+
   // 2. Generate ER diagrams for each module
   const outputDir = path.resolve(__dirname, "../docs/erd/modules");
   
@@ -1117,28 +1737,78 @@ function main() {
       continue; // Skip modules without models
     }
 
-    const xmlContent = buildDrawioDiagram(moduleName, nativeSchemas, allSchemasMap, moduleMap);
-    
     const moduleOutputDir = path.join(outputDir, moduleName);
     if (!fs.existsSync(moduleOutputDir)) {
       fs.mkdirSync(moduleOutputDir, { recursive: true });
     }
 
-    const outputPath = path.join(moduleOutputDir, "er-diagram.drawio");
-    fs.writeFileSync(outputPath, xmlContent, "utf8");
-    console.log(`Generated ER diagram for module "${moduleName}" at: docs/erd/modules/${moduleName}/er-diagram.drawio`);
+    if (nativeSchemas.length > 15) {
+      console.log(`Module "${moduleName}" has ${nativeSchemas.length} entities (> 15). Splitting into sub-diagrams...`);
+      const partitions = partitionSchemas(nativeSchemas, codeRelations);
+      
+      // 1. Generate individual sub-diagrams
+      for (let idx = 0; idx < partitions.length; idx++) {
+        const subSchemas = partitions[idx];
+        const partName = `${moduleName}-part${idx + 1}`;
+        const subXml = buildDrawioDiagram(partName, subSchemas, allSchemasMap, moduleMap, codeRelations, false);
+        
+        const valErr = validateDrawioXml(subXml, partName);
+        if (valErr) {
+          console.error(`[Validation Failed] Skipping sub-module part "${partName}": ${valErr}`);
+          continue;
+        }
+
+        const subOutputPath = path.join(moduleOutputDir, `${partName}.drawio`);
+        fs.writeFileSync(subOutputPath, subXml, "utf8");
+        console.log(`Generated sub-diagram: docs/erd/modules/${moduleName}/${partName}.drawio`);
+      }
+
+      // 2. Generate overview diagram
+      const overviewXml = buildOverviewDiagram(moduleName, partitions, codeRelations);
+      const valErr = validateDrawioXml(overviewXml, `${moduleName}-overview`);
+      if (valErr) {
+        console.error(`[Validation Failed] Skipping overview for "${moduleName}": ${valErr}`);
+      } else {
+        const overviewPath = path.join(moduleOutputDir, `${moduleName}-overview.drawio`);
+        fs.writeFileSync(overviewPath, overviewXml, "utf8");
+        
+        // Also write as er-diagram.drawio as the main entry point
+        const standardPath = path.join(moduleOutputDir, "er-diagram.drawio");
+        fs.writeFileSync(standardPath, overviewXml, "utf8");
+        console.log(`Generated overview ER diagram at: docs/erd/modules/${moduleName}/${moduleName}-overview.drawio`);
+      }
+    } else {
+      // Standard single module diagram
+      const xmlContent = buildDrawioDiagram(moduleName, nativeSchemas, allSchemasMap, moduleMap, codeRelations, false);
+      
+      const validationError = validateDrawioXml(xmlContent, moduleName);
+      if (validationError) {
+        console.error(`[Validation Failed] Skipping module "${moduleName}": ${validationError}`);
+        continue;
+      }
+
+      const outputPath = path.join(moduleOutputDir, "er-diagram.drawio");
+      fs.writeFileSync(outputPath, xmlContent, "utf8");
+      console.log(`Generated ER diagram for module "${moduleName}" at: docs/erd/modules/${moduleName}/er-diagram.drawio`);
+    }
   }
 
   // 3. Generate the project-wide (whole) ER diagram
   if (allSchemas.length > 0) {
     const wholeOutputDir = path.join(outputDir, "whole-er-diagram");
-    if (!fs.existsSync(wholeOutputDir)) {
-      fs.mkdirSync(wholeOutputDir, { recursive: true });
+    const wholeXmlContent = buildDrawioDiagram("whole-er-diagram", allSchemas, allSchemasMap, moduleMap, codeRelations);
+    
+    const validationError = validateDrawioXml(wholeXmlContent, "whole-er-diagram");
+    if (validationError) {
+      console.error(`[Validation Failed] Skipping project-wide diagram: ${validationError}`);
+    } else {
+      if (!fs.existsSync(wholeOutputDir)) {
+        fs.mkdirSync(wholeOutputDir, { recursive: true });
+      }
+      const wholeOutputPath = path.join(wholeOutputDir, "er-diagram.drawio");
+      fs.writeFileSync(wholeOutputPath, wholeXmlContent, "utf8");
+      console.log(`Generated project-wide ER diagram at: docs/erd/modules/whole-er-diagram/er-diagram.drawio`);
     }
-    const wholeXmlContent = buildDrawioDiagram("whole-er-diagram", allSchemas, allSchemasMap, moduleMap);
-    const wholeOutputPath = path.join(wholeOutputDir, "er-diagram.drawio");
-    fs.writeFileSync(wholeOutputPath, wholeXmlContent, "utf8");
-    console.log(`Generated project-wide ER diagram at: docs/erd/modules/whole-er-diagram/er-diagram.drawio`);
   }
 
   console.log("AST schema parsing and Draw.io XML diagram generation completed successfully.");

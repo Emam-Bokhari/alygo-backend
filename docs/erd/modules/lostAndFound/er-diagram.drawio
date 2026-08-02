@@ -1,695 +1,239 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mxfile host="Electron" modified="2026-07-31T11:08:06.774Z" agent="Antigravity" version="24.0.0" type="device">
+<mxfile host="Electron" modified="2026-08-02T03:18:17.763Z" agent="Antigravity" version="24.0.0" type="device">
   <diagram id="Page-1" name="Page-1">
-    <mxGraphModel dx="1422" dy="804" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0" background="#0D0E15">
+    <mxGraphModel dx="1422" dy="804" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2000" pageHeight="1920" math="0" shadow="0" background="#FFFFFF">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="column_left" value="Parent Lookups / External Dependencies" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#131522;strokeColor=#4B5563;strokeWidth=2.5;arcSize=6;align=left;verticalAlign=top;spacingLeft=15;spacingTop=12;fontColor=#FFFFFF;fontSize=14;fontStyle=1;container=1;collapsible=0;recursiveResize=0;" vertex="1" parent="1">
-          <mxGeometry x="50" y="50" width="390" height="5828" as="geometry" />
+        <mxCell id="column_0" value="Parent Lookups / External Dependencies" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;dashed=1;arcSize=6;align=left;verticalAlign=top;spacingLeft=15;spacingTop=12;fontColor=#000000;fontSize=14;fontStyle=1;container=1;collapsible=0;recursiveResize=0;" vertex="1" parent="1">
+          <mxGeometry x="100" y="350" width="400" height="1220" as="geometry" />
         </mxCell>
-        <mxCell id="column_center" value="Core Module: LostAndFound" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#131522;strokeColor=#189AB4;strokeWidth=2.5;arcSize=6;align=left;verticalAlign=top;spacingLeft=15;spacingTop=12;fontColor=#FFFFFF;fontSize=14;fontStyle=1;container=1;collapsible=0;recursiveResize=0;" vertex="1" parent="1">
-          <mxGeometry x="660" y="2312" width="390" height="1304" as="geometry" />
+        <mxCell id="column_1" value="Core Module: LostAndFound" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;dashed=1;arcSize=6;align=left;verticalAlign=top;spacingLeft=15;spacingTop=12;fontColor=#000000;fontSize=14;fontStyle=1;container=1;collapsible=0;recursiveResize=0;" vertex="1" parent="1">
+          <mxGeometry x="800" y="100" width="400" height="1720" as="geometry" />
         </mxCell>
-        <mxCell id="column_right" value="Dependent Entities &amp; Sub-Schemas" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#131522;strokeColor=#6B7280;strokeWidth=2.5;arcSize=6;align=left;verticalAlign=top;spacingLeft=15;spacingTop=12;fontColor=#FFFFFF;fontSize=14;fontStyle=1;container=1;collapsible=0;recursiveResize=0;" vertex="1" parent="1">
-          <mxGeometry x="1270" y="2849" width="390" height="230" as="geometry" />
+        <mxCell id="column_2" value="Dependent Entities &amp; Sub-Schemas" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;dashed=1;arcSize=6;align=left;verticalAlign=top;spacingLeft=15;spacingTop=12;fontColor=#000000;fontSize=14;fontStyle=1;container=1;collapsible=0;recursiveResize=0;" vertex="1" parent="1">
+          <mxGeometry x="1500" y="840" width="400" height="240" as="geometry" />
         </mxCell>
-        <mxCell id="table_LostFound" value="LostFound" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#162E3B;strokeColor=#189AB4;strokeWidth=2;fontColor=#FFFFFF;fontSize=13;align=center;" vertex="1" parent="column_center">
-          <mxGeometry x="25" y="55" width="340" height="1224" as="geometry" />
+        <mxCell id="table_auditLogSchema" value="auditLogSchema" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#000000;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=2;fontColor=#FFFFFF;fontSize=13;align=center;" vertex="1" parent="column_1">
+          <mxGeometry x="30" y="60" width="340" height="206" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostFound__id" value="&lt;b&gt;_id&lt;/b&gt;: objectId &lt;font color=&quot;#FFA500&quot;&gt;&lt;b&gt;PK&lt;/b&gt;&lt;/font&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_LostFound">
+        <mxCell id="field_auditLogSchema__id" value="&lt;b&gt;_id&lt;/b&gt;: &lt;b&gt;objectId&lt;/b&gt; &lt;span style=&quot;background-color:#000000;color:#FFFFFF;padding:1px 3px;font-size:9px;font-weight:bold;border-radius:2px;margin-left:4px;&quot;&gt;PK&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_auditLogSchema">
           <mxGeometry y="38" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostFound_rideId" value="&lt;b&gt;rideId&lt;/b&gt;: objectId &lt;font color=&quot;#8BE9FD&quot;&gt;&lt;b&gt;FK&lt;/b&gt;&lt;/font&gt; &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required, idx)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_LostFound">
+        <mxCell id="field_auditLogSchema_action" value="&lt;b&gt;action&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_auditLogSchema">
           <mxGeometry y="66" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostFound_passengerId" value="&lt;b&gt;passengerId&lt;/b&gt;: objectId &lt;font color=&quot;#8BE9FD&quot;&gt;&lt;b&gt;FK&lt;/b&gt;&lt;/font&gt; &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required, idx)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_LostFound">
+        <mxCell id="field_auditLogSchema_actor" value="&lt;b&gt;actor&lt;/b&gt;: &lt;i&gt;objectId&lt;/i&gt;&lt;span style=&quot;background-color:#000000;color:#FFFFFF;padding:1px 3px;font-size:9px;font-weight:bold;border-radius:2px;margin-left:4px;&quot;&gt;FK&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_auditLogSchema">
           <mxGeometry y="94" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostFound_driverId" value="&lt;b&gt;driverId&lt;/b&gt;: objectId &lt;font color=&quot;#8BE9FD&quot;&gt;&lt;b&gt;FK&lt;/b&gt;&lt;/font&gt; &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required, idx)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_LostFound">
+        <mxCell id="field_auditLogSchema_actorRole" value="&lt;b&gt;actorRole&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_auditLogSchema">
           <mxGeometry y="122" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostFound_reportNumber" value="&lt;b&gt;reportNumber&lt;/b&gt;: string &lt;font color=&quot;#FFA500&quot;&gt;&lt;b&gt;UK&lt;/b&gt;&lt;/font&gt; &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required, idx)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_LostFound">
+        <mxCell id="field_auditLogSchema_details" value="details: mixed" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_auditLogSchema">
           <mxGeometry y="150" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostFound_itemName" value="&lt;b&gt;itemName&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_LostFound">
+        <mxCell id="field_auditLogSchema_timestamp" value="timestamp: date &lt;span style=&quot;color:#000000; font-size:10px; font-style:italic;&quot;&gt;(def: Date.now)&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_auditLogSchema">
           <mxGeometry y="178" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostFound_itemCategory" value="&lt;b&gt;itemCategory&lt;/b&gt;: objectId &lt;font color=&quot;#8BE9FD&quot;&gt;&lt;b&gt;FK&lt;/b&gt;&lt;/font&gt; &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_LostFound">
+        <mxCell id="table_LostAndFoundItemCategory" value="LostAndFoundItemCategory" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=2;dashed=1;fontColor=#000000;fontSize=13;align=center;" vertex="1" parent="column_0">
+          <mxGeometry x="30" y="60" width="340" height="66" as="geometry" />
+        </mxCell>
+        <mxCell id="field_LostAndFoundItemCategory__id" value="&lt;b&gt;_id&lt;/b&gt;: &lt;b&gt;objectId&lt;/b&gt; &lt;span style=&quot;background-color:#000000;color:#FFFFFF;padding:1px 3px;font-size:9px;font-weight:bold;border-radius:2px;margin-left:4px;&quot;&gt;PK&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_LostAndFoundItemCategory">
+          <mxGeometry y="38" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="table_LostFound" value="LostFound" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#000000;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=2;fontColor=#FFFFFF;fontSize=13;align=center;" vertex="1" parent="column_1">
+          <mxGeometry x="30" y="466" width="340" height="1224" as="geometry" />
+        </mxCell>
+        <mxCell id="field_LostFound__id" value="&lt;b&gt;_id&lt;/b&gt;: &lt;b&gt;objectId&lt;/b&gt; &lt;span style=&quot;background-color:#000000;color:#FFFFFF;padding:1px 3px;font-size:9px;font-weight:bold;border-radius:2px;margin-left:4px;&quot;&gt;PK&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_LostFound">
+          <mxGeometry y="38" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_LostFound_rideId" value="&lt;b&gt;rideId&lt;/b&gt;: &lt;i&gt;objectId&lt;/i&gt;&lt;span style=&quot;background-color:#000000;color:#FFFFFF;padding:1px 3px;font-size:9px;font-weight:bold;border-radius:2px;margin-left:4px;&quot;&gt;FK&lt;/span&gt;&lt;span style=&quot;background-color:#000000;color:#FFFFFF;padding:1px 3px;font-size:9px;font-weight:bold;border-radius:2px;margin-left:4px;&quot;&gt;IDX&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_LostFound">
+          <mxGeometry y="66" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_LostFound_passengerId" value="&lt;b&gt;passengerId&lt;/b&gt;: &lt;i&gt;objectId&lt;/i&gt;&lt;span style=&quot;background-color:#000000;color:#FFFFFF;padding:1px 3px;font-size:9px;font-weight:bold;border-radius:2px;margin-left:4px;&quot;&gt;FK&lt;/span&gt;&lt;span style=&quot;background-color:#000000;color:#FFFFFF;padding:1px 3px;font-size:9px;font-weight:bold;border-radius:2px;margin-left:4px;&quot;&gt;IDX&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_LostFound">
+          <mxGeometry y="94" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_LostFound_driverId" value="&lt;b&gt;driverId&lt;/b&gt;: &lt;i&gt;objectId&lt;/i&gt;&lt;span style=&quot;background-color:#000000;color:#FFFFFF;padding:1px 3px;font-size:9px;font-weight:bold;border-radius:2px;margin-left:4px;&quot;&gt;FK&lt;/span&gt;&lt;span style=&quot;background-color:#000000;color:#FFFFFF;padding:1px 3px;font-size:9px;font-weight:bold;border-radius:2px;margin-left:4px;&quot;&gt;IDX&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_LostFound">
+          <mxGeometry y="122" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_LostFound_reportNumber" value="&lt;b&gt;reportNumber&lt;/b&gt;: string&lt;span style=&quot;background-color:#000000;color:#FFFFFF;padding:1px 3px;font-size:9px;font-weight:bold;border-radius:2px;margin-left:4px;&quot;&gt;UK&lt;/span&gt;&lt;span style=&quot;background-color:#000000;color:#FFFFFF;padding:1px 3px;font-size:9px;font-weight:bold;border-radius:2px;margin-left:4px;&quot;&gt;IDX&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_LostFound">
+          <mxGeometry y="150" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_LostFound_itemName" value="&lt;b&gt;itemName&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_LostFound">
+          <mxGeometry y="178" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_LostFound_itemCategory" value="&lt;b&gt;itemCategory&lt;/b&gt;: &lt;i&gt;objectId&lt;/i&gt;&lt;span style=&quot;background-color:#000000;color:#FFFFFF;padding:1px 3px;font-size:9px;font-weight:bold;border-radius:2px;margin-left:4px;&quot;&gt;FK&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_LostFound">
           <mxGeometry y="206" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostFound_itemDescription" value="&lt;b&gt;itemDescription&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_LostFound">
+        <mxCell id="field_LostFound_itemDescription" value="&lt;b&gt;itemDescription&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_LostFound">
           <mxGeometry y="234" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostFound_lastSeenLocation" value="&lt;b&gt;lastSeenLocation&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_LostFound">
+        <mxCell id="field_LostFound_lastSeenLocation" value="&lt;b&gt;lastSeenLocation&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_LostFound">
           <mxGeometry y="262" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostFound_reportStatus" value="&lt;b&gt;reportStatus&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: REPORT_STATUS.REPORTED, enum: reported|under_review|found|not_found|waiting_payment|payment_completed|return_scheduled|return_in_progress|return_completed|received|closed|cancelled, idx)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_LostFound">
+        <mxCell id="field_LostFound_reportStatus" value="reportStatus: string&lt;span style=&quot;background-color:#000000;color:#FFFFFF;padding:1px 3px;font-size:9px;font-weight:bold;border-radius:2px;margin-left:4px;&quot;&gt;IDX&lt;/span&gt;&lt;span style=&quot;background-color:#000000;color:#FFFFFF;padding:1px 3px;font-size:9px;font-weight:bold;border-radius:2px;margin-left:4px;&quot;&gt;ENUM&lt;/span&gt; &lt;span style=&quot;color:#000000; font-size:10px; font-style:italic;&quot;&gt;(def: REPORT_STATUS.REPORTED, enum: reported|under_review|found|not_found|waiting_payment|payment_completed|return_scheduled|return_in_progress|return_completed|received|closed|cancelled)&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_LostFound">
           <mxGeometry y="290" width="340" height="88" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostFound_foundStatus" value="&lt;b&gt;foundStatus&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: FOUND_STATUS.PENDING, enum: pending|found|not_found, idx)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_LostFound">
+        <mxCell id="field_LostFound_foundStatus" value="foundStatus: string&lt;span style=&quot;background-color:#000000;color:#FFFFFF;padding:1px 3px;font-size:9px;font-weight:bold;border-radius:2px;margin-left:4px;&quot;&gt;IDX&lt;/span&gt;&lt;span style=&quot;background-color:#000000;color:#FFFFFF;padding:1px 3px;font-size:9px;font-weight:bold;border-radius:2px;margin-left:4px;&quot;&gt;ENUM&lt;/span&gt; &lt;span style=&quot;color:#000000; font-size:10px; font-style:italic;&quot;&gt;(def: FOUND_STATUS.PENDING, enum: pending|found|not_found)&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_LostFound">
           <mxGeometry y="378" width="340" height="43" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostFound_recoveryMethod" value="&lt;b&gt;recoveryMethod&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(enum: passenger_pickup|driver_delivery)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_LostFound">
+        <mxCell id="field_LostFound_recoveryMethod" value="recoveryMethod: string&lt;span style=&quot;background-color:#000000;color:#FFFFFF;padding:1px 3px;font-size:9px;font-weight:bold;border-radius:2px;margin-left:4px;&quot;&gt;ENUM&lt;/span&gt; &lt;span style=&quot;color:#000000; font-size:10px; font-style:italic;&quot;&gt;(enum: passenger_pickup|driver_delivery)&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_LostFound">
           <mxGeometry y="421" width="340" height="43" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostFound_pickupLocation_type" value="&lt;b&gt;pickupLocation_type&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: &apos;Point&apos;, enum: Point)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_LostFound">
+        <mxCell id="field_LostFound_pickupLocation_type" value="pickupLocation_type: string&lt;span style=&quot;background-color:#000000;color:#FFFFFF;padding:1px 3px;font-size:9px;font-weight:bold;border-radius:2px;margin-left:4px;&quot;&gt;ENUM&lt;/span&gt; &lt;span style=&quot;color:#000000; font-size:10px; font-style:italic;&quot;&gt;(def: &apos;Point&apos;, enum: Point)&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_LostFound">
           <mxGeometry y="464" width="340" height="43" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostFound_pickupLocation_coordinates" value="&lt;b&gt;pickupLocation_coordinates&lt;/b&gt;: number[]" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_LostFound">
+        <mxCell id="field_LostFound_pickupLocation_coordinates" value="pickupLocation_coordinates: number[]" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_LostFound">
           <mxGeometry y="507" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostFound_pickupLocation_address" value="&lt;b&gt;pickupLocation_address&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_LostFound">
+        <mxCell id="field_LostFound_pickupLocation_address" value="pickupLocation_address: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_LostFound">
           <mxGeometry y="535" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostFound_deliveryLocation_type" value="&lt;b&gt;deliveryLocation_type&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: &apos;Point&apos;, enum: Point)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_LostFound">
+        <mxCell id="field_LostFound_deliveryLocation_type" value="deliveryLocation_type: string&lt;span style=&quot;background-color:#000000;color:#FFFFFF;padding:1px 3px;font-size:9px;font-weight:bold;border-radius:2px;margin-left:4px;&quot;&gt;ENUM&lt;/span&gt; &lt;span style=&quot;color:#000000; font-size:10px; font-style:italic;&quot;&gt;(def: &apos;Point&apos;, enum: Point)&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_LostFound">
           <mxGeometry y="563" width="340" height="43" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostFound_deliveryLocation_coordinates" value="&lt;b&gt;deliveryLocation_coordinates&lt;/b&gt;: number[]" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_LostFound">
+        <mxCell id="field_LostFound_deliveryLocation_coordinates" value="deliveryLocation_coordinates: number[]" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_LostFound">
           <mxGeometry y="606" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostFound_deliveryLocation_address" value="&lt;b&gt;deliveryLocation_address&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_LostFound">
+        <mxCell id="field_LostFound_deliveryLocation_address" value="deliveryLocation_address: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_LostFound">
           <mxGeometry y="634" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostFound_scheduledAt" value="&lt;b&gt;scheduledAt&lt;/b&gt;: date" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_LostFound">
+        <mxCell id="field_LostFound_scheduledAt" value="scheduledAt: date" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_LostFound">
           <mxGeometry y="662" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostFound_deliveryFee" value="&lt;b&gt;deliveryFee&lt;/b&gt;: number &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: 0)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_LostFound">
+        <mxCell id="field_LostFound_deliveryFee" value="deliveryFee: number &lt;span style=&quot;color:#000000; font-size:10px; font-style:italic;&quot;&gt;(def: 0)&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_LostFound">
           <mxGeometry y="690" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostFound_paymentStatus" value="&lt;b&gt;paymentStatus&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: PAYMENT_STATUS.NOT_REQUIRED, enum: not_required|pending|paid|failed|refunded, idx)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_LostFound">
+        <mxCell id="field_LostFound_paymentStatus" value="paymentStatus: string&lt;span style=&quot;background-color:#000000;color:#FFFFFF;padding:1px 3px;font-size:9px;font-weight:bold;border-radius:2px;margin-left:4px;&quot;&gt;IDX&lt;/span&gt;&lt;span style=&quot;background-color:#000000;color:#FFFFFF;padding:1px 3px;font-size:9px;font-weight:bold;border-radius:2px;margin-left:4px;&quot;&gt;ENUM&lt;/span&gt; &lt;span style=&quot;color:#000000; font-size:10px; font-style:italic;&quot;&gt;(def: PAYMENT_STATUS.NOT_REQUIRED, enum: not_required|pending|paid|failed|refunded)&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_LostFound">
           <mxGeometry y="718" width="340" height="58" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostFound_paymentIntentId" value="&lt;b&gt;paymentIntentId&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_LostFound">
+        <mxCell id="field_LostFound_paymentIntentId" value="paymentIntentId: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_LostFound">
           <mxGeometry y="776" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostFound_paymentTransactionId" value="&lt;b&gt;paymentTransactionId&lt;/b&gt;: objectId &lt;font color=&quot;#8BE9FD&quot;&gt;&lt;b&gt;FK&lt;/b&gt;&lt;/font&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_LostFound">
+        <mxCell id="field_LostFound_paymentTransactionId" value="paymentTransactionId: &lt;i&gt;objectId&lt;/i&gt;&lt;span style=&quot;background-color:#000000;color:#FFFFFF;padding:1px 3px;font-size:9px;font-weight:bold;border-radius:2px;margin-left:4px;&quot;&gt;FK&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_LostFound">
           <mxGeometry y="804" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostFound_paymentReference" value="&lt;b&gt;paymentReference&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_LostFound">
+        <mxCell id="field_LostFound_paymentReference" value="paymentReference: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_LostFound">
           <mxGeometry y="832" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostFound_paymentAmount" value="&lt;b&gt;paymentAmount&lt;/b&gt;: number" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_LostFound">
+        <mxCell id="field_LostFound_paymentAmount" value="paymentAmount: number" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_LostFound">
           <mxGeometry y="860" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostFound_paymentCurrency" value="&lt;b&gt;paymentCurrency&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_LostFound">
+        <mxCell id="field_LostFound_paymentCurrency" value="paymentCurrency: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_LostFound">
           <mxGeometry y="888" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostFound_passengerConfirmed" value="&lt;b&gt;passengerConfirmed&lt;/b&gt;: boolean &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: false)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_LostFound">
+        <mxCell id="field_LostFound_passengerConfirmed" value="passengerConfirmed: boolean &lt;span style=&quot;color:#000000; font-size:10px; font-style:italic;&quot;&gt;(def: false)&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_LostFound">
           <mxGeometry y="916" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostFound_driverConfirmed" value="&lt;b&gt;driverConfirmed&lt;/b&gt;: boolean &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: false)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_LostFound">
+        <mxCell id="field_LostFound_driverConfirmed" value="driverConfirmed: boolean &lt;span style=&quot;color:#000000; font-size:10px; font-style:italic;&quot;&gt;(def: false)&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_LostFound">
           <mxGeometry y="944" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostFound_passengerRated" value="&lt;b&gt;passengerRated&lt;/b&gt;: boolean &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: false)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_LostFound">
+        <mxCell id="field_LostFound_passengerRated" value="passengerRated: boolean &lt;span style=&quot;color:#000000; font-size:10px; font-style:italic;&quot;&gt;(def: false)&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_LostFound">
           <mxGeometry y="972" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostFound_passengerRating" value="&lt;b&gt;passengerRating&lt;/b&gt;: number" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_LostFound">
+        <mxCell id="field_LostFound_passengerRating" value="passengerRating: number" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_LostFound">
           <mxGeometry y="1000" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostFound_passengerReview" value="&lt;b&gt;passengerReview&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_LostFound">
+        <mxCell id="field_LostFound_passengerReview" value="passengerReview: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_LostFound">
           <mxGeometry y="1028" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostFound_adminNotes" value="&lt;b&gt;adminNotes&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_LostFound">
+        <mxCell id="field_LostFound_adminNotes" value="adminNotes: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_LostFound">
           <mxGeometry y="1056" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostFound_driverNotes" value="&lt;b&gt;driverNotes&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_LostFound">
+        <mxCell id="field_LostFound_driverNotes" value="driverNotes: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_LostFound">
           <mxGeometry y="1084" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostFound_createdBy" value="&lt;b&gt;createdBy&lt;/b&gt;: objectId &lt;font color=&quot;#8BE9FD&quot;&gt;&lt;b&gt;FK&lt;/b&gt;&lt;/font&gt; &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_LostFound">
+        <mxCell id="field_LostFound_createdBy" value="&lt;b&gt;createdBy&lt;/b&gt;: &lt;i&gt;objectId&lt;/i&gt;&lt;span style=&quot;background-color:#000000;color:#FFFFFF;padding:1px 3px;font-size:9px;font-weight:bold;border-radius:2px;margin-left:4px;&quot;&gt;FK&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_LostFound">
           <mxGeometry y="1112" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostFound_auditLogs" value="&lt;b&gt;auditLogs&lt;/b&gt;: auditLogSchema[] &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: [])&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_LostFound">
+        <mxCell id="field_LostFound_auditLogs" value="auditLogs: auditLogSchema[] &lt;span style=&quot;color:#000000; font-size:10px; font-style:italic;&quot;&gt;(def: [])&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_LostFound">
           <mxGeometry y="1140" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostFound_createdAt" value="&lt;b&gt;createdAt&lt;/b&gt;: date &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(ts)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_LostFound">
+        <mxCell id="field_LostFound_createdAt" value="&lt;b&gt;createdAt&lt;/b&gt;: date" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_LostFound">
           <mxGeometry y="1168" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostFound_updatedAt" value="&lt;b&gt;updatedAt&lt;/b&gt;: date &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(ts)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_LostFound">
+        <mxCell id="field_LostFound_updatedAt" value="&lt;b&gt;updatedAt&lt;/b&gt;: date" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_LostFound">
           <mxGeometry y="1196" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="table_LostFound_UploadedFiles" value="LostFound_UploadedFiles" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#1E1E28;strokeColor=#4B5563;strokeWidth=2;fontColor=#9CA3AF;fontSize=13;align=center;" vertex="1" parent="column_right">
-          <mxGeometry x="25" y="55" width="340" height="150" as="geometry" />
+        <mxCell id="table_LostFound_UploadedFiles" value="LostFound_UploadedFiles" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=2;dashed=1;fontColor=#000000;fontSize=13;align=center;" vertex="1" parent="column_2">
+          <mxGeometry x="30" y="60" width="340" height="150" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostFound_UploadedFiles__id" value="&lt;b&gt;_id&lt;/b&gt;: objectId &lt;font color=&quot;#FFA500&quot;&gt;&lt;b&gt;PK&lt;/b&gt;&lt;/font&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_LostFound_UploadedFiles">
+        <mxCell id="field_LostFound_UploadedFiles__id" value="&lt;b&gt;_id&lt;/b&gt;: &lt;b&gt;objectId&lt;/b&gt; &lt;span style=&quot;background-color:#000000;color:#FFFFFF;padding:1px 3px;font-size:9px;font-weight:bold;border-radius:2px;margin-left:4px;&quot;&gt;PK&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_LostFound_UploadedFiles">
           <mxGeometry y="38" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostFound_UploadedFiles_fileUrl" value="&lt;b&gt;fileUrl&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_LostFound_UploadedFiles">
+        <mxCell id="field_LostFound_UploadedFiles_fileUrl" value="&lt;b&gt;fileUrl&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_LostFound_UploadedFiles">
           <mxGeometry y="66" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostFound_UploadedFiles_fileName" value="&lt;b&gt;fileName&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_LostFound_UploadedFiles">
+        <mxCell id="field_LostFound_UploadedFiles_fileName" value="fileName: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_LostFound_UploadedFiles">
           <mxGeometry y="94" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostFound_UploadedFiles_uploadedAt" value="&lt;b&gt;uploadedAt&lt;/b&gt;: date &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: Date.now)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_LostFound_UploadedFiles">
+        <mxCell id="field_LostFound_UploadedFiles_uploadedAt" value="uploadedAt: date &lt;span style=&quot;color:#000000; font-size:10px; font-style:italic;&quot;&gt;(def: Date.now)&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_LostFound_UploadedFiles">
           <mxGeometry y="122" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="table_LostAndFoundItemCategory" value="LostAndFoundItemCategory" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#1E1E28;strokeColor=#4B5563;strokeWidth=2;fontColor=#9CA3AF;fontSize=13;align=center;" vertex="1" parent="column_left">
-          <mxGeometry x="25" y="55" width="340" height="193" as="geometry" />
+        <mxCell id="table_Ride" value="Ride" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=2;dashed=1;fontColor=#000000;fontSize=13;align=center;" vertex="1" parent="column_0">
+          <mxGeometry x="30" y="326" width="340" height="66" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostAndFoundItemCategory__id" value="&lt;b&gt;_id&lt;/b&gt;: objectId &lt;font color=&quot;#FFA500&quot;&gt;&lt;b&gt;PK&lt;/b&gt;&lt;/font&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_LostAndFoundItemCategory">
+        <mxCell id="field_Ride__id" value="&lt;b&gt;_id&lt;/b&gt;: &lt;b&gt;objectId&lt;/b&gt; &lt;span style=&quot;background-color:#000000;color:#FFFFFF;padding:1px 3px;font-size:9px;font-weight:bold;border-radius:2px;margin-left:4px;&quot;&gt;PK&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_Ride">
           <mxGeometry y="38" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostAndFoundItemCategory_name" value="&lt;b&gt;name&lt;/b&gt;: string &lt;font color=&quot;#FFA500&quot;&gt;&lt;b&gt;UK&lt;/b&gt;&lt;/font&gt; &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_LostAndFoundItemCategory">
-          <mxGeometry y="66" width="340" height="28" as="geometry" />
+        <mxCell id="table_ServiceArea" value="ServiceArea" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=2;dashed=1;fontColor=#000000;fontSize=13;align=center;" vertex="1" parent="column_0">
+          <mxGeometry x="30" y="592" width="340" height="66" as="geometry" />
         </mxCell>
-        <mxCell id="field_LostAndFoundItemCategory_status" value="&lt;b&gt;status&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: STATUS.ACTIVE, enum: active|inactive)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_LostAndFoundItemCategory">
-          <mxGeometry y="94" width="340" height="43" as="geometry" />
-        </mxCell>
-        <mxCell id="field_LostAndFoundItemCategory_createdAt" value="&lt;b&gt;createdAt&lt;/b&gt;: date &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(ts)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_LostAndFoundItemCategory">
-          <mxGeometry y="137" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_LostAndFoundItemCategory_updatedAt" value="&lt;b&gt;updatedAt&lt;/b&gt;: date &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(ts)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_LostAndFoundItemCategory">
-          <mxGeometry y="165" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="table_Ride" value="Ride" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#1E1E28;strokeColor=#4B5563;strokeWidth=2;fontColor=#9CA3AF;fontSize=13;align=center;" vertex="1" parent="column_left">
-          <mxGeometry x="25" y="313" width="340" height="3370" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride__id" value="&lt;b&gt;_id&lt;/b&gt;: objectId &lt;font color=&quot;#FFA500&quot;&gt;&lt;b&gt;PK&lt;/b&gt;&lt;/font&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
+        <mxCell id="field_ServiceArea__id" value="&lt;b&gt;_id&lt;/b&gt;: &lt;b&gt;objectId&lt;/b&gt; &lt;span style=&quot;background-color:#000000;color:#FFFFFF;padding:1px 3px;font-size:9px;font-weight:bold;border-radius:2px;margin-left:4px;&quot;&gt;PK&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_ServiceArea">
           <mxGeometry y="38" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="field_Ride_userId" value="&lt;b&gt;userId&lt;/b&gt;: objectId &lt;font color=&quot;#8BE9FD&quot;&gt;&lt;b&gt;FK&lt;/b&gt;&lt;/font&gt; &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required, idx)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="66" width="340" height="28" as="geometry" />
+        <mxCell id="table_Transaction" value="Transaction" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=2;dashed=1;fontColor=#000000;fontSize=13;align=center;" vertex="1" parent="column_0">
+          <mxGeometry x="30" y="858" width="340" height="66" as="geometry" />
         </mxCell>
-        <mxCell id="field_Ride_driverId" value="&lt;b&gt;driverId&lt;/b&gt;: objectId &lt;font color=&quot;#8BE9FD&quot;&gt;&lt;b&gt;FK&lt;/b&gt;&lt;/font&gt; &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(idx)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="94" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_carId" value="&lt;b&gt;carId&lt;/b&gt;: objectId &lt;font color=&quot;#8BE9FD&quot;&gt;&lt;b&gt;FK&lt;/b&gt;&lt;/font&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="122" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_serviceAreaId" value="&lt;b&gt;serviceAreaId&lt;/b&gt;: objectId &lt;font color=&quot;#8BE9FD&quot;&gt;&lt;b&gt;FK&lt;/b&gt;&lt;/font&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="150" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_serviceCategoryId" value="&lt;b&gt;serviceCategoryId&lt;/b&gt;: objectId &lt;font color=&quot;#8BE9FD&quot;&gt;&lt;b&gt;FK&lt;/b&gt;&lt;/font&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="178" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_rideCategory_categoryId" value="&lt;b&gt;rideCategory_categoryId&lt;/b&gt;: objectId &lt;font color=&quot;#8BE9FD&quot;&gt;&lt;b&gt;FK&lt;/b&gt;&lt;/font&gt; &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="206" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_rideCategory_name" value="&lt;b&gt;rideCategory_name&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="234" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_rideCategory_commissionRate" value="&lt;b&gt;rideCategory_commissionRate&lt;/b&gt;: number &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="262" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_pickup_address" value="&lt;b&gt;pickup_address&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="290" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_pickup_location_type" value="&lt;b&gt;pickup_location_type&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required, def: &apos;Point&apos;, enum: Point)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="318" width="340" height="43" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_pickup_location_coordinates" value="&lt;b&gt;pickup_location_coordinates&lt;/b&gt;: number[] &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required, idx)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="361" width="340" height="43" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_destination_address" value="&lt;b&gt;destination_address&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="404" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_destination_location_type" value="&lt;b&gt;destination_location_type&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required, def: &apos;Point&apos;, enum: Point)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="432" width="340" height="43" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_destination_location_coordinates" value="&lt;b&gt;destination_location_coordinates&lt;/b&gt;: number[] &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required, idx)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="475" width="340" height="43" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_routeInfo_totalDistanceKm" value="&lt;b&gt;routeInfo_totalDistanceKm&lt;/b&gt;: number &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="518" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_routeInfo_totalDurationMinutes" value="&lt;b&gt;routeInfo_totalDurationMinutes&lt;/b&gt;: number &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="546" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_routeInfo_googleRouteId" value="&lt;b&gt;routeInfo_googleRouteId&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="574" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_routeInfo_polyline" value="&lt;b&gt;routeInfo_polyline&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="602" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_driverMatching_requestExpireSeconds" value="&lt;b&gt;driverMatching_requestExpireSeconds&lt;/b&gt;: number &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="630" width="340" height="43" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_driverMatching_searchRadiusKm" value="&lt;b&gt;driverMatching_searchRadiusKm&lt;/b&gt;: number &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="673" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_driverMatching_requiredDriverCount" value="&lt;b&gt;driverMatching_requiredDriverCount&lt;/b&gt;: number &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="701" width="340" height="43" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_rideType" value="&lt;b&gt;rideType&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required, def: RIDE_TYPE.INSTANT, enum: instant|scheduled)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="744" width="340" height="43" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_scheduledAt" value="&lt;b&gt;scheduledAt&lt;/b&gt;: date" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="787" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_timezone" value="&lt;b&gt;timezone&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="815" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_reservationStatus" value="&lt;b&gt;reservationStatus&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: &apos;pending&apos;, enum: pending|confirmed|cancelled|expired)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="843" width="340" height="43" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_reservationConfirmedAt" value="&lt;b&gt;reservationConfirmedAt&lt;/b&gt;: date" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="886" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_reservationAssignedAt" value="&lt;b&gt;reservationAssignedAt&lt;/b&gt;: date" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="914" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_reservationAcceptedAt" value="&lt;b&gt;reservationAcceptedAt&lt;/b&gt;: date" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="942" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_reservationExpiresAt" value="&lt;b&gt;reservationExpiresAt&lt;/b&gt;: date" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="970" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_assignedDriverId" value="&lt;b&gt;assignedDriverId&lt;/b&gt;: objectId &lt;font color=&quot;#8BE9FD&quot;&gt;&lt;b&gt;FK&lt;/b&gt;&lt;/font&gt; &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(idx)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="998" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_reservationReminderSent__24h_" value="&lt;b&gt;reservationReminderSent__24h_&lt;/b&gt;: boolean &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: false)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="1026" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_reservationReminderSent__1h_" value="&lt;b&gt;reservationReminderSent__1h_&lt;/b&gt;: boolean &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: false)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="1054" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_reservationReminderSent__30m_" value="&lt;b&gt;reservationReminderSent__30m_&lt;/b&gt;: boolean &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: false)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="1082" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_reservationReminderSent__15m_" value="&lt;b&gt;reservationReminderSent__15m_&lt;/b&gt;: boolean &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: false)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="1110" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_reservationCancelledReason" value="&lt;b&gt;reservationCancelledReason&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="1138" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_shareToken" value="&lt;b&gt;shareToken&lt;/b&gt;: string &lt;font color=&quot;#FFA500&quot;&gt;&lt;b&gt;UK&lt;/b&gt;&lt;/font&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="1166" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_isSharingActive" value="&lt;b&gt;isSharingActive&lt;/b&gt;: boolean &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: false)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="1194" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_status" value="&lt;b&gt;status&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required, enum: searching_driver|driver_accepted|waiting_user_approval|driver_on_the_way|driver_arrived|started|completed|cancelled|cancelled_by_user|cancelled_by_driver|expired, idx)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="1222" width="340" height="73" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_pickupVerification_method" value="&lt;b&gt;pickupVerification_method&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required, enum: otp|phone_last_4_digits)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="1295" width="340" height="43" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_pickupVerification_otp_code" value="&lt;b&gt;pickupVerification_otp_code&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="1338" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_pickupVerification_otp_expiresAt" value="&lt;b&gt;pickupVerification_otp_expiresAt&lt;/b&gt;: date" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="1366" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_pickupVerification_otp_createdAt" value="&lt;b&gt;pickupVerification_otp_createdAt&lt;/b&gt;: date" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="1394" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_pickupVerification_otp_verified" value="&lt;b&gt;pickupVerification_otp_verified&lt;/b&gt;: boolean &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: false)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="1422" width="340" height="43" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_pickupVerification_otp_verifiedAt" value="&lt;b&gt;pickupVerification_otp_verifiedAt&lt;/b&gt;: date" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="1465" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_pickupVerification_otp_attempts" value="&lt;b&gt;pickupVerification_otp_attempts&lt;/b&gt;: number &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: 0)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="1493" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_pickupVerification_phoneLastFourDigits_value" value="&lt;b&gt;pickupVerification_phoneLastFourDigits_value&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="1521" width="340" height="43" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_pickupVerification_phoneLastFourDigits_verified" value="&lt;b&gt;pickupVerification_phoneLastFourDigits_verified&lt;/b&gt;: boolean &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: false)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="1564" width="340" height="43" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_pickupVerification_phoneLastFourDigits_verifiedAt" value="&lt;b&gt;pickupVerification_phoneLastFourDigits_verifiedAt&lt;/b&gt;: date" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="1607" width="340" height="43" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_dropVerification_method" value="&lt;b&gt;dropVerification_method&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required, enum: otp|phone_last_4_digits)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="1650" width="340" height="43" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_dropVerification_otp_code" value="&lt;b&gt;dropVerification_otp_code&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="1693" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_dropVerification_otp_expiresAt" value="&lt;b&gt;dropVerification_otp_expiresAt&lt;/b&gt;: date" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="1721" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_dropVerification_otp_createdAt" value="&lt;b&gt;dropVerification_otp_createdAt&lt;/b&gt;: date" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="1749" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_dropVerification_otp_verified" value="&lt;b&gt;dropVerification_otp_verified&lt;/b&gt;: boolean &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: false)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="1777" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_dropVerification_otp_verifiedAt" value="&lt;b&gt;dropVerification_otp_verifiedAt&lt;/b&gt;: date" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="1805" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_dropVerification_otp_attempts" value="&lt;b&gt;dropVerification_otp_attempts&lt;/b&gt;: number &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: 0)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="1833" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_dropVerification_phoneLastFourDigits_value" value="&lt;b&gt;dropVerification_phoneLastFourDigits_value&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="1861" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_dropVerification_phoneLastFourDigits_verified" value="&lt;b&gt;dropVerification_phoneLastFourDigits_verified&lt;/b&gt;: boolean &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: false)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="1889" width="340" height="43" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_dropVerification_phoneLastFourDigits_verifiedAt" value="&lt;b&gt;dropVerification_phoneLastFourDigits_verifiedAt&lt;/b&gt;: date" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="1932" width="340" height="43" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_fare_baseFare" value="&lt;b&gt;fare_baseFare&lt;/b&gt;: number &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="1975" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_fare_distanceFare" value="&lt;b&gt;fare_distanceFare&lt;/b&gt;: number &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="2003" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_fare_timeFare" value="&lt;b&gt;fare_timeFare&lt;/b&gt;: number &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="2031" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_fare_stopWaitingCharge" value="&lt;b&gt;fare_stopWaitingCharge&lt;/b&gt;: number &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="2059" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_fare_cancellationFee" value="&lt;b&gt;fare_cancellationFee&lt;/b&gt;: number &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="2087" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_fare_discount" value="&lt;b&gt;fare_discount&lt;/b&gt;: number &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="2115" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_fare_subtotal" value="&lt;b&gt;fare_subtotal&lt;/b&gt;: number &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="2143" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_fare_commission" value="&lt;b&gt;fare_commission&lt;/b&gt;: number &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="2171" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_fare_driverEarning" value="&lt;b&gt;fare_driverEarning&lt;/b&gt;: number &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="2199" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_fare_total" value="&lt;b&gt;fare_total&lt;/b&gt;: number &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="2227" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_fare_surgeMultiplier" value="&lt;b&gt;fare_surgeMultiplier&lt;/b&gt;: number &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: 1.0)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="2255" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_fare_surgeApplied" value="&lt;b&gt;fare_surgeApplied&lt;/b&gt;: number &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: 0.0)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="2283" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_fare_rideFare" value="&lt;b&gt;fare_rideFare&lt;/b&gt;: number" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="2311" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_fare_pendingCancellationFee" value="&lt;b&gt;fare_pendingCancellationFee&lt;/b&gt;: number" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="2339" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_payment_method" value="&lt;b&gt;payment_method&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(enum: stripe|wallet|apple_pay|google_pay|card)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="2367" width="340" height="43" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_payment_status" value="&lt;b&gt;payment_status&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(enum: pending|paid|failed|refunded)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="2410" width="340" height="43" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_payment_stripePaymentIntentId" value="&lt;b&gt;payment_stripePaymentIntentId&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="2453" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_payment_stripeCheckoutSessionId" value="&lt;b&gt;payment_stripeCheckoutSessionId&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="2481" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_payment_paidAt" value="&lt;b&gt;payment_paidAt&lt;/b&gt;: date" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="2509" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_cancellation_cancelledBy" value="&lt;b&gt;cancellation_cancelledBy&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(enum: user|driver|admin)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="2537" width="340" height="43" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_cancellation_cancellationReasonId" value="&lt;b&gt;cancellation_cancellationReasonId&lt;/b&gt;: objectId &lt;font color=&quot;#8BE9FD&quot;&gt;&lt;b&gt;FK&lt;/b&gt;&lt;/font&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="2580" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_cancellation_cancellationReasonName" value="&lt;b&gt;cancellation_cancellationReasonName&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="2608" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_cancellation_cancellationFee" value="&lt;b&gt;cancellation_cancellationFee&lt;/b&gt;: number" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="2636" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_cancellation_driverCompensation" value="&lt;b&gt;cancellation_driverCompensation&lt;/b&gt;: number" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="2664" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_cancellation_platformShare" value="&lt;b&gt;cancellation_platformShare&lt;/b&gt;: number" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="2692" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_cancellation_cancellationPolicy_scenario" value="&lt;b&gt;cancellation_cancellationPolicy_scenario&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="2720" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_cancellation_cancellationPolicy_policyName" value="&lt;b&gt;cancellation_cancellationPolicy_policyName&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="2748" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_cancellation_cancellationPolicy_cancellationFee" value="&lt;b&gt;cancellation_cancellationPolicy_cancellationFee&lt;/b&gt;: number" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="2776" width="340" height="43" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_cancellation_cancellationPolicy_driverCompensation" value="&lt;b&gt;cancellation_cancellationPolicy_driverCompensation&lt;/b&gt;: number" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="2819" width="340" height="43" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_cancellation_cancellationPolicy_platformShare" value="&lt;b&gt;cancellation_cancellationPolicy_platformShare&lt;/b&gt;: number" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="2862" width="340" height="43" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_cancellation_paymentStatus" value="&lt;b&gt;cancellation_paymentStatus&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(enum: pending|paid|voided)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="2905" width="340" height="43" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_cancellation_paymentCollectionMode" value="&lt;b&gt;cancellation_paymentCollectionMode&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="2948" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_cancellation_rideStatusBeforeCancellation" value="&lt;b&gt;cancellation_rideStatusBeforeCancellation&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="2976" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_cancellation_surgeSnapshot_multiplier" value="&lt;b&gt;cancellation_surgeSnapshot_multiplier&lt;/b&gt;: number &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: 1.0)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="3004" width="340" height="43" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_cancellation_surgeSnapshot_amount" value="&lt;b&gt;cancellation_surgeSnapshot_amount&lt;/b&gt;: number &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: 0.0)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="3047" width="340" height="43" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_cancellation_fareSnapshot" value="&lt;b&gt;cancellation_fareSnapshot&lt;/b&gt;: mixed" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="3090" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_cancellation_cancelledAt" value="&lt;b&gt;cancellation_cancelledAt&lt;/b&gt;: date" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="3118" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_requestedAt" value="&lt;b&gt;requestedAt&lt;/b&gt;: date &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required, def: Date.now, idx)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="3146" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_acceptedAt" value="&lt;b&gt;acceptedAt&lt;/b&gt;: date" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="3174" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_userApprovedAt" value="&lt;b&gt;userApprovedAt&lt;/b&gt;: date" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="3202" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_arrivedAt" value="&lt;b&gt;arrivedAt&lt;/b&gt;: date" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="3230" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_startedAt" value="&lt;b&gt;startedAt&lt;/b&gt;: date" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="3258" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_completedAt" value="&lt;b&gt;completedAt&lt;/b&gt;: date" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="3286" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_createdAt" value="&lt;b&gt;createdAt&lt;/b&gt;: date &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(ts)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="3314" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Ride_updatedAt" value="&lt;b&gt;updatedAt&lt;/b&gt;: date &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(ts)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Ride">
-          <mxGeometry y="3342" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="table_Transaction" value="Transaction" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#1E1E28;strokeColor=#4B5563;strokeWidth=2;fontColor=#9CA3AF;fontSize=13;align=center;" vertex="1" parent="column_left">
-          <mxGeometry x="25" y="3748" width="340" height="940" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Transaction__id" value="&lt;b&gt;_id&lt;/b&gt;: objectId &lt;font color=&quot;#FFA500&quot;&gt;&lt;b&gt;PK&lt;/b&gt;&lt;/font&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Transaction">
+        <mxCell id="field_Transaction__id" value="&lt;b&gt;_id&lt;/b&gt;: &lt;b&gt;objectId&lt;/b&gt; &lt;span style=&quot;background-color:#000000;color:#FFFFFF;padding:1px 3px;font-size:9px;font-weight:bold;border-radius:2px;margin-left:4px;&quot;&gt;PK&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_Transaction">
           <mxGeometry y="38" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="field_Transaction_transactionId" value="&lt;b&gt;transactionId&lt;/b&gt;: string &lt;font color=&quot;#FFA500&quot;&gt;&lt;b&gt;UK&lt;/b&gt;&lt;/font&gt; &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required, idx)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Transaction">
-          <mxGeometry y="66" width="340" height="28" as="geometry" />
+        <mxCell id="table_User" value="User" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=2;dashed=1;fontColor=#000000;fontSize=13;align=center;" vertex="1" parent="column_0">
+          <mxGeometry x="30" y="1124" width="340" height="66" as="geometry" />
         </mxCell>
-        <mxCell id="field_Transaction_userId" value="&lt;b&gt;userId&lt;/b&gt;: objectId &lt;font color=&quot;#8BE9FD&quot;&gt;&lt;b&gt;FK&lt;/b&gt;&lt;/font&gt; &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required, idx)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Transaction">
-          <mxGeometry y="94" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Transaction_driverId" value="&lt;b&gt;driverId&lt;/b&gt;: objectId &lt;font color=&quot;#8BE9FD&quot;&gt;&lt;b&gt;FK&lt;/b&gt;&lt;/font&gt; &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(idx)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Transaction">
-          <mxGeometry y="122" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Transaction_bookingId" value="&lt;b&gt;bookingId&lt;/b&gt;: objectId &lt;font color=&quot;#8BE9FD&quot;&gt;&lt;b&gt;FK&lt;/b&gt;&lt;/font&gt; &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(idx)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Transaction">
-          <mxGeometry y="150" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Transaction_rideId" value="&lt;b&gt;rideId&lt;/b&gt;: objectId &lt;font color=&quot;#8BE9FD&quot;&gt;&lt;b&gt;FK&lt;/b&gt;&lt;/font&gt; &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(idx)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Transaction">
-          <mxGeometry y="178" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Transaction_walletId" value="&lt;b&gt;walletId&lt;/b&gt;: objectId &lt;font color=&quot;#8BE9FD&quot;&gt;&lt;b&gt;FK&lt;/b&gt;&lt;/font&gt; &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(idx)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Transaction">
-          <mxGeometry y="206" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Transaction_stripeCustomerId" value="&lt;b&gt;stripeCustomerId&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Transaction">
-          <mxGeometry y="234" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Transaction_stripeCheckoutSessionId" value="&lt;b&gt;stripeCheckoutSessionId&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Transaction">
-          <mxGeometry y="262" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Transaction_stripePaymentIntentId" value="&lt;b&gt;stripePaymentIntentId&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Transaction">
-          <mxGeometry y="290" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Transaction_stripeChargeId" value="&lt;b&gt;stripeChargeId&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Transaction">
-          <mxGeometry y="318" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Transaction_stripeTransferId" value="&lt;b&gt;stripeTransferId&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Transaction">
-          <mxGeometry y="346" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Transaction_stripePayoutId" value="&lt;b&gt;stripePayoutId&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Transaction">
-          <mxGeometry y="374" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Transaction_stripeRefundId" value="&lt;b&gt;stripeRefundId&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Transaction">
-          <mxGeometry y="402" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Transaction_amount" value="&lt;b&gt;amount&lt;/b&gt;: number &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Transaction">
-          <mxGeometry y="430" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Transaction_totalFare" value="&lt;b&gt;totalFare&lt;/b&gt;: number" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Transaction">
-          <mxGeometry y="458" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Transaction_commission" value="&lt;b&gt;commission&lt;/b&gt;: number" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Transaction">
-          <mxGeometry y="486" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Transaction_fee" value="&lt;b&gt;fee&lt;/b&gt;: number" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Transaction">
-          <mxGeometry y="514" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Transaction_currency" value="&lt;b&gt;currency&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Transaction">
-          <mxGeometry y="542" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Transaction_status" value="&lt;b&gt;status&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Transaction">
-          <mxGeometry y="570" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Transaction_paymentMethod" value="&lt;b&gt;paymentMethod&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required, enum: stripe|wallet|apple_pay|google_pay|card)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Transaction">
-          <mxGeometry y="598" width="340" height="43" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Transaction_paymentStatus" value="&lt;b&gt;paymentStatus&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required, def: PAYMENT_STATUS.PENDING, enum: pending|paid|failed|refunded, idx)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Transaction">
-          <mxGeometry y="641" width="340" height="43" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Transaction_transactionType" value="&lt;b&gt;transactionType&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required, enum: booking_payment|wallet_topup|refund|cancellation_fee|cancellation_compensation|payout|driver_appreciation|lost_found_delivery|user_referral_reward|driver_referral_reward, idx)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Transaction">
-          <mxGeometry y="684" width="340" height="88" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Transaction_gatewayTransactionId" value="&lt;b&gt;gatewayTransactionId&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(idx)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Transaction">
-          <mxGeometry y="772" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Transaction_gatewayResponse" value="&lt;b&gt;gatewayResponse&lt;/b&gt;: mixed" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Transaction">
-          <mxGeometry y="800" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Transaction_description" value="&lt;b&gt;description&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Transaction">
-          <mxGeometry y="828" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Transaction_metadata" value="&lt;b&gt;metadata&lt;/b&gt;: mixed" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Transaction">
-          <mxGeometry y="856" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Transaction_createdAt" value="&lt;b&gt;createdAt&lt;/b&gt;: date &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(ts)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Transaction">
-          <mxGeometry y="884" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_Transaction_updatedAt" value="&lt;b&gt;updatedAt&lt;/b&gt;: date &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(ts)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Transaction">
-          <mxGeometry y="912" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="table_User" value="User" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#1E1E28;strokeColor=#4B5563;strokeWidth=2;fontColor=#9CA3AF;fontSize=13;align=center;" vertex="1" parent="column_left">
-          <mxGeometry x="25" y="4753" width="340" height="1050" as="geometry" />
-        </mxCell>
-        <mxCell id="field_User__id" value="&lt;b&gt;_id&lt;/b&gt;: objectId &lt;font color=&quot;#FFA500&quot;&gt;&lt;b&gt;PK&lt;/b&gt;&lt;/font&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
+        <mxCell id="field_User__id" value="&lt;b&gt;_id&lt;/b&gt;: &lt;b&gt;objectId&lt;/b&gt; &lt;span style=&quot;background-color:#000000;color:#FFFFFF;padding:1px 3px;font-size:9px;font-weight:bold;border-radius:2px;margin-left:4px;&quot;&gt;PK&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#000000;" vertex="1" parent="table_User">
           <mxGeometry y="38" width="340" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="field_User_name" value="&lt;b&gt;name&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
-          <mxGeometry y="66" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_User_role" value="&lt;b&gt;role&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: USER_ROLES.USER, enum: admin|superAdmin|user|driver)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
-          <mxGeometry y="94" width="340" height="43" as="geometry" />
-        </mxCell>
-        <mxCell id="field_User_roleId" value="&lt;b&gt;roleId&lt;/b&gt;: objectId &lt;font color=&quot;#8BE9FD&quot;&gt;&lt;b&gt;FK&lt;/b&gt;&lt;/font&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
-          <mxGeometry y="137" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_User_email" value="&lt;b&gt;email&lt;/b&gt;: string &lt;font color=&quot;#FFA500&quot;&gt;&lt;b&gt;UK&lt;/b&gt;&lt;/font&gt; &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
-          <mxGeometry y="165" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_User_profileImage" value="&lt;b&gt;profileImage&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: &apos;&apos;)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
-          <mxGeometry y="193" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_User_dateOfBirth" value="&lt;b&gt;dateOfBirth&lt;/b&gt;: date" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
-          <mxGeometry y="221" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_User_gender" value="&lt;b&gt;gender&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: GENDER.MALE, enum: male|female)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
-          <mxGeometry y="249" width="340" height="43" as="geometry" />
-        </mxCell>
-        <mxCell id="field_User_password" value="&lt;b&gt;password&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
-          <mxGeometry y="292" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_User_status" value="&lt;b&gt;status&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: STATUS.ACTIVE, enum: active|inactive)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
-          <mxGeometry y="320" width="340" height="43" as="geometry" />
-        </mxCell>
-        <mxCell id="field_User_phone" value="&lt;b&gt;phone&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
-          <mxGeometry y="363" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_User_countryCode" value="&lt;b&gt;countryCode&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
-          <mxGeometry y="391" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_User_firebaseUid" value="&lt;b&gt;firebaseUid&lt;/b&gt;: string &lt;font color=&quot;#FFA500&quot;&gt;&lt;b&gt;UK&lt;/b&gt;&lt;/font&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
-          <mxGeometry y="419" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_User_userName" value="&lt;b&gt;userName&lt;/b&gt;: string &lt;font color=&quot;#FFA500&quot;&gt;&lt;b&gt;UK&lt;/b&gt;&lt;/font&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
-          <mxGeometry y="447" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_User_deviceToken" value="&lt;b&gt;deviceToken&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
-          <mxGeometry y="475" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_User_verified" value="&lt;b&gt;verified&lt;/b&gt;: boolean &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: false)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
-          <mxGeometry y="503" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_User_location_type" value="&lt;b&gt;location_type&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: &apos;Point&apos;, enum: Point)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
-          <mxGeometry y="531" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_User_location_coordinates" value="&lt;b&gt;location_coordinates&lt;/b&gt;: number[] &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: [0, 0], idx)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
-          <mxGeometry y="559" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_User_location_address" value="&lt;b&gt;location_address&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: &apos;&apos;)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
-          <mxGeometry y="587" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_User_stripeCustomerId" value="&lt;b&gt;stripeCustomerId&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
-          <mxGeometry y="615" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_User_referralCode" value="&lt;b&gt;referralCode&lt;/b&gt;: string &lt;font color=&quot;#FFA500&quot;&gt;&lt;b&gt;UK&lt;/b&gt;&lt;/font&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
-          <mxGeometry y="643" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_User_referredById" value="&lt;b&gt;referredById&lt;/b&gt;: objectId &lt;font color=&quot;#8BE9FD&quot;&gt;&lt;b&gt;FK&lt;/b&gt;&lt;/font&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
-          <mxGeometry y="671" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_User_authentication_isResetPassword" value="&lt;b&gt;authentication_isResetPassword&lt;/b&gt;: boolean &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: false)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
-          <mxGeometry y="699" width="340" height="43" as="geometry" />
-        </mxCell>
-        <mxCell id="field_User_authentication_oneTimeCode" value="&lt;b&gt;authentication_oneTimeCode&lt;/b&gt;: number &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: null)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
-          <mxGeometry y="742" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_User_authentication_expireAt" value="&lt;b&gt;authentication_expireAt&lt;/b&gt;: date &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: null)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
-          <mxGeometry y="770" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_User_authentication_authType" value="&lt;b&gt;authentication_authType&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: null)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
-          <mxGeometry y="798" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_User_totalCancellations" value="&lt;b&gt;totalCancellations&lt;/b&gt;: number &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: 0)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
-          <mxGeometry y="826" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_User_consecutiveCancellations" value="&lt;b&gt;consecutiveCancellations&lt;/b&gt;: number &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: 0)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
-          <mxGeometry y="854" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_User_lastCancellationTime" value="&lt;b&gt;lastCancellationTime&lt;/b&gt;: date &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: null)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
-          <mxGeometry y="882" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_User_averageRating" value="&lt;b&gt;averageRating&lt;/b&gt;: number &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: 0)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
-          <mxGeometry y="910" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_User_totalRatings" value="&lt;b&gt;totalRatings&lt;/b&gt;: number &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: 0)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
-          <mxGeometry y="938" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_User_totalReviews" value="&lt;b&gt;totalReviews&lt;/b&gt;: number &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: 0)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
-          <mxGeometry y="966" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_User_createdAt" value="&lt;b&gt;createdAt&lt;/b&gt;: date &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(ts)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
-          <mxGeometry y="994" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="field_User_updatedAt" value="&lt;b&gt;updatedAt&lt;/b&gt;: date &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(ts)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
-          <mxGeometry y="1022" width="340" height="28" as="geometry" />
-        </mxCell>
-        <mxCell id="edge_1" value="rideId" style="edgeStyle=entityRelationEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#189AB4;strokeWidth=2;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;fontSize=10;fontColor=#A0A5C0;" edge="1" parent="1" source="field_Ride__id" target="field_LostFound_rideId">
+        <mxCell id="edge_1" value="reports ($lookup)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=2;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;fontSize=10;fontColor=#000000;" edge="1" parent="1" source="field_LostFound__id" target="table_LostFound">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="edge_2" value="passengerId" style="edgeStyle=entityRelationEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#189AB4;strokeWidth=2;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;fontSize=10;fontColor=#A0A5C0;" edge="1" parent="1" source="field_User__id" target="field_LostFound_passengerId">
+        <mxCell id="edge_2" value="categoryDetails ($lookup)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1.5;dashed=1;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;fontSize=9;fontColor=#000000;" edge="1" parent="1" source="field_LostAndFoundItemCategory__id" target="table_LostFound">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="edge_3" value="driverId" style="edgeStyle=entityRelationEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#189AB4;strokeWidth=2;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;fontSize=10;fontColor=#A0A5C0;" edge="1" parent="1" source="field_User__id" target="field_LostFound_driverId">
+        <mxCell id="edge_3" value="ride ($lookup)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1.5;dashed=1;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;fontSize=9;fontColor=#000000;" edge="1" parent="1" source="field_Ride__id" target="table_LostFound">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="edge_4" value="itemCategory" style="edgeStyle=entityRelationEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#189AB4;strokeWidth=2;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;fontSize=10;fontColor=#A0A5C0;" edge="1" parent="1" source="field_LostAndFoundItemCategory__id" target="field_LostFound_itemCategory">
+        <mxCell id="edge_4" value="serviceArea ($lookup)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1.5;dashed=1;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;fontSize=9;fontColor=#000000;" edge="1" parent="1" source="field_ServiceArea__id" target="table_LostFound">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="edge_5" value="uploadedFiles" style="edgeStyle=entityRelationEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#189AB4;strokeWidth=2;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;fontSize=10;fontColor=#A0A5C0;" edge="1" parent="1" source="field_LostFound__id" target="table_LostFound_UploadedFiles">
+        <mxCell id="edge_5" value="parentCity ($lookup)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1.5;dashed=1;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;fontSize=9;fontColor=#000000;exitY=0.5;exitDx=0;exitDy=8;entryY=0.5;entryDx=0;entryDy=8;" edge="1" parent="1" source="field_ServiceArea__id" target="table_LostFound">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="edge_6" value="paymentTransactionId" style="edgeStyle=entityRelationEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#189AB4;strokeWidth=2;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;fontSize=10;fontColor=#A0A5C0;" edge="1" parent="1" source="field_Transaction__id" target="field_LostFound_paymentTransactionId">
+        <mxCell id="edge_6" value="rideId" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1.5;dashed=1;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;fontSize=9;fontColor=#000000;" edge="1" parent="1" source="field_Ride__id" target="field_LostFound_rideId">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="edge_7" value="createdBy" style="edgeStyle=entityRelationEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#189AB4;strokeWidth=2;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;fontSize=10;fontColor=#A0A5C0;" edge="1" parent="1" source="field_User__id" target="field_LostFound_createdBy">
+        <mxCell id="edge_7" value="passengerId" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1.5;dashed=1;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;fontSize=9;fontColor=#000000;" edge="1" parent="1" source="field_User__id" target="field_LostFound_passengerId">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_8" value="driverId" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1.5;dashed=1;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;fontSize=9;fontColor=#000000;" edge="1" parent="1" source="field_User__id" target="field_LostFound_driverId">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_9" value="itemCategory" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1.5;dashed=1;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;fontSize=9;fontColor=#000000;" edge="1" parent="1" source="field_LostAndFoundItemCategory__id" target="field_LostFound_itemCategory">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_10" value="uploadedFiles" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=2;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;fontSize=10;fontColor=#000000;" edge="1" parent="1" source="field_LostFound__id" target="table_LostFound_UploadedFiles">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_11" value="paymentTransactionId" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1.5;dashed=1;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;fontSize=9;fontColor=#000000;" edge="1" parent="1" source="field_Transaction__id" target="field_LostFound_paymentTransactionId">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_12" value="createdBy" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1.5;dashed=1;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;fontSize=9;fontColor=#000000;" edge="1" parent="1" source="field_User__id" target="field_LostFound_createdBy">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_13" value="auditLogs" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=2;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;fontSize=10;fontColor=#000000;" edge="1" parent="1" source="field_LostFound__id" target="table_auditLogSchema">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_14" value="actor" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1.5;dashed=1;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;fontSize=9;fontColor=#000000;" edge="1" parent="1" source="field_User__id" target="field_auditLogSchema_actor">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
       </root>

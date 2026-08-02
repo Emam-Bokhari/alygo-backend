@@ -10,8 +10,12 @@ function main() {
     process.exit(1);
   }
 
-  // Resolve the user's local PC's Downloads directory dynamically
-  const downloadsDir = path.join(os.homedir(), "Downloads", "alygo-erd-diagrams");
+  // Resolve the project root directory and dynamically determine its folder name
+  const projectRootDir = path.resolve(__dirname, "..");
+  const projectName = path.basename(projectRootDir);
+
+  // Resolve the user's local PC's Downloads directory dynamically based on the project name
+  const downloadsDir = path.join(os.homedir(), "Downloads", `${projectName}-erd-diagrams`);
   
   if (!fs.existsSync(downloadsDir)) {
     fs.mkdirSync(downloadsDir, { recursive: true });
