@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="Electron" modified="2026-07-31T11:08:06.793Z" agent="Antigravity" version="24.0.0" type="device">
+  <diagram id="Page-1" name="Page-1">
+    <mxGraphModel dx="1422" dy="804" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0" background="#0D0E15">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="column_center" value="Core Module: ServiceArea" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#131522;strokeColor=#8A2BE2;strokeWidth=2.5;arcSize=6;align=left;verticalAlign=top;spacingLeft=15;spacingTop=12;fontColor=#FFFFFF;fontSize=14;fontStyle=1;container=1;collapsible=0;recursiveResize=0;" vertex="1" parent="1">
+          <mxGeometry x="50" y="50" width="390" height="652" as="geometry" />
+        </mxCell>
+        <mxCell id="table_ServiceArea" value="ServiceArea" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#281E3D;strokeColor=#8A2BE2;strokeWidth=2;fontColor=#FFFFFF;fontSize=13;align=center;" vertex="1" parent="column_center">
+          <mxGeometry x="25" y="55" width="340" height="572" as="geometry" />
+        </mxCell>
+        <mxCell id="field_ServiceArea__id" value="&lt;b&gt;_id&lt;/b&gt;: objectId &lt;font color=&quot;#FFA500&quot;&gt;&lt;b&gt;PK&lt;/b&gt;&lt;/font&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_ServiceArea">
+          <mxGeometry y="38" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_ServiceArea_country" value="&lt;b&gt;country&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: &apos;&apos;)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_ServiceArea">
+          <mxGeometry y="66" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_ServiceArea_state" value="&lt;b&gt;state&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: &apos;&apos;)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_ServiceArea">
+          <mxGeometry y="94" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_ServiceArea_city" value="&lt;b&gt;city&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: &apos;&apos;)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_ServiceArea">
+          <mxGeometry y="122" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_ServiceArea_zone" value="&lt;b&gt;zone&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: &apos;&apos;)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_ServiceArea">
+          <mxGeometry y="150" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_ServiceArea_airport" value="&lt;b&gt;airport&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: &apos;&apos;)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_ServiceArea">
+          <mxGeometry y="178" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_ServiceArea_countryId" value="&lt;b&gt;countryId&lt;/b&gt;: objectId &lt;font color=&quot;#8BE9FD&quot;&gt;&lt;b&gt;FK&lt;/b&gt;&lt;/font&gt; &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: null)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_ServiceArea">
+          <mxGeometry y="206" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_ServiceArea_stateId" value="&lt;b&gt;stateId&lt;/b&gt;: objectId &lt;font color=&quot;#8BE9FD&quot;&gt;&lt;b&gt;FK&lt;/b&gt;&lt;/font&gt; &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: null)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_ServiceArea">
+          <mxGeometry y="234" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_ServiceArea_cityId" value="&lt;b&gt;cityId&lt;/b&gt;: objectId &lt;font color=&quot;#8BE9FD&quot;&gt;&lt;b&gt;FK&lt;/b&gt;&lt;/font&gt; &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: null)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_ServiceArea">
+          <mxGeometry y="262" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_ServiceArea_type" value="&lt;b&gt;type&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required, enum: state|city|zone|airport|country, idx)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_ServiceArea">
+          <mxGeometry y="290" width="340" height="43" as="geometry" />
+        </mxCell>
+        <mxCell id="field_ServiceArea_maxDrivers" value="&lt;b&gt;maxDrivers&lt;/b&gt;: number &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: 0)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_ServiceArea">
+          <mxGeometry y="333" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_ServiceArea_location_type" value="&lt;b&gt;location_type&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: &apos;Point&apos;, enum: Point)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_ServiceArea">
+          <mxGeometry y="361" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_ServiceArea_location_coordinates" value="&lt;b&gt;location_coordinates&lt;/b&gt;: number[] &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: [0, 0])&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_ServiceArea">
+          <mxGeometry y="389" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_ServiceArea_coverageRadiusKm" value="&lt;b&gt;coverageRadiusKm&lt;/b&gt;: number &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: 25)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_ServiceArea">
+          <mxGeometry y="417" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_ServiceArea_timezone" value="&lt;b&gt;timezone&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: &apos;UTC&apos;)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_ServiceArea">
+          <mxGeometry y="445" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_ServiceArea_status" value="&lt;b&gt;status&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: STATUS.ACTIVE, enum: active|inactive)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_ServiceArea">
+          <mxGeometry y="473" width="340" height="43" as="geometry" />
+        </mxCell>
+        <mxCell id="field_ServiceArea_createdAt" value="&lt;b&gt;createdAt&lt;/b&gt;: date &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(ts)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_ServiceArea">
+          <mxGeometry y="516" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_ServiceArea_updatedAt" value="&lt;b&gt;updatedAt&lt;/b&gt;: date &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(ts)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_ServiceArea">
+          <mxGeometry y="544" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_1" value="countryId" style="edgeStyle=entityRelationEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#8A2BE2;strokeWidth=2;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;fontSize=10;fontColor=#A0A5C0;" edge="1" parent="1" source="field_ServiceArea__id" target="field_ServiceArea_countryId">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_2" value="stateId" style="edgeStyle=entityRelationEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#8A2BE2;strokeWidth=2;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;fontSize=10;fontColor=#A0A5C0;" edge="1" parent="1" source="field_ServiceArea__id" target="field_ServiceArea_stateId">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_3" value="cityId" style="edgeStyle=entityRelationEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#8A2BE2;strokeWidth=2;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;fontSize=10;fontColor=#A0A5C0;" edge="1" parent="1" source="field_ServiceArea__id" target="field_ServiceArea_cityId">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

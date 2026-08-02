@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="Electron" modified="2026-07-31T11:08:06.776Z" agent="Antigravity" version="24.0.0" type="device">
+  <diagram id="Page-1" name="Page-1">
+    <mxGraphModel dx="1422" dy="804" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0" background="#0D0E15">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="column_left" value="Parent Lookups / External Dependencies" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#131522;strokeColor=#4B5563;strokeWidth=2.5;arcSize=6;align=left;verticalAlign=top;spacingLeft=15;spacingTop=12;fontColor=#FFFFFF;fontSize=14;fontStyle=1;container=1;collapsible=0;recursiveResize=0;" vertex="1" parent="1">
+          <mxGeometry x="50" y="50" width="390" height="1642" as="geometry" />
+        </mxCell>
+        <mxCell id="column_center" value="Core Module: Message" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#131522;strokeColor=#06B6D4;strokeWidth=2.5;arcSize=6;align=left;verticalAlign=top;spacingLeft=15;spacingTop=12;fontColor=#FFFFFF;fontSize=14;fontStyle=1;container=1;collapsible=0;recursiveResize=0;" vertex="1" parent="1">
+          <mxGeometry x="660" y="622.5" width="390" height="497" as="geometry" />
+        </mxCell>
+        <mxCell id="table_Chat" value="Chat" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#1E1E28;strokeColor=#4B5563;strokeWidth=2;fontColor=#9CA3AF;fontSize=13;align=center;" vertex="1" parent="column_left">
+          <mxGeometry x="25" y="55" width="340" height="447" as="geometry" />
+        </mxCell>
+        <mxCell id="field_Chat__id" value="&lt;b&gt;_id&lt;/b&gt;: objectId &lt;font color=&quot;#FFA500&quot;&gt;&lt;b&gt;PK&lt;/b&gt;&lt;/font&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Chat">
+          <mxGeometry y="38" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_Chat_participants" value="&lt;b&gt;participants&lt;/b&gt;: objectId[] &lt;font color=&quot;#8BE9FD&quot;&gt;&lt;b&gt;FK&lt;/b&gt;&lt;/font&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Chat">
+          <mxGeometry y="66" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_Chat_lastMessage" value="&lt;b&gt;lastMessage&lt;/b&gt;: objectId &lt;font color=&quot;#8BE9FD&quot;&gt;&lt;b&gt;FK&lt;/b&gt;&lt;/font&gt; &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: null)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Chat">
+          <mxGeometry y="94" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_Chat_read" value="&lt;b&gt;read&lt;/b&gt;: boolean &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: false)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Chat">
+          <mxGeometry y="122" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_Chat_readBy" value="&lt;b&gt;readBy&lt;/b&gt;: objectId[] &lt;font color=&quot;#8BE9FD&quot;&gt;&lt;b&gt;FK&lt;/b&gt;&lt;/font&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Chat">
+          <mxGeometry y="150" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_Chat_deletedBy" value="&lt;b&gt;deletedBy&lt;/b&gt;: objectId[] &lt;font color=&quot;#8BE9FD&quot;&gt;&lt;b&gt;FK&lt;/b&gt;&lt;/font&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Chat">
+          <mxGeometry y="178" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_Chat_isDeleted" value="&lt;b&gt;isDeleted&lt;/b&gt;: boolean &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: false)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Chat">
+          <mxGeometry y="206" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_Chat_status" value="&lt;b&gt;status&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: CHAT_STATUS.ACTIVE, enum: active|deleted)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Chat">
+          <mxGeometry y="234" width="340" height="43" as="geometry" />
+        </mxCell>
+        <mxCell id="field_Chat_pinnedMessages" value="&lt;b&gt;pinnedMessages&lt;/b&gt;: objectId[] &lt;font color=&quot;#8BE9FD&quot;&gt;&lt;b&gt;FK&lt;/b&gt;&lt;/font&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Chat">
+          <mxGeometry y="277" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_Chat_communicationType" value="&lt;b&gt;communicationType&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: CHAT_COMMUNICATION_TYPE.OTHER, enum: regular_ride|scheduled_ride|lost_found|reservation|support|other)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Chat">
+          <mxGeometry y="305" width="340" height="58" as="geometry" />
+        </mxCell>
+        <mxCell id="field_Chat_referenceId" value="&lt;b&gt;referenceId&lt;/b&gt;: objectId" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Chat">
+          <mxGeometry y="363" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_Chat_createdAt" value="&lt;b&gt;createdAt&lt;/b&gt;: date &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(ts)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Chat">
+          <mxGeometry y="391" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_Chat_updatedAt" value="&lt;b&gt;updatedAt&lt;/b&gt;: date &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(ts)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_Chat">
+          <mxGeometry y="419" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="table_Message" value="Message" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#1B2A32;strokeColor=#06B6D4;strokeWidth=2;fontColor=#FFFFFF;fontSize=13;align=center;" vertex="1" parent="column_center">
+          <mxGeometry x="25" y="55" width="340" height="417" as="geometry" />
+        </mxCell>
+        <mxCell id="field_Message__id" value="&lt;b&gt;_id&lt;/b&gt;: objectId &lt;font color=&quot;#FFA500&quot;&gt;&lt;b&gt;PK&lt;/b&gt;&lt;/font&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_Message">
+          <mxGeometry y="38" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_Message_chatId" value="&lt;b&gt;chatId&lt;/b&gt;: objectId &lt;font color=&quot;#8BE9FD&quot;&gt;&lt;b&gt;FK&lt;/b&gt;&lt;/font&gt; &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_Message">
+          <mxGeometry y="66" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_Message_sender" value="&lt;b&gt;sender&lt;/b&gt;: objectId &lt;font color=&quot;#8BE9FD&quot;&gt;&lt;b&gt;FK&lt;/b&gt;&lt;/font&gt; &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_Message">
+          <mxGeometry y="94" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_Message_text" value="&lt;b&gt;text&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_Message">
+          <mxGeometry y="122" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_Message_image" value="&lt;b&gt;image&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: &apos;&apos;)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_Message">
+          <mxGeometry y="150" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_Message_read" value="&lt;b&gt;read&lt;/b&gt;: boolean &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: false)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_Message">
+          <mxGeometry y="178" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_Message_type" value="&lt;b&gt;type&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: MESSAGE_TYPE.TEXT, enum: text|image|doc|both)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_Message">
+          <mxGeometry y="206" width="340" height="43" as="geometry" />
+        </mxCell>
+        <mxCell id="field_Message_isDeleted" value="&lt;b&gt;isDeleted&lt;/b&gt;: boolean &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required, def: false)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_Message">
+          <mxGeometry y="249" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_Message_isPinned" value="&lt;b&gt;isPinned&lt;/b&gt;: boolean &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: false)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_Message">
+          <mxGeometry y="277" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_Message_pinnedBy" value="&lt;b&gt;pinnedBy&lt;/b&gt;: objectId &lt;font color=&quot;#8BE9FD&quot;&gt;&lt;b&gt;FK&lt;/b&gt;&lt;/font&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_Message">
+          <mxGeometry y="305" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_Message_pinnedAt" value="&lt;b&gt;pinnedAt&lt;/b&gt;: date" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_Message">
+          <mxGeometry y="333" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_Message_createdAt" value="&lt;b&gt;createdAt&lt;/b&gt;: date &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(ts)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_Message">
+          <mxGeometry y="361" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_Message_updatedAt" value="&lt;b&gt;updatedAt&lt;/b&gt;: date &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(ts)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#D0D2E6;" vertex="1" parent="table_Message">
+          <mxGeometry y="389" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="table_User" value="User" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#1E1E28;strokeColor=#4B5563;strokeWidth=2;fontColor=#9CA3AF;fontSize=13;align=center;" vertex="1" parent="column_left">
+          <mxGeometry x="25" y="567" width="340" height="1050" as="geometry" />
+        </mxCell>
+        <mxCell id="field_User__id" value="&lt;b&gt;_id&lt;/b&gt;: objectId &lt;font color=&quot;#FFA500&quot;&gt;&lt;b&gt;PK&lt;/b&gt;&lt;/font&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
+          <mxGeometry y="38" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_User_name" value="&lt;b&gt;name&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
+          <mxGeometry y="66" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_User_role" value="&lt;b&gt;role&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: USER_ROLES.USER, enum: admin|superAdmin|user|driver)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
+          <mxGeometry y="94" width="340" height="43" as="geometry" />
+        </mxCell>
+        <mxCell id="field_User_roleId" value="&lt;b&gt;roleId&lt;/b&gt;: objectId &lt;font color=&quot;#8BE9FD&quot;&gt;&lt;b&gt;FK&lt;/b&gt;&lt;/font&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
+          <mxGeometry y="137" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_User_email" value="&lt;b&gt;email&lt;/b&gt;: string &lt;font color=&quot;#FFA500&quot;&gt;&lt;b&gt;UK&lt;/b&gt;&lt;/font&gt; &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
+          <mxGeometry y="165" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_User_profileImage" value="&lt;b&gt;profileImage&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: &apos;&apos;)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
+          <mxGeometry y="193" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_User_dateOfBirth" value="&lt;b&gt;dateOfBirth&lt;/b&gt;: date" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
+          <mxGeometry y="221" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_User_gender" value="&lt;b&gt;gender&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: GENDER.MALE, enum: male|female)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
+          <mxGeometry y="249" width="340" height="43" as="geometry" />
+        </mxCell>
+        <mxCell id="field_User_password" value="&lt;b&gt;password&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
+          <mxGeometry y="292" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_User_status" value="&lt;b&gt;status&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: STATUS.ACTIVE, enum: active|inactive)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
+          <mxGeometry y="320" width="340" height="43" as="geometry" />
+        </mxCell>
+        <mxCell id="field_User_phone" value="&lt;b&gt;phone&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
+          <mxGeometry y="363" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_User_countryCode" value="&lt;b&gt;countryCode&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(required)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
+          <mxGeometry y="391" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_User_firebaseUid" value="&lt;b&gt;firebaseUid&lt;/b&gt;: string &lt;font color=&quot;#FFA500&quot;&gt;&lt;b&gt;UK&lt;/b&gt;&lt;/font&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
+          <mxGeometry y="419" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_User_userName" value="&lt;b&gt;userName&lt;/b&gt;: string &lt;font color=&quot;#FFA500&quot;&gt;&lt;b&gt;UK&lt;/b&gt;&lt;/font&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
+          <mxGeometry y="447" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_User_deviceToken" value="&lt;b&gt;deviceToken&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
+          <mxGeometry y="475" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_User_verified" value="&lt;b&gt;verified&lt;/b&gt;: boolean &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: false)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
+          <mxGeometry y="503" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_User_location_type" value="&lt;b&gt;location_type&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: &apos;Point&apos;, enum: Point)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
+          <mxGeometry y="531" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_User_location_coordinates" value="&lt;b&gt;location_coordinates&lt;/b&gt;: number[] &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: [0, 0], idx)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
+          <mxGeometry y="559" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_User_location_address" value="&lt;b&gt;location_address&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: &apos;&apos;)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
+          <mxGeometry y="587" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_User_stripeCustomerId" value="&lt;b&gt;stripeCustomerId&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
+          <mxGeometry y="615" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_User_referralCode" value="&lt;b&gt;referralCode&lt;/b&gt;: string &lt;font color=&quot;#FFA500&quot;&gt;&lt;b&gt;UK&lt;/b&gt;&lt;/font&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
+          <mxGeometry y="643" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_User_referredById" value="&lt;b&gt;referredById&lt;/b&gt;: objectId &lt;font color=&quot;#8BE9FD&quot;&gt;&lt;b&gt;FK&lt;/b&gt;&lt;/font&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
+          <mxGeometry y="671" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_User_authentication_isResetPassword" value="&lt;b&gt;authentication_isResetPassword&lt;/b&gt;: boolean &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: false)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
+          <mxGeometry y="699" width="340" height="43" as="geometry" />
+        </mxCell>
+        <mxCell id="field_User_authentication_oneTimeCode" value="&lt;b&gt;authentication_oneTimeCode&lt;/b&gt;: number &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: null)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
+          <mxGeometry y="742" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_User_authentication_expireAt" value="&lt;b&gt;authentication_expireAt&lt;/b&gt;: date &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: null)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
+          <mxGeometry y="770" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_User_authentication_authType" value="&lt;b&gt;authentication_authType&lt;/b&gt;: string &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: null)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
+          <mxGeometry y="798" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_User_totalCancellations" value="&lt;b&gt;totalCancellations&lt;/b&gt;: number &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: 0)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
+          <mxGeometry y="826" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_User_consecutiveCancellations" value="&lt;b&gt;consecutiveCancellations&lt;/b&gt;: number &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: 0)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
+          <mxGeometry y="854" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_User_lastCancellationTime" value="&lt;b&gt;lastCancellationTime&lt;/b&gt;: date &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: null)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
+          <mxGeometry y="882" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_User_averageRating" value="&lt;b&gt;averageRating&lt;/b&gt;: number &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: 0)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
+          <mxGeometry y="910" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_User_totalRatings" value="&lt;b&gt;totalRatings&lt;/b&gt;: number &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: 0)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
+          <mxGeometry y="938" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_User_totalReviews" value="&lt;b&gt;totalReviews&lt;/b&gt;: number &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(def: 0)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
+          <mxGeometry y="966" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_User_createdAt" value="&lt;b&gt;createdAt&lt;/b&gt;: date &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(ts)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
+          <mxGeometry y="994" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="field_User_updatedAt" value="&lt;b&gt;updatedAt&lt;/b&gt;: date &lt;i&gt;&lt;font color=&quot;#8E94B7&quot;&gt;(ts)&lt;/font&gt;&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=11;fontColor=#8E94B7;" vertex="1" parent="table_User">
+          <mxGeometry y="1022" width="340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_1" value="chatId" style="edgeStyle=entityRelationEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#06B6D4;strokeWidth=2;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;fontSize=10;fontColor=#A0A5C0;" edge="1" parent="1" source="field_Chat__id" target="field_Message_chatId">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_2" value="sender" style="edgeStyle=entityRelationEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#06B6D4;strokeWidth=2;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;fontSize=10;fontColor=#A0A5C0;" edge="1" parent="1" source="field_User__id" target="field_Message_sender">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_3" value="pinnedBy" style="edgeStyle=entityRelationEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#06B6D4;strokeWidth=2;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;fontSize=10;fontColor=#A0A5C0;" edge="1" parent="1" source="field_User__id" target="field_Message_pinnedBy">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
