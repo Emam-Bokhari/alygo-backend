@@ -517,6 +517,7 @@ async function renderDrawio(page: Page, drawioPath: string) {
   }
 
   // Configure high-DPI resolution viewport dynamically based on diagram size
+  // Configure high-DPI resolution viewport dynamically based on diagram size
   let scaleFactor = 4.0;
   if (process.env.ERD_SCALE) {
     scaleFactor = parseFloat(process.env.ERD_SCALE);
@@ -529,6 +530,12 @@ async function renderDrawio(page: Page, drawioPath: string) {
     }
   }
 
+  // Ensure scaled viewport dimensions do not exceed Chromium's canvas/viewport stability limit (~30,000 pixels)
+  const maxDimension = Math.max(dimensions.width, dimensions.height);
+  if (maxDimension * scaleFactor > 30000) {
+    scaleFactor = Math.max(0.5, 30000 / maxDimension);
+  }
+
   await page.setViewport({
     width: dimensions.width,
     height: dimensions.height,
@@ -536,33 +543,38 @@ async function renderDrawio(page: Page, drawioPath: string) {
   });
 
   // 2. Export PNG
-  const svgElement = await page.$("div.mxgraph svg");
-  if (svgElement) {
-    const buffer = await svgElement.screenshot({
+  try {
+    const buffer = await page.screenshot({
       type: "png",
       omitBackground: false // Keep background color #FFFFFF
     });
     await sharp(buffer, { limitInputPixels: false })
       .withMetadata({ density: 300 })
       .toFile(pngPath);
-    console.log(`-> Generated PNG (${scaleFactor}x): ${pngPath}`);
+    console.log(`-> Generated PNG (${scaleFactor.toFixed(2)}x): ${pngPath}`);
+  } catch (pngErr: any) {
+    console.error(`-> Failed to generate PNG for ${baseName}: ${pngErr.message}`);
   }
 
   // 3. Export PDF with matching custom dimensions
-  await page.pdf({
-    path: pdfPath,
-    width: `${dimensions.width}px`,
-    height: `${dimensions.height}px`,
-    printBackground: true,
-    pageRanges: "1",
-    margin: {
-      top: "0px",
-      right: "0px",
-      bottom: "0px",
-      left: "0px"
-    }
-  });
-  console.log(`-> Generated PDF: ${pdfPath}`);
+  try {
+    await page.pdf({
+      path: pdfPath,
+      width: `${dimensions.width}px`,
+      height: `${dimensions.height}px`,
+      printBackground: true,
+      pageRanges: "1",
+      margin: {
+        top: "0px",
+        right: "0px",
+        bottom: "0px",
+        left: "0px"
+      }
+    });
+    console.log(`-> Generated PDF: ${pdfPath}`);
+  } catch (pdfErr: any) {
+    console.error(`-> Failed to generate PDF for ${baseName}: ${pdfErr.message}`);
+  }
 }
 
 async function main() {
@@ -590,26 +602,33 @@ async function main() {
   });
 
   try {
-    const page = await browser.newPage();
-
-    // Listen for browser logs & errors to ease debugging
-    page.on("console", (msg) => {
-      const text = msg.text();
-      const type = msg.type() as string;
-      // Ignore routine logs to avoid cluttering, but log errors/warnings
-      if (type === "error" || type === "warning" || text.includes("error") || text.includes("fail")) {
-        console.log(`[Browser Console] ${type.toUpperCase()}: ${text}`);
-      }
-    });
-    page.on("pageerror", (err: any) => {
-      console.error(`[Browser PageError]: ${err.message}`);
-    });
-
     for (const file of drawioFiles) {
+      let page: Page | null = null;
       try {
+        page = await browser.newPage();
+
+        // Listen for browser logs & errors to ease debugging
+        page.on("console", (msg) => {
+          const text = msg.text();
+          const type = msg.type() as string;
+          // Ignore routine logs to avoid cluttering, but log errors/warnings
+          if (type === "error" || type === "warning" || text.includes("error") || text.includes("fail")) {
+            console.log(`[Browser Console] ${type.toUpperCase()}: ${text}`);
+          }
+        });
+        page.on("pageerror", (err: any) => {
+          console.error(`[Browser PageError]: ${err.message}`);
+        });
+
         await renderDrawio(page, file);
       } catch (err: any) {
         console.error(`Error rendering diagram for ${file}:`, err.message);
+      } finally {
+        if (page) {
+          try {
+            await page.close();
+          } catch (e) {}
+        }
       }
     }
   } finally {

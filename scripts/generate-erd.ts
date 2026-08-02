@@ -1154,13 +1154,27 @@ function buildDrawioDiagram(
   let colTitles: string[] = [];
 
   if (isWhole) {
-    columns = Array.from({ length: 7 }, () => []);
-    colTitles = DOMAIN_NAMES;
+    // Dynamically identify all active modules present in the schemas being rendered
+    const activeModules = Array.from(
+      new Set(Array.from(schemasToRender.values()).map(s => s.moduleName))
+    ).filter(m => m !== "shared").sort();
+    
+    if (Array.from(schemasToRender.values()).some(s => s.moduleName === "shared")) {
+      activeModules.push("shared");
+    }
+
+    columns = Array.from({ length: activeModules.length }, () => []);
+    colTitles = activeModules.map(modName => {
+      if (modName === "shared") return "Shared / External Dependencies";
+      return `${capitalize(modName)} Module`;
+    });
 
     for (const entName of sortedEntityNames) {
       const schema = schemasToRender.get(entName)!;
-      const colIdx = getDomainGroupIndex(schema.moduleName);
-      columns[colIdx].push(entName);
+      const colIdx = activeModules.indexOf(schema.moduleName);
+      if (colIdx !== -1) {
+        columns[colIdx].push(entName);
+      }
     }
   } else {
     columns = Array.from({ length: 3 }, () => []);
@@ -1231,15 +1245,31 @@ function buildDrawioDiagram(
     return h;
   });
 
-  const maxHeight = Math.max(...columnHeights, 100);
-
   const tableRelativePositions = new Map<string, { rx: number, ry: number }>();
   const tableParentIds = new Map<string, string>();
 
-  // Determine dynamic canvas size
+  // Determine dynamic canvas size and coordinates using grid if isWhole
   const numColumns = columns.length;
-  const pageWidth = leftMargin + numColumns * (columnContainerWidth + horizontalSpacing) - horizontalSpacing + leftMargin;
-  const pageHeight = topMargin + maxHeight + bottomMargin;
+  const maxColsPerRow = 6;
+  const colsPerRow = isWhole ? Math.min(maxColsPerRow, numColumns) : numColumns;
+  const numRows = Math.ceil(numColumns / colsPerRow);
+
+  const rowHeights: number[] = [];
+  const rowYPositions: number[] = [];
+  let currentY = topMargin;
+
+  for (let r = 0; r < numRows; r++) {
+    const rowColHeights = columnHeights.slice(r * colsPerRow, (r + 1) * colsPerRow);
+    const rowH = Math.max(...rowColHeights, 100);
+    rowHeights.push(rowH);
+    rowYPositions.push(currentY);
+    // Vertical spacing between grid rows
+    currentY += rowH + verticalSpacing * 2;
+  }
+
+  const pageCols = Math.min(numColumns, colsPerRow);
+  const pageWidth = Math.round(leftMargin + pageCols * (columnContainerWidth + horizontalSpacing) - horizontalSpacing + leftMargin);
+  const pageHeight = Math.round(currentY - (verticalSpacing * 2) + bottomMargin);
 
   // XML construction
   let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
@@ -1254,8 +1284,12 @@ function buildDrawioDiagram(
   for (let colIdx = 0; colIdx < numColumns; colIdx++) {
     const title = colTitles[colIdx];
     const colHeight = columnHeights[colIdx] || 100;
-    const startY = topMargin + (maxHeight - colHeight) / 2;
-    const colX = leftMargin + colIdx * (columnContainerWidth + horizontalSpacing);
+
+    const r = Math.floor(colIdx / colsPerRow);
+    const c = colIdx % colsPerRow;
+
+    const startY = Math.round(rowYPositions[r] + (rowHeights[r] - colHeight) / 2);
+    const colX = Math.round(leftMargin + c * (columnContainerWidth + horizontalSpacing));
     const cardId = `column_${colIdx}`;
 
     // Clean white column card with black dashed border representing domain structure
