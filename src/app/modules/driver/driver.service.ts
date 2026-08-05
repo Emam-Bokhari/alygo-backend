@@ -413,9 +413,14 @@ const getDriverDrivingHours = async (userId: string) => {
     driverTimezone = serviceArea?.timezone || defaultTimezone;
   }
 
-  if (driver.location && driver.location.coordinates && driver.location.coordinates[0] !== 0) {
+  if (
+    driver.location &&
+    driver.location.coordinates &&
+    driver.location.coordinates[0] !== 0
+  ) {
     const [lon, lat] = driver.location.coordinates;
-    const coordServiceArea = await ServiceAreaServices.findServiceAreaByCoordinates(lon, lat);
+    const coordServiceArea =
+      await ServiceAreaServices.findServiceAreaByCoordinates(lon, lat);
     if (coordServiceArea) {
       serviceArea = coordServiceArea;
       driverTimezone = serviceArea.timezone || defaultTimezone;
@@ -434,11 +439,16 @@ const getDriverDrivingHours = async (userId: string) => {
     policy = await DriverDutyPolicy.findOne(pQuery);
   }
   if (!policy) {
-    policy = await DriverDutyPolicy.findOne({ scopeType: "global", status: "active" });
+    policy = await DriverDutyPolicy.findOne({
+      scopeType: "global",
+      status: "active",
+    });
   }
 
   const dailyLimit = policy ? policy.maxDrivingHoursPerDay : 12; // default to 12 if no policy
-  const maxContinuousDrivingHours = policy ? policy.maxContinuousDrivingHours : 0;
+  const maxContinuousDrivingHours = policy
+    ? policy.maxContinuousDrivingHours
+    : 0;
   const breakDurationMinutes = policy ? policy.breakDurationMinutes : 30;
 
   // 3. Query completed rides for today
@@ -454,11 +464,15 @@ const getDriverDrivingHours = async (userId: string) => {
   let rideHoursToday = 0;
   for (const ride of completedRides) {
     if (ride.startedAt && ride.completedAt) {
-      const durationHrs = (ride.completedAt.getTime() - ride.startedAt.getTime()) / (1000 * 60 * 60);
+      const durationHrs =
+        (ride.completedAt.getTime() - ride.startedAt.getTime()) /
+        (1000 * 60 * 60);
       drivingHoursToday += durationHrs;
-      
+
       const acceptedAtTime = ride.acceptedAt || ride.startedAt;
-      const rideDurationHrs = (ride.completedAt.getTime() - acceptedAtTime.getTime()) / (1000 * 60 * 60);
+      const rideDurationHrs =
+        (ride.completedAt.getTime() - acceptedAtTime.getTime()) /
+        (1000 * 60 * 60);
       rideHoursToday += rideDurationHrs;
     }
   }
@@ -471,7 +485,8 @@ const getDriverDrivingHours = async (userId: string) => {
   let ongoingDrivingHrs = 0;
   for (const ride of startedRides) {
     if (ride.startedAt) {
-      const durationHrs = (Date.now() - ride.startedAt.getTime()) / (1000 * 60 * 60);
+      const durationHrs =
+        (Date.now() - ride.startedAt.getTime()) / (1000 * 60 * 60);
       ongoingDrivingHrs += durationHrs;
     }
   }
@@ -487,7 +502,9 @@ const getDriverDrivingHours = async (userId: string) => {
       const rideA = completedRides[i];
       const rideB = completedRides[i + 1];
       if (rideA.completedAt && rideB.startedAt) {
-        const gapHrs = (rideB.startedAt.getTime() - rideA.completedAt.getTime()) / (1000 * 60 * 60);
+        const gapHrs =
+          (rideB.startedAt.getTime() - rideA.completedAt.getTime()) /
+          (1000 * 60 * 60);
         const minBreakHrs = breakDurationMinutes / 60;
         if (gapHrs >= minBreakHrs) {
           breakHoursToday += Math.min(gapHrs, 2);
@@ -497,7 +514,8 @@ const getDriverDrivingHours = async (userId: string) => {
   }
 
   if (driver.driverAvailabilityStatus === "break" && driver.lastOfflineAt) {
-    const currentBreakHrs = (Date.now() - driver.lastOfflineAt.getTime()) / (1000 * 60 * 60);
+    const currentBreakHrs =
+      (Date.now() - driver.lastOfflineAt.getTime()) / (1000 * 60 * 60);
     breakHoursToday += currentBreakHrs;
   }
 
@@ -505,18 +523,28 @@ const getDriverDrivingHours = async (userId: string) => {
   let totalOnlineHrs = 0;
   const now = new Date();
   if (driver.lastOnlineAt) {
-    const onlineStart = driver.lastOnlineAt > dayRange.start ? driver.lastOnlineAt : dayRange.start;
+    const onlineStart =
+      driver.lastOnlineAt > dayRange.start
+        ? driver.lastOnlineAt
+        : dayRange.start;
     if (driver.driverAvailabilityStatus !== "offline") {
-      totalOnlineHrs = (now.getTime() - onlineStart.getTime()) / (1000 * 60 * 60);
+      totalOnlineHrs =
+        (now.getTime() - onlineStart.getTime()) / (1000 * 60 * 60);
     } else if (driver.lastOfflineAt && driver.lastOfflineAt > onlineStart) {
-      totalOnlineHrs = (driver.lastOfflineAt.getTime() - onlineStart.getTime()) / (1000 * 60 * 60);
+      totalOnlineHrs =
+        (driver.lastOfflineAt.getTime() - onlineStart.getTime()) /
+        (1000 * 60 * 60);
     }
   }
 
   totalOnlineHrs = Math.max(totalOnlineHrs, rideHoursToday + breakHoursToday);
-  const hrsSinceMidnight = (now.getTime() - dayRange.start.getTime()) / (1000 * 60 * 60);
+  const hrsSinceMidnight =
+    (now.getTime() - dayRange.start.getTime()) / (1000 * 60 * 60);
   const offlineHoursToday = Math.max(0, hrsSinceMidnight - totalOnlineHrs);
-  const idleHoursToday = Math.max(0, totalOnlineHrs - rideHoursToday - breakHoursToday);
+  const idleHoursToday = Math.max(
+    0,
+    totalOnlineHrs - rideHoursToday - breakHoursToday,
+  );
 
   // 7. Continuous driving calculation
   let continuousDrivingHours = 0;
@@ -525,8 +553,12 @@ const getDriverDrivingHours = async (userId: string) => {
     for (let i = completedRides.length - 1; i >= 0; i--) {
       const ride = completedRides[i];
       if (ride.startedAt && ride.completedAt) {
-        const rideDuration = (ride.completedAt.getTime() - ride.startedAt.getTime()) / (1000 * 60 * 60);
-        const gapHours = (lastRideEndTime.getTime() - ride.completedAt.getTime()) / (1000 * 60 * 60);
+        const rideDuration =
+          (ride.completedAt.getTime() - ride.startedAt.getTime()) /
+          (1000 * 60 * 60);
+        const gapHours =
+          (lastRideEndTime.getTime() - ride.completedAt.getTime()) /
+          (1000 * 60 * 60);
         if (gapHours > (policy?.breakAfterHours || 4)) {
           break;
         }
@@ -545,26 +577,30 @@ const getDriverDrivingHours = async (userId: string) => {
     description: "You are well within your daily driving limit.",
   };
 
-  let remainingContinuous = maxContinuousDrivingHours > 0 
-    ? Math.max(0, maxContinuousDrivingHours - continuousDrivingHours)
-    : remainingHours;
+  let remainingContinuous =
+    maxContinuousDrivingHours > 0
+      ? Math.max(0, maxContinuousDrivingHours - continuousDrivingHours)
+      : remainingHours;
 
-  const thresholdContinuous = maxContinuousDrivingHours > 0 ? remainingContinuous : remainingHours;
+  const thresholdContinuous =
+    maxContinuousDrivingHours > 0 ? remainingContinuous : remainingHours;
 
   if (thresholdContinuous <= 0) {
     alert.show = true;
     alert.type = "exceeded";
     alert.severity = "critical";
     alert.title = "Daily Limit Exceeded";
-    alert.description = "You have reached your maximum daily driving limit. Please go off-duty immediately.";
+    alert.description =
+      "You have reached your maximum daily driving limit. Please go off-duty immediately.";
   } else if (thresholdContinuous <= 1.0) {
     alert.show = true;
     alert.type = "critical";
     alert.severity = "high";
     alert.title = "1 Hour Remaining Alert";
-    alert.description = maxContinuousDrivingHours > 0 && remainingContinuous <= 1.0
-      ? "You have 1 hour left of continuous daily driving eligibility. Alygo platform will require you to log off-duty soon."
-      : "You have 1 hour left before reaching today's driving limit. Please start winding down your shift.";
+    alert.description =
+      maxContinuousDrivingHours > 0 && remainingContinuous <= 1.0
+        ? "You have 1 hour left of continuous daily driving eligibility. Alygo platform will require you to log off-duty soon."
+        : "You have 1 hour left before reaching today's driving limit. Please start winding down your shift.";
   } else if (thresholdContinuous <= 2.0) {
     alert.show = true;
     alert.type = "warning";
@@ -637,18 +673,24 @@ const getDriverDrivingHoursHistory = async (
     policy = await DriverDutyPolicy.findOne(pQuery);
   }
   if (!policy) {
-    policy = await DriverDutyPolicy.findOne({ scopeType: "global", status: "active" });
+    policy = await DriverDutyPolicy.findOne({
+      scopeType: "global",
+      status: "active",
+    });
   }
 
   const dailyLimit = policy ? policy.maxDrivingHoursPerDay : 12;
 
   // Resolve filters
   const cycle = (query.cycle as string) || "daily";
-  
+
   let startUtc: Date | undefined;
   let endUtc: Date | undefined;
   if (query.startDate) {
-    startUtc = getDayRangeInTimezone(query.startDate as string, driverTimezone).start;
+    startUtc = getDayRangeInTimezone(
+      query.startDate as string,
+      driverTimezone,
+    ).start;
   }
   if (query.endDate) {
     endUtc = getDayRangeInTimezone(query.endDate as string, driverTimezone).end;
@@ -668,7 +710,7 @@ const getDriverDrivingHoursHistory = async (
   // 3. Build aggregation grouping by cycle
   let formatStr = "%Y-%m-%d";
   let allowedLimit = dailyLimit;
-  
+
   if (cycle === "weekly") {
     formatStr = "%G-W%V"; // ISO Week format (Year-WWeekNo)
     allowedLimit = dailyLimit * 5; // e.g. 60 hours
@@ -719,8 +761,14 @@ const getDriverDrivingHoursHistory = async (
   }
 
   let isCurrentPeriodInQueryRange = true;
-  const currentPeriodStart = getDayRangeInTimezone(nowInTz.toFormat("yyyy-MM-dd"), driverTimezone).start;
-  const currentPeriodEnd = getDayRangeInTimezone(nowInTz.toFormat("yyyy-MM-dd"), driverTimezone).end;
+  const currentPeriodStart = getDayRangeInTimezone(
+    nowInTz.toFormat("yyyy-MM-dd"),
+    driverTimezone,
+  ).start;
+  const currentPeriodEnd = getDayRangeInTimezone(
+    nowInTz.toFormat("yyyy-MM-dd"),
+    driverTimezone,
+  ).end;
 
   if (startUtc && currentPeriodEnd < startUtc) {
     isCurrentPeriodInQueryRange = false;
@@ -730,7 +778,9 @@ const getDriverDrivingHoursHistory = async (
   }
 
   if (isCurrentPeriodInQueryRange) {
-    let currentPeriodItem = results.find((item) => item._id === currentPeriodStr);
+    let currentPeriodItem = results.find(
+      (item) => item._id === currentPeriodStr,
+    );
     if (!currentPeriodItem) {
       currentPeriodItem = { _id: currentPeriodStr, drive: 0 };
       results.push(currentPeriodItem);
@@ -744,7 +794,8 @@ const getDriverDrivingHoursHistory = async (
     let ongoingDrivingHrs = 0;
     for (const ride of startedRides) {
       if (ride.startedAt) {
-        const durationHrs = (Date.now() - ride.startedAt.getTime()) / (1000 * 60 * 60);
+        const durationHrs =
+          (Date.now() - ride.startedAt.getTime()) / (1000 * 60 * 60);
         ongoingDrivingHrs += durationHrs;
       }
     }
@@ -773,7 +824,9 @@ const getDriverDrivingHoursHistory = async (
   let currentPeriodCompletedHrs = 0;
   for (const ride of currentPeriodCompletedRides) {
     if (ride.startedAt && ride.completedAt) {
-      currentPeriodCompletedHrs += (ride.completedAt.getTime() - ride.startedAt.getTime()) / (1000 * 60 * 60);
+      currentPeriodCompletedHrs +=
+        (ride.completedAt.getTime() - ride.startedAt.getTime()) /
+        (1000 * 60 * 60);
     }
   }
 
@@ -784,13 +837,22 @@ const getDriverDrivingHoursHistory = async (
   let currentPeriodOngoingHrs = 0;
   for (const ride of startedRidesForTimeline) {
     if (ride.startedAt) {
-      currentPeriodOngoingHrs += (Date.now() - ride.startedAt.getTime()) / (1000 * 60 * 60);
+      currentPeriodOngoingHrs +=
+        (Date.now() - ride.startedAt.getTime()) / (1000 * 60 * 60);
     }
   }
 
-  const timelineDrive = Number((currentPeriodCompletedHrs + currentPeriodOngoingHrs).toFixed(1));
-  const timelineLeft = Math.max(0, Number((allowedLimit - timelineDrive).toFixed(1)));
-  const timelinePercentage = Math.min(100, Math.round((timelineDrive / allowedLimit) * 100));
+  const timelineDrive = Number(
+    (currentPeriodCompletedHrs + currentPeriodOngoingHrs).toFixed(1),
+  );
+  const timelineLeft = Math.max(
+    0,
+    Number((allowedLimit - timelineDrive).toFixed(1)),
+  );
+  const timelinePercentage = Math.min(
+    100,
+    Math.round((timelineDrive / allowedLimit) * 100),
+  );
 
   const formatDuration = (hours: number): string => {
     const h = Math.floor(hours);
@@ -811,7 +873,7 @@ const getDriverDrivingHoursHistory = async (
   // 6. Sort and Paginate
   const sortStr = (query.sort as string) || "-_id";
   const isDesc = sortStr.startsWith("-");
-  
+
   results.sort((a, b) => {
     if (a._id < b._id) return isDesc ? 1 : -1;
     if (a._id > b._id) return isDesc ? -1 : 1;
@@ -830,7 +892,9 @@ const getDriverDrivingHoursHistory = async (
   const history = paginatedResults.map((item) => {
     let periodLabel = item._id;
     if (cycle === "daily") {
-      const dt = DateTime.fromFormat(item._id, "yyyy-MM-dd", { zone: driverTimezone });
+      const dt = DateTime.fromFormat(item._id, "yyyy-MM-dd", {
+        zone: driverTimezone,
+      });
       if (dt.isValid) {
         periodLabel = dt.toFormat("EEE, MMM dd");
       }
@@ -840,7 +904,9 @@ const getDriverDrivingHoursHistory = async (
         periodLabel = `Week ${parts[1]}, ${parts[0]}`;
       }
     } else if (cycle === "monthly") {
-      const dt = DateTime.fromFormat(item._id, "yyyy-MM", { zone: driverTimezone });
+      const dt = DateTime.fromFormat(item._id, "yyyy-MM", {
+        zone: driverTimezone,
+      });
       if (dt.isValid) {
         periodLabel = dt.toFormat("MMMM yyyy");
       }
@@ -854,11 +920,17 @@ const getDriverDrivingHoursHistory = async (
     const cycleCompleted = drive <= allowedLimit;
     let status = "";
     if (cycle === "daily") {
-      status = cycleCompleted ? "HOS Shift Summary Complied" : "HOS Shift Limit Exceeded";
+      status = cycleCompleted
+        ? "HOS Shift Summary Complied"
+        : "HOS Shift Limit Exceeded";
     } else if (cycle === "weekly") {
-      status = cycleCompleted ? "HOS Weekly Summary Complied" : "HOS Weekly Limit Exceeded";
+      status = cycleCompleted
+        ? "HOS Weekly Summary Complied"
+        : "HOS Weekly Limit Exceeded";
     } else if (cycle === "monthly") {
-      status = cycleCompleted ? "HOS Monthly Summary Complied" : "HOS Monthly Limit Exceeded";
+      status = cycleCompleted
+        ? "HOS Monthly Summary Complied"
+        : "HOS Monthly Limit Exceeded";
     }
 
     return {
@@ -920,7 +992,10 @@ const getDriverDrivingHoursLedger = async (
     policy = await DriverDutyPolicy.findOne(pQuery);
   }
   if (!policy) {
-    policy = await DriverDutyPolicy.findOne({ scopeType: "global", status: "active" });
+    policy = await DriverDutyPolicy.findOne({
+      scopeType: "global",
+      status: "active",
+    });
   }
 
   const dailyLimit = policy ? policy.maxDrivingHoursPerDay : 12;
@@ -929,7 +1004,10 @@ const getDriverDrivingHoursLedger = async (
   let startUtc: Date | undefined;
   let endUtc: Date | undefined;
   if (query.startDate) {
-    startUtc = getDayRangeInTimezone(query.startDate as string, driverTimezone).start;
+    startUtc = getDayRangeInTimezone(
+      query.startDate as string,
+      driverTimezone,
+    ).start;
   }
   if (query.endDate) {
     endUtc = getDayRangeInTimezone(query.endDate as string, driverTimezone).end;
@@ -966,7 +1044,12 @@ const getDriverDrivingHoursLedger = async (
         },
         rideDurationHrs: {
           $divide: [
-            { $subtract: ["$completedAt", { $ifNull: ["$acceptedAt", "$startedAt"] }] },
+            {
+              $subtract: [
+                "$completedAt",
+                { $ifNull: ["$acceptedAt", "$startedAt"] },
+              ],
+            },
             1000 * 60 * 60,
           ],
         },
@@ -986,7 +1069,7 @@ const getDriverDrivingHoursLedger = async (
   // 4. Sort and Paginate
   const sortStr = (query.sort as string) || "-_id";
   const isDesc = sortStr.startsWith("-");
-  
+
   results.sort((a, b) => {
     if (a._id < b._id) return isDesc ? 1 : -1;
     if (a._id > b._id) return isDesc ? -1 : 1;
@@ -1003,7 +1086,9 @@ const getDriverDrivingHoursLedger = async (
 
   // 5. Format Ledger Entries
   const ledger = paginatedResults.map((item) => {
-    const dt = DateTime.fromFormat(item._id, "yyyy-MM-dd", { zone: driverTimezone });
+    const dt = DateTime.fromFormat(item._id, "yyyy-MM-dd", {
+      zone: driverTimezone,
+    });
     const periodLabel = dt.isValid ? dt.toFormat("EEE, MMM dd") : item._id;
 
     const drive = Number(item.drive.toFixed(1));
@@ -1014,7 +1099,9 @@ const getDriverDrivingHoursLedger = async (
     const remaining = Number(Math.max(0, dailyLimit - drive).toFixed(1));
 
     const cycleCompleted = drive <= dailyLimit;
-    const status = cycleCompleted ? "HOS Shift Summary Complied" : "HOS Shift Limit Exceeded";
+    const status = cycleCompleted
+      ? "HOS Shift Summary Complied"
+      : "HOS Shift Limit Exceeded";
 
     return {
       date: periodLabel,
@@ -1052,4 +1139,3 @@ export const DriverServices = {
   getDriverDrivingHoursHistory,
   getDriverDrivingHoursLedger,
 };
-

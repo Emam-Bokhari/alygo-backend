@@ -153,4 +153,3 @@ export const DriverController = {
   getDrivingHoursHistory,
   getDrivingHoursLedger,
 };
-

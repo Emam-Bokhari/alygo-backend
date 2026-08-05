@@ -67,11 +67,7 @@ router.get(
   DriverController.getPerformanceMetrics,
 );
 
-router.get(
-  "/me/driving-hours",
-  isDriver,
-  DriverController.getDrivingHours,
-);
+router.get("/me/driving-hours", isDriver, DriverController.getDrivingHours);
 
 router.get(
   "/me/driving-hours/history",
@@ -86,7 +82,6 @@ router.get(
   validateRequest(DriverValidations.drivingHoursLedgerQueryValidationSchema),
   DriverController.getDrivingHoursLedger,
 );
-
 
 router.get(
   "/me/reviews",
