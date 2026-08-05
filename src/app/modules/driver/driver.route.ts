@@ -59,6 +59,12 @@ router.get(
 );
 
 router.get(
+  "/me/performance-metrics",
+  isDriver,
+  DriverController.getPerformanceMetrics,
+);
+
+router.get(
   "/:driverId/reviews",
   isAuthenticated,
   ReviewController.getDriverReviews,

@@ -71,10 +71,26 @@ const getReservations = catchAsync(async (req, res) => {
   });
 });
 
+const getPerformanceMetrics = catchAsync(async (req, res) => {
+  if (!req.user) {
+    throw new ApiError(401, "User not authenticated");
+  }
+
+  const result = await DriverServices.getDriverPerformanceMetrics(req.user.id);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Driver performance metrics retrieved successfully",
+    data: result,
+  });
+});
+
 export const DriverController = {
   createDriver,
   getDriverProfile,
   updateDriver,
   getAvailability,
   getReservations,
+  getPerformanceMetrics,
 };
