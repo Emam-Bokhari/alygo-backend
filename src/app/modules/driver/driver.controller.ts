@@ -86,6 +86,62 @@ const getPerformanceMetrics = catchAsync(async (req, res) => {
   });
 });
 
+const getDrivingHours = catchAsync(async (req, res) => {
+  if (!req.user) {
+    throw new ApiError(401, "User not authenticated");
+  }
+
+  const result = await DriverServices.getDriverDrivingHours(req.user.id);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Driving hours retrieved successfully",
+    data: result,
+  });
+});
+
+const getDrivingHoursHistory = catchAsync(async (req, res) => {
+  if (!req.user) {
+    throw new ApiError(401, "User not authenticated");
+  }
+
+  const result = await DriverServices.getDriverDrivingHoursHistory(
+    req.user.id,
+    req.query,
+  );
+
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Driving hours history retrieved successfully",
+    data: {
+      timeline: result.timeline,
+      history: result.history,
+    },
+    pagination: result.pagination,
+  });
+});
+
+const getDrivingHoursLedger = catchAsync(async (req, res) => {
+  if (!req.user) {
+    throw new ApiError(401, "User not authenticated");
+  }
+
+  const result = await DriverServices.getDriverDrivingHoursLedger(
+    req.user.id,
+    req.query,
+  );
+
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Driving hours ledger retrieved successfully",
+    data: result.ledger,
+    pagination: result.pagination,
+  });
+});
+
 export const DriverController = {
   createDriver,
   getDriverProfile,
@@ -93,4 +149,8 @@ export const DriverController = {
   getAvailability,
   getReservations,
   getPerformanceMetrics,
+  getDrivingHours,
+  getDrivingHoursHistory,
+  getDrivingHoursLedger,
 };
+

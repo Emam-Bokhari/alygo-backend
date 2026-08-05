@@ -7,6 +7,7 @@ import { parseFileData } from "../../middlewares/parseFileData";
 import fileUploadHandler from "../../middlewares/flieUploadHandler";
 import validateRequest from "../../middlewares/validateRequest";
 import { ReviewValidations } from "../review/review.validation";
+import { DriverValidations } from "./driver.validation";
 
 const router = express.Router();
 
@@ -65,6 +66,27 @@ router.get(
   isDriver,
   DriverController.getPerformanceMetrics,
 );
+
+router.get(
+  "/me/driving-hours",
+  isDriver,
+  DriverController.getDrivingHours,
+);
+
+router.get(
+  "/me/driving-hours/history",
+  isDriver,
+  validateRequest(DriverValidations.drivingHoursHistoryQueryValidationSchema),
+  DriverController.getDrivingHoursHistory,
+);
+
+router.get(
+  "/me/driving-hours/ledger",
+  isDriver,
+  validateRequest(DriverValidations.drivingHoursLedgerQueryValidationSchema),
+  DriverController.getDrivingHoursLedger,
+);
+
 
 router.get(
   "/me/reviews",
