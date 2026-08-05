@@ -13,6 +13,7 @@ import { REVIEW_STATUS } from "./review.constant";
 import { RIDE_STATUS } from "../ride/ride.constant";
 import { PointsService } from "../tier/points.service";
 import { POINT_EVENT_TYPE } from "../tier/tier.constant";
+import QueryBuilder from "../../builder/queryBuilder";
 
 /**
  * Submit a rating & review for a completed ride.
@@ -322,6 +323,7 @@ const getDriverReviewSummaryFromDB = async (driverId: string) => {
       $match: {
         receiverId: driver.userId,
         receiverRole: "driver",
+        status: REVIEW_STATUS.ACTIVE,
       },
     },
     {
@@ -340,19 +342,139 @@ const getDriverReviewSummaryFromDB = async (driverId: string) => {
     "5": 0,
   };
 
+  let totalReviews = 0;
+  let totalRatingSum = 0;
+
   starAggregation.forEach((item) => {
     const star = item._id.toString();
     if (star in ratingDistribution) {
-      ratingDistribution[star as keyof typeof ratingDistribution] = item.count;
+      const count = item.count;
+      ratingDistribution[star as keyof typeof ratingDistribution] = count;
+      totalReviews += count;
+      totalRatingSum += Number(item._id) * count;
     }
   });
 
+  const averageRating = totalReviews > 0 ? Number((totalRatingSum / totalReviews).toFixed(2)) : 0;
+
   return {
-    averageRating: driver.averageRating || 0,
-    totalReviews: driver.totalReviews || 0,
+    averageRating,
+    totalReviews,
     ratingDistribution,
     totalAppreciation: driver.totalAppreciationAmount || 0,
     averageAppreciation: driver.averageAppreciation || 0,
+  };
+};
+
+/**
+ * Get paginated and filtered reviews for the current authenticated driver.
+ */
+const getMyReviewsFromDB = async (
+  userId: string,
+  query: Record<string, unknown>,
+) => {
+  const driver = await Driver.findOne({ userId: new Types.ObjectId(userId) });
+  if (!driver) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "Driver profile not found");
+  }
+
+  const filterObj: Record<string, any> = {
+    receiverId: driver.userId,
+    receiverRole: "driver",
+  };
+
+  // Rating Filter
+  if (query.rating) {
+    filterObj.rating = Number(query.rating);
+  }
+
+  // Date Filter
+  if (query.fromDate || query.toDate) {
+    filterObj.createdAt = {};
+    if (query.fromDate) {
+      filterObj.createdAt.$gte = new Date(query.fromDate as string);
+    }
+    if (query.toDate) {
+      filterObj.createdAt.$lte = new Date(query.toDate as string);
+    }
+  }
+
+  // Search by Passenger Name
+  if (query.searchTerm) {
+    const matchingUsers = await User.find({
+      role: "user",
+      name: { $regex: query.searchTerm as string, $options: "i" },
+    }).select("_id");
+
+    const matchingUserIds = matchingUsers.map((u) => u._id);
+    filterObj.reviewerId = { $in: matchingUserIds };
+  }
+
+  const cleanQuery = { ...query };
+  delete cleanQuery.rating;
+  delete cleanQuery.fromDate;
+  delete cleanQuery.toDate;
+  delete cleanQuery.searchTerm;
+
+  const baseQuery = Review.find(filterObj).populate({
+    path: "reviewerId",
+    select: "name profileImage",
+  });
+
+  const queryBuilder = new QueryBuilder(baseQuery, cleanQuery)
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
+
+  const data = await queryBuilder.modelQuery;
+  const meta = await queryBuilder.countTotal();
+
+  const reviews = data.map((review: any) => ({
+    _id: review._id,
+    passenger: {
+      _id: review.reviewerId?._id || null,
+      name: review.reviewerId?.name || "Unknown Passenger",
+      profileImage: review.reviewerId?.profileImage || "",
+    },
+    rating: review.rating,
+    comment: review.reviewText || "",
+    createdAt: review.createdAt,
+    rideId: review.rideId,
+  }));
+
+  // Calculate rating stats dynamically
+  const ratingStats = await Review.aggregate([
+    {
+      $match: {
+        receiverId: driver.userId,
+        receiverRole: "driver",
+        status: REVIEW_STATUS.ACTIVE,
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        totalReviews: { $sum: 1 },
+        averageRating: { $avg: "$rating" },
+      },
+    },
+  ]);
+
+  const totalReviewsCount = ratingStats[0]?.totalReviews || 0;
+  const averageRatingVal = ratingStats[0]?.averageRating
+    ? Number(ratingStats[0].averageRating.toFixed(2))
+    : 0;
+
+  const summary = {
+    averageRating: averageRatingVal,
+    totalReviews: totalReviewsCount,
+  };
+
+  return {
+    summary,
+    reviews,
+    pagination: meta,
   };
 };
 
@@ -361,4 +483,5 @@ export const ReviewServices = {
   getDriverReviewsFromDB,
   getUserReviewsFromDB,
   getDriverReviewSummaryFromDB,
+  getMyReviewsFromDB,
 };

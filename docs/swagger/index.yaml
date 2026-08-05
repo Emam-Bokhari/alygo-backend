@@ -1970,6 +1970,55 @@ paths:
         deprecated: false
         schema: {}
         example: 6a5c70b2935ce366cf679da4
+  /drivers/me/reviews:
+    get:
+      summary: Get Passenger Reviews for Current Driver
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: sort
+          in: query
+          schema:
+            type: string
+        - name: rating
+          in: query
+          schema:
+            type: integer
+        - name: fromDate
+          in: query
+          schema:
+            type: string
+        - name: toDate
+          in: query
+          schema:
+            type: string
+        - name: searchTerm
+          in: query
+          schema:
+            type: string
+      responses: {}
+      tags:
+        - App
+        - Driver
+        - Reviews
+      security:
+        - BearerAuth: []
+  /drivers/me/reviews/summary:
+    get:
+      summary: Get Review Summary for Current Driver
+      responses: {}
+      tags:
+        - App
+        - Driver
+        - Reviews
+      security:
+        - BearerAuth: []
   /drivers/me/availability:
     get:
       summary: Check Availability

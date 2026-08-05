@@ -5,6 +5,8 @@ import { ReviewController } from "../review/review.controller";
 
 import { parseFileData } from "../../middlewares/parseFileData";
 import fileUploadHandler from "../../middlewares/flieUploadHandler";
+import validateRequest from "../../middlewares/validateRequest";
+import { ReviewValidations } from "../review/review.validation";
 
 const router = express.Router();
 
@@ -62,6 +64,19 @@ router.get(
   "/me/performance-metrics",
   isDriver,
   DriverController.getPerformanceMetrics,
+);
+
+router.get(
+  "/me/reviews",
+  isDriver,
+  validateRequest(ReviewValidations.driverReviewsQueryValidationSchema),
+  ReviewController.getMyReviews,
+);
+
+router.get(
+  "/me/reviews/summary",
+  isDriver,
+  ReviewController.getMyReviewSummary,
 );
 
 router.get(

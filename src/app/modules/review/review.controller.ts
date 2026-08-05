@@ -6,6 +6,9 @@ import { ReviewServices } from "./review.service";
 import { ReviewValidations } from "./review.validation";
 import config from "../../../config";
 import { PlatformSettingsService } from "../platformSettings/platformSettings.service";
+import { Driver } from "../driver/driver.model";
+import { Types } from "mongoose";
+import ApiError from "../../../errors/ApiErrors";
 
 /**
  * Create review handler (passenger or driver).
@@ -158,9 +161,54 @@ const getDriverReviewSummary = catchAsync(
   },
 );
 
+/**
+ * Get reviews received by the authenticated driver.
+ */
+const getMyReviews = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user.id;
+  const result = await ReviewServices.getMyReviewsFromDB(userId, req.query);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Passenger reviews retrieved successfully.",
+    data: result,
+  });
+});
+
+/**
+ * Get review summary for the authenticated driver.
+ */
+const getMyReviewSummary = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user.id;
+  const driver = await Driver.findOne({ userId: new Types.ObjectId(userId) });
+  if (!driver) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "Driver profile not found");
+  }
+
+  const result = await ReviewServices.getDriverReviewSummaryFromDB(
+    driver._id.toString(),
+  );
+
+  const formattedResult = {
+    averageRating: result.averageRating,
+    totalReviews: result.totalReviews,
+    ratingDistribution: result.ratingDistribution,
+  };
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Passenger review summary retrieved successfully.",
+    data: formattedResult,
+  });
+});
+
 export const ReviewController = {
   createReview,
   getDriverReviews,
   getUserReviews,
   getDriverReviewSummary,
+  getMyReviews,
+  getMyReviewSummary,
 };

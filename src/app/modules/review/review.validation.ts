@@ -81,7 +81,40 @@ const driverReviewValidationSchema = z.object({
   }),
 });
 
+const driverReviewsQueryValidationSchema = z.object({
+  query: z.object({
+    page: z.string().optional(),
+    limit: z.string().optional(),
+    sort: z.string().optional(),
+    rating: z
+      .string()
+      .optional()
+      .refine(
+        (val) => {
+          if (!val) return true;
+          const num = Number(val);
+          return num >= 1 && num <= 5 && Number.isInteger(num);
+        },
+        { message: "Rating filter must be an integer between 1 and 5" },
+      ),
+    fromDate: z
+      .string()
+      .optional()
+      .refine((val) => !val || !isNaN(Date.parse(val)), {
+        message: "Invalid date format for fromDate",
+      }),
+    toDate: z
+      .string()
+      .optional()
+      .refine((val) => !val || !isNaN(Date.parse(val)), {
+        message: "Invalid date format for toDate",
+      }),
+    searchTerm: z.string().optional(),
+  }),
+});
+
 export const ReviewValidations = {
   passengerReviewValidationSchema,
   driverReviewValidationSchema,
+  driverReviewsQueryValidationSchema,
 };
