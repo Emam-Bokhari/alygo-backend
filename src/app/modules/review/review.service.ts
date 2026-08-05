@@ -146,35 +146,77 @@ const createReviewInDB = async (
 
     const [review] = await Review.create([reviewData], { session });
 
-    // 6. Incrementally update receiver's rating statistics atomically
+    // 6. Recalculate and update receiver's rating statistics based on actual reviews in database
     if (receiverRole === "user") {
-      const user = await User.findById(receiverId).session(session);
-      if (user) {
-        const totalRatings = user.totalRatings || 0;
-        const oldAverage = user.averageRating || 0;
-        const newAverage =
-          (oldAverage * totalRatings + rating) / (totalRatings + 1);
+      const stats = await Review.aggregate([
+        {
+          $match: {
+            receiverId: new Types.ObjectId(receiverId.toString()),
+            receiverRole: "user",
+            status: REVIEW_STATUS.ACTIVE,
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            totalReviews: { $sum: 1 },
+            totalRatings: { $sum: 1 },
+            averageRating: { $avg: "$rating" },
+          },
+        },
+      ]).session(session);
 
-        user.averageRating = Number(newAverage.toFixed(2));
-        user.totalRatings = totalRatings + 1;
-        user.totalReviews = (user.totalReviews || 0) + 1;
-        await user.save({ session });
-      }
-    } else if (receiverRole === "driver") {
-      const driver = await Driver.findOne({ userId: receiverId }).session(
-        session,
+      const totalReviews = stats[0]?.totalReviews || 0;
+      const totalRatings = stats[0]?.totalRatings || 0;
+      const averageRating = stats[0]?.averageRating
+        ? Number(stats[0].averageRating.toFixed(2))
+        : 0;
+
+      await User.findByIdAndUpdate(
+        receiverId,
+        {
+          totalReviews,
+          totalRatings,
+          averageRating,
+        },
+        { session },
       );
+    } else if (receiverRole === "driver") {
+      const stats = await Review.aggregate([
+        {
+          $match: {
+            receiverId: new Types.ObjectId(receiverId.toString()),
+            receiverRole: "driver",
+            status: REVIEW_STATUS.ACTIVE,
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            totalReviews: { $sum: 1 },
+            totalRatings: { $sum: 1 },
+            averageRating: { $avg: "$rating" },
+          },
+        },
+      ]).session(session);
+
+      const totalReviews = stats[0]?.totalReviews || 0;
+      const totalRatings = stats[0]?.totalRatings || 0;
+      const averageRating = stats[0]?.averageRating
+        ? Number(stats[0].averageRating.toFixed(2))
+        : 0;
+
+      const driver = await Driver.findOneAndUpdate(
+        { userId: new Types.ObjectId(receiverId.toString()) },
+        {
+          totalReviews,
+          totalRatings,
+          averageRating,
+        },
+        { session, new: true },
+      );
+
       if (driver) {
-        const totalRatings = driver.totalRatings || 0;
-        const oldAverage = driver.averageRating || 0;
-        const newAverage =
-          (oldAverage * totalRatings + rating) / (totalRatings + 1);
-
-        driver.averageRating = Number(newAverage.toFixed(2));
-        driver.totalRatings = totalRatings + 1;
-        driver.totalReviews = (driver.totalReviews || 0) + 1;
-        await driver.save({ session });
-
         // Award points if passenger left a 5-star rating for driver
         if (rating === 5) {
           PointsService.awardPoints(
@@ -355,7 +397,8 @@ const getDriverReviewSummaryFromDB = async (driverId: string) => {
     }
   });
 
-  const averageRating = totalReviews > 0 ? Number((totalRatingSum / totalReviews).toFixed(2)) : 0;
+  const averageRating =
+    totalReviews > 0 ? Number((totalRatingSum / totalReviews).toFixed(2)) : 0;
 
   return {
     averageRating,

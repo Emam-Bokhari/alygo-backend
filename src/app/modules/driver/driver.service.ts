@@ -247,7 +247,8 @@ const getDriverPerformanceMetrics = async (driverUserId: string) => {
     }
   });
 
-  const averageRating = totalReviews > 0 ? Number((sumRatings / totalReviews).toFixed(2)) : 0;
+  const averageRating =
+    totalReviews > 0 ? Number((sumRatings / totalReviews).toFixed(2)) : 0;
 
   // 2. Fetch recent passenger reviews (up to 5)
   const passengerReviews = reviews.slice(0, 5).map((r) => {
@@ -263,7 +264,9 @@ const getDriverPerformanceMetrics = async (driverUserId: string) => {
   });
 
   // 3. Compute Acceptance Rate
-  const acceptanceRate = Number((await calculateDriverAcceptanceRate(driverUserIdObj)).toFixed(1));
+  const acceptanceRate = Number(
+    (await calculateDriverAcceptanceRate(driverUserIdObj)).toFixed(1),
+  );
 
   // 4. Compute other Operational & Performance Metrics from Ride History
   const thirtyDaysAgo = new Date();
@@ -343,15 +346,19 @@ const getDriverPerformanceMetrics = async (driverUserId: string) => {
   const totalTrips = stats.totalTrips;
   // Convert KM to Miles
   const totalMileage = Number((stats.totalMileageKm * 0.621371).toFixed(1));
-  const onlineHours = Number((stats.totalOnlineMs / (1000 * 60 * 60)).toFixed(1));
+  const onlineHours = Number(
+    (stats.totalOnlineMs / (1000 * 60 * 60)).toFixed(1),
+  );
 
   // Cancellation rate over last 30 days: (Cancelled / Accepted) * 100
   const cancellationRate =
     stats.totalAcceptedLast30Days > 0
       ? Number(
-          ((stats.totalCancelledByDriverLast30Days / stats.totalAcceptedLast30Days) * 100).toFixed(
-            1,
-          ),
+          (
+            (stats.totalCancelledByDriverLast30Days /
+              stats.totalAcceptedLast30Days) *
+            100
+          ).toFixed(1),
         )
       : 0;
 
@@ -361,7 +368,9 @@ const getDriverPerformanceMetrics = async (driverUserId: string) => {
   });
 
   const completionRate =
-    totalAssignedRides > 0 ? Number(((totalTrips / totalAssignedRides) * 100).toFixed(0)) : 100;
+    totalAssignedRides > 0
+      ? Number(((totalTrips / totalAssignedRides) * 100).toFixed(0))
+      : 100;
 
   return {
     performanceOverview: {

@@ -154,8 +154,8 @@ const getMyProfile = catchAsync(async (req, res) => {
     statusCode: 200,
     message: "Profile data is retrieved successfully",
     data: result,
-  })
-})
+  });
+});
 
 const deleteProfile = catchAsync(async (req, res) => {
   const { id }: any = req.user;

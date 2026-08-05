@@ -827,8 +827,6 @@ const getDriverReferralDashboard = async (userId: string) => {
   };
 };
 
-
-
 /**
  * Get referred friends history for Passenger.
  */

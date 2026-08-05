@@ -18,7 +18,8 @@ import fileUploadHandler from "../../middlewares/flieUploadHandler";
 const router = express.Router();
 
 /* ---------------------------- PROFILE ROUTES ---------------------------- */
-router.route("/profile")
+router
+  .route("/profile")
   .get(isAuthenticated, UserController.getMyProfile)
   .delete(isAuthenticated, UserController.deleteProfile);
 
