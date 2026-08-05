@@ -23,7 +23,7 @@ export interface IAiKnowledge {
   publishedBy?: Types.ObjectId;
   changeLog?: string;
   isLatest: boolean;
-  createdBy: Types.ObjectId;
+  createdBy: Types.ObjectId; 
   updatedBy: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;

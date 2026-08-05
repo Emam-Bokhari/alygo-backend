@@ -265,6 +265,8 @@ const askAiQuestion = async (
     "payment internals",
   ];
 
+  // per year 180
+
   const containsViolation = safetyBlocklist.some((term) =>
     normalizedQuestion.includes(term),
   );

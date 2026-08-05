@@ -6,6 +6,8 @@ import catchAsync from "../../../shared/catchAsync";
 import sendResponse from "../../../shared/sendResponse";
 import { JwtPayload } from "jsonwebtoken";
 import config from "../../../config";
+import { User } from "./user.model";
+import ApiError from "../../../errors/ApiErrors";
 
 // register user
 const createUser = catchAsync(
@@ -144,6 +146,17 @@ const deleteUserById = catchAsync(async (req, res) => {
   });
 });
 
+const getMyProfile = catchAsync(async (req, res) => {
+  const { id: userId }: any = req.user;
+  const result = await UserService.getMyProfileFromDB(userId);
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Profile data is retrieved successfully",
+    data: result,
+  })
+})
+
 const deleteProfile = catchAsync(async (req, res) => {
   const { id }: any = req.user;
   // console.log(id, "ID");
@@ -167,6 +180,7 @@ export const UserController = {
   updateProfile,
   getUserById,
   updateUserStatusById,
+  getMyProfile,
   updateAdminStatusById,
   deleteUserById,
   deleteProfile,

@@ -162,6 +162,7 @@ const rideSchema = new Schema<IRide, RideModel>(
             type: Schema.Types.ObjectId,
             ref: "User",
             required: true,
+            index: true,
           },
           sentAt: {
             type: Date,

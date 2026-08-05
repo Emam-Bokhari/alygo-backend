@@ -177,6 +177,14 @@ const createUserToDB = async (payload: any) => {
   return result;
 };
 
+const getMyProfileFromDB = async (userId: string) => {
+  const result = await User.findById(userId);
+  if (!result) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "User not found")
+  }
+  return result;
+}
+
 const updateProfileToDB = async (
   user: JwtPayload,
   payload: Partial<IUser>,
@@ -280,6 +288,7 @@ export const UserService = {
   getAdminFromDB,
   deleteAdminFromDB,
   getUserByIdFromDB,
+  getMyProfileFromDB,
   updateProfileToDB,
   createAdminToDB,
   updateUserStatusByIdToDB,
