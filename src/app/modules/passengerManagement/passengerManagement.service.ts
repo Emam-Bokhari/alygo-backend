@@ -1,4 +1,5 @@
 import { Types } from "mongoose";
+import { Request } from "express";
 import ApiError from "../../../errors/ApiErrors";
 import { User } from "../user/user.model";
 import { Ride } from "../ride/ride.model";
@@ -13,6 +14,11 @@ import { STATUS, USER_ROLES } from "../../../enums/user";
 import { RIDE_STATUS } from "../ride/ride.constant";
 import { TRANSACTION_TYPE } from "../transaction/transaction.constant";
 import { utcToTimezone } from "../../../shared/timezoneHelper";
+import { createAuditLog } from "../rbac/rbac.utils";
+import { sendNotifications } from "../../../helpers/notificationsHelper";
+import { NOTIFICATION_TYPE } from "../notification/notification.constant";
+import { emailHelper } from "../../../helpers/emailHelper";
+import { socketHelper } from "../../../helpers/socketHelper";
 
 /**
  * Get paginated list of passengers overview
@@ -619,10 +625,144 @@ const getLivePassengerDetails = async (passengerId: string) => {
   };
 };
 
+/**
+ * Suspend Passenger: mark User status as inactive and write suspension details
+ */
+const suspendPassengerInDB = async (
+  passengerId: string,
+  adminId: string,
+  reason?: string,
+  note?: string,
+  req?: Request,
+) => {
+  const user = await User.findOne({ _id: passengerId, role: USER_ROLES.USER });
+  if (!user) {
+    throw new ApiError(404, "Passenger not found");
+  }
+
+  // Update suspension details and status in User model
+  await User.findByIdAndUpdate(passengerId, {
+    $set: {
+      status: STATUS.INACTIVE,
+      "suspension.isSuspended": true,
+      "suspension.suspendedBy": new Types.ObjectId(adminId),
+      "suspension.suspendedAt": new Date(),
+      "suspension.reason": reason || "",
+      "suspension.note": note || "",
+    },
+  });
+
+  // 1. Audit Log
+  await createAuditLog(
+    "PASSENGER_SUSPENDED",
+    adminId,
+    { passengerId, reason, note },
+    req,
+  );
+
+  // 2. Push Notification
+  await sendNotifications({
+    receiver: user._id,
+    type: NOTIFICATION_TYPE.USER,
+    title: "Account Suspended",
+    text: `Your account has been suspended. Reason: ${reason || "Policy violation."}`,
+  });
+
+  // 3. Email
+  if (user.email) {
+    await emailHelper.sendEmail({
+      to: user.email,
+      subject: "Alygo Account Suspension Notice",
+      html: `
+        <div style="font-family: sans-serif; padding: 20px;">
+          <h2>Hello ${user.name},</h2>
+          <p>This is to inform you that your passenger account on <strong>Alygo</strong> has been suspended.</p>
+          <p><strong>Reason:</strong> ${reason || "Policy violation."}</p>
+          <p>If you believe this is a mistake, please reach out to customer support.</p>
+          <br />
+          <p>Best regards,<br/>The Alygo Team</p>
+        </div>
+      `,
+    });
+  }
+
+  // 4. Socket Event
+  socketHelper.sendToUser(user._id.toString(), "passenger-status-updated", {
+    isSuspended: true,
+    message: `Your passenger account has been suspended. Reason: ${reason}`,
+  });
+
+  return { success: true, message: "Passenger suspended successfully" };
+};
+
+/**
+ * Unsuspend Passenger: mark User status as active and clear suspension details
+ */
+const unsuspendPassengerInDB = async (
+  passengerId: string,
+  adminId: string,
+  req?: Request,
+) => {
+  const user = await User.findOne({ _id: passengerId, role: USER_ROLES.USER });
+  if (!user) {
+    throw new ApiError(404, "Passenger not found");
+  }
+
+  // Clear suspension details and set status active in User model
+  await User.findByIdAndUpdate(passengerId, {
+    $set: {
+      status: STATUS.ACTIVE,
+      "suspension.isSuspended": false,
+      "suspension.suspendedBy": null,
+      "suspension.suspendedAt": null,
+      "suspension.reason": "",
+      "suspension.note": "",
+    },
+  });
+
+  // 1. Audit Log
+  await createAuditLog("PASSENGER_UNSUSPENDED", adminId, { passengerId }, req);
+
+  // 2. Push Notification
+  await sendNotifications({
+    receiver: user._id,
+    type: NOTIFICATION_TYPE.USER,
+    title: "Account Activated",
+    text: "Your account suspension has been lifted. Welcome back!",
+  });
+
+  // 3. Email
+  if (user.email) {
+    await emailHelper.sendEmail({
+      to: user.email,
+      subject: "Alygo Account Reactivated",
+      html: `
+        <div style="font-family: sans-serif; padding: 20px;">
+          <h2>Hello ${user.name},</h2>
+          <p>We are pleased to inform you that your passenger account on <strong>Alygo</strong> has been reactivated.</p>
+          <p>You can now log in and request rides as normal.</p>
+          <br />
+          <p>Best regards,<br/>The Alygo Team</p>
+        </div>
+      `,
+    });
+  }
+
+  // 4. Socket Event
+  socketHelper.sendToUser(user._id.toString(), "passenger-status-updated", {
+    isSuspended: false,
+    message: "Your passenger account suspension has been lifted.",
+  });
+
+  return { success: true, message: "Passenger unsuspended successfully" };
+};
+
 export const PassengerManagementServices = {
   getPassengersOverview,
   getLivePassengers,
   getSuspendedPassengers,
   getPassengerDetails,
   getLivePassengerDetails,
+  suspendPassengerInDB,
+  unsuspendPassengerInDB,
 };

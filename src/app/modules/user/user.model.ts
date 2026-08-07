@@ -155,6 +155,29 @@ const userSchema = new Schema<IUser, IUserModel>(
       type: Number,
       default: 0,
     },
+    suspension: {
+      isSuspended: {
+        type: Boolean,
+        default: false,
+      },
+      suspendedBy: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        default: null,
+      },
+      suspendedAt: {
+        type: Date,
+        default: null,
+      },
+      reason: {
+        type: String,
+        default: "",
+      },
+      note: {
+        type: String,
+        default: "",
+      },
+    },
   },
   {
     timestamps: true,

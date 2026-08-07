@@ -38,6 +38,13 @@ export type IUser = {
   averageRating?: number;
   totalRatings?: number;
   totalReviews?: number;
+  suspension?: {
+    isSuspended: boolean;
+    suspendedBy?: Types.ObjectId | null;
+    suspendedAt?: Date | null;
+    reason?: string;
+    note?: string;
+  };
 };
 
 export type UserModal = {

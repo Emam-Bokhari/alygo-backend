@@ -8,6 +8,14 @@ const passengerIdParamSchema = z.object({
   }),
 });
 
+const suspendPassengerZodSchema = z.object({
+  body: z.object({
+    reason: z.string().optional(),
+    note: z.string().optional(),
+  }),
+});
+
 export const PassengerManagementValidation = {
   passengerIdParamSchema,
+  suspendPassengerZodSchema,
 };

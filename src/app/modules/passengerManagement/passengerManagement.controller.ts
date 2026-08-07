@@ -62,10 +62,49 @@ const getLivePassengerDetails = catchAsync(async (req, res) => {
   });
 });
 
+const suspendPassenger = catchAsync(async (req, res) => {
+  const { passengerId } = req.params;
+  const { reason, note } = req.body;
+  const adminId = (req as any).user.id;
+  const result = await PassengerManagementServices.suspendPassengerInDB(
+    passengerId,
+    adminId,
+    reason,
+    note,
+    req,
+  );
+
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Passenger suspended successfully",
+    data: result,
+  });
+});
+
+const unsuspendPassenger = catchAsync(async (req, res) => {
+  const { passengerId } = req.params;
+  const adminId = (req as any).user.id;
+  const result = await PassengerManagementServices.unsuspendPassengerInDB(
+    passengerId,
+    adminId,
+    req,
+  );
+
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Passenger unsuspended successfully",
+    data: result,
+  });
+});
+
 export const PassengerManagementControllers = {
   getPassengersOverview,
   getLivePassengers,
   getSuspendedPassengers,
   getPassengerDetails,
   getLivePassengerDetails,
+  suspendPassenger,
+  unsuspendPassenger,
 };

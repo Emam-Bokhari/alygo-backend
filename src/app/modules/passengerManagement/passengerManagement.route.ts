@@ -44,4 +44,19 @@ router.get(
   PassengerManagementControllers.getPassengerDetails,
 );
 
+router.post(
+  "/:passengerId/suspend",
+  auth(),
+  requirePermission("passengermanagement.creaate"),
+  validateRequest(PassengerManagementValidation.suspendPassengerZodSchema),
+  PassengerManagementControllers.suspendPassenger,
+);
+
+router.post(
+  "/:passengerId/create",
+  auth(),
+  requirePermission("passengermanagement.creaate"),
+  PassengerManagementControllers.unsuspendPassenger,
+);
+
 export const PassengerManagementRoutes = router;
