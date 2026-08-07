@@ -290,6 +290,10 @@ const apiRoutes = [
     route: LiveTripsRoutes,
   },
   {
+    path: "/admin/live-trips",
+    route: LiveTripsRoutes,
+  },
+  {
     path: "/calls",
     route: CallRoutes,
   },

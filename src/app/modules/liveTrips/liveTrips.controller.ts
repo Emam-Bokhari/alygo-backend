@@ -33,6 +33,19 @@ const getLiveTrips = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getLiveTripById = catchAsync(async (req: Request, res: Response) => {
+  const { rideId } = req.params;
+  const result = await LiveTripsService.getLiveTripByIdFromDB(rideId);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: "Live trip details retrieved successfully",
+    data: result,
+  });
+});
+
 export const LiveTripsController = {
   getLiveTrips,
+  getLiveTripById,
 };
