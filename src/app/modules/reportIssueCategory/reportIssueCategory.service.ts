@@ -30,7 +30,7 @@ const getAllReportIssueCategoriesFromDB = async (
 }> => {
   const searchableFields = ["issueName", "description"];
   const reportIssueCategoryQuery = new QueryBuilder(
-    ReportIssueCategory.find(),
+    ReportIssueCategory.find().setOptions({ withDeleted: true }),
     query,
   )
     .search(searchableFields)
@@ -80,7 +80,9 @@ const getReportIssueCategoryById = async (
     throw new ApiError(StatusCodes.NOT_ACCEPTABLE, "Invalid ID");
   }
 
-  const category = await ReportIssueCategory.findById(id);
+  const category = await ReportIssueCategory.findById(id).setOptions({
+    withDeleted: true,
+  });
   if (!category) {
     throw new ApiError(404, "Report issue category not found");
   }

@@ -21,7 +21,9 @@ const getHolidayFromDB = async (
     throw new ApiError(StatusCodes.NOT_ACCEPTABLE, "Invalid ID");
   }
 
-  const holiday = await Holiday.findById(holidayId);
+  const holiday = await Holiday.findById(holidayId).setOptions({
+    withDeleted: true,
+  });
   if (!holiday) {
     throw new ApiError(404, "Holiday not found");
   }
@@ -30,7 +32,7 @@ const getHolidayFromDB = async (
 };
 
 const getAllHolidayFromDB = async (): Promise<IHoliday[]> => {
-  return await Holiday.find({});
+  return await Holiday.find({}).setOptions({ withDeleted: true });
 };
 
 const getActiveHolidayFromDB = async (): Promise<IHoliday[]> => {

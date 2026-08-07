@@ -160,9 +160,7 @@ const getSystemConfig = async (
   // Self-healing: if there are duplicate configuration documents, delete the extra ones
   if (configs.length > 1) {
     const idsToDelete = configs.slice(1).map((c) => c._id);
-    await SystemConfiguration.deleteMany({ _id: { $in: idsToDelete } }).session(
-      session,
-    );
+    await SystemConfiguration.softDeleteMany({ _id: { $in: idsToDelete } }, { session });
   }
 
   return configs[0];
@@ -182,7 +180,7 @@ const createOrUpdateSystemConfigurationToDB = async (
     // Self-healing: clean up duplicate configurations if any exist
     if (configs.length > 1) {
       const idsToDelete = configs.slice(1).map((c) => c._id);
-      await SystemConfiguration.deleteMany({ _id: { $in: idsToDelete } });
+      await SystemConfiguration.softDeleteMany({ _id: { $in: idsToDelete } });
     }
 
     const updated = await SystemConfiguration.findOneAndUpdate({}, payload, {

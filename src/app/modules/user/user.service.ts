@@ -252,7 +252,7 @@ const deleteUserByIdFromD = async (id: string) => {
     throw new ApiError(404, "User doest not exist in the database");
   }
 
-  const result = await User.findByIdAndDelete(id);
+  const result = await User.softDeleteById(id);
 
   if (!result) {
     throw new ApiError(400, "Failed to delete user by this ID");
@@ -275,7 +275,7 @@ const deleteProfileFromDB = async (id: string, password: string) => {
   }
 
   // delete user
-  const result = await User.findByIdAndDelete(id);
+  const result = await User.softDeleteById(id);
   if (!result) {
     throw new ApiError(400, "Failed to delete this user");
   }

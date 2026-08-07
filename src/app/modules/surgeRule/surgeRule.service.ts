@@ -16,7 +16,10 @@ const createSurgeRule = async (
 
 // get all surge rules with pagination
 const getAllSurgeRules = async (query: Record<string, unknown>) => {
-  const surgeRuleQuery = new QueryBuilder(SurgeRule.find(), query)
+  const surgeRuleQuery = new QueryBuilder(
+    SurgeRule.find().setOptions({ withDeleted: true }),
+    query,
+  )
     .search(["ruleName"])
     .filter()
     .sort()
@@ -57,7 +60,9 @@ const getActiveSurgeRules = async (query: Record<string, unknown>) => {
 const getSurgeRuleById = async (
   surgeRuleId: string,
 ): Promise<ISurgeRule | null> => {
-  const result = await SurgeRule.findById(surgeRuleId);
+  const result = await SurgeRule.findById(surgeRuleId).setOptions({
+    withDeleted: true,
+  });
   return result;
 };
 

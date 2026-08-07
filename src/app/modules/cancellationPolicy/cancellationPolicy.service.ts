@@ -64,7 +64,7 @@ const getPolicyConfig = async (session?: any): Promise<any> => {
     (policy.driver?.afterAccept as any)?.driverCompensation !== undefined
   ) {
     if (policy) {
-      await CancellationPolicy.deleteMany({}).session(session);
+      await CancellationPolicy.softDeleteMany({}, { session });
     }
     const [newPolicy] = await CancellationPolicy.create(
       [getDefaultPolicyConfig()],

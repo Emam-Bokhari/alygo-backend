@@ -9,7 +9,7 @@ const saveDeviceToken = async (
   payload: ITokenData,
 ) => {
   try {
-    await DeviceToken.deleteMany({
+    await DeviceToken.softDeleteMany({
       fcmToken: payload.fcmToken,
       userId: { $ne: userId },
     });

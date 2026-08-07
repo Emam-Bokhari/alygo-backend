@@ -79,13 +79,15 @@ const createDriverDutyPolicyToDB = async (
 const getDriverDutyPolicyFromDB = async (driverDutyPolicyId: string) => {
   const driverDutyPolicy = await DriverDutyPolicy.findById(
     driverDutyPolicyId,
-  ).populate([
-    { path: "countryId", select: "country type maxDrivers" },
-    { path: "stateId", select: "state type maxDrivers" },
-    { path: "cityId", select: "city type maxDrivers" },
-    { path: "zoneId", select: "zone type maxDrivers" },
-    { path: "airportId", select: "airport type maxDrivers" },
-  ]);
+  )
+    .populate([
+      { path: "countryId", select: "country type maxDrivers" },
+      { path: "stateId", select: "state type maxDrivers" },
+      { path: "cityId", select: "city type maxDrivers" },
+      { path: "zoneId", select: "zone type maxDrivers" },
+      { path: "airportId", select: "airport type maxDrivers" },
+    ])
+    .setOptions({ withDeleted: true });
 
   if (!driverDutyPolicy) {
     throw new ApiError(404, "Driver duty policy not found");
@@ -245,7 +247,9 @@ const getAllDriverDutyPoliciesFromDB = async (
 
   // Get total count before pagination
   const countPipeline = [...pipeline, { $count: "total" }];
-  const countResult = await DriverDutyPolicy.aggregate(countPipeline);
+  const countResult = await DriverDutyPolicy.aggregate(countPipeline).option({
+    withDeleted: true,
+  });
   const total = countResult[0]?.total || 0;
 
   // Add sort
@@ -280,7 +284,9 @@ const getAllDriverDutyPoliciesFromDB = async (
   });
   pipeline.push({ $project: projectObj });
 
-  const result = await DriverDutyPolicy.aggregate(pipeline);
+  const result = await DriverDutyPolicy.aggregate(pipeline).option({
+    withDeleted: true,
+  });
 
   const totalPage = Math.ceil(total / limit);
   const meta = { page, limit, total, totalPage };

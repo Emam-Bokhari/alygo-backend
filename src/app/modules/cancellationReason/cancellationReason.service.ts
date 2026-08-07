@@ -14,7 +14,9 @@ const createCancellationReasonToDB = async (
 
 const getCancellationReasonFromDB = async (cancellationReasonId: string) => {
   const cancellationReason =
-    await CancellationReason.findById(cancellationReasonId);
+    await CancellationReason.findById(cancellationReasonId).setOptions({
+      withDeleted: true,
+    });
 
   if (!cancellationReason) {
     throw new ApiError(404, "Cancellation reason not found");
@@ -27,7 +29,7 @@ const getAllCancellationReasonsFromDB = async (
   query: Record<string, unknown>,
 ): Promise<{ data: ICancellationReason[]; meta: any }> => {
   const cancellationReasonQuery = new QueryBuilder(
-    CancellationReason.find(),
+    CancellationReason.find().setOptions({ withDeleted: true }),
     query,
   )
     .search(["reasonName", "description"])

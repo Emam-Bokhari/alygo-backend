@@ -404,7 +404,7 @@ const deleteRole = async (
     );
   }
 
-  await Role.findByIdAndDelete(roleId);
+  await Role.softDeleteById(roleId);
 
   // Clear Cache
   await clearRoleCache(roleId);

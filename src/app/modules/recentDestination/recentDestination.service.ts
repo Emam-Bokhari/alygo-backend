@@ -38,14 +38,14 @@ const deleteRecentDestination = async (
     throw new ApiError(404, "Recent destination not found");
   }
 
-  await RecentDestination.deleteOne({ _id: destinationId, userId });
+  await RecentDestination.softDeleteMany({ _id: destinationId, userId });
 };
 
 /**
  * Clear all recent destinations for a user
  */
 const clearAllRecentDestinations = async (userId: string): Promise<void> => {
-  await RecentDestination.deleteMany({ userId });
+  await RecentDestination.softDeleteMany({ userId });
 };
 
 /**
@@ -148,7 +148,7 @@ const enforceDestinationLimit = async (userId: string): Promise<void> => {
     const idsToDelete = destinationsToDelete.map((d) => d._id);
 
     if (idsToDelete.length > 0) {
-      await RecentDestination.deleteMany({
+      await RecentDestination.softDeleteMany({
         _id: { $in: idsToDelete },
       });
     }

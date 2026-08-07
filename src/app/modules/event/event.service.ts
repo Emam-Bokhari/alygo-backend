@@ -19,7 +19,9 @@ const getEventFromDB = async (eventId: string): Promise<IEvent | null> => {
     throw new ApiError(StatusCodes.NOT_ACCEPTABLE, "Invalid ID");
   }
 
-  const event = await Event.findById(eventId);
+  const event = await Event.findById(eventId).setOptions({
+    withDeleted: true,
+  });
   if (!event) {
     throw new ApiError(404, "Event not found");
   }
@@ -28,7 +30,7 @@ const getEventFromDB = async (eventId: string): Promise<IEvent | null> => {
 };
 
 const getAllEventFromDB = async (): Promise<IEvent[]> => {
-  return await Event.find({});
+  return await Event.find({}).setOptions({ withDeleted: true });
 };
 
 const getActiveEventFromDB = async (): Promise<IEvent[]> => {

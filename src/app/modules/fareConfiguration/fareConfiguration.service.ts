@@ -24,7 +24,9 @@ const getFareConfigurationFromDB = async (
     throw new ApiError(StatusCodes.NOT_ACCEPTABLE, "Invalid ID");
   }
 
-  const result = await FareConfiguration.findById(fareConfigurationId);
+  const result = await FareConfiguration.findById(fareConfigurationId).setOptions({
+    withDeleted: true,
+  });
   return result;
 };
 
@@ -32,9 +34,9 @@ const getAllFareConfigurationFromDB = async (
   query: Record<string, unknown>,
 ) => {
   const fareConfigQuery = new QueryBuilder(
-    FareConfiguration.find().populate(
-      "serviceAreaId serviceCategoryId rideCategoryId createdBy",
-    ),
+    FareConfiguration.find()
+      .populate("serviceAreaId serviceCategoryId rideCategoryId createdBy")
+      .setOptions({ withDeleted: true }),
     query,
   )
     .search([])

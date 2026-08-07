@@ -346,7 +346,7 @@ const updatePointRule = catchAsync(async (req: Request, res: Response) => {
  * CRUD Point Rules - DELETE /admin/rewards/point-rules/:id
  */
 const deletePointRule = catchAsync(async (req: Request, res: Response) => {
-  const result = await PointRule.findByIdAndDelete(req.params.id);
+  const result = await PointRule.softDeleteById(req.params.id);
 
   if (!result) {
     throw new ApiError(StatusCodes.NOT_FOUND, "Point rule not found");

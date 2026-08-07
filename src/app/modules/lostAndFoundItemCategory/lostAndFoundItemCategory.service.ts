@@ -30,7 +30,7 @@ const getLostAndFoundItemCategoryFromDB = async (
 
   const result = await LostAndFoundItemCategory.findById(
     lostAndFoundItemCategoryId,
-  );
+  ).setOptions({ withDeleted: true });
   if (!result) {
     throw new ApiError(
       StatusCodes.NOT_FOUND,
@@ -46,7 +46,7 @@ const getAllLostAndFoundItemCategoriesFromDB = async (
   const searchableFields = ["name"];
 
   const lostAndFoundItemCategoryQuery = new QueryBuilder(
-    LostAndFoundItemCategory.find(),
+    LostAndFoundItemCategory.find().setOptions({ withDeleted: true }),
     query,
   )
     .search(searchableFields)

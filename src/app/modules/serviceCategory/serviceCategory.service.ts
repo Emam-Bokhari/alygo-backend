@@ -28,7 +28,9 @@ const getServiceCategoryFromDB = async (
     throw new ApiError(StatusCodes.NOT_ACCEPTABLE, "Invalid ID");
   }
 
-  const result = await ServiceCategory.findById(serviceCategoryId);
+  const result = await ServiceCategory.findById(serviceCategoryId).setOptions({
+    withDeleted: true,
+  });
   return result;
 };
 
@@ -36,7 +38,10 @@ const getAllServiceCategoryFromDB = async (
   query: Record<string, unknown>,
 ): Promise<{ data: IServiceCategory[]; meta: any }> => {
   const searchableFields = ["name", "description"];
-  const serviceCategoryQuery = new QueryBuilder(ServiceCategory.find(), query)
+  const serviceCategoryQuery = new QueryBuilder(
+    ServiceCategory.find().setOptions({ withDeleted: true }),
+    query,
+  )
     .search(searchableFields)
     .filter()
     .sort()

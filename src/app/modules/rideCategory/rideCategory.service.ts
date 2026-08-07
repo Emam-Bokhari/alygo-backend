@@ -27,8 +27,9 @@ const getRideCategoryFromDB = async (
     throw new ApiError(StatusCodes.NOT_ACCEPTABLE, "Invalid ID");
   }
 
-  const result =
-    await RideCategory.findById(rideCategoryId).populate("serviceCategoryId");
+  const result = await RideCategory.findById(rideCategoryId)
+    .populate("serviceCategoryId")
+    .setOptions({ withDeleted: true });
   if (!result) {
     throw new ApiError(StatusCodes.NOT_FOUND, "Ride category not found");
   }
@@ -41,7 +42,7 @@ const getAllRideCategoriesFromDB = async (
   const searchableFields = ["name", "description"];
 
   const rideCategoryQuery = new QueryBuilder(
-    RideCategory.find().populate("serviceCategoryId"),
+    RideCategory.find().populate("serviceCategoryId").setOptions({ withDeleted: true }),
     query,
   )
     .search(searchableFields)

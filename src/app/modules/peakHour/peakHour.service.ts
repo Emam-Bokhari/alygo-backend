@@ -21,7 +21,9 @@ const getPeakHourFromDB = async (
     throw new ApiError(StatusCodes.NOT_ACCEPTABLE, "Invalid ID");
   }
 
-  const peakHour = await PeakHour.findById(peakHourId);
+  const peakHour = await PeakHour.findById(peakHourId).setOptions({
+    withDeleted: true,
+  });
   if (!peakHour) {
     throw new ApiError(404, "Peak hour not found");
   }
@@ -30,7 +32,7 @@ const getPeakHourFromDB = async (
 };
 
 const getAllPeakHourFromDB = async (): Promise<IPeakHour[]> => {
-  return await PeakHour.find({});
+  return await PeakHour.find({}).setOptions({ withDeleted: true });
 };
 
 const getActivePeakHourFromDB = async (): Promise<IPeakHour[]> => {
