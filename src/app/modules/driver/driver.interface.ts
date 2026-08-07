@@ -121,6 +121,10 @@ export type IDriver = {
   backgroundCheckStatus?: VERIFICATION_STATUS;
   identityVerificationStatus?: VERIFICATION_STATUS;
   licenseExpiryDate?: Date;
+  identityVerifiedAt?: Date;
+  lastVerificationDate?: Date;
+  verificationSource?: string;
+  verificationNotes?: string;
   suspension?: {
     isSuspended: boolean;
     suspendedBy?: Types.ObjectId | null;

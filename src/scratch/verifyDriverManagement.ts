@@ -329,8 +329,8 @@ async function runVerification() {
       driver._id.toString(),
     );
     assert(
-      details.rating.averageRating === 5,
-      "averageRating in API output is rounded to 5 (Integer)",
+      details.driver.averageRating === 4.67,
+      "averageRating in API output is 4.67 (Float preserved)",
     );
 
     const dbDriverAfter = await Driver.findById(driver._id);

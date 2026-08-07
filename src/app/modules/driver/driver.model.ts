@@ -394,6 +394,22 @@ const driverSchema = new Schema<IDriver, DriverModel>(
       type: Date,
       default: null,
     },
+    identityVerifiedAt: {
+      type: Date,
+      default: null,
+    },
+    lastVerificationDate: {
+      type: Date,
+      default: null,
+    },
+    verificationSource: {
+      type: String,
+      default: "",
+    },
+    verificationNotes: {
+      type: String,
+      default: "",
+    },
     suspension: {
       isSuspended: {
         type: Boolean,

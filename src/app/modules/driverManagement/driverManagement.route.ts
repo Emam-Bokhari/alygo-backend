@@ -8,6 +8,13 @@ import { DriverManagementValidation } from "./driverManagement.validation";
 const router = express.Router();
 
 router.get(
+  "/",
+  auth(),
+  requirePermission("drivermanagement.read"),
+  DriverManagementControllers.getDriversOverview,
+);
+
+router.get(
   "/overview",
   auth(),
   requirePermission("drivermanagement.read"),
@@ -46,6 +53,7 @@ router.get(
   "/drivers/:driverId",
   auth(),
   requirePermission("drivermanagement.read"),
+  validateRequest(DriverManagementValidation.getDriverDetailsZodSchema),
   DriverManagementControllers.getDriverDetails,
 );
 

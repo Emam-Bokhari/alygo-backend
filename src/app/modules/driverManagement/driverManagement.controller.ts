@@ -13,6 +13,20 @@ const getOverviewSummary = catchAsync(async (req, res) => {
   });
 });
 
+const getDriversOverview = catchAsync(async (req, res) => {
+  const result = await DriverManagementServices.getDriversOverviewFromDB(
+    req.query,
+  );
+
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Drivers overview retrieved successfully",
+    data: result.data,
+    meta: result.meta,
+  });
+});
+
 const getOnlineDrivers = catchAsync(async (req, res) => {
   const result = await DriverManagementServices.getOnlineDriversFromDB(
     req.query,
@@ -72,7 +86,7 @@ const getComplianceDrivers = catchAsync(async (req, res) => {
 const getDriverDetails = catchAsync(async (req, res) => {
   const { driverId } = req.params;
   const result =
-    await DriverManagementServices.getDriverDetailsFromDB(driverId);
+    await DriverManagementServices.getDriverDetailsFromDB(driverId, req.query);
 
   sendResponse(res, {
     success: true,
@@ -156,6 +170,7 @@ const unsuspendDriver = catchAsync(async (req, res) => {
 });
 
 export const DriverManagementControllers = {
+  getDriversOverview,
   getOverviewSummary,
   getOnlineDrivers,
   getPendingApprovalDrivers,
