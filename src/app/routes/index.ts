@@ -14,6 +14,7 @@ import { FcmTokenRoutes } from "../modules/fcmToken/fcmToken.route";
 import { ReferralRoutes } from "../modules/referral/referral.route";
 import { DriverRoutes } from "../modules/driver/driver.route";
 import { DriverManagementRoutes } from "../modules/driverManagement/driverManagement.route";
+import { PassengerManagementRoutes } from "../modules/passengerManagement/passengerManagement.route";
 import { CarRoutes } from "../modules/car/car.routes";
 import { ServiceAreaRoutes } from "../modules/serviceArea/serviceArea.route";
 import { CancellationReasonRoutes } from "../modules/cancellationReason/cancellationReason.route";
@@ -132,6 +133,10 @@ const apiRoutes = [
   {
     path: "/driver-management",
     route: DriverManagementRoutes,
+  },
+  {
+    path: "/passenger-management",
+    route: PassengerManagementRoutes,
   },
   {
     path: "/cars",
