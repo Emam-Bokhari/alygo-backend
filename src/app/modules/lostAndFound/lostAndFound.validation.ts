@@ -125,6 +125,18 @@ const updateDeliveryFeeSettingsSchema = z.object({
   }),
 });
 
+const getReportByIdParamsSchema = z.object({
+  params: z.object({
+    reportId: z
+      .string({
+        required_error: "Report ID is required",
+      })
+      .regex(/^[0-9a-fA-F]{24}$/, {
+        message: "Invalid Report ID format",
+      }),
+  }),
+});
+
 export const LostAndFoundValidation = {
   reportLostItemSchema,
   driverFoundSchema,
@@ -133,4 +145,6 @@ export const LostAndFoundValidation = {
   rateDriverSchema,
   adminUpdateSchema,
   updateDeliveryFeeSettingsSchema,
+  getReportByIdParamsSchema,
 };
+

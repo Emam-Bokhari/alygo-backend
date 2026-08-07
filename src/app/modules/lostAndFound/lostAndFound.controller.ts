@@ -400,6 +400,30 @@ const getAnalyticsCategoryDistribution = catchAsync(
   },
 );
 
+const getLostItemDetails = catchAsync(async (req: Request, res: Response) => {
+  const { reportId } = req.params;
+  const result = await LostAndFoundService.getLostItemDetailsFromDB(reportId);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Lost item details retrieved successfully",
+    data: result,
+  });
+});
+
+const getLostItemReturnDetails = catchAsync(async (req: Request, res: Response) => {
+  const { reportId } = req.params;
+  const result = await LostAndFoundService.getLostItemReturnDetailsFromDB(reportId);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Lost item return details retrieved successfully",
+    data: result,
+  });
+});
+
 export const LostAndFoundController = {
   reportLostItem,
   getMyReports,
@@ -428,4 +452,7 @@ export const LostAndFoundController = {
   getAnalyticsMostLostItems,
   getAnalyticsCityReports,
   getAnalyticsCategoryDistribution,
+  getLostItemDetails,
+  getLostItemReturnDetails,
 };
+

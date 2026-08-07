@@ -121,6 +121,22 @@ export const LostAndFoundRoutes = router;
 const adminRouter = express.Router();
 
 adminRouter.get(
+  "/:reportId/details",
+  auth(),
+  requirePermission("lostandfound.read"),
+  validateRequest(LostAndFoundValidation.getReportByIdParamsSchema),
+  LostAndFoundController.getLostItemDetails,
+);
+
+adminRouter.get(
+  "/:reportId/return-details",
+  auth(),
+  requirePermission("lostandfound.read"),
+  validateRequest(LostAndFoundValidation.getReportByIdParamsSchema),
+  LostAndFoundController.getLostItemReturnDetails,
+);
+
+adminRouter.get(
   "/dashboard/cards",
   auth(),
   requirePermission("lostandfound.read"),

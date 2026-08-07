@@ -23,6 +23,7 @@ import {
 import { NOTIFICATION_TYPE } from "../notification/notification.constant";
 import { TRANSACTION_TYPE } from "../transaction/transaction.constant";
 import { DateTime } from "luxon";
+import { utcToTimezone } from "../../../shared/timezoneHelper";
 import { SystemConfigurationService } from "../systemConfiguration/systemConfiguration.service";
 import { SystemConfiguration } from "../systemConfiguration/systemConfiguration.model";
 import {
@@ -1342,6 +1343,10 @@ const getAdminReportsFromDB = async (
     tripId: report.rideId,
     itemCategory: report.itemCategory?.name || "",
     itemName: report.itemName,
+    photos: report.uploadedFiles?.map((file: any, idx: number) => ({
+      id: file._id?.toString() || idx.toString(),
+      url: file.fileUrl,
+    })) || [],
     createdDate: report.createdAt,
     status: report.reportStatus,
   }));
@@ -1405,9 +1410,14 @@ const getAdminReturnsFromDB = async (
 
   const items = data.map((report: any) => ({
     reportId: report._id,
+    itemName: report.itemName,
     returnMethod: report.recoveryMethod,
     passenger: report.passengerId || {},
     driver: report.driverId || {},
+    photos: report.uploadedFiles?.map((file: any, idx: number) => ({
+      id: file._id?.toString() || idx.toString(),
+      url: file.fileUrl,
+    })) || [],
     scheduledDate: report.scheduledAt || null,
     returnStatus: report.reportStatus,
     fee: report.deliveryFee || 0,
@@ -1923,6 +1933,275 @@ const getAnalyticsCategoryDistributionFromDB = async (): Promise<any[]> => {
   return result;
 };
 
+const buildTimelineHelper = (report: any, timezone: string): any[] => {
+  const timeline: any[] = [];
+  const formatTime = (date: Date) => utcToTimezone(date, timezone).toFormat("M/d/yyyy, h:mm:ss a");
+
+  // Sort audit logs by timestamp ascending
+  const sortedLogs = [...(report.auditLogs || [])].sort(
+    (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+  );
+
+  for (const log of sortedLogs) {
+    const actorName = (log.actor as any)?.name || "System";
+    const timestampStr = formatTime(log.timestamp);
+
+    if (log.action === "REPORT_CREATED") {
+      timeline.push({
+        status: "completed",
+        title: "Report Submitted",
+        description: `Passenger reported lost ${report.itemName.toLowerCase()}`,
+        createdBy: actorName,
+        createdAt: `${timestampStr} · ${actorName}`,
+      });
+
+      // Driver Notified step occurs immediately (or 1 minute later) after submission
+      const notificationTime = new Date(log.timestamp.getTime() + 60000);
+      timeline.push({
+        status: "completed",
+        title: "Driver Notified",
+        description: "Push notification sent to driver",
+        createdBy: "System",
+        createdAt: `${formatTime(notificationTime)} · System`,
+      });
+    } else if (log.action === "DRIVER_FOUND") {
+      timeline.push({
+        status: "completed",
+        title: "Driver Found Item",
+        description: log.details?.driverNotes || `Driver found ${report.itemName.toLowerCase()} under seat`,
+        createdBy: actorName,
+        createdAt: `${timestampStr} · ${actorName}`,
+      });
+    } else if (log.action === "DRIVER_NOT_FOUND") {
+      timeline.push({
+        status: "completed",
+        title: "Driver Checked (Not Found)",
+        description: log.details?.driverNotes || "Driver checked the vehicle but did not locate the item.",
+        createdBy: actorName,
+        createdAt: `${timestampStr} · ${actorName}`,
+      });
+    } else if (log.action === "ADMIN_ACTION") {
+      // If assignment
+      if (log.actorRole === "ADMIN" || log.actorRole === "SUPER_ADMIN") {
+        if (!timeline.some((item) => item.title === "Admin Assigned")) {
+          timeline.push({
+            status: "completed",
+            title: "Admin Assigned",
+            description: "Case assigned to support administrator",
+            createdBy: actorName,
+            createdAt: `${timestampStr} · ${actorName}`,
+          });
+        }
+      }
+
+      // If pickup schedule update
+      if (log.details?.reportStatus === "return_scheduled" || log.details?.recoveryMethod || log.details?.scheduledAt) {
+        const isPickup = (log.details?.recoveryMethod || report.recoveryMethod) === "passenger_pickup";
+        const title = isPickup ? "Pickup Scheduled" : "Delivery Scheduled";
+        const desc = isPickup ? "Passenger pickup arranged at hub" : "Driver delivery scheduled to passenger address";
+        
+        timeline.push({
+          status: "completed",
+          title,
+          description: desc,
+          createdBy: actorName,
+          createdAt: `${timestampStr} · ${actorName}`,
+        });
+      }
+    } else if (log.action === "RECOVERY_SELECTED") {
+      const isPickup = (log.details?.recoveryMethod || report.recoveryMethod) === "passenger_pickup";
+      const title = isPickup ? "Pickup Scheduled" : "Delivery Scheduled";
+      const desc = isPickup ? "Passenger pickup arranged at hub" : "Driver delivery scheduled to passenger address";
+      
+      timeline.push({
+        status: "completed",
+        title,
+        description: desc,
+        createdBy: actorName,
+        createdAt: `${timestampStr} · ${actorName}`,
+      });
+    } else if (log.action === "PASSENGER_CONFIRMED" || log.action === "RETURN_COMPLETED") {
+      if (!timeline.some((item) => item.title === "Returned Successfully")) {
+        timeline.push({
+          status: "completed",
+          title: "Returned Successfully",
+          description: "Safety checklist finalized and confirmed.",
+          createdBy: actorName,
+          createdAt: `${timestampStr} · ${actorName}`,
+        });
+      }
+    }
+  }
+
+  // Fallback if no logs
+  if (timeline.length === 0) {
+    const passengerName = report.passengerId?.name || "Passenger";
+    timeline.push({
+      status: "completed",
+      title: "Report Submitted",
+      description: `Passenger reported lost ${report.itemName.toLowerCase()}`,
+      createdBy: passengerName,
+      createdAt: `${formatTime(report.createdAt)} · ${passengerName}`,
+    });
+  }
+
+  return timeline;
+};
+
+const getLostItemDetailsFromDB = async (reportId: string): Promise<any> => {
+  if (!mongoose.Types.ObjectId.isValid(reportId)) {
+    throw new ApiError(StatusCodes.NOT_ACCEPTABLE, "Invalid report ID.");
+  }
+
+  const report = await LostFound.findById(reportId)
+    .populate({ path: "rideId" })
+    .populate({ path: "passengerId", select: "name email phone profileImage" })
+    .populate({ path: "driverId", select: "name email phone profileImage" })
+    .populate({ path: "itemCategory" })
+    .populate({ path: "auditLogs.actor", select: "name role profileImage" })
+    .lean();
+
+  if (!report) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "Report not found.");
+  }
+
+  const driverDoc = await Driver.findOne({ userId: report.driverId._id }).lean();
+  const timezone = (report.rideId as any)?.timezone || (process.env.TIMEZONE as string) || "Asia/Dhaka";
+  const formatTime = (date: Date) => utcToTimezone(date, timezone).toFormat("M/d/yyyy, h:mm:ss a");
+
+  return {
+    report: {
+      reportId: report._id.toString(),
+      reportNumber: report.reportNumber,
+      currentStatus: report.reportStatus,
+      createdAt: formatTime(report.createdAt),
+    },
+    passenger: {
+      id: report.passengerId?._id?.toString() || "",
+      fullName: (report.passengerId as any)?.name || "",
+      email: (report.passengerId as any)?.email || "",
+      phone: (report.passengerId as any)?.phone || "",
+      avatar: (report.passengerId as any)?.profileImage || "",
+    },
+    driver: {
+      id: report.driverId?._id?.toString() || "",
+      fullName: (report.driverId as any)?.name || "",
+      driverId: driverDoc ? `d-${driverDoc._id.toString().slice(-3)}` : "",
+      rating: driverDoc?.averageRating || 0,
+      avatar: (report.driverId as any)?.profileImage || "",
+    },
+    trip: {
+      rideId: (report.rideId as any)?._id?.toString() || "",
+      bookingReference: (report.rideId as any)?.bookingReference || `TRP-${(report.rideId as any)?._id?.toString().slice(-5).toUpperCase()}`,
+      pickupAddress: (report.rideId as any)?.pickup?.address || "",
+      destinationAddress: (report.rideId as any)?.destination?.address || "",
+      tripDate: (report.rideId as any)?.createdAt ? formatTime((report.rideId as any)?.createdAt) : "",
+    },
+    lostItem: {
+      category: (report.itemCategory as any)?.name || "",
+      itemName: report.itemName,
+      description: report.itemDescription,
+      photos: report.uploadedFiles?.map((file: any, idx: number) => ({
+        id: file._id?.toString() || idx.toString(),
+        url: file.fileUrl,
+      })) || [],
+    },
+    timeline: buildTimelineHelper(report, timezone),
+  };
+};
+
+const getLostItemReturnDetailsFromDB = async (reportId: string): Promise<any> => {
+  if (!mongoose.Types.ObjectId.isValid(reportId)) {
+    throw new ApiError(StatusCodes.NOT_ACCEPTABLE, "Invalid report ID.");
+  }
+
+  const report = await LostFound.findById(reportId)
+    .populate({ path: "rideId" })
+    .populate({ path: "passengerId", select: "name email phone profileImage" })
+    .populate({ path: "driverId", select: "name email phone profileImage" })
+    .populate({ path: "itemCategory" })
+    .populate({ path: "auditLogs.actor", select: "name role profileImage" })
+    .lean();
+
+  if (!report) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "Report not found.");
+  }
+
+  const driverDoc = await Driver.findOne({ userId: report.driverId._id }).lean();
+  const timezone = (report.rideId as any)?.timezone || (process.env.TIMEZONE as string) || "Asia/Dhaka";
+  const formatTime = (date: Date) => utcToTimezone(date, timezone).toFormat("M/d/yyyy, h:mm:ss a");
+
+  // Find completedAt from auditLogs
+  const completedAtLog = report.auditLogs?.find(
+    (log: any) => log.action === "PASSENGER_CONFIRMED" || log.action === "RETURN_COMPLETED"
+  );
+  const completedAt = completedAtLog ? completedAtLog.timestamp : null;
+
+  // Assignment info from auditLogs
+  const adminLog = report.auditLogs?.find(
+    (log: any) => log.actorRole === "ADMIN" || log.actorRole === "SUPER_ADMIN"
+  );
+  const assignment = adminLog ? {
+    assignedAdminId: (adminLog.actor as any)?._id?.toString() || "",
+    assignedAdminName: (adminLog.actor as any)?.name || "",
+    assignedAt: formatTime(adminLog.timestamp),
+  } : null;
+
+  const returnInformation = report.recoveryMethod ? {
+    returnMethod: report.recoveryMethod,
+    returnLocation: report.recoveryMethod === "passenger_pickup"
+      ? (report.pickupLocation?.address || null)
+      : (report.deliveryLocation?.address || null),
+    scheduledAt: report.scheduledAt ? formatTime(report.scheduledAt) : null,
+    completedAt: completedAt ? formatTime(completedAt) : null,
+    receivedBy: report.passengerConfirmed ? "passenger" : null,
+    receiverName: report.passengerConfirmed ? (report.passengerId as any)?.name || null : null,
+    returnNotes: report.adminNotes || report.driverNotes || null,
+  } : null;
+
+  return {
+    report: {
+      reportId: report._id.toString(),
+      reportNumber: report.reportNumber,
+      currentStatus: report.reportStatus,
+      createdAt: formatTime(report.createdAt),
+    },
+    passenger: {
+      id: report.passengerId?._id?.toString() || "",
+      fullName: (report.passengerId as any)?.name || "",
+      email: (report.passengerId as any)?.email || "",
+      phone: (report.passengerId as any)?.phone || "",
+      avatar: (report.passengerId as any)?.profileImage || "",
+    },
+    driver: {
+      id: report.driverId?._id?.toString() || "",
+      fullName: (report.driverId as any)?.name || "",
+      driverId: driverDoc ? `d-${driverDoc._id.toString().slice(-3)}` : "",
+      rating: driverDoc?.averageRating || 0,
+      avatar: (report.driverId as any)?.profileImage || "",
+    },
+    trip: {
+      rideId: (report.rideId as any)?._id?.toString() || "",
+      bookingReference: (report.rideId as any)?.bookingReference || `TRP-${(report.rideId as any)?._id?.toString().slice(-5).toUpperCase()}`,
+      pickupAddress: (report.rideId as any)?.pickup?.address || "",
+      destinationAddress: (report.rideId as any)?.destination?.address || "",
+      tripDate: (report.rideId as any)?.createdAt ? formatTime((report.rideId as any)?.createdAt) : "",
+    },
+    lostItem: {
+      category: (report.itemCategory as any)?.name || "",
+      itemName: report.itemName,
+      description: report.itemDescription,
+      photos: report.uploadedFiles?.map((file: any, idx: number) => ({
+        id: file._id?.toString() || idx.toString(),
+        url: file.fileUrl,
+      })) || [],
+    },
+    assignment,
+    returnInformation,
+    timeline: buildTimelineHelper(report, timezone),
+  };
+};
+
 export const LostAndFoundService = {
   reportLostItem,
   getMyReports,
@@ -1953,4 +2232,6 @@ export const LostAndFoundService = {
   getAnalyticsMostLostItemsFromDB,
   getAnalyticsCityReportsFromDB,
   getAnalyticsCategoryDistributionFromDB,
+  getLostItemDetailsFromDB,
+  getLostItemReturnDetailsFromDB,
 };
