@@ -117,11 +117,13 @@ const adminUpdateSchema = z.object({
 
 const updateDeliveryFeeSettingsSchema = z.object({
   body: z.object({
-    defaultDeliveryFee: z
-      .number({
-        required_error: "defaultDeliveryFee is required",
-      })
-      .min(0, "defaultDeliveryFee must be non-negative"),
+    enabled: z.boolean().optional(),
+    reportWindowDays: z.number().min(1).optional(),
+    maxFiles: z.number().min(1).optional(),
+    maxFileSizeMb: z.number().min(1).optional(),
+    defaultDeliveryFee: z.number().min(0).optional(),
+    returnConfirmationHours: z.number().min(1).optional(),
+    autoCloseDays: z.number().min(1).optional(),
   }),
 });
 

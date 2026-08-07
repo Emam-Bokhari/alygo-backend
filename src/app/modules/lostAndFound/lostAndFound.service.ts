@@ -26,6 +26,7 @@ import { DateTime } from "luxon";
 import { utcToTimezone } from "../../../shared/timezoneHelper";
 import { SystemConfigurationService } from "../systemConfiguration/systemConfiguration.service";
 import { SystemConfiguration } from "../systemConfiguration/systemConfiguration.model";
+import { ILostFoundConfig } from "../systemConfiguration/systemConfiguration.interface";
 import {
   PAYMENT_METHOD,
   PAYMENT_STATUS as RidePaymentStatus,
@@ -1432,11 +1433,21 @@ const getDeliveryFeeSettingsFromDB = async (): Promise<any> => {
 };
 
 const updateDeliveryFeeSettingsInDB = async (
-  defaultDeliveryFee: number,
+  payload: Partial<ILostFoundConfig>,
 ): Promise<any> => {
+  const updateObj: Record<string, any> = {};
+
+  if (payload.enabled !== undefined) updateObj["lostFound.enabled"] = payload.enabled;
+  if (payload.reportWindowDays !== undefined) updateObj["lostFound.reportWindowDays"] = payload.reportWindowDays;
+  if (payload.maxFiles !== undefined) updateObj["lostFound.maxFiles"] = payload.maxFiles;
+  if (payload.maxFileSizeMb !== undefined) updateObj["lostFound.maxFileSizeMb"] = payload.maxFileSizeMb;
+  if (payload.defaultDeliveryFee !== undefined) updateObj["lostFound.defaultDeliveryFee"] = payload.defaultDeliveryFee;
+  if (payload.returnConfirmationHours !== undefined) updateObj["lostFound.returnConfirmationHours"] = payload.returnConfirmationHours;
+  if (payload.autoCloseDays !== undefined) updateObj["lostFound.autoCloseDays"] = payload.autoCloseDays;
+
   const updated = await SystemConfiguration.findOneAndUpdate(
     {},
-    { "lostFound.defaultDeliveryFee": defaultDeliveryFee },
+    { $set: updateObj },
     { new: true, runValidators: true },
   );
 

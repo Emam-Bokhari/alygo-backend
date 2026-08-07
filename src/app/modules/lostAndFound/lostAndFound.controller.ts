@@ -285,7 +285,7 @@ const getDeliveryFeeSettings = catchAsync(
 const updateDeliveryFeeSettings = catchAsync(
   async (req: Request, res: Response) => {
     const result = await LostAndFoundService.updateDeliveryFeeSettingsInDB(
-      req.body.defaultDeliveryFee,
+      req.body,
     );
 
     sendResponse(res, {
