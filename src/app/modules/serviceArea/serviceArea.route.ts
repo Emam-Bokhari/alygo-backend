@@ -25,14 +25,17 @@ router
 
 router.route("/states").get(isAuthenticated, ServiceAreaController.getStates);
 
+router.route("/cities").get(isAuthenticated, ServiceAreaController.getCities);
 router
   .route("/cities/:stateId")
   .get(isAuthenticated, ServiceAreaController.getCitiesByState);
 
+router.route("/zones").get(isAuthenticated, ServiceAreaController.getZones);
 router
   .route("/zones/:cityId")
   .get(isAuthenticated, ServiceAreaController.getZonesByCity);
 
+router.route("/airports").get(isAuthenticated, ServiceAreaController.getAirports);
 router
   .route("/airports/:cityId")
   .get(isAuthenticated, ServiceAreaController.getAirportsByCity);

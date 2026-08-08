@@ -12,7 +12,9 @@ const createServiceAreaToDB = async (payload: Partial<IServiceArea>) => {
 };
 
 const getServiceAreaFromDB = async (serviceAreaId: string) => {
-  const serviceArea = await ServiceArea.findById(serviceAreaId);
+  const serviceArea = await ServiceArea.findById(serviceAreaId).populate(
+    "countryId stateId cityId",
+  );
 
   if (!serviceArea) {
     throw new ApiError(404, "Service area not found");
@@ -24,7 +26,10 @@ const getServiceAreaFromDB = async (serviceAreaId: string) => {
 const getAllServiceAreasFromDB = async (
   query: Record<string, unknown>,
 ): Promise<{ data: IServiceArea[]; meta: any }> => {
-  const serviceAreaQuery = new QueryBuilder(ServiceArea.find(), query)
+  const serviceAreaQuery = new QueryBuilder(
+    ServiceArea.find().populate("countryId stateId cityId"),
+    query,
+  )
     .search(["country", "state", "city", "zone", "airport"])
     .filter()
     .sort()
@@ -69,7 +74,7 @@ const getStatesByCountryFromDB = async (
     ServiceArea.find({
       type: "state",
       countryId: new Types.ObjectId(countryId),
-    }),
+    }).populate("countryId"),
     query,
   )
     .filter()
@@ -90,7 +95,7 @@ const getStatesFromDB = async (
   query: Record<string, unknown>,
 ): Promise<{ data: IServiceArea[]; meta: any }> => {
   const statesQuery = new QueryBuilder(
-    ServiceArea.find({ type: "state" }),
+    ServiceArea.find({ type: "state" }).populate("countryId"),
     query,
   )
     .filter()
@@ -115,7 +120,28 @@ const getCitiesByStateFromDB = async (
     ServiceArea.find({
       type: "city",
       stateId: new Types.ObjectId(stateId),
-    }),
+    }).populate("countryId stateId"),
+    query,
+  )
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
+
+  const result = await citiesQuery.modelQuery;
+  const meta = await citiesQuery.countTotal();
+
+  return {
+    data: result,
+    meta,
+  };
+};
+
+const getCitiesFromDB = async (
+  query: Record<string, unknown>,
+): Promise<{ data: IServiceArea[]; meta: any }> => {
+  const citiesQuery = new QueryBuilder(
+    ServiceArea.find({ type: "city" }).populate("countryId stateId"),
     query,
   )
     .filter()
@@ -140,7 +166,28 @@ const getZonesByCityFromDB = async (
     ServiceArea.find({
       type: "zone",
       cityId: new Types.ObjectId(cityId),
-    }),
+    }).populate("countryId stateId cityId"),
+    query,
+  )
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
+
+  const result = await zonesQuery.modelQuery;
+  const meta = await zonesQuery.countTotal();
+
+  return {
+    data: result,
+    meta,
+  };
+};
+
+const getZonesFromDB = async (
+  query: Record<string, unknown>,
+): Promise<{ data: IServiceArea[]; meta: any }> => {
+  const zonesQuery = new QueryBuilder(
+    ServiceArea.find({ type: "zone" }).populate("countryId stateId cityId"),
     query,
   )
     .filter()
@@ -165,7 +212,28 @@ const getAirportsByCityFromDB = async (
     ServiceArea.find({
       type: "airport",
       cityId: new Types.ObjectId(cityId),
-    }),
+    }).populate("countryId stateId cityId"),
+    query,
+  )
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
+
+  const result = await airportsQuery.modelQuery;
+  const meta = await airportsQuery.countTotal();
+
+  return {
+    data: result,
+    meta,
+  };
+};
+
+const getAirportsFromDB = async (
+  query: Record<string, unknown>,
+): Promise<{ data: IServiceArea[]; meta: any }> => {
+  const airportsQuery = new QueryBuilder(
+    ServiceArea.find({ type: "airport" }).populate("countryId stateId cityId"),
     query,
   )
     .filter()
@@ -397,8 +465,11 @@ export const ServiceAreaServices = {
   getStatesByCountryFromDB,
   getStatesFromDB,
   getCitiesByStateFromDB,
+  getCitiesFromDB,
   getZonesByCityFromDB,
+  getZonesFromDB,
   getAirportsByCityFromDB,
+  getAirportsFromDB,
   updateServiceAreaFromDB,
   deleteServiceAreaFromDB,
   findServiceAreaByCoordinates,

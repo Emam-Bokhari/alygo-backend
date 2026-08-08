@@ -93,6 +93,18 @@ const getCitiesByState = catchAsync(async (req, res) => {
   });
 });
 
+const getCities = catchAsync(async (req, res) => {
+  const result = await ServiceAreaServices.getCitiesFromDB(req.query);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Cities retrieved successfully",
+    data: result.data,
+    meta: result.meta,
+  });
+});
+
 const getZonesByCity = catchAsync(async (req, res) => {
   const { cityId } = req.params;
   const result = await ServiceAreaServices.getZonesByCityFromDB(
@@ -109,12 +121,36 @@ const getZonesByCity = catchAsync(async (req, res) => {
   });
 });
 
+const getZones = catchAsync(async (req, res) => {
+  const result = await ServiceAreaServices.getZonesFromDB(req.query);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Zones retrieved successfully",
+    data: result.data,
+    meta: result.meta,
+  });
+});
+
 const getAirportsByCity = catchAsync(async (req, res) => {
   const { cityId } = req.params;
   const result = await ServiceAreaServices.getAirportsByCityFromDB(
     cityId,
     req.query,
   );
+
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Airports retrieved successfully",
+    data: result.data,
+    meta: result.meta,
+  });
+});
+
+const getAirports = catchAsync(async (req, res) => {
+  const result = await ServiceAreaServices.getAirportsFromDB(req.query);
 
   sendResponse(res, {
     success: true,
@@ -235,8 +271,11 @@ export const ServiceAreaController = {
   getStatesByCountry,
   getStates,
   getCitiesByState,
+  getCities,
   getZonesByCity,
+  getZones,
   getAirportsByCity,
+  getAirports,
   updateServiceArea,
   deleteServiceArea,
   findServiceAreaByCoordinates,
