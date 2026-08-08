@@ -102,7 +102,7 @@ const updateDriverFromDB = async (
   const hasNewServiceArea =
     updatePayload.serviceAreaId !== undefined &&
     updatePayload.serviceAreaId.toString() !==
-      existingDriver.serviceAreaId?.toString();
+    existingDriver.serviceAreaId?.toString();
 
   if (isGoingOnline || (isOnlineOrGoingOnline && hasNewServiceArea)) {
     const targetServiceAreaId =
@@ -134,8 +134,7 @@ const updateDriverFromDB = async (
       if (activeDriversCount >= serviceArea.maxDrivers) {
         throw new ApiError(
           400,
-          `Driver capacity limit reached for ${
-            serviceArea.city || serviceArea.zone || "this service area"
+          `Driver capacity limit reached for ${serviceArea.city || serviceArea.zone || "this service area"
           }. You cannot go online at this time.`,
         );
       }
@@ -146,7 +145,7 @@ const updateDriverFromDB = async (
   if (
     updatePayload.serviceAreaId !== undefined &&
     updatePayload.serviceAreaId.toString() !==
-      existingDriver.serviceAreaId?.toString()
+    existingDriver.serviceAreaId?.toString()
   ) {
     if (!existingDriver.serviceAreaId) {
       updatePayload.serviceAreaAssignedAt = new Date();
@@ -159,7 +158,7 @@ const updateDriverFromDB = async (
   if (
     updatePayload.driverAvailabilityStatus !== undefined &&
     updatePayload.driverAvailabilityStatus !==
-      existingDriver.driverAvailabilityStatus
+    existingDriver.driverAvailabilityStatus
   ) {
     if (updatePayload.driverAvailabilityStatus === "online") {
       updatePayload.lastOnlineAt = new Date();
@@ -444,12 +443,12 @@ const getDriverPerformanceMetrics = async (driverUserId: string) => {
   const cancellationRate =
     stats.totalAcceptedLast30Days > 0
       ? Number(
-          (
-            (stats.totalCancelledByDriverLast30Days /
-              stats.totalAcceptedLast30Days) *
-            100
-          ).toFixed(1),
-        )
+        (
+          (stats.totalCancelledByDriverLast30Days /
+            stats.totalAcceptedLast30Days) *
+          100
+        ).toFixed(1),
+      )
       : 0;
 
   // Completion Rate: Completed Rides / Total Assigned Rides * 100
