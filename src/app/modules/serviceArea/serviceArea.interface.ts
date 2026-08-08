@@ -19,7 +19,7 @@ export interface IServiceArea {
   type: SERVICE_AREA_TYPE;
 
   maxDrivers?: number;
-
+  
   // GeoJSON location for coordinate-based matching
   location?: {
     type: "Point";

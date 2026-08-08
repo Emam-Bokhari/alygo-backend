@@ -68,6 +68,14 @@ const updateDriverFromDB = async (
     throw new ApiError(404, "User not found");
   }
 
+  const existingDriver = await Driver.findOne({
+    userId: new Types.ObjectId(userId),
+  });
+
+  if (!existingDriver) {
+    throw new ApiError(404, "Driver profile not found");
+  }
+
   const { userId: _, ...updatePayload } = payload as Partial<IDriver> & {
     userId?: Types.ObjectId;
   };
@@ -81,15 +89,93 @@ const updateDriverFromDB = async (
     }));
   }
 
+  // Determine if driver is going online or changing service area while online
+  const isGoingOnline =
+    updatePayload.driverAvailabilityStatus === "online" &&
+    existingDriver.driverAvailabilityStatus !== "online";
+
+  const isOnlineOrGoingOnline =
+    updatePayload.driverAvailabilityStatus === "online" ||
+    (updatePayload.driverAvailabilityStatus === undefined &&
+      existingDriver.driverAvailabilityStatus === "online");
+
+  const hasNewServiceArea =
+    updatePayload.serviceAreaId !== undefined &&
+    updatePayload.serviceAreaId.toString() !==
+      existingDriver.serviceAreaId?.toString();
+
+  if (isGoingOnline || (isOnlineOrGoingOnline && hasNewServiceArea)) {
+    const targetServiceAreaId =
+      updatePayload.serviceAreaId || existingDriver.serviceAreaId;
+
+    if (!targetServiceAreaId) {
+      throw new ApiError(
+        400,
+        "Please select a service area before going online.",
+      );
+    }
+
+    const serviceArea = await ServiceArea.findById(targetServiceAreaId);
+    if (!serviceArea) {
+      throw new ApiError(404, "Selected service area not found");
+    }
+
+    if (serviceArea.status !== "active") {
+      throw new ApiError(400, "Selected service area is not active");
+    }
+
+    if (serviceArea.maxDrivers && serviceArea.maxDrivers > 0) {
+      const activeDriversCount = await Driver.countDocuments({
+        serviceAreaId: targetServiceAreaId,
+        driverAvailabilityStatus: "online",
+        userId: { $ne: existingDriver.userId },
+      });
+
+      if (activeDriversCount >= serviceArea.maxDrivers) {
+        throw new ApiError(
+          400,
+          `Driver capacity limit reached for ${
+            serviceArea.city || serviceArea.zone || "this service area"
+          }. You cannot go online at this time.`,
+        );
+      }
+    }
+  }
+
+  // Handle service area assigned and changed dates
+  if (
+    updatePayload.serviceAreaId !== undefined &&
+    updatePayload.serviceAreaId.toString() !==
+      existingDriver.serviceAreaId?.toString()
+  ) {
+    if (!existingDriver.serviceAreaId) {
+      updatePayload.serviceAreaAssignedAt = new Date();
+    } else {
+      updatePayload.serviceAreaChangedAt = new Date();
+    }
+  }
+
+  // Handle HOS timestamps automatically
+  if (
+    updatePayload.driverAvailabilityStatus !== undefined &&
+    updatePayload.driverAvailabilityStatus !==
+      existingDriver.driverAvailabilityStatus
+  ) {
+    if (updatePayload.driverAvailabilityStatus === "online") {
+      updatePayload.lastOnlineAt = new Date();
+    } else if (
+      updatePayload.driverAvailabilityStatus === "offline" ||
+      updatePayload.driverAvailabilityStatus === "break"
+    ) {
+      updatePayload.lastOfflineAt = new Date();
+    }
+  }
+
   const updatedDriver = await Driver.findOneAndUpdate(
     { userId: new Types.ObjectId(userId) },
     updatePayload,
     { new: true, runValidators: true },
   );
-
-  if (!updatedDriver) {
-    throw new ApiError(404, "Driver profile not found");
-  }
 
   return updatedDriver;
 };
