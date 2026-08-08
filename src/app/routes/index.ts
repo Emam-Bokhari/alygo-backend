@@ -66,6 +66,7 @@ import { CancellationAnalyticsRoutes } from "../modules/cancellationAnalytics/ca
 import { LiveTripsRoutes } from "../modules/liveTrips/liveTrips.route";
 import { CallRoutes } from "../modules/call/call.route";
 import { RbacRoutes } from "../modules/rbac/rbac.route";
+import { ReservationRoutes } from "../modules/reservation/reservation.route";
 
 const router = express.Router();
 
@@ -301,6 +302,10 @@ const apiRoutes = [
   {
     path: "/calls",
     route: CallRoutes,
+  },
+  {
+    path: "/admin/reservations",
+    route: ReservationRoutes,
   },
 ];
 
