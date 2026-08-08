@@ -412,17 +412,20 @@ const getLostItemDetails = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const getLostItemReturnDetails = catchAsync(async (req: Request, res: Response) => {
-  const { reportId } = req.params;
-  const result = await LostAndFoundService.getLostItemReturnDetailsFromDB(reportId);
+const getLostItemReturnDetails = catchAsync(
+  async (req: Request, res: Response) => {
+    const { reportId } = req.params;
+    const result =
+      await LostAndFoundService.getLostItemReturnDetailsFromDB(reportId);
 
-  sendResponse(res, {
-    statusCode: StatusCodes.OK,
-    success: true,
-    message: "Lost item return details retrieved successfully",
-    data: result,
-  });
-});
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "Lost item return details retrieved successfully",
+      data: result,
+    });
+  },
+);
 
 export const LostAndFoundController = {
   reportLostItem,
@@ -455,4 +458,3 @@ export const LostAndFoundController = {
   getLostItemDetails,
   getLostItemReturnDetails,
 };
-

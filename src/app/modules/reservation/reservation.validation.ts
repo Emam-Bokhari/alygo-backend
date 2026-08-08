@@ -20,7 +20,8 @@ const getReservationsQuerySchema = z.object({
 const reservationIdParamSchema = z.object({
   params: z.object({
     reservationId: z.string().refine((val) => /^[0-9a-fA-F]{24}$/.test(val), {
-      message: "Invalid reservationId format. Must be a 24-character hex string.",
+      message:
+        "Invalid reservationId format. Must be a 24-character hex string.",
     }),
   }),
 });

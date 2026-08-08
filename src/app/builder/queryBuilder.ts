@@ -139,7 +139,10 @@ class QueryBuilder<T> {
     if (options && options.withDeleted) {
       countOptions.withDeleted = options.withDeleted;
     }
-    const total = await this.modelQuery.model.countDocuments(filter, countOptions);
+    const total = await this.modelQuery.model.countDocuments(
+      filter,
+      countOptions,
+    );
     const page = Number(this.query.page) || 1;
     const limit = Number(this.query.limit) || 10;
     const totalPage = Math.ceil(total / limit);

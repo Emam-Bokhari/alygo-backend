@@ -42,7 +42,9 @@ const getAllRideCategoriesFromDB = async (
   const searchableFields = ["name", "description"];
 
   const rideCategoryQuery = new QueryBuilder(
-    RideCategory.find().populate("serviceCategoryId").setOptions({ withDeleted: true }),
+    RideCategory.find()
+      .populate("serviceCategoryId")
+      .setOptions({ withDeleted: true }),
     query,
   )
     .search(searchableFields)

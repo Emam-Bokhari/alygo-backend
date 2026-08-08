@@ -13,10 +13,11 @@ const createCancellationReasonToDB = async (
 };
 
 const getCancellationReasonFromDB = async (cancellationReasonId: string) => {
-  const cancellationReason =
-    await CancellationReason.findById(cancellationReasonId).setOptions({
-      withDeleted: true,
-    });
+  const cancellationReason = await CancellationReason.findById(
+    cancellationReasonId,
+  ).setOptions({
+    withDeleted: true,
+  });
 
   if (!cancellationReason) {
     throw new ApiError(404, "Cancellation reason not found");

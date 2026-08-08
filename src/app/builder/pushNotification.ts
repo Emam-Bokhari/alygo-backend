@@ -174,7 +174,9 @@ class NotificationHelper {
           });
 
           if (failedTokens.length > 0) {
-            await DeviceToken.softDeleteMany({ fcmToken: { $in: failedTokens } });
+            await DeviceToken.softDeleteMany({
+              fcmToken: { $in: failedTokens },
+            });
             logger.info(
               colors.yellow(
                 `🗑️ Cleaned up ${failedTokens.length} invalid tokens.`,

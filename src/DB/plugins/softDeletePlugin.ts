@@ -27,10 +27,12 @@ export function softDeletePlugin<T>(schema: Schema<T>) {
     const options = this.getOptions();
     const isPopulate =
       options &&
-      (options.skip === undefined &&
-        options.limit === undefined &&
-        options.perDocumentLimit === undefined &&
-        ("skip" in options || "limit" in options || "perDocumentLimit" in options));
+      options.skip === undefined &&
+      options.limit === undefined &&
+      options.perDocumentLimit === undefined &&
+      ("skip" in options ||
+        "limit" in options ||
+        "perDocumentLimit" in options);
     if (isPopulate || (options && options.withDeleted)) {
       return;
     }
@@ -99,15 +101,17 @@ export function softDeletePlugin<T>(schema: Schema<T>) {
 
   // static methods
   schema.statics.softDeleteById = function (id: string, options?: any) {
-    const update: Record<string, any> = { isDeleted: true, deletedAt: new Date() };
+    const update: Record<string, any> = {
+      isDeleted: true,
+      deletedAt: new Date(),
+    };
     if (schema.path("status")) {
       update.status = "inactive";
     }
-    return this.findOneAndUpdate(
-      { _id: id } as any,
-      { $set: update } as any,
-      { new: true, ...options },
-    );
+    return this.findOneAndUpdate({ _id: id } as any, { $set: update } as any, {
+      new: true,
+      ...options,
+    });
   };
 
   schema.statics.restoreById = function (id: string, options?: any) {
@@ -120,8 +124,14 @@ export function softDeletePlugin<T>(schema: Schema<T>) {
     );
   };
 
-  schema.statics.softDeleteMany = function (filter: Record<string, any>, options?: any) {
-    const update: Record<string, any> = { isDeleted: true, deletedAt: new Date() };
+  schema.statics.softDeleteMany = function (
+    filter: Record<string, any>,
+    options?: any,
+  ) {
+    const update: Record<string, any> = {
+      isDeleted: true,
+      deletedAt: new Date(),
+    };
     if (schema.path("status")) {
       update.status = "inactive";
     }
@@ -134,7 +144,10 @@ export function softDeletePlugin<T>(schema: Schema<T>) {
     );
   };
 
-  schema.statics.restoreMany = function (filter: Record<string, any>, options?: any) {
+  schema.statics.restoreMany = function (
+    filter: Record<string, any>,
+    options?: any,
+  ) {
     return this.updateMany(
       { ...filter, isDeleted: true } as any,
       { $set: { isDeleted: false, deletedAt: null } } as any,

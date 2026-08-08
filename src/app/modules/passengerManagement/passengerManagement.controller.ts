@@ -3,7 +3,9 @@ import sendResponse from "../../../shared/sendResponse";
 import { PassengerManagementServices } from "./passengerManagement.service";
 
 const getPassengersOverview = catchAsync(async (req, res) => {
-  const result = await PassengerManagementServices.getPassengersOverview(req.query);
+  const result = await PassengerManagementServices.getPassengersOverview(
+    req.query,
+  );
 
   sendResponse(res, {
     success: true,
@@ -27,7 +29,9 @@ const getLivePassengers = catchAsync(async (req, res) => {
 });
 
 const getSuspendedPassengers = catchAsync(async (req, res) => {
-  const result = await PassengerManagementServices.getSuspendedPassengers(req.query);
+  const result = await PassengerManagementServices.getSuspendedPassengers(
+    req.query,
+  );
 
   sendResponse(res, {
     success: true,
@@ -40,7 +44,8 @@ const getSuspendedPassengers = catchAsync(async (req, res) => {
 
 const getPassengerDetails = catchAsync(async (req, res) => {
   const { passengerId } = req.params;
-  const result = await PassengerManagementServices.getPassengerDetails(passengerId);
+  const result =
+    await PassengerManagementServices.getPassengerDetails(passengerId);
 
   sendResponse(res, {
     success: true,
@@ -52,7 +57,8 @@ const getPassengerDetails = catchAsync(async (req, res) => {
 
 const getLivePassengerDetails = catchAsync(async (req, res) => {
   const { passengerId } = req.params;
-  const result = await PassengerManagementServices.getLivePassengerDetails(passengerId);
+  const result =
+    await PassengerManagementServices.getLivePassengerDetails(passengerId);
 
   sendResponse(res, {
     success: true,

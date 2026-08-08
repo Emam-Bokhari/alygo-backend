@@ -27,7 +27,9 @@ async function run() {
 
     // Clean up
     console.log("Cleaning old test data...");
-    await User.deleteMany({ email: { $in: ["testpassenger@alygo.com", "testdriver@alygo.com"] } });
+    await User.deleteMany({
+      email: { $in: ["testpassenger@alygo.com", "testdriver@alygo.com"] },
+    });
     await ServiceArea.deleteMany({ city: "Test Reservations City" });
     await RideCategory.deleteMany({ name: "Test Comfort" });
     await Event.deleteMany({ eventName: "Test Event" });
@@ -106,7 +108,7 @@ async function run() {
       description: "Reservation testing event",
       timezone: "UTC",
       startDateTime: new Date(Date.now() - 1000 * 60 * 60), // started 1h ago
-      endDateTime: new Date(Date.now() + 1000 * 60 * 60),   // ends in 1h
+      endDateTime: new Date(Date.now() + 1000 * 60 * 60), // ends in 1h
       serviceAreaId: cityServiceArea._id,
       location: { type: "Point", coordinates: [90.5, 23.5] },
       status: STATUS.ACTIVE,
@@ -145,7 +147,18 @@ async function run() {
       status: RIDE_STATUS.SEARCHING_DRIVER,
       pickupVerification: { method: "otp" },
       dropVerification: { method: "otp" },
-      fare: { baseFare: 5, distanceFare: 10, timeFare: 5, stopWaitingCharge: 0, cancellationFee: 5, discount: 0, subtotal: 20, commission: 2, driverEarning: 18, total: 20 },
+      fare: {
+        baseFare: 5,
+        distanceFare: 10,
+        timeFare: 5,
+        stopWaitingCharge: 0,
+        cancellationFee: 5,
+        discount: 0,
+        subtotal: 20,
+        commission: 2,
+        driverEarning: 18,
+        total: 20,
+      },
       requestedAt: new Date(),
     });
 
@@ -180,7 +193,18 @@ async function run() {
       status: RIDE_STATUS.SEARCHING_DRIVER,
       pickupVerification: { method: "otp" },
       dropVerification: { method: "otp" },
-      fare: { baseFare: 10, distanceFare: 50, timeFare: 15, stopWaitingCharge: 0, cancellationFee: 10, discount: 0, subtotal: 75, commission: 7.5, driverEarning: 67.5, total: 75 },
+      fare: {
+        baseFare: 10,
+        distanceFare: 50,
+        timeFare: 15,
+        stopWaitingCharge: 0,
+        cancellationFee: 10,
+        discount: 0,
+        subtotal: 75,
+        commission: 7.5,
+        driverEarning: 67.5,
+        total: 75,
+      },
       requestedAt: new Date(),
     });
 
@@ -215,7 +239,18 @@ async function run() {
       status: RIDE_STATUS.SEARCHING_DRIVER,
       pickupVerification: { method: "otp" },
       dropVerification: { method: "otp" },
-      fare: { baseFare: 5, distanceFare: 4, timeFare: 3, stopWaitingCharge: 0, cancellationFee: 5, discount: 0, subtotal: 12, commission: 1.2, driverEarning: 10.8, total: 12 },
+      fare: {
+        baseFare: 5,
+        distanceFare: 4,
+        timeFare: 3,
+        stopWaitingCharge: 0,
+        cancellationFee: 5,
+        discount: 0,
+        subtotal: 12,
+        commission: 1.2,
+        driverEarning: 10.8,
+        total: 12,
+      },
       requestedAt: new Date(),
     });
 
@@ -237,68 +272,136 @@ async function run() {
     });
 
     console.log("Overview statistics:", overview.statistics);
-    assert(overview.statistics.totalReservations === 3, "totalReservations counts 3 rides");
-    assert(overview.statistics.scheduledReservations === 1, "scheduledReservations counts 1 ride");
-    assert(overview.statistics.airportReservations === 1, "airportReservations counts 1 ride");
-    assert(overview.statistics.eventReservations === 1, "eventReservations counts 1 ride");
-    assert(overview.statistics.pendingAssignments === 2, "pendingAssignments counts 2 rides");
+    assert(
+      overview.statistics.totalReservations === 3,
+      "totalReservations counts 3 rides",
+    );
+    assert(
+      overview.statistics.scheduledReservations === 1,
+      "scheduledReservations counts 1 ride",
+    );
+    assert(
+      overview.statistics.airportReservations === 1,
+      "airportReservations counts 1 ride",
+    );
+    assert(
+      overview.statistics.eventReservations === 1,
+      "eventReservations counts 1 ride",
+    );
+    assert(
+      overview.statistics.pendingAssignments === 2,
+      "pendingAssignments counts 2 rides",
+    );
 
     assert(overview.data.length === 3, "overview data contains 3 rows");
-    
-    // Verify specific type resolutions in rows
-    const scheduledRow = overview.data.find((r: any) => r.reservationId === scheduledRide._id.toString());
-    const airportRow = overview.data.find((r: any) => r.reservationId === airportRide._id.toString());
-    const eventRow = overview.data.find((r: any) => r.reservationId === eventRide._id.toString());
 
-    assert(scheduledRow?.reservationType === "scheduled", "First row is type scheduled");
-    assert(airportRow?.reservationType === "airport", "Second row is type airport");
+    // Verify specific type resolutions in rows
+    const scheduledRow = overview.data.find(
+      (r: any) => r.reservationId === scheduledRide._id.toString(),
+    );
+    const airportRow = overview.data.find(
+      (r: any) => r.reservationId === airportRide._id.toString(),
+    );
+    const eventRow = overview.data.find(
+      (r: any) => r.reservationId === eventRide._id.toString(),
+    );
+
+    assert(
+      scheduledRow?.reservationType === "scheduled",
+      "First row is type scheduled",
+    );
+    assert(
+      airportRow?.reservationType === "airport",
+      "Second row is type airport",
+    );
     assert(eventRow?.reservationType === "event", "Third row is type event");
 
     // --- VERIFY FILTERS ---
     console.log("\n--- Verification 2: Filtering ---");
-    const airportFilter = await ReservationServices.getReservationsOverviewFromDB({
-      city: "Test Reservations City",
-      reservationType: "airport",
-    });
-    assert(airportFilter.data.length === 1 && airportFilter.data[0].reservationId === airportRide._id.toString(), "airport filter returns correct ride");
+    const airportFilter =
+      await ReservationServices.getReservationsOverviewFromDB({
+        city: "Test Reservations City",
+        reservationType: "airport",
+      });
+    assert(
+      airportFilter.data.length === 1 &&
+        airportFilter.data[0].reservationId === airportRide._id.toString(),
+      "airport filter returns correct ride",
+    );
 
-    const eventFilter = await ReservationServices.getReservationsOverviewFromDB({
-      city: "Test Reservations City",
-      reservationType: "event",
-    });
-    assert(eventFilter.data.length === 1 && eventFilter.data[0].reservationId === eventRide._id.toString(), "event filter returns correct ride");
+    const eventFilter = await ReservationServices.getReservationsOverviewFromDB(
+      {
+        city: "Test Reservations City",
+        reservationType: "event",
+      },
+    );
+    assert(
+      eventFilter.data.length === 1 &&
+        eventFilter.data[0].reservationId === eventRide._id.toString(),
+      "event filter returns correct ride",
+    );
 
-    const scheduledFilter = await ReservationServices.getReservationsOverviewFromDB({
-      city: "Test Reservations City",
-      reservationType: "scheduled",
-    });
-    assert(scheduledFilter.data.length === 1 && scheduledFilter.data[0].reservationId === scheduledRide._id.toString(), "scheduled filter returns correct ride");
+    const scheduledFilter =
+      await ReservationServices.getReservationsOverviewFromDB({
+        city: "Test Reservations City",
+        reservationType: "scheduled",
+      });
+    assert(
+      scheduledFilter.data.length === 1 &&
+        scheduledFilter.data[0].reservationId === scheduledRide._id.toString(),
+      "scheduled filter returns correct ride",
+    );
 
     // --- VERIFY DETAILS API ---
     console.log("\n--- Verification 3: Details API ---");
-    const details = await ReservationServices.getReservationDetailsFromDB(scheduledRide._id.toString());
+    const details = await ReservationServices.getReservationDetailsFromDB(
+      scheduledRide._id.toString(),
+    );
 
-    assert(details.reservation.reservationId === scheduledRide._id.toString(), "reservationId correct");
-    assert(details.reservation.type === "scheduled", "reservation type resolved correct");
-    assert(details.passenger?.fullName === "Test Passenger", "passenger populated");
-    assert(details.passenger?.totalTrips === 0, "passenger completed trips fetched");
-    assert(details.driver?.fullName === "Test Driver", "assigned driver populated");
+    assert(
+      details.reservation.reservationId === scheduledRide._id.toString(),
+      "reservationId correct",
+    );
+    assert(
+      details.reservation.type === "scheduled",
+      "reservation type resolved correct",
+    );
+    assert(
+      details.passenger?.fullName === "Test Passenger",
+      "passenger populated",
+    );
+    assert(
+      details.passenger?.totalTrips === 0,
+      "passenger completed trips fetched",
+    );
+    assert(
+      details.driver?.fullName === "Test Driver",
+      "assigned driver populated",
+    );
     assert(details.vehicle?.licensePlate === "RESERVE1", "vehicle populated");
-    assert(details.trip.pickup.address === "100 Main St, Test City", "pickup correct");
+    assert(
+      details.trip.pickup.address === "100 Main St, Test City",
+      "pickup correct",
+    );
     assert(details.fare.totalFare === 20, "fare breakdown populated");
     assert(details.timeline.length > 0, "chronological timeline generated");
     assert(
       details.timeline[0].status === "RESERVATION_CREATED" ||
         details.timeline[0].status === "RESERVATION_REQUESTED",
-      "timeline first event correct"
+      "timeline first event correct",
     );
     assert(details.tracking?.currentEta === 5, "tracking info retrieved");
-    assert(details.tracking?.routeProgress === 70, "route progress calculated correctly");
+    assert(
+      details.tracking?.routeProgress === 70,
+      "route progress calculated correctly",
+    );
 
     console.log("ALL VERIFICATIONS PASSED SUCCESSFULLY!");
   } finally {
     console.log("Cleaning up...");
-    await User.deleteMany({ email: { $in: ["testpassenger@alygo.com", "testdriver@alygo.com"] } });
+    await User.deleteMany({
+      email: { $in: ["testpassenger@alygo.com", "testdriver@alygo.com"] },
+    });
     await ServiceArea.deleteMany({ city: "Test Reservations City" });
     await RideCategory.deleteMany({ name: "Test Comfort" });
     await Event.deleteMany({ eventName: "Test Event" });

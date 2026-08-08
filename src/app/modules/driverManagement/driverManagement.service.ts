@@ -49,7 +49,9 @@ const getDriversOverviewFromDB = async (queryParams: Record<string, any>) => {
   const totalPage = Math.ceil(total / limit);
 
   const driverIds = drivers.map((d) => d._id);
-  const userIds = drivers.map((d) => d.userId?._id || (d.userId as any)).filter(Boolean);
+  const userIds = drivers
+    .map((d) => d.userId?._id || (d.userId as any))
+    .filter(Boolean);
 
   // Batch query Cars, Completed Rides count, and active Ride Categories
   const [cars, rideCounts, activeCategories] = await Promise.all([
@@ -62,7 +64,9 @@ const getDriversOverviewFromDB = async (queryParams: Record<string, any>) => {
   ]);
 
   const carMap = new Map(cars.map((c) => [c.driverId.toString(), c]));
-  const rideCountMap = new Map(rideCounts.map((r) => [r._id.toString(), r.count]));
+  const rideCountMap = new Map(
+    rideCounts.map((r) => [r._id.toString(), r.count]),
+  );
 
   // Helper to capitalize verification/compliance statuses
   const capitalize = (str: string) =>
@@ -70,7 +74,7 @@ const getDriversOverviewFromDB = async (queryParams: Record<string, any>) => {
 
   const formattedData = await Promise.all(
     drivers.map(async (driver: any) => {
-      const user = driver.userId as any || {};
+      const user = (driver.userId as any) || {};
 
       // 1. City / Service Area
       let driverCity = "Unknown";
@@ -93,7 +97,7 @@ const getDriversOverviewFromDB = async (queryParams: Record<string, any>) => {
         for (const cat of activeCategories) {
           const { vehicleTypes, minimumSeats } = cat.vehicleRequirements || {};
           const isCarTypeMatched = vehicleTypes?.some(
-            (type: string) => type.toLowerCase() === car.carType?.toLowerCase()
+            (type: string) => type.toLowerCase() === car.carType?.toLowerCase(),
           );
           const isSeatsSufficient = car.seatNumber >= (minimumSeats || 0);
 
@@ -121,12 +125,19 @@ const getDriversOverviewFromDB = async (queryParams: Record<string, any>) => {
       if (driver.currentTier && (driver.currentTier as any).requirements) {
         const reqs = (driver.currentTier as any).requirements;
         // Calculate driver's acceptance rate
-        const acceptanceRate = await calculateDriverAcceptanceRate(driver.userId?._id || driver.userId);
-        
-        const isRatingLow = (driver.averageRating || 0) < (reqs.ratingRequired || 0);
-        const isAcceptanceRateLow = acceptanceRate < (reqs.acceptanceRateRequired || 0);
-        const isTripsLow = (rideCountMap.get(user._id?.toString() || user.toString()) || 0) < (reqs.tripsRequired || 0);
-        const isPointsLow = (driver.currentPoints || 0) < (reqs.pointsRequired || 0);
+        const acceptanceRate = await calculateDriverAcceptanceRate(
+          driver.userId?._id || driver.userId,
+        );
+
+        const isRatingLow =
+          (driver.averageRating || 0) < (reqs.ratingRequired || 0);
+        const isAcceptanceRateLow =
+          acceptanceRate < (reqs.acceptanceRateRequired || 0);
+        const isTripsLow =
+          (rideCountMap.get(user._id?.toString() || user.toString()) || 0) <
+          (reqs.tripsRequired || 0);
+        const isPointsLow =
+          (driver.currentPoints || 0) < (reqs.pointsRequired || 0);
 
         if (isRatingLow || isAcceptanceRateLow || isTripsLow || isPointsLow) {
           tierStatus = "at risk";
@@ -156,20 +167,25 @@ const getDriversOverviewFromDB = async (queryParams: Record<string, any>) => {
           licenseExpiryDate: driver.licenseExpiryDate,
           suspension: driver.suspension,
         },
-        userId: driver.userId ? {
-          _id: user._id?.toString() || "",
-          name: user.name || "",
-          email: user.email || "",
-          phone: user.phone || "",
-          profileImage: user.profileImage || "",
-          status: user.status || "",
-        } : null,
+        userId: driver.userId
+          ? {
+              _id: user._id?.toString() || "",
+              name: user.name || "",
+              email: user.email || "",
+              phone: user.phone || "",
+              profileImage: user.profileImage || "",
+              status: user.status || "",
+            }
+          : null,
         fullName: user.name || "",
         avatar: user.profileImage || "",
         email: user.email || "",
         phone: user.phone || "",
-        averageRating: driver.averageRating ? Number(driver.averageRating.toFixed(1)) : 0,
-        completedTrips: rideCountMap.get(user._id?.toString() || user.toString()) || 0,
+        averageRating: driver.averageRating
+          ? Number(driver.averageRating.toFixed(1))
+          : 0,
+        completedTrips:
+          rideCountMap.get(user._id?.toString() || user.toString()) || 0,
         tier: currentTierName,
         tierProgress,
         tierStatus,
@@ -181,7 +197,7 @@ const getDriversOverviewFromDB = async (queryParams: Record<string, any>) => {
         status: overallStatus,
         city: driverCity,
       };
-    })
+    }),
   );
 
   return {
@@ -442,7 +458,10 @@ const getDriverDetailsFromDB = async (
   const timezone = serviceArea?.timezone || "UTC";
 
   // Reusable helper to format dates in local timezone
-  const formatTime = (date: Date | string | undefined | null, tz: string): string | null => {
+  const formatTime = (
+    date: Date | string | undefined | null,
+    tz: string,
+  ): string | null => {
     if (!date) return null;
     return utcToTimezone(date, tz).toFormat("LLL d, yyyy h:mm a");
   };
@@ -453,14 +472,19 @@ const getDriverDetailsFromDB = async (
 
   // Retrieve parallel details
   const [car, completedTrips, auditLogs] = await Promise.all([
-    Car.findOne({ driverId: driver._id }).select("brand model licensePlate").lean(),
+    Car.findOne({ driverId: driver._id })
+      .select("brand model licensePlate")
+      .lean(),
     user?._id
-      ? Ride.countDocuments({ driverId: user._id, status: RIDE_STATUS.COMPLETED })
+      ? Ride.countDocuments({
+          driverId: user._id,
+          status: RIDE_STATUS.COMPLETED,
+        })
       : Promise.resolve(0),
     AuditLog.find({
       $or: [
         { "details.driverId": driverId },
-        { "details.driverId": new Types.ObjectId(driverId) }
+        { "details.driverId": new Types.ObjectId(driverId) },
       ],
       action: {
         $in: [
@@ -468,12 +492,12 @@ const getDriverDetailsFromDB = async (
           "DRIVER_REJECTED",
           "DRIVER_SUSPENDED",
           "DRIVER_UNSUSPENDED",
-        ]
-      }
+        ],
+      },
     })
-    .sort({ createdAt: -1 })
-    .populate("performedBy", "name")
-    .lean(),
+      .sort({ createdAt: -1 })
+      .populate("performedBy", "name")
+      .lean(),
   ]);
 
   // Paginate audit logs for verification history
@@ -498,14 +522,26 @@ const getDriverDetailsFromDB = async (
 
   // 2. Identity Verification Summary
   const latestVerificationLog = auditLogs.find((log) =>
-    ["DRIVER_APPROVED", "DRIVER_REJECTED", "DRIVER_SUSPENDED", "DRIVER_UNSUSPENDED"].includes(log.action)
+    [
+      "DRIVER_APPROVED",
+      "DRIVER_REJECTED",
+      "DRIVER_SUSPENDED",
+      "DRIVER_UNSUSPENDED",
+    ].includes(log.action),
   );
 
-  let verificationStatus = capitalize(driver.identityVerificationStatus || "pending");
+  let verificationStatus = capitalize(
+    driver.identityVerificationStatus || "pending",
+  );
   let verificationDate: string | null = null;
-  let lastVerificationDate: string | null = formatTime(driver.lastVerificationDate || (driver as any).updatedAt, timezone);
+  let lastVerificationDate: string | null = formatTime(
+    driver.lastVerificationDate || (driver as any).updatedAt,
+    timezone,
+  );
   let verificationSource = driver.verificationSource || "Onboarding";
-  let verificationNotes = driver.verificationNotes || "Live selfie captured via in-app camera. Gallery uploads disabled.";
+  let verificationNotes =
+    driver.verificationNotes ||
+    "Live selfie captured via in-app camera. Gallery uploads disabled.";
 
   if (latestVerificationLog) {
     if (latestVerificationLog.action === "DRIVER_APPROVED") {
@@ -518,17 +554,31 @@ const getDriverDetailsFromDB = async (
     } else if (latestVerificationLog.action === "DRIVER_UNSUSPENDED") {
       verificationStatus = "Verified";
     }
-    lastVerificationDate = formatTime(latestVerificationLog.createdAt, timezone);
-    
-    verificationSource = latestVerificationLog.details?.triggerSource ||
+    lastVerificationDate = formatTime(
+      latestVerificationLog.createdAt,
+      timezone,
+    );
+
+    verificationSource =
+      latestVerificationLog.details?.triggerSource ||
       latestVerificationLog.details?.source ||
-      (latestVerificationLog.action === "DRIVER_APPROVED" ? "Onboarding" : "Manual Review");
-      
-    verificationNotes = latestVerificationLog.details?.reason ||
+      (latestVerificationLog.action === "DRIVER_APPROVED"
+        ? "Onboarding"
+        : "Manual Review");
+
+    verificationNotes =
+      latestVerificationLog.details?.reason ||
       latestVerificationLog.details?.note ||
-      (latestVerificationLog.action === "DRIVER_APPROVED" ? "Live selfie captured via in-app camera. Gallery uploads disabled." : "");
-  } else if (driver.identityVerificationStatus === VERIFICATION_STATUS.VERIFIED) {
-    verificationDate = formatTime(driver.identityVerifiedAt || (driver as any).updatedAt, timezone);
+      (latestVerificationLog.action === "DRIVER_APPROVED"
+        ? "Live selfie captured via in-app camera. Gallery uploads disabled."
+        : "");
+  } else if (
+    driver.identityVerificationStatus === VERIFICATION_STATUS.VERIFIED
+  ) {
+    verificationDate = formatTime(
+      driver.identityVerifiedAt || (driver as any).updatedAt,
+      timezone,
+    );
   }
 
   const identityVerification = {
@@ -543,23 +593,30 @@ const getDriverDetailsFromDB = async (
   const profilePhoto = user?.profileImage
     ? {
         imageUrl: user.profileImage,
-        uploadedAt: formatTime((user as any).updatedAt || (driver as any).createdAt, timezone),
+        uploadedAt: formatTime(
+          (user as any).updatedAt || (driver as any).createdAt,
+          timezone,
+        ),
       }
     : null;
 
   const latestLiveSelfie = driver.liveSelfie
     ? {
         imageUrl: driver.liveSelfie,
-        capturedAt: formatTime(driver.identityVerifiedAt || (driver as any).updatedAt, timezone),
+        capturedAt: formatTime(
+          driver.identityVerifiedAt || (driver as any).updatedAt,
+          timezone,
+        ),
       }
     : null;
 
-  const verificationImages = (profilePhoto || latestLiveSelfie)
-    ? {
-        profilePhoto,
-        latestLiveSelfie,
-      }
-    : null;
+  const verificationImages =
+    profilePhoto || latestLiveSelfie
+      ? {
+          profilePhoto,
+          latestLiveSelfie,
+        }
+      : null;
 
   // 4. Verification History
   const verificationHistory = paginatedLogs.map((log) => {
@@ -569,13 +626,17 @@ const getDriverDetailsFromDB = async (
     else if (log.action === "DRIVER_SUSPENDED") status = "Suspended";
     else if (log.action === "DRIVER_UNSUSPENDED") status = "Active";
 
-    const triggerSource = log.details?.triggerSource ||
+    const triggerSource =
+      log.details?.triggerSource ||
       log.details?.source ||
       (log.action === "DRIVER_APPROVED" ? "Onboarding" : "Manual Review");
 
-    const notes = log.details?.reason ||
+    const notes =
+      log.details?.reason ||
       log.details?.note ||
-      (log.action === "DRIVER_APPROVED" ? "Initial onboarding verification." : "");
+      (log.action === "DRIVER_APPROVED"
+        ? "Initial onboarding verification."
+        : "");
 
     return {
       verifiedAt: formatTime(log.createdAt, timezone),

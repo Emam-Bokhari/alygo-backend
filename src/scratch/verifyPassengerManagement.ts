@@ -40,36 +40,71 @@ async function runVerification() {
 
     // 2. Verify Suspension
     console.log("Suspending passenger...");
-    const suspendResult = await PassengerManagementServices.suspendPassengerInDB(
-      passenger._id.toString(),
-      adminId,
-      reason,
-      note
+    const suspendResult =
+      await PassengerManagementServices.suspendPassengerInDB(
+        passenger._id.toString(),
+        adminId,
+        reason,
+        note,
+      );
+    assert(
+      suspendResult.success === true,
+      "suspendPassengerInDB should return success: true",
     );
-    assert(suspendResult.success === true, "suspendPassengerInDB should return success: true");
 
     const suspendedUser = await User.findById(passenger._id);
     assert(suspendedUser !== null, "Passenger should exist in DB");
-    assert(suspendedUser?.status === STATUS.INACTIVE, "Passenger status should be INACTIVE");
-    assert(suspendedUser?.suspension?.isSuspended === true, "isSuspended should be true");
-    assert(suspendedUser?.suspension?.reason === reason, `Reason should be '${reason}'`);
-    assert(suspendedUser?.suspension?.note === note, `Note should be '${note}'`);
-    assert(suspendedUser?.suspension?.suspendedBy?.toString() === adminId, "suspendedBy should match adminId");
+    assert(
+      suspendedUser?.status === STATUS.INACTIVE,
+      "Passenger status should be INACTIVE",
+    );
+    assert(
+      suspendedUser?.suspension?.isSuspended === true,
+      "isSuspended should be true",
+    );
+    assert(
+      suspendedUser?.suspension?.reason === reason,
+      `Reason should be '${reason}'`,
+    );
+    assert(
+      suspendedUser?.suspension?.note === note,
+      `Note should be '${note}'`,
+    );
+    assert(
+      suspendedUser?.suspension?.suspendedBy?.toString() === adminId,
+      "suspendedBy should match adminId",
+    );
 
     // 3. Verify Unsuspension
     console.log("Unsuspending passenger...");
-    const unsuspendResult = await PassengerManagementServices.unsuspendPassengerInDB(
-      passenger._id.toString(),
-      adminId
+    const unsuspendResult =
+      await PassengerManagementServices.unsuspendPassengerInDB(
+        passenger._id.toString(),
+        adminId,
+      );
+    assert(
+      unsuspendResult.success === true,
+      "unsuspendPassengerInDB should return success: true",
     );
-    assert(unsuspendResult.success === true, "unsuspendPassengerInDB should return success: true");
 
     const unsuspendedUser = await User.findById(passenger._id);
-    assert(unsuspendedUser?.status === STATUS.ACTIVE, "Passenger status should be ACTIVE");
-    assert(unsuspendedUser?.suspension?.isSuspended === false, "isSuspended should be false");
-    assert(unsuspendedUser?.suspension?.reason === "", "Reason should be empty");
+    assert(
+      unsuspendedUser?.status === STATUS.ACTIVE,
+      "Passenger status should be ACTIVE",
+    );
+    assert(
+      unsuspendedUser?.suspension?.isSuspended === false,
+      "isSuspended should be false",
+    );
+    assert(
+      unsuspendedUser?.suspension?.reason === "",
+      "Reason should be empty",
+    );
     assert(unsuspendedUser?.suspension?.note === "", "Note should be empty");
-    assert(unsuspendedUser?.suspension?.suspendedBy === null, "suspendedBy should be null");
+    assert(
+      unsuspendedUser?.suspension?.suspendedBy === null,
+      "suspendedBy should be null",
+    );
 
     // 4. Clean up test data
     console.log("Cleaning up test data...");
@@ -79,7 +114,6 @@ async function runVerification() {
     console.log("\n========================================");
     console.log("All passenger suspension checks passed!");
     console.log("========================================\n");
-
   } catch (error) {
     console.error("Verification failed with error:", error);
     process.exit(1);

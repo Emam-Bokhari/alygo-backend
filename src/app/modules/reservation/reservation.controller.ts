@@ -3,7 +3,9 @@ import sendResponse from "../../../shared/sendResponse";
 import { ReservationServices } from "./reservation.service";
 
 const getReservationsOverview = catchAsync(async (req, res) => {
-  const result = await ReservationServices.getReservationsOverviewFromDB(req.query);
+  const result = await ReservationServices.getReservationsOverviewFromDB(
+    req.query,
+  );
 
   sendResponse(res, {
     success: true,
@@ -19,7 +21,8 @@ const getReservationsOverview = catchAsync(async (req, res) => {
 
 const getReservationDetails = catchAsync(async (req, res) => {
   const { reservationId } = req.params;
-  const result = await ReservationServices.getReservationDetailsFromDB(reservationId);
+  const result =
+    await ReservationServices.getReservationDetailsFromDB(reservationId);
 
   sendResponse(res, {
     success: true,

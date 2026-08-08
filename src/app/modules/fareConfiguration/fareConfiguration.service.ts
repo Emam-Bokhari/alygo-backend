@@ -24,7 +24,9 @@ const getFareConfigurationFromDB = async (
     throw new ApiError(StatusCodes.NOT_ACCEPTABLE, "Invalid ID");
   }
 
-  const result = await FareConfiguration.findById(fareConfigurationId).setOptions({
+  const result = await FareConfiguration.findById(
+    fareConfigurationId,
+  ).setOptions({
     withDeleted: true,
   });
   return result;

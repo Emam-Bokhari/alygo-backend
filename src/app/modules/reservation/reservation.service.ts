@@ -10,7 +10,10 @@ import { SERVICE_AREA_TYPE } from "../serviceArea/serviceArea.constant";
 import { STATUS } from "../../../enums/user";
 import { utcToTimezone } from "../../../shared/timezoneHelper";
 
-const getDistanceKm = (coords1: [number, number], coords2: [number, number]) => {
+const getDistanceKm = (
+  coords1: [number, number],
+  coords2: [number, number],
+) => {
   const [lon1, lat1] = coords1;
   const [lon2, lat2] = coords2;
   const R = 6371; // Radius of the earth in km
@@ -31,7 +34,10 @@ const resolveReservationType = (
   airportServiceAreaIds: string[],
   activeEvents: any[],
 ): "airport" | "event" | "scheduled" => {
-  if (ride.serviceAreaId && airportServiceAreaIds.includes(ride.serviceAreaId.toString())) {
+  if (
+    ride.serviceAreaId &&
+    airportServiceAreaIds.includes(ride.serviceAreaId.toString())
+  ) {
     return "airport";
   }
 
@@ -48,10 +54,16 @@ const resolveReservationType = (
 
       // Check event area/location
       if (event.serviceAreaId) {
-        if (ride.serviceAreaId && event.serviceAreaId.toString() === ride.serviceAreaId.toString()) {
+        if (
+          ride.serviceAreaId &&
+          event.serviceAreaId.toString() === ride.serviceAreaId.toString()
+        ) {
           return "event";
         }
-      } else if (event.location?.coordinates && ride.pickup?.location?.coordinates) {
+      } else if (
+        event.location?.coordinates &&
+        ride.pickup?.location?.coordinates
+      ) {
         const distance = getDistanceKm(
           event.location.coordinates,
           ride.pickup.location.coordinates,
@@ -67,7 +79,9 @@ const resolveReservationType = (
   return "scheduled";
 };
 
-const getReservationsOverviewFromDB = async (queryParams: Record<string, any>) => {
+const getReservationsOverviewFromDB = async (
+  queryParams: Record<string, any>,
+) => {
   const {
     page = 1,
     limit = 10,
@@ -93,7 +107,9 @@ const getReservationsOverviewFromDB = async (queryParams: Record<string, any>) =
     Event.find({ status: STATUS.ACTIVE }).lean(),
   ]);
 
-  const airportServiceAreaIds = airportServiceAreas.map((sa) => sa._id.toString());
+  const airportServiceAreaIds = airportServiceAreas.map((sa) =>
+    sa._id.toString(),
+  );
 
   // Base query: only scheduled/reservation rides
   const filterQuery: any = { rideType: RIDE_TYPE.SCHEDULED };
@@ -376,7 +392,9 @@ const getReservationDetailsFromDB = async (reservationId: string) => {
     ServiceArea.find({ type: SERVICE_AREA_TYPE.AIRPORT }).select("_id").lean(),
     Event.find({ status: STATUS.ACTIVE }).lean(),
   ]);
-  const airportServiceAreaIds = airportServiceAreas.map((sa) => sa._id.toString());
+  const airportServiceAreaIds = airportServiceAreas.map((sa) =>
+    sa._id.toString(),
+  );
   const typeResolved = resolveReservationType(
     ride,
     airportServiceAreaIds,
@@ -393,10 +411,16 @@ const getReservationDetailsFromDB = async (reservationId: string) => {
 
   const [passengerCompletedTrips, driverCompletedTrips] = await Promise.all([
     passengerId
-      ? Ride.countDocuments({ userId: passengerId, status: RIDE_STATUS.COMPLETED })
+      ? Ride.countDocuments({
+          userId: passengerId,
+          status: RIDE_STATUS.COMPLETED,
+        })
       : Promise.resolve(0),
     driverId
-      ? Ride.countDocuments({ driverId: driverId, status: RIDE_STATUS.COMPLETED })
+      ? Ride.countDocuments({
+          driverId: driverId,
+          status: RIDE_STATUS.COMPLETED,
+        })
       : Promise.resolve(0),
   ]);
 
@@ -409,7 +433,8 @@ const getReservationDetailsFromDB = async (reservationId: string) => {
         profileImage: passengerUser.profileImage || "",
         rating: passengerUser.averageRating || 0,
         totalTrips: passengerCompletedTrips,
-        accountStatus: passengerUser.status === STATUS.INACTIVE ? "Banned" : "Active",
+        accountStatus:
+          passengerUser.status === STATUS.INACTIVE ? "Banned" : "Active",
       }
     : null;
 
@@ -422,7 +447,8 @@ const getReservationDetailsFromDB = async (reservationId: string) => {
         profileImage: driverUser.profileImage || "",
         rating: driverUser.averageRating || 0,
         completedTrips: driverCompletedTrips,
-        driverStatus: driverUser.status === STATUS.INACTIVE ? "Banned" : "Active",
+        driverStatus:
+          driverUser.status === STATUS.INACTIVE ? "Banned" : "Active",
       }
     : null;
 
@@ -538,13 +564,15 @@ const getReservationDetailsFromDB = async (reservationId: string) => {
       ride.cancellation.cancelledBy === "user"
         ? "Passenger"
         : ride.cancellation.cancelledBy === "driver"
-        ? "Driver"
-        : "Admin";
+          ? "Driver"
+          : "Admin";
     timeline.push({
       status: "RESERVATION_CANCELLED",
       title: "Reservation Cancelled",
       description: `Cancelled by: ${cancellationActor}. Reason: ${
-        ride.cancellation.cancellationReasonName || ride.reservationCancelledReason || "N/A"
+        ride.cancellation.cancellationReasonName ||
+        ride.reservationCancelledReason ||
+        "N/A"
       }`,
       timestamp: formatDate(ride.cancellation.cancelledAt),
       actor: cancellationActor,
@@ -578,7 +606,14 @@ const getReservationDetailsFromDB = async (reservationId: string) => {
         remainingDistance: trackingDoc.remainingDistanceKm || null,
         routeProgress:
           trackingDoc.totalDistanceKm && trackingDoc.remainingDistanceKm
-            ? Number(((1 - trackingDoc.remainingDistanceKm / trackingDoc.totalDistanceKm) * 100).toFixed(1))
+            ? Number(
+                (
+                  (1 -
+                    trackingDoc.remainingDistanceKm /
+                      trackingDoc.totalDistanceKm) *
+                  100
+                ).toFixed(1),
+              )
             : null,
       }
     : null;

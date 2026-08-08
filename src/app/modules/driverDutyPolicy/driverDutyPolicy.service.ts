@@ -77,9 +77,7 @@ const createDriverDutyPolicyToDB = async (
 };
 
 const getDriverDutyPolicyFromDB = async (driverDutyPolicyId: string) => {
-  const driverDutyPolicy = await DriverDutyPolicy.findById(
-    driverDutyPolicyId,
-  )
+  const driverDutyPolicy = await DriverDutyPolicy.findById(driverDutyPolicyId)
     .populate([
       { path: "countryId", select: "country type maxDrivers" },
       { path: "stateId", select: "state type maxDrivers" },

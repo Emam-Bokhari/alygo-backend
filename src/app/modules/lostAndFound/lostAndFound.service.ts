@@ -1344,10 +1344,11 @@ const getAdminReportsFromDB = async (
     tripId: report.rideId,
     itemCategory: report.itemCategory?.name || "",
     itemName: report.itemName,
-    photos: report.uploadedFiles?.map((file: any, idx: number) => ({
-      id: file._id?.toString() || idx.toString(),
-      url: file.fileUrl,
-    })) || [],
+    photos:
+      report.uploadedFiles?.map((file: any, idx: number) => ({
+        id: file._id?.toString() || idx.toString(),
+        url: file.fileUrl,
+      })) || [],
     createdDate: report.createdAt,
     status: report.reportStatus,
   }));
@@ -1415,10 +1416,11 @@ const getAdminReturnsFromDB = async (
     returnMethod: report.recoveryMethod,
     passenger: report.passengerId || {},
     driver: report.driverId || {},
-    photos: report.uploadedFiles?.map((file: any, idx: number) => ({
-      id: file._id?.toString() || idx.toString(),
-      url: file.fileUrl,
-    })) || [],
+    photos:
+      report.uploadedFiles?.map((file: any, idx: number) => ({
+        id: file._id?.toString() || idx.toString(),
+        url: file.fileUrl,
+      })) || [],
     scheduledDate: report.scheduledAt || null,
     returnStatus: report.reportStatus,
     fee: report.deliveryFee || 0,
@@ -1437,13 +1439,21 @@ const updateDeliveryFeeSettingsInDB = async (
 ): Promise<any> => {
   const updateObj: Record<string, any> = {};
 
-  if (payload.enabled !== undefined) updateObj["lostFound.enabled"] = payload.enabled;
-  if (payload.reportWindowDays !== undefined) updateObj["lostFound.reportWindowDays"] = payload.reportWindowDays;
-  if (payload.maxFiles !== undefined) updateObj["lostFound.maxFiles"] = payload.maxFiles;
-  if (payload.maxFileSizeMb !== undefined) updateObj["lostFound.maxFileSizeMb"] = payload.maxFileSizeMb;
-  if (payload.defaultDeliveryFee !== undefined) updateObj["lostFound.defaultDeliveryFee"] = payload.defaultDeliveryFee;
-  if (payload.returnConfirmationHours !== undefined) updateObj["lostFound.returnConfirmationHours"] = payload.returnConfirmationHours;
-  if (payload.autoCloseDays !== undefined) updateObj["lostFound.autoCloseDays"] = payload.autoCloseDays;
+  if (payload.enabled !== undefined)
+    updateObj["lostFound.enabled"] = payload.enabled;
+  if (payload.reportWindowDays !== undefined)
+    updateObj["lostFound.reportWindowDays"] = payload.reportWindowDays;
+  if (payload.maxFiles !== undefined)
+    updateObj["lostFound.maxFiles"] = payload.maxFiles;
+  if (payload.maxFileSizeMb !== undefined)
+    updateObj["lostFound.maxFileSizeMb"] = payload.maxFileSizeMb;
+  if (payload.defaultDeliveryFee !== undefined)
+    updateObj["lostFound.defaultDeliveryFee"] = payload.defaultDeliveryFee;
+  if (payload.returnConfirmationHours !== undefined)
+    updateObj["lostFound.returnConfirmationHours"] =
+      payload.returnConfirmationHours;
+  if (payload.autoCloseDays !== undefined)
+    updateObj["lostFound.autoCloseDays"] = payload.autoCloseDays;
 
   const updated = await SystemConfiguration.findOneAndUpdate(
     {},
@@ -1946,11 +1956,12 @@ const getAnalyticsCategoryDistributionFromDB = async (): Promise<any[]> => {
 
 const buildTimelineHelper = (report: any, timezone: string): any[] => {
   const timeline: any[] = [];
-  const formatTime = (date: Date) => utcToTimezone(date, timezone).toFormat("M/d/yyyy, h:mm:ss a");
+  const formatTime = (date: Date) =>
+    utcToTimezone(date, timezone).toFormat("M/d/yyyy, h:mm:ss a");
 
   // Sort audit logs by timestamp ascending
   const sortedLogs = [...(report.auditLogs || [])].sort(
-    (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
   );
 
   for (const log of sortedLogs) {
@@ -1979,7 +1990,9 @@ const buildTimelineHelper = (report: any, timezone: string): any[] => {
       timeline.push({
         status: "completed",
         title: "Driver Found Item",
-        description: log.details?.driverNotes || `Driver found ${report.itemName.toLowerCase()} under seat`,
+        description:
+          log.details?.driverNotes ||
+          `Driver found ${report.itemName.toLowerCase()} under seat`,
         createdBy: actorName,
         createdAt: `${timestampStr} · ${actorName}`,
       });
@@ -1987,7 +2000,9 @@ const buildTimelineHelper = (report: any, timezone: string): any[] => {
       timeline.push({
         status: "completed",
         title: "Driver Checked (Not Found)",
-        description: log.details?.driverNotes || "Driver checked the vehicle but did not locate the item.",
+        description:
+          log.details?.driverNotes ||
+          "Driver checked the vehicle but did not locate the item.",
         createdBy: actorName,
         createdAt: `${timestampStr} · ${actorName}`,
       });
@@ -2006,11 +2021,19 @@ const buildTimelineHelper = (report: any, timezone: string): any[] => {
       }
 
       // If pickup schedule update
-      if (log.details?.reportStatus === "return_scheduled" || log.details?.recoveryMethod || log.details?.scheduledAt) {
-        const isPickup = (log.details?.recoveryMethod || report.recoveryMethod) === "passenger_pickup";
+      if (
+        log.details?.reportStatus === "return_scheduled" ||
+        log.details?.recoveryMethod ||
+        log.details?.scheduledAt
+      ) {
+        const isPickup =
+          (log.details?.recoveryMethod || report.recoveryMethod) ===
+          "passenger_pickup";
         const title = isPickup ? "Pickup Scheduled" : "Delivery Scheduled";
-        const desc = isPickup ? "Passenger pickup arranged at hub" : "Driver delivery scheduled to passenger address";
-        
+        const desc = isPickup
+          ? "Passenger pickup arranged at hub"
+          : "Driver delivery scheduled to passenger address";
+
         timeline.push({
           status: "completed",
           title,
@@ -2020,10 +2043,14 @@ const buildTimelineHelper = (report: any, timezone: string): any[] => {
         });
       }
     } else if (log.action === "RECOVERY_SELECTED") {
-      const isPickup = (log.details?.recoveryMethod || report.recoveryMethod) === "passenger_pickup";
+      const isPickup =
+        (log.details?.recoveryMethod || report.recoveryMethod) ===
+        "passenger_pickup";
       const title = isPickup ? "Pickup Scheduled" : "Delivery Scheduled";
-      const desc = isPickup ? "Passenger pickup arranged at hub" : "Driver delivery scheduled to passenger address";
-      
+      const desc = isPickup
+        ? "Passenger pickup arranged at hub"
+        : "Driver delivery scheduled to passenger address";
+
       timeline.push({
         status: "completed",
         title,
@@ -2031,7 +2058,10 @@ const buildTimelineHelper = (report: any, timezone: string): any[] => {
         createdBy: actorName,
         createdAt: `${timestampStr} · ${actorName}`,
       });
-    } else if (log.action === "PASSENGER_CONFIRMED" || log.action === "RETURN_COMPLETED") {
+    } else if (
+      log.action === "PASSENGER_CONFIRMED" ||
+      log.action === "RETURN_COMPLETED"
+    ) {
       if (!timeline.some((item) => item.title === "Returned Successfully")) {
         timeline.push({
           status: "completed",
@@ -2076,9 +2106,15 @@ const getLostItemDetailsFromDB = async (reportId: string): Promise<any> => {
     throw new ApiError(StatusCodes.NOT_FOUND, "Report not found.");
   }
 
-  const driverDoc = await Driver.findOne({ userId: report.driverId._id }).lean();
-  const timezone = (report.rideId as any)?.timezone || (process.env.TIMEZONE as string) || "Asia/Dhaka";
-  const formatTime = (date: Date) => utcToTimezone(date, timezone).toFormat("M/d/yyyy, h:mm:ss a");
+  const driverDoc = await Driver.findOne({
+    userId: report.driverId._id,
+  }).lean();
+  const timezone =
+    (report.rideId as any)?.timezone ||
+    (process.env.TIMEZONE as string) ||
+    "Asia/Dhaka";
+  const formatTime = (date: Date) =>
+    utcToTimezone(date, timezone).toFormat("M/d/yyyy, h:mm:ss a");
 
   return {
     report: {
@@ -2103,25 +2139,32 @@ const getLostItemDetailsFromDB = async (reportId: string): Promise<any> => {
     },
     trip: {
       rideId: (report.rideId as any)?._id?.toString() || "",
-      bookingReference: (report.rideId as any)?.bookingReference || `TRP-${(report.rideId as any)?._id?.toString().slice(-5).toUpperCase()}`,
+      bookingReference:
+        (report.rideId as any)?.bookingReference ||
+        `TRP-${(report.rideId as any)?._id?.toString().slice(-5).toUpperCase()}`,
       pickupAddress: (report.rideId as any)?.pickup?.address || "",
       destinationAddress: (report.rideId as any)?.destination?.address || "",
-      tripDate: (report.rideId as any)?.createdAt ? formatTime((report.rideId as any)?.createdAt) : "",
+      tripDate: (report.rideId as any)?.createdAt
+        ? formatTime((report.rideId as any)?.createdAt)
+        : "",
     },
     lostItem: {
       category: (report.itemCategory as any)?.name || "",
       itemName: report.itemName,
       description: report.itemDescription,
-      photos: report.uploadedFiles?.map((file: any, idx: number) => ({
-        id: file._id?.toString() || idx.toString(),
-        url: file.fileUrl,
-      })) || [],
+      photos:
+        report.uploadedFiles?.map((file: any, idx: number) => ({
+          id: file._id?.toString() || idx.toString(),
+          url: file.fileUrl,
+        })) || [],
     },
     timeline: buildTimelineHelper(report, timezone),
   };
 };
 
-const getLostItemReturnDetailsFromDB = async (reportId: string): Promise<any> => {
+const getLostItemReturnDetailsFromDB = async (
+  reportId: string,
+): Promise<any> => {
   if (!mongoose.Types.ObjectId.isValid(reportId)) {
     throw new ApiError(StatusCodes.NOT_ACCEPTABLE, "Invalid report ID.");
   }
@@ -2138,37 +2181,51 @@ const getLostItemReturnDetailsFromDB = async (reportId: string): Promise<any> =>
     throw new ApiError(StatusCodes.NOT_FOUND, "Report not found.");
   }
 
-  const driverDoc = await Driver.findOne({ userId: report.driverId._id }).lean();
-  const timezone = (report.rideId as any)?.timezone || (process.env.TIMEZONE as string) || "Asia/Dhaka";
-  const formatTime = (date: Date) => utcToTimezone(date, timezone).toFormat("M/d/yyyy, h:mm:ss a");
+  const driverDoc = await Driver.findOne({
+    userId: report.driverId._id,
+  }).lean();
+  const timezone =
+    (report.rideId as any)?.timezone ||
+    (process.env.TIMEZONE as string) ||
+    "Asia/Dhaka";
+  const formatTime = (date: Date) =>
+    utcToTimezone(date, timezone).toFormat("M/d/yyyy, h:mm:ss a");
 
   // Find completedAt from auditLogs
   const completedAtLog = report.auditLogs?.find(
-    (log: any) => log.action === "PASSENGER_CONFIRMED" || log.action === "RETURN_COMPLETED"
+    (log: any) =>
+      log.action === "PASSENGER_CONFIRMED" || log.action === "RETURN_COMPLETED",
   );
   const completedAt = completedAtLog ? completedAtLog.timestamp : null;
 
   // Assignment info from auditLogs
   const adminLog = report.auditLogs?.find(
-    (log: any) => log.actorRole === "ADMIN" || log.actorRole === "SUPER_ADMIN"
+    (log: any) => log.actorRole === "ADMIN" || log.actorRole === "SUPER_ADMIN",
   );
-  const assignment = adminLog ? {
-    assignedAdminId: (adminLog.actor as any)?._id?.toString() || "",
-    assignedAdminName: (adminLog.actor as any)?.name || "",
-    assignedAt: formatTime(adminLog.timestamp),
-  } : null;
+  const assignment = adminLog
+    ? {
+        assignedAdminId: (adminLog.actor as any)?._id?.toString() || "",
+        assignedAdminName: (adminLog.actor as any)?.name || "",
+        assignedAt: formatTime(adminLog.timestamp),
+      }
+    : null;
 
-  const returnInformation = report.recoveryMethod ? {
-    returnMethod: report.recoveryMethod,
-    returnLocation: report.recoveryMethod === "passenger_pickup"
-      ? (report.pickupLocation?.address || null)
-      : (report.deliveryLocation?.address || null),
-    scheduledAt: report.scheduledAt ? formatTime(report.scheduledAt) : null,
-    completedAt: completedAt ? formatTime(completedAt) : null,
-    receivedBy: report.passengerConfirmed ? "passenger" : null,
-    receiverName: report.passengerConfirmed ? (report.passengerId as any)?.name || null : null,
-    returnNotes: report.adminNotes || report.driverNotes || null,
-  } : null;
+  const returnInformation = report.recoveryMethod
+    ? {
+        returnMethod: report.recoveryMethod,
+        returnLocation:
+          report.recoveryMethod === "passenger_pickup"
+            ? report.pickupLocation?.address || null
+            : report.deliveryLocation?.address || null,
+        scheduledAt: report.scheduledAt ? formatTime(report.scheduledAt) : null,
+        completedAt: completedAt ? formatTime(completedAt) : null,
+        receivedBy: report.passengerConfirmed ? "passenger" : null,
+        receiverName: report.passengerConfirmed
+          ? (report.passengerId as any)?.name || null
+          : null,
+        returnNotes: report.adminNotes || report.driverNotes || null,
+      }
+    : null;
 
   return {
     report: {
@@ -2193,19 +2250,24 @@ const getLostItemReturnDetailsFromDB = async (reportId: string): Promise<any> =>
     },
     trip: {
       rideId: (report.rideId as any)?._id?.toString() || "",
-      bookingReference: (report.rideId as any)?.bookingReference || `TRP-${(report.rideId as any)?._id?.toString().slice(-5).toUpperCase()}`,
+      bookingReference:
+        (report.rideId as any)?.bookingReference ||
+        `TRP-${(report.rideId as any)?._id?.toString().slice(-5).toUpperCase()}`,
       pickupAddress: (report.rideId as any)?.pickup?.address || "",
       destinationAddress: (report.rideId as any)?.destination?.address || "",
-      tripDate: (report.rideId as any)?.createdAt ? formatTime((report.rideId as any)?.createdAt) : "",
+      tripDate: (report.rideId as any)?.createdAt
+        ? formatTime((report.rideId as any)?.createdAt)
+        : "",
     },
     lostItem: {
       category: (report.itemCategory as any)?.name || "",
       itemName: report.itemName,
       description: report.itemDescription,
-      photos: report.uploadedFiles?.map((file: any, idx: number) => ({
-        id: file._id?.toString() || idx.toString(),
-        url: file.fileUrl,
-      })) || [],
+      photos:
+        report.uploadedFiles?.map((file: any, idx: number) => ({
+          id: file._id?.toString() || idx.toString(),
+          url: file.fileUrl,
+        })) || [],
     },
     assignment,
     returnInformation,

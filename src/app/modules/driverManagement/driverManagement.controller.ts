@@ -85,8 +85,10 @@ const getComplianceDrivers = catchAsync(async (req, res) => {
 
 const getDriverDetails = catchAsync(async (req, res) => {
   const { driverId } = req.params;
-  const result =
-    await DriverManagementServices.getDriverDetailsFromDB(driverId, req.query);
+  const result = await DriverManagementServices.getDriverDetailsFromDB(
+    driverId,
+    req.query,
+  );
 
   sendResponse(res, {
     success: true,

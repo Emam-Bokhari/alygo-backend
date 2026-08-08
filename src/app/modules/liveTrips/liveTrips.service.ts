@@ -254,16 +254,23 @@ const getLiveTripByIdFromDB = async (rideId: string): Promise<any> => {
 
   // Fetch associated documents in parallel
   const [passengerUser, driverDoc, trackingDoc] = await Promise.all([
-    User.findById(ride.userId).select("name phone email profileImage averageRating status"),
+    User.findById(ride.userId).select(
+      "name phone email profileImage averageRating status",
+    ),
     ride.driverId
-      ? Driver.findOne({ userId: ride.driverId }).populate("userId", "name phone email profileImage status")
+      ? Driver.findOne({ userId: ride.driverId }).populate(
+          "userId",
+          "name phone email profileImage status",
+        )
       : null,
     Tracking.findOne({ rideId }),
   ]);
 
   // Fetch car and cancellation reason if needed
   const [carDoc, cancellationReasonDoc] = await Promise.all([
-    driverDoc ? Car.findOne({ driverId: driverDoc._id, isVerified: true }) : null,
+    driverDoc
+      ? Car.findOne({ driverId: driverDoc._id, isVerified: true })
+      : null,
     ride.cancellation?.cancellationReasonId
       ? CancellationReason.findById(ride.cancellation.cancellationReasonId)
       : null,
@@ -348,12 +355,19 @@ const getLiveTripByIdFromDB = async (rideId: string): Promise<any> => {
 
   // Route progress calculation
   let routeProgressPercentage = 0;
-  if (trackingDoc && trackingDoc.totalDistanceKm && trackingDoc.remainingDistanceKm) {
+  if (
+    trackingDoc &&
+    trackingDoc.totalDistanceKm &&
+    trackingDoc.remainingDistanceKm
+  ) {
     const total = trackingDoc.totalDistanceKm;
     const remaining = trackingDoc.remainingDistanceKm;
     if (total > 0) {
       routeProgressPercentage = Math.round(((total - remaining) / total) * 100);
-      routeProgressPercentage = Math.max(0, Math.min(100, routeProgressPercentage));
+      routeProgressPercentage = Math.max(
+        0,
+        Math.min(100, routeProgressPercentage),
+      );
     }
   }
 
@@ -368,7 +382,11 @@ const getLiveTripByIdFromDB = async (rideId: string): Promise<any> => {
           : null,
         heading: (trackingDoc as any).heading || 0,
         speed: (trackingDoc as any).speed || 0,
-        lastUpdated: formatDate(trackingDoc.lastDriverLocationUpdateAt || trackingDoc.lastUpdatedAt || (trackingDoc as any).updatedAt),
+        lastUpdated: formatDate(
+          trackingDoc.lastDriverLocationUpdateAt ||
+            trackingDoc.lastUpdatedAt ||
+            (trackingDoc as any).updatedAt,
+        ),
         routePolyline: trackingDoc.polyline || ride.routeInfo.polyline || "",
         ETA: trackingDoc.estimatedArrivalMinutes || 0,
         routeProgressPercentage,

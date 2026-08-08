@@ -87,9 +87,8 @@ const getFinancialMetricsForRange = async (
     txStats.find((t) => t._id === TRANSACTION_TYPE.CANCELLATION_FEE)
       ?.totalAmount || 0;
   const cancellationCompensation =
-    txStats.find(
-      (t) => t._id === TRANSACTION_TYPE.CANCELLATION_COMPENSATION,
-    )?.totalAmount || 0;
+    txStats.find((t) => t._id === TRANSACTION_TYPE.CANCELLATION_COMPENSATION)
+      ?.totalAmount || 0;
 
   const platformEarnings =
     totalCommission + cancellationFee - cancellationCompensation;
@@ -109,11 +108,7 @@ const getRevenueSummaryFromDB = async (
   const tz = await resolveDashboardTimezone();
 
   // 1. Calculate All-time top summaries in parallel
-  const [
-    allTimeRideStats,
-    allTimeTxStats,
-    payoutStats,
-  ] = await Promise.all([
+  const [allTimeRideStats, allTimeTxStats, payoutStats] = await Promise.all([
     Ride.aggregate([
       {
         $match: {
@@ -216,7 +211,11 @@ const getRevenueSummaryFromDB = async (
   } else {
     // Default to last 7 days (including today)
     const nowInTzObj = DateTime.now().setZone(tz);
-    trendStart = nowInTzObj.minus({ days: 6 }).startOf("day").toUTC().toJSDate();
+    trendStart = nowInTzObj
+      .minus({ days: 6 })
+      .startOf("day")
+      .toUTC()
+      .toJSDate();
     trendEnd = nowInTzObj.endOf("day").toUTC().toJSDate();
   }
 
@@ -252,10 +251,7 @@ const getRevenueSummaryFromDB = async (
             {
               $cond: [
                 {
-                  $eq: [
-                    "$transactionType",
-                    TRANSACTION_TYPE.CANCELLATION_FEE,
-                  ],
+                  $eq: ["$transactionType", TRANSACTION_TYPE.CANCELLATION_FEE],
                 },
                 "$amount",
                 {
@@ -324,7 +320,7 @@ const getPayoutsFromDB = async (
   const payoutQueryObj: any = {};
 
   if (query.status) {
-    payoutQueryObj.status = query.status;
+    payoutQueryObj.status = (query.status as string).toLowerCase();
   }
 
   if (query.startDate || query.endDate) {
@@ -453,20 +449,36 @@ const mapType = (type?: string): string => {
  * Helper to map transaction status to UI strings
  */
 const mapStatus = (status?: string, type?: string): string => {
-  if (!status) return "Pending";
+  if (!status) return "pending";
   const s = status.toLowerCase();
+
+  if (type === TRANSACTION_TYPE.PAYOUT) {
+    if (
+      s === "paid" ||
+      s === "completed" ||
+      s === "processed" ||
+      s === "success"
+    ) {
+      return "completed";
+    }
+    if (s === "pending" || s === "processing") return s;
+    if (s === "failed") return "failed";
+    if (s === "rejected") return "rejected";
+    return s;
+  }
+
   if (
     s === "paid" ||
     s === "completed" ||
     s === "processed" ||
     s === "success"
   ) {
-    return type === TRANSACTION_TYPE.PAYOUT ? "Processed" : "Completed";
+    return "paid";
   }
-  if (s === "pending" || s === "processing") return "Pending";
-  if (s === "failed") return "Failed";
-  if (s === "refunded") return "Refunded";
-  return status;
+  if (s === "pending" || s === "processing") return "pending";
+  if (s === "failed") return "failed";
+  if (s === "refunded") return "refunded";
+  return s;
 };
 
 /**
@@ -478,14 +490,18 @@ const getTransactionsFromDB = async (
   const txQueryObj: any = {};
 
   if (query.status) {
-    const statusStr = query.status as string;
-    if (statusStr === "Completed" || statusStr === "Processed") {
+    const statusStr = (query.status as string).toLowerCase();
+    if (
+      statusStr === "completed" ||
+      statusStr === "processed" ||
+      statusStr === "paid"
+    ) {
       txQueryObj.paymentStatus = PAYMENT_STATUS.PAID;
-    } else if (statusStr === "Pending") {
+    } else if (statusStr === "pending" || statusStr === "processing") {
       txQueryObj.paymentStatus = PAYMENT_STATUS.PENDING;
-    } else if (statusStr === "Failed") {
+    } else if (statusStr === "failed") {
       txQueryObj.paymentStatus = PAYMENT_STATUS.FAILED;
-    } else if (statusStr === "Refunded") {
+    } else if (statusStr === "refunded") {
       txQueryObj.paymentStatus = PAYMENT_STATUS.REFUNDED;
     } else {
       txQueryObj.paymentStatus = statusStr;

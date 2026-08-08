@@ -45,7 +45,11 @@ const getPassengersOverview = async (queryParams: Record<string, any>) => {
   }
 
   if (status) {
-    if (status === "inactive" || status === "suspended" || status === "banned") {
+    if (
+      status === "inactive" ||
+      status === "suspended" ||
+      status === "banned"
+    ) {
       filterQuery.status = STATUS.INACTIVE;
     } else if (status === "active") {
       filterQuery.status = STATUS.ACTIVE;
@@ -94,8 +98,12 @@ const getPassengersOverview = async (queryParams: Record<string, any>) => {
     Wallet.find({ userId: { $in: passengerIds } }).lean(),
   ]);
 
-  const rideCountMap = new Map(rideCounts.map((r) => [r._id.toString(), r.count]));
-  const walletMap = new Map(wallets.map((w) => [w.userId.toString(), w.balance]));
+  const rideCountMap = new Map(
+    rideCounts.map((r) => [r._id.toString(), r.count]),
+  );
+  const walletMap = new Map(
+    wallets.map((w) => [w.userId.toString(), w.balance]),
+  );
 
   // Format response rows
   const formattedData = passengers.map((user: any) => {
@@ -112,7 +120,9 @@ const getPassengersOverview = async (queryParams: Record<string, any>) => {
       fullName: user.name,
       avatar: user.profileImage || "",
       email: user.email,
-      averageRating: user.averageRating ? Number(user.averageRating.toFixed(1)) : 0,
+      averageRating: user.averageRating
+        ? Number(user.averageRating.toFixed(1))
+        : 0,
       totalTrips: rideCountMap.get(user._id.toString()) || 0,
       walletBalance: walletMap.get(user._id.toString()) || 0,
       city: passengerCity,
@@ -227,7 +237,9 @@ const getLivePassengers = async (query: Record<string, any>) => {
     { $match: { userId: { $in: passengerIds } } },
     { $group: { _id: "$userId", count: { $sum: 1 } } },
   ]);
-  const rideCountMap = new Map(rideCounts.map((r) => [r._id.toString(), r.count]));
+  const rideCountMap = new Map(
+    rideCounts.map((r) => [r._id.toString(), r.count]),
+  );
 
   const formattedData = rides.map((r: any) => {
     let passengerCity = r.serviceArea?.city || "Unknown";
@@ -245,7 +257,9 @@ const getLivePassengers = async (query: Record<string, any>) => {
       currentRideId: r._id.toString(),
       rideStatus: r.status,
       totalTrips: rideCountMap.get(r.passenger._id.toString()) || 0,
-      averageRating: r.passenger.averageRating ? Number(r.passenger.averageRating.toFixed(1)) : 0,
+      averageRating: r.passenger.averageRating
+        ? Number(r.passenger.averageRating.toFixed(1))
+        : 0,
       city: passengerCity,
     };
   });
@@ -288,7 +302,10 @@ const getSuspendedPassengers = async (queryParams: Record<string, any>) => {
  * Get detailed dashboard profile view for passenger
  */
 const getPassengerDetails = async (passengerId: string) => {
-  const user = await User.findOne({ _id: passengerId, role: USER_ROLES.USER }).lean();
+  const user = await User.findOne({
+    _id: passengerId,
+    role: USER_ROLES.USER,
+  }).lean();
   if (!user) {
     throw new ApiError(404, "Passenger not found");
   }
@@ -319,16 +336,36 @@ const getPassengerDetails = async (passengerId: string) => {
       },
     }),
     Ride.aggregate([
-      { $match: { userId: new Types.ObjectId(passengerId), status: RIDE_STATUS.COMPLETED } },
-      { $group: { _id: null, totalDistance: { $sum: "$routeInfo.totalDistanceKm" } } },
+      {
+        $match: {
+          userId: new Types.ObjectId(passengerId),
+          status: RIDE_STATUS.COMPLETED,
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalDistance: { $sum: "$routeInfo.totalDistanceKm" },
+        },
+      },
     ]),
     Ride.aggregate([
-      { $match: { userId: new Types.ObjectId(passengerId), status: RIDE_STATUS.COMPLETED } },
+      {
+        $match: {
+          userId: new Types.ObjectId(passengerId),
+          status: RIDE_STATUS.COMPLETED,
+        },
+      },
       { $group: { _id: null, totalSpent: { $sum: "$fare.total" } } },
     ]),
     Wallet.findOne({ userId: passengerId }).lean(),
     Transaction.aggregate([
-      { $match: { userId: new Types.ObjectId(passengerId), paymentStatus: "paid" } },
+      {
+        $match: {
+          userId: new Types.ObjectId(passengerId),
+          paymentStatus: "paid",
+        },
+      },
       {
         $group: {
           _id: "$transactionType",
@@ -337,10 +374,7 @@ const getPassengerDetails = async (passengerId: string) => {
       },
     ]),
     EmergencyContact.findOne({ userId: passengerId, isActive: true }).lean(),
-    Ride.find({ userId: passengerId })
-      .sort({ createdAt: -1 })
-      .limit(5)
-      .lean(),
+    Ride.find({ userId: passengerId }).sort({ createdAt: -1 }).limit(5).lean(),
     Review.find({ receiverId: passengerId })
       .sort({ createdAt: -1 })
       .populate("reviewerId", "name")
@@ -383,7 +417,9 @@ const getPassengerDetails = async (passengerId: string) => {
     email: user.email,
     phone: user.phone || "",
     gender: user.gender || "male",
-    dateOfBirth: user.dateOfBirth ? user.dateOfBirth.toISOString().split("T")[0] : null,
+    dateOfBirth: user.dateOfBirth
+      ? user.dateOfBirth.toISOString().split("T")[0]
+      : null,
   };
 
   const account = {
@@ -399,7 +435,9 @@ const getPassengerDetails = async (passengerId: string) => {
     cancelledTrips,
     totalDistance: Number(totalDistance.toFixed(2)),
     totalSpent: Number(totalSpentFromRides.toFixed(2)),
-    averageRating: user.averageRating ? Number(user.averageRating.toFixed(1)) : 0,
+    averageRating: user.averageRating
+      ? Number(user.averageRating.toFixed(1))
+      : 0,
   };
 
   const wallet = {
@@ -458,7 +496,9 @@ const getLivePassengerDetails = async (passengerId: string) => {
         RIDE_STATUS.STARTED,
       ],
     },
-  }).populate("serviceAreaId").lean();
+  })
+    .populate("serviceAreaId")
+    .lean();
 
   if (!ride) {
     throw new ApiError(404, "No active ride found for this passenger");
@@ -467,7 +507,10 @@ const getLivePassengerDetails = async (passengerId: string) => {
   const [passengerUser, driverDoc, trackingDoc] = await Promise.all([
     User.findById(ride.userId).select("name phone email profileImage status"),
     ride.driverId
-      ? Driver.findOne({ userId: ride.driverId }).populate("userId", "name phone email profileImage status")
+      ? Driver.findOne({ userId: ride.driverId }).populate(
+          "userId",
+          "name phone email profileImage status",
+        )
       : null,
     Tracking.findOne({ rideId: ride._id }),
   ]);
@@ -520,12 +563,19 @@ const getLivePassengerDetails = async (passengerId: string) => {
   }
 
   let routeProgressPercentage = 0;
-  if (trackingDoc && trackingDoc.totalDistanceKm && trackingDoc.remainingDistanceKm) {
+  if (
+    trackingDoc &&
+    trackingDoc.totalDistanceKm &&
+    trackingDoc.remainingDistanceKm
+  ) {
     const total = trackingDoc.totalDistanceKm;
     const remaining = trackingDoc.remainingDistanceKm;
     if (total > 0) {
       routeProgressPercentage = Math.round(((total - remaining) / total) * 100);
-      routeProgressPercentage = Math.max(0, Math.min(100, routeProgressPercentage));
+      routeProgressPercentage = Math.max(
+        0,
+        Math.min(100, routeProgressPercentage),
+      );
     }
   }
 

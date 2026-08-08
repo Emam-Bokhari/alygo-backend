@@ -162,30 +162,66 @@ async function runVerification() {
       searchTerm: "Overview Driver",
     });
 
-    assert(overview.data.length === 1, "Should find 1 driver matching the search term");
+    assert(
+      overview.data.length === 1,
+      "Should find 1 driver matching the search term",
+    );
     const item = overview.data[0];
     console.log("ITEM IS:", JSON.stringify(item, null, 2));
 
-    assert(item.fullName === "Overview Driver", `fullName should be 'Overview Driver', got ${item.fullName}`);
-    assert(item.driverId._id === driver._id.toString(), "driverId should match");
+    assert(
+      item.fullName === "Overview Driver",
+      `fullName should be 'Overview Driver', got ${item.fullName}`,
+    );
+    assert(
+      item.driverId._id === driver._id.toString(),
+      "driverId should match",
+    );
     assert(item.userId?._id === user._id.toString(), "userId should match");
-    assert(item.city === "Overview City Address", `city should be parsed from location address, got: ${item.city}`);
-    assert(item.vehicle === "Toyota Corolla", `vehicle should match, got: ${item.vehicle}`);
-    assert(item.rideCategories.includes("Overview Standard"), "Should match active ride category 'Overview Standard'");
-    assert(item.completedTrips === 1, `completedTrips should be 1, got ${item.completedTrips}`);
-    assert(item.tier === "Overview Journey Tier", `tier should be 'Overview Journey Tier', got ${item.tier}`);
-    assert(item.tierProgress === "45% To Overview Elite Tier", `tierProgress should match progressPercentage & nextTier name, got: ${item.tierProgress}`);
-    assert(item.tierStatus === "Active", `tierStatus should be Active when meeting requirements, got: ${item.tierStatus}`);
+    assert(
+      item.city === "Overview City Address",
+      `city should be parsed from location address, got: ${item.city}`,
+    );
+    assert(
+      item.vehicle === "Toyota Corolla",
+      `vehicle should match, got: ${item.vehicle}`,
+    );
+    assert(
+      item.rideCategories.includes("Overview Standard"),
+      "Should match active ride category 'Overview Standard'",
+    );
+    assert(
+      item.completedTrips === 1,
+      `completedTrips should be 1, got ${item.completedTrips}`,
+    );
+    assert(
+      item.tier === "Overview Journey Tier",
+      `tier should be 'Overview Journey Tier', got ${item.tier}`,
+    );
+    assert(
+      item.tierProgress === "45% To Overview Elite Tier",
+      `tierProgress should match progressPercentage & nextTier name, got: ${item.tierProgress}`,
+    );
+    assert(
+      item.tierStatus === "Active",
+      `tierStatus should be Active when meeting requirements, got: ${item.tierStatus}`,
+    );
 
     // Now test "at risk" status by changing averageRating to be below requirement (4.0)
-    console.log("\nUpdating driver rating below requirement to test 'at risk' tier status...");
+    console.log(
+      "\nUpdating driver rating below requirement to test 'at risk' tier status...",
+    );
     await Driver.findByIdAndUpdate(driver._id, { averageRating: 3.5 });
 
-    const updatedOverview = await DriverManagementServices.getDriversOverviewFromDB({
-      searchTerm: "Overview Driver",
-    });
+    const updatedOverview =
+      await DriverManagementServices.getDriversOverviewFromDB({
+        searchTerm: "Overview Driver",
+      });
     const updatedItem = updatedOverview.data[0];
-    assert(updatedItem.tierStatus === "at risk", `tierStatus should become 'at risk' when rating drops below 4.0, got: ${updatedItem.tierStatus}`);
+    assert(
+      updatedItem.tierStatus === "at risk",
+      `tierStatus should become 'at risk' when rating drops below 4.0, got: ${updatedItem.tierStatus}`,
+    );
 
     console.log("\nALL TESTS PASSED SUCCESSFULLY!");
   } catch (error: any) {
