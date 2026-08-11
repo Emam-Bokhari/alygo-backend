@@ -99,8 +99,19 @@ const getAllDriverDutyPoliciesFromDB = async (
 ): Promise<{ data: IDriverDutyPolicy[]; meta: any }> => {
   const searchTerm = query.searchTerm as string;
 
+  // Match initial query parameters before lookups for better performance and correct ObjectId matching
+  const matchQuery: Record<string, any> = {};
+  if (query.scopeType) matchQuery.scopeType = query.scopeType;
+  if (query.countryId) matchQuery.countryId = new Types.ObjectId(query.countryId as string);
+  if (query.stateId) matchQuery.stateId = new Types.ObjectId(query.stateId as string);
+  if (query.cityId) matchQuery.cityId = new Types.ObjectId(query.cityId as string);
+  if (query.zoneId) matchQuery.zoneId = new Types.ObjectId(query.zoneId as string);
+  if (query.airportId) matchQuery.airportId = new Types.ObjectId(query.airportId as string);
+  if (query.status) matchQuery.status = query.status;
+
   // Build aggregation pipeline
   const pipeline: any[] = [
+    ...(Object.keys(matchQuery).length > 0 ? [{ $match: matchQuery }] : []),
     {
       $lookup: {
         from: "serviceareas",
@@ -234,9 +245,22 @@ const getAllDriverDutyPoliciesFromDB = async (
     });
   }
 
-  // Apply filters (excluding searchTerm, sort, limit, page, fields)
+  // Apply filters (excluding searchTerm, sort, limit, page, fields, and explicitly matched fields)
   const queryObj = { ...query };
-  const excludeFields = ["searchTerm", "sort", "limit", "page", "fields"];
+  const excludeFields = [
+    "searchTerm",
+    "sort",
+    "limit",
+    "page",
+    "fields",
+    "scopeType",
+    "countryId",
+    "stateId",
+    "cityId",
+    "zoneId",
+    "airportId",
+    "status",
+  ];
   excludeFields.forEach((el) => delete queryObj[el]);
 
   if (Object.keys(queryObj).length > 0) {
@@ -387,10 +411,19 @@ const getActiveDriverDutyPoliciesFromDB = async (
 ): Promise<{ data: IDriverDutyPolicy[]; meta: any }> => {
   const searchTerm = query.searchTerm as string;
 
+  // Match initial query parameters before lookups for better performance and correct ObjectId matching
+  const matchQuery: Record<string, any> = { status: STATUS.ACTIVE };
+  if (query.scopeType) matchQuery.scopeType = query.scopeType;
+  if (query.countryId) matchQuery.countryId = new Types.ObjectId(query.countryId as string);
+  if (query.stateId) matchQuery.stateId = new Types.ObjectId(query.stateId as string);
+  if (query.cityId) matchQuery.cityId = new Types.ObjectId(query.cityId as string);
+  if (query.zoneId) matchQuery.zoneId = new Types.ObjectId(query.zoneId as string);
+  if (query.airportId) matchQuery.airportId = new Types.ObjectId(query.airportId as string);
+
   // Build aggregation pipeline
   const pipeline: any[] = [
     {
-      $match: { status: STATUS.ACTIVE },
+      $match: matchQuery,
     },
     {
       $lookup: {
@@ -525,9 +558,21 @@ const getActiveDriverDutyPoliciesFromDB = async (
     });
   }
 
-  // Apply filters (excluding searchTerm, sort, limit, page, fields)
+  // Apply filters (excluding searchTerm, sort, limit, page, fields, and explicitly matched fields)
   const queryObj = { ...query };
-  const excludeFields = ["searchTerm", "sort", "limit", "page", "fields"];
+  const excludeFields = [
+    "searchTerm",
+    "sort",
+    "limit",
+    "page",
+    "fields",
+    "scopeType",
+    "countryId",
+    "stateId",
+    "cityId",
+    "zoneId",
+    "airportId",
+  ];
   excludeFields.forEach((el) => delete queryObj[el]);
 
   if (Object.keys(queryObj).length > 0) {
