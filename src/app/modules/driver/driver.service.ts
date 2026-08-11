@@ -3,7 +3,6 @@ import ApiError from "../../../errors/ApiErrors";
 import { User } from "../user/user.model";
 import { Driver } from "./driver.model";
 import { IDriver } from "./driver.interface";
-import { EXTRACTION_STATUS } from "./driver.constant";
 import { DriverDutyPolicyServices } from "../driverDutyPolicy/driverDutyPolicy.service";
 import { Review } from "../review/review.model";
 import { calculateDriverAcceptanceRate } from "../tier/points.service";
@@ -11,6 +10,23 @@ import { DriverDutyPolicy } from "../driverDutyPolicy/driverDutyPolicy.model";
 import { ServiceAreaServices } from "../serviceArea/serviceArea.service";
 import { getDayRangeInTimezone } from "../../../shared/timezoneHelper";
 import { DateTime } from "luxon";
+import { Car } from "../car/car.model";
+import { DRIVER_STATUS } from "../../../enums/user";
+
+const calculateDocumentsStatus = async (userId: string, driverDoc?: any) => {
+  const user = await User.findById(userId);
+  const driver =
+    driverDoc || (await Driver.findOne({ userId: new Types.ObjectId(userId) }));
+  if (!driver) return null;
+
+  return {
+    profilePhoto: !!user?.profileImage,
+    liveSelfie: !!driver?.liveSelfie,
+    ssn: !!(driver?.ssn || driver?.ssnCard),
+    drivingLicense: !!(driver?.drivingLicense && driver?.drivingLicenseNumber),
+    taxDocuments: !!(driver?.taxDocument || driver?.taxIdValue),
+  };
+};
 
 const createDriverToDB = async (userId: string, payload: Partial<IDriver>) => {
   const existingUser = await User.isExistUserById(userId);
@@ -19,43 +35,82 @@ const createDriverToDB = async (userId: string, payload: Partial<IDriver>) => {
     throw new ApiError(404, "User not found");
   }
 
-  const existingDriver = await Driver.findOne({
+  let existingDriver = await Driver.findOne({
     userId: new Types.ObjectId(userId),
   });
 
-  if (existingDriver) {
-    throw new ApiError(409, "Driver profile already exists for this user");
+  // Extract profileImage and update User if present
+  const { profileImage, ...payloadRest } = payload as any;
+  if (profileImage) {
+    await User.findByIdAndUpdate(userId, { profileImage });
   }
 
-  // Process taxDocuments to ensure they have required fields
-  let processedTaxDocuments = payload.taxDocuments;
-  if (processedTaxDocuments && Array.isArray(processedTaxDocuments)) {
-    processedTaxDocuments = processedTaxDocuments.map((doc) => ({
-      ...doc,
-      extractionStatus: doc.extractionStatus || EXTRACTION_STATUS.PENDING,
-      extractedData: doc.extractedData || {},
-    }));
+  if (!existingDriver) {
+    existingDriver = await Driver.create({
+      userId: new Types.ObjectId(userId),
+      ...payloadRest,
+      approvalStatus: DRIVER_STATUS.PENDING,
+    });
+  } else {
+    // Reset approval status to pending when updating verification details
+    payloadRest.approvalStatus = DRIVER_STATUS.PENDING;
+    existingDriver = await Driver.findOneAndUpdate(
+      { userId: new Types.ObjectId(userId) },
+      payloadRest,
+      { new: true },
+    );
   }
 
-  const driverPayload = {
-    userId: new Types.ObjectId(userId),
-    ...payload,
-    taxDocuments: processedTaxDocuments || [],
+  // Update user role to driver
+  await User.findByIdAndUpdate(userId, { role: "driver" });
+
+  // Calculate and store documents status
+  const docStatus = await calculateDocumentsStatus(userId, existingDriver);
+  if (docStatus) {
+    existingDriver = await Driver.findOneAndUpdate(
+      { userId: existingDriver!.userId },
+      { $set: { documentsStatus: docStatus } },
+      { new: true },
+    );
+  }
+
+  const populatedDriver = await Driver.findById(existingDriver!._id)
+    .populate("userId", "name profileImage phone email")
+    .lean();
+
+  const car = await Car.findOne({ driverId: existingDriver!._id }).lean();
+
+  return {
+    ...populatedDriver,
+    car,
   };
-
-  const driver = await Driver.create(driverPayload);
-
-  return driver;
 };
 
 const getDriverProfileFromDB = async (userId: string) => {
-  const driver = await Driver.findOne({ userId: new Types.ObjectId(userId) });
+  let driver = await Driver.findOne({ userId: new Types.ObjectId(userId) })
+    .populate("userId", "name profileImage phone email")
+    .lean();
 
   if (!driver) {
     throw new ApiError(404, "Driver profile not found");
   }
 
-  return driver;
+  // Recalculate document status to make sure it's accurate
+  const docStatus = await calculateDocumentsStatus(userId, driver);
+  if (docStatus) {
+    await Driver.updateOne(
+      { _id: driver._id },
+      { $set: { documentsStatus: docStatus } },
+    );
+    driver.documentsStatus = docStatus;
+  }
+
+  const car = await Car.findOne({ driverId: driver._id }).lean();
+
+  return {
+    ...driver,
+    car,
+  };
 };
 
 const updateDriverFromDB = async (
@@ -76,18 +131,15 @@ const updateDriverFromDB = async (
     throw new ApiError(404, "Driver profile not found");
   }
 
-  const { userId: _, ...updatePayload } = payload as Partial<IDriver> & {
+  // Extract profileImage and update User if present
+  const { profileImage, ...payloadRest } = payload as any;
+  if (profileImage) {
+    await User.findByIdAndUpdate(userId, { profileImage });
+  }
+
+  const { userId: _, ...updatePayload } = payloadRest as Partial<IDriver> & {
     userId?: Types.ObjectId;
   };
-
-  // Process taxDocuments if present
-  if (updatePayload.taxDocuments && Array.isArray(updatePayload.taxDocuments)) {
-    updatePayload.taxDocuments = updatePayload.taxDocuments.map((doc) => ({
-      ...doc,
-      extractionStatus: doc.extractionStatus || EXTRACTION_STATUS.PENDING,
-      extractedData: doc.extractedData || {},
-    }));
-  }
 
   // Determine if driver is going online or changing service area while online
   const isGoingOnline =
@@ -171,13 +223,49 @@ const updateDriverFromDB = async (
     }
   }
 
+  // Set approval status to pending if rider updates registration details (prevent self-approval bypass)
+  const hasUpdatedDetails =
+    Object.keys(updatePayload).some(
+      (key) =>
+        ![
+          "driverAvailabilityStatus",
+          "lastOnlineAt",
+          "lastOfflineAt",
+          "location",
+        ].includes(key),
+    ) || profileImage;
+
+  if (hasUpdatedDetails) {
+    updatePayload.approvalStatus = DRIVER_STATUS.PENDING;
+  }
+
   const updatedDriver = await Driver.findOneAndUpdate(
     { userId: new Types.ObjectId(userId) },
     updatePayload,
     { new: true, runValidators: true },
   );
 
-  return updatedDriver;
+  // Calculate documents status
+  const docStatus = await calculateDocumentsStatus(userId, updatedDriver);
+  if (docStatus) {
+    await Driver.findOneAndUpdate(
+      { userId: new Types.ObjectId(userId) },
+      { $set: { documentsStatus: docStatus } },
+    );
+  }
+
+  const finalDriver = await Driver.findOne({
+    userId: new Types.ObjectId(userId),
+  })
+    .populate("userId", "name profileImage phone email")
+    .lean();
+
+  const car = await Car.findOne({ driverId: existingDriver._id }).lean();
+
+  return {
+    ...finalDriver,
+    car,
+  };
 };
 
 const getDriverAvailability = async (userId: string) => {

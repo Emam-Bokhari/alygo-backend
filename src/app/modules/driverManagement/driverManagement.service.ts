@@ -472,9 +472,7 @@ const getDriverDetailsFromDB = async (
 
   // Retrieve parallel details
   const [car, completedTrips, auditLogs] = await Promise.all([
-    Car.findOne({ driverId: driver._id })
-      .select("brand model licensePlate")
-      .lean(),
+    Car.findOne({ driverId: driver._id }).lean(),
     user?._id
       ? Ride.countDocuments({
           driverId: user._id,
@@ -648,7 +646,28 @@ const getDriverDetailsFromDB = async (
   });
 
   return {
-    driver: driverInfo,
+    driver: {
+      ...driverInfo,
+      ssn: driver.ssn,
+      ssnCard: driver.ssnCard,
+      drivingLicense: driver.drivingLicense,
+      drivingLicenseNumber: driver.drivingLicenseNumber,
+      taxDocument: driver.taxDocument,
+      documentsStatus: driver.documentsStatus,
+      approvalStatus: driver.approvalStatus,
+      taxLegalName: driver.taxLegalName,
+      taxBusinessName: driver.taxBusinessName,
+      taxIdType: driver.taxIdType,
+      taxIdValue: driver.taxIdValue,
+      taxEmail: driver.taxEmail,
+      taxPhone: driver.taxPhone,
+      taxStreet: driver.taxStreet,
+      taxCity: driver.taxCity,
+      taxState: driver.taxState,
+      taxZipCode: driver.taxZipCode,
+      taxCountry: driver.taxCountry,
+    },
+    car,
     identityVerification,
     verificationImages,
     verificationHistory,

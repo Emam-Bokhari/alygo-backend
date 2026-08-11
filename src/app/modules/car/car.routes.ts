@@ -22,6 +22,18 @@ router
         mode: "single",
       },
       {
+        fieldName: "vehicleRegistration",
+        mode: "single",
+      },
+      {
+        fieldName: "commercialInsurance",
+        mode: "single",
+      },
+      {
+        fieldName: "vehicleInspection",
+        mode: "single",
+      },
+      {
         fieldName: "insuranceHub",
         mode: "multiple",
       },
@@ -43,6 +55,18 @@ router
       },
       {
         fieldName: "personalAutoInsurance",
+        mode: "single",
+      },
+      {
+        fieldName: "vehicleRegistration",
+        mode: "single",
+      },
+      {
+        fieldName: "commercialInsurance",
+        mode: "single",
+      },
+      {
+        fieldName: "vehicleInspection",
         mode: "single",
       },
       {

@@ -251,6 +251,7 @@ const overrideDriverTier = catchAsync(async (req: Request, res: Response) => {
   const activeTiers = await Tier.find({ status: "active" as any }).sort({
     level: 1,
   });
+
   const nextTier = activeTiers.find((t) => t.level === tier.level + 1) || null;
   driver.nextTier = nextTier ? nextTier._id : null;
 
@@ -268,7 +269,7 @@ const overrideDriverTier = catchAsync(async (req: Request, res: Response) => {
 
   await driver.save();
 
-  // Create log history
+  // create log history
   await TierHistory.create({
     driverId: new Types.ObjectId(driverUserId),
     oldTierId: oldTierId || null,

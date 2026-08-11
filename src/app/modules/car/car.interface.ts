@@ -20,11 +20,28 @@ export interface ICar {
 
   vehicleLicense?: string;
   personalAutoInsurance?: string;
+  personalAutoInsuranceNumber?: string;
+  color?: string;
+  vehicleRegistration?: string;
+  vehicleRegistrationNumber?: string;
+  commercialInsurance?: string;
+  commercialInsuranceNumber?: string;
+  vehicleInspection?: string;
+  vehicleInspectionNumber?: string;
   insuranceHub: {
     fileUrl: string;
     fileName?: string;
     uploadedAt?: Date;
-    extractedData?: Record<string, unknown>;
+    provider?: string;
+    policyNumber?: string;
+    policyHolder?: string;
+    coverageType?: string;
+    vehicleBound?: string;
+    effectiveDate?: Date;
+    expirationDate?: Date;
+    liabilityLimits?: string;
+    collisionDeductible?: string;
+    comprehensive?: string;
   }[];
   isVerified: boolean;
   verifiedAt?: Date;

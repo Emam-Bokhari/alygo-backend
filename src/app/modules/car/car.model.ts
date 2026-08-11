@@ -64,6 +64,46 @@ const carSchema = new Schema<ICar>(
       default: "",
     },
 
+    personalAutoInsuranceNumber: {
+      type: String,
+      default: "",
+    },
+
+    color: {
+      type: String,
+      default: "",
+    },
+
+    vehicleRegistration: {
+      type: String,
+      default: "",
+    },
+
+    vehicleRegistrationNumber: {
+      type: String,
+      default: "",
+    },
+
+    commercialInsurance: {
+      type: String,
+      default: "",
+    },
+
+    commercialInsuranceNumber: {
+      type: String,
+      default: "",
+    },
+
+    vehicleInspection: {
+      type: String,
+      default: "",
+    },
+
+    vehicleInspectionNumber: {
+      type: String,
+      default: "",
+    },
+
     insuranceHub: {
       type: [
         {
@@ -82,9 +122,45 @@ const carSchema = new Schema<ICar>(
             default: null,
           },
 
-          extractedData: {
-            type: Schema.Types.Mixed,
-            default: {},
+          provider: {
+            type: String,
+            default: "",
+          },
+          policyNumber: {
+            type: String,
+            default: "",
+          },
+          policyHolder: {
+            type: String,
+            default: "",
+          },
+          coverageType: {
+            type: String,
+            default: "",
+          },
+          vehicleBound: {
+            type: String,
+            default: "",
+          },
+          effectiveDate: {
+            type: Date,
+            default: null,
+          },
+          expirationDate: {
+            type: Date,
+            default: null,
+          },
+          liabilityLimits: {
+            type: String,
+            default: "",
+          },
+          collisionDeductible: {
+            type: String,
+            default: "",
+          },
+          comprehensive: {
+            type: String,
+            default: "",
           },
         },
       ],

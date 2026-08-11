@@ -2,10 +2,8 @@ import { ISoftDeleteModel } from "../../../types/softDelete";
 import { Types } from "mongoose";
 import {
   CLASSIFICATION,
-  DOCUMENT_TYPE,
   DRIVER_AVAILABILITY_STATUS,
   DRIVER_BLOCK_REASON,
-  EXTRACTION_STATUS,
   TAX_ID_TYPE,
   VERIFICATION_STATUS,
 } from "./driver.constant";
@@ -22,7 +20,17 @@ export type IDriver = {
   isStripeOnboarded?: boolean;
   liveSelfie?: string;
   drivingLicense?: string;
+  drivingLicenseNumber?: string;
   ssn?: string;
+  ssnCard?: string;
+  taxDocument?: string;
+  documentsStatus?: {
+    profilePhoto: boolean;
+    liveSelfie: boolean;
+    ssn: boolean;
+    drivingLicense: boolean;
+    taxDocuments: boolean;
+  };
 
   // Service Area
   serviceAreaId?: Types.ObjectId;
@@ -51,19 +59,6 @@ export type IDriver = {
   taxCountry?: string;
 
   receiveTaxDocumentsDigitally: boolean;
-
-  taxDocuments: {
-    documentType: DOCUMENT_TYPE;
-
-    fileUrl: string;
-    fileName: string;
-
-    extractionStatus: EXTRACTION_STATUS;
-
-    extractedData: Record<string, unknown>;
-
-    uploadedAt: Date;
-  }[];
   driverAvailabilityStatus: DRIVER_AVAILABILITY_STATUS;
   lastOnlineAt?: Date;
   lastOfflineAt?: Date;

@@ -2,7 +2,6 @@ import express from "express";
 import { isAuthenticated, isDriver } from "../../../helpers/authHelper";
 import { DriverController } from "./driver.controller";
 import { ReviewController } from "../review/review.controller";
-
 import { parseFileData } from "../../middlewares/parseFileData";
 import fileUploadHandler from "../../middlewares/flieUploadHandler";
 import validateRequest from "../../middlewares/validateRequest";
@@ -17,39 +16,37 @@ router
   .route("/")
   .post(
     isAuthenticated,
-    fileUploadHandler(["drivingLicense", "liveSelfie", "taxDocuments"]),
+    fileUploadHandler([
+      "profileImage",
+      "liveSelfie",
+      "ssnCard",
+      "drivingLicense",
+      "taxDocument",
+    ]),
     parseFileData(
-      {
-        fieldName: "drivingLicense",
-        mode: "single",
-      },
-      {
-        fieldName: "liveSelfie",
-        mode: "single",
-      },
-      {
-        fieldName: "taxDocuments",
-        mode: "multiple",
-      },
+      { fieldName: "profileImage", mode: "single" },
+      { fieldName: "liveSelfie", mode: "single" },
+      { fieldName: "ssnCard", mode: "single" },
+      { fieldName: "drivingLicense", mode: "single" },
+      { fieldName: "taxDocument", mode: "single" },
     ),
     DriverController.createDriver,
   )
   .patch(
     isAuthenticated,
-    fileUploadHandler(["drivingLicense", "liveSelfie", "taxDocuments"]),
+    fileUploadHandler([
+      "profileImage",
+      "liveSelfie",
+      "ssnCard",
+      "drivingLicense",
+      "taxDocument",
+    ]),
     parseFileData(
-      {
-        fieldName: "drivingLicense",
-        mode: "single",
-      },
-      {
-        fieldName: "liveSelfie",
-        mode: "single",
-      },
-      {
-        fieldName: "taxDocuments",
-        mode: "multiple",
-      },
+      { fieldName: "profileImage", mode: "single" },
+      { fieldName: "liveSelfie", mode: "single" },
+      { fieldName: "ssnCard", mode: "single" },
+      { fieldName: "drivingLicense", mode: "single" },
+      { fieldName: "taxDocument", mode: "single" },
     ),
     DriverController.updateDriver,
   )

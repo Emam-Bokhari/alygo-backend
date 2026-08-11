@@ -35,7 +35,9 @@ router
   .route("/zones/:cityId")
   .get(isAuthenticated, ServiceAreaController.getZonesByCity);
 
-router.route("/airports").get(isAuthenticated, ServiceAreaController.getAirports);
+router
+  .route("/airports")
+  .get(isAuthenticated, ServiceAreaController.getAirports);
 router
   .route("/airports/:cityId")
   .get(isAuthenticated, ServiceAreaController.getAirportsByCity);

@@ -1,8 +1,8 @@
 import express from "express";
 import auth from "../../middlewares/auth";
-import { USER_ROLES } from "../../../enums/user";
 import { AdminRewardsController } from "./adminRewards.controller";
 import { requirePermission } from "../../middlewares/requirePermission";
+import { isAuthenticated } from "../../../helpers/authHelper";
 
 const router = express.Router();
 
@@ -44,11 +44,7 @@ router
     requirePermission("adminrewards.create"),
     AdminRewardsController.createPointRule,
   )
-  .get(
-    auth(),
-    requirePermission("adminrewards.read"),
-    AdminRewardsController.getPointRules,
-  );
+  .get(isAuthenticated, AdminRewardsController.getPointRules);
 
 router
   .route("/point-rules/:id")

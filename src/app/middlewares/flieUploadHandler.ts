@@ -141,6 +141,56 @@ export const FILE_CONFIG = {
       "application/pdf",
     ]),
   },
+  taxDocument: {
+    dir: "taxDocument",
+    maxCount: 1,
+    mimeTypes: new Set([
+      "image/png",
+      "image/jpeg",
+      "image/webp",
+      "application/pdf",
+    ]),
+  },
+  vehicleRegistration: {
+    dir: "vehicleRegistration",
+    maxCount: 1,
+    mimeTypes: new Set([
+      "image/png",
+      "image/jpeg",
+      "image/webp",
+      "application/pdf",
+    ]),
+  },
+  vehicleInspection: {
+    dir: "vehicleInspection",
+    maxCount: 1,
+    mimeTypes: new Set([
+      "image/png",
+      "image/jpeg",
+      "image/webp",
+      "application/pdf",
+    ]),
+  },
+  commercialInsurance: {
+    dir: "commercialInsurance",
+    maxCount: 1,
+    mimeTypes: new Set([
+      "image/png",
+      "image/jpeg",
+      "image/webp",
+      "application/pdf",
+    ]),
+  },
+  ssnCard: {
+    dir: "ssnCard",
+    maxCount: 1,
+    mimeTypes: new Set([
+      "image/png",
+      "image/jpeg",
+      "image/webp",
+      "application/pdf",
+    ]),
+  },
   uploadedFiles: {
     dir: "uploadedFiles",
     maxCount: 15,

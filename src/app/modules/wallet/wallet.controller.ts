@@ -40,7 +40,7 @@ const getTransactionHistory = catchAsync(
 
     const {
       filter,
-      search,
+      searchTerm,
       page,
       limit,
       sortBy,
@@ -52,7 +52,7 @@ const getTransactionHistory = catchAsync(
 
     const result = await TransactionService.getTransactions(userId, role, {
       filter: filter as string,
-      search: search as string,
+      searchTerm: searchTerm as string,
       page: page ? Number(page) : undefined,
       limit: limit ? Number(limit) : undefined,
       sortBy: sortBy as string,
@@ -165,7 +165,7 @@ const getDriverTransactionHistory = catchAsync(
 
     const {
       filter,
-      search,
+      searchTerm,
       page,
       limit,
       sortBy,
@@ -177,7 +177,7 @@ const getDriverTransactionHistory = catchAsync(
 
     const result = await TransactionService.getTransactions(userId, role, {
       filter: filter as string,
-      search: search as string,
+      searchTerm: searchTerm as string,
       page: page ? Number(page) : undefined,
       limit: limit ? Number(limit) : undefined,
       sortBy: sortBy as string,

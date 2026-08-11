@@ -193,7 +193,7 @@ const getTransactions = async (
   role: string,
   queryOptions: {
     filter?: string;
-    search?: string;
+    searchTerm?: string;
     page?: number;
     limit?: number;
     sortBy?: string;
@@ -322,12 +322,12 @@ const getTransactions = async (
   }
 
   // 5. Search
-  if (queryOptions.search) {
-    const searchRegex = new RegExp(queryOptions.search, "i");
+  if (queryOptions.searchTerm) {
+    const searchRegex = new RegExp(queryOptions.searchTerm, "i");
     const orConditions: any[] = [{ transactionId: searchRegex }];
 
-    if (Types.ObjectId.isValid(queryOptions.search)) {
-      const searchObjectId = new Types.ObjectId(queryOptions.search);
+    if (Types.ObjectId.isValid(queryOptions.searchTerm)) {
+      const searchObjectId = new Types.ObjectId(queryOptions.searchTerm);
       orConditions.push(
         { _id: searchObjectId },
         { rideId: searchObjectId },

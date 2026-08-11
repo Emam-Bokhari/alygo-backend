@@ -6,7 +6,6 @@ import {
   DOCUMENT_TYPE,
   DRIVER_AVAILABILITY_STATUS,
   DRIVER_BLOCK_REASON,
-  EXTRACTION_STATUS,
   TAX_ID_TYPE,
   VERIFICATION_STATUS,
 } from "./driver.constant";
@@ -54,9 +53,32 @@ const driverSchema = new Schema<IDriver, DriverModel>(
       default: "",
     },
 
+    drivingLicenseNumber: {
+      type: String,
+      default: "",
+    },
+
     ssn: {
       type: String,
       default: "",
+    },
+
+    ssnCard: {
+      type: String,
+      default: "",
+    },
+
+    taxDocument: {
+      type: String,
+      default: "",
+    },
+
+    documentsStatus: {
+      profilePhoto: { type: Boolean, default: false },
+      liveSelfie: { type: Boolean, default: false },
+      ssn: { type: Boolean, default: false },
+      drivingLicense: { type: Boolean, default: false },
+      taxDocuments: { type: Boolean, default: false },
     },
 
     // Service Area
@@ -156,45 +178,6 @@ const driverSchema = new Schema<IDriver, DriverModel>(
     receiveTaxDocumentsDigitally: {
       type: Boolean,
       default: true,
-    },
-
-    taxDocuments: {
-      type: [
-        {
-          documentType: {
-            type: String,
-            enum: Object.values(DOCUMENT_TYPE),
-            required: true,
-          },
-
-          fileUrl: {
-            type: String,
-            required: true,
-          },
-
-          fileName: {
-            type: String,
-            default: "",
-          },
-
-          extractionStatus: {
-            type: String,
-            enum: Object.values(EXTRACTION_STATUS),
-            default: EXTRACTION_STATUS.PENDING,
-          },
-
-          extractedData: {
-            type: Schema.Types.Mixed,
-            default: {},
-          },
-
-          uploadedAt: {
-            type: Date,
-            default: Date.now,
-          },
-        },
-      ],
-      default: [],
     },
 
     driverAvailabilityStatus: {
