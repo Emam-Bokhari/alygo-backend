@@ -60,7 +60,8 @@ export const analyticsQuerySchema = z.object({
         return true;
       },
       {
-        message: "startDate and endDate are required when filter is set to 'custom'",
+        message:
+          "startDate and endDate are required when filter is set to 'custom'",
         path: ["startDate"],
       },
     ),

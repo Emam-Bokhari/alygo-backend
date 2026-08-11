@@ -124,7 +124,9 @@ const updateRideCategoryStatusToDB = async (
     throw new ApiError(StatusCodes.NOT_ACCEPTABLE, "Invalid ID");
   }
 
-  const rideCategory = await RideCategory.findById(rideCategoryId).setOptions({ withDeleted: true });
+  const rideCategory = await RideCategory.findById(rideCategoryId).setOptions({
+    withDeleted: true,
+  });
   if (!rideCategory) {
     throw new ApiError(
       StatusCodes.NOT_FOUND,

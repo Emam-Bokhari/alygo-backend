@@ -59,18 +59,26 @@ const updateCandidate = async (
     return response.data;
   } catch (error: any) {
     const errorDetails = error.response?.data || error.message;
-    console.error(`Checkr Candidate Update Failed for Candidate ${candidateId}:`, {
-      status: error.response?.status,
-      error: errorDetails,
-    });
+    console.error(
+      `Checkr Candidate Update Failed for Candidate ${candidateId}:`,
+      {
+        status: error.response?.status,
+        error: errorDetails,
+      },
+    );
     throw error;
   }
 };
 
-const createReport = async (candidateId: string, type: "mvr" | "background") => {
+const createReport = async (
+  candidateId: string,
+  type: "mvr" | "background",
+) => {
   try {
     const packageName =
-      type === "mvr" ? config.checkr.mvrPackage : config.checkr.backgroundCheckPackage;
+      type === "mvr"
+        ? config.checkr.mvrPackage
+        : config.checkr.backgroundCheckPackage;
 
     const response = await checkrClient.post("/v1/reports", {
       candidate_id: candidateId,

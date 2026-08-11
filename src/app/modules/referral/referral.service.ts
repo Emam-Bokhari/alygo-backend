@@ -116,6 +116,9 @@ const handleReferralSignup = async (
     referee.referredById = referrer._id;
     await referee.save();
 
+    const qualificationTarget =
+      config.referral.driver.requiredCompletedTrips ?? 10;
+
     const referral = await Referral.create({
       referrerId: referrer._id,
       refereeId: referee._id,
@@ -125,7 +128,7 @@ const handleReferralSignup = async (
       referralType: "DRIVER",
       status: REFERRAL_STATUS.ACTIVE,
       qualificationProgress: 0,
-      qualificationTarget: config.referral.driver.requiredCompletedTrips || 10,
+      qualificationTarget: qualificationTarget,
       rewardAmount: config.referral.driver.rewardAmount || 100,
       rewardCurrency: platformCurrency.toUpperCase(),
       rewardStatus: REWARD_STATUS.PENDING,
@@ -139,19 +142,187 @@ const handleReferralSignup = async (
       ],
     });
 
-    // Realtime events
-    const socketIo = (global as any).io;
-    if (socketIo) {
-      socketIo.emit(`driver-referral-progress::${referrer._id}`, {
-        refereeId: referee._id,
-        progress: 0,
-        target: referral.qualificationTarget,
-        status: REFERRAL_STATUS.ACTIVE,
+    // If no rides required, mark as completed immediately
+    if (qualificationTarget === 0) {
+      referral.status = REFERRAL_STATUS.COMPLETED;
+      referral.completedAt = new Date();
+      referral.qualificationCompletedAt = new Date();
+      referral.qualificationProgress = 0;
+
+      // Award points to the referrer driver
+      PointsService.awardPoints(
+        referral.referrerId,
+        POINT_EVENT_TYPE.REFERRAL_COMPLETED,
+        "referral",
+        referral._id,
+        {
+          notes: `Successful Driver Referral of referee ${referral.refereeId}`,
+        },
+      ).catch((err) => console.error("Error awarding referral points:", err));
+
+      referral.auditLogs.push({
+        action: "QUALIFICATION_COMPLETED",
+        details: {
+          message:
+            "Driver satisfied completed ride requirements (0 rides required).",
+        },
+        timestamp: new Date(),
       });
-      socketIo.emit("referral-updated", {
-        referralId: referral._id,
-        type: "DRIVER",
+
+      const socketIo = (global as any).io;
+      if (socketIo) {
+        socketIo.emit(`driver-referral-qualified::${referral.referrerId}`, {
+          refereeId: referral.refereeId,
+          rewardAmount: referral.rewardAmount,
+        });
+        socketIo.emit("referral-updated", {
+          referralId: referral._id,
+          type: "DRIVER",
+        });
+      }
+
+      await sendNotifications({
+        title: "Reward Qualified",
+        text: "Referred driver successfully completed the required ride count.",
+        receiver: referral.referrerId,
+        type: NOTIFICATION_TYPE.DRIVER,
       });
+
+      // Award wallet payout if auto reward is enabled
+      if (config.referral.driver.autoRewardEnabled && !referral.rewardPaid) {
+        const paidRewardsCount = await Referral.countDocuments({
+          referrerId: referral.referrerId,
+          referralType: "DRIVER",
+          rewardPaid: true,
+        });
+
+        if (paidRewardsCount < config.referral.driver.maximumRewardsPerDriver) {
+          const session = await mongoose.startSession();
+          session.startTransaction();
+          let transactionCommitted = false;
+          let createdTransactionId: any = null;
+          try {
+            const wallet = await WalletService.getOrCreateWallet(
+              referral.referrerId,
+              session,
+            );
+            wallet.balance = parseFloat(
+              (wallet.balance + referral.rewardAmount).toFixed(2),
+            );
+            await wallet.save({ session });
+
+            const uniqueTxnRef = `TXN-REF-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+            const [transaction] = await Transaction.create(
+              [
+                {
+                  transactionId: uniqueTxnRef,
+                  userId: referral.referrerId,
+                  walletId: wallet._id,
+                  amount: referral.rewardAmount,
+                  currency: referral.rewardCurrency,
+                  paymentMethod: PAYMENT_METHOD.WALLET,
+                  paymentStatus: PAYMENT_STATUS.PAID,
+                  transactionType: TRANSACTION_TYPE.DRIVER_REFERRAL_REWARD,
+                  description: `Referral Reward payout for successfully inviting a qualified driver.`,
+                },
+              ],
+              { session },
+            );
+
+            createdTransactionId = transaction._id;
+            referral.rewardPaid = true;
+            referral.rewardPaidAt = new Date();
+            referral.rewardStatus = REWARD_STATUS.PAID;
+            referral.rewardTransactionId = transaction._id;
+            referral.auditLogs.push({
+              action: "REWARD_PAID",
+              actor: referral.referrerId,
+              actorRole: "driver",
+              details: {
+                transactionId: transaction._id,
+                amount: referral.rewardAmount,
+              },
+              timestamp: new Date(),
+            });
+
+            await referral.save({ session });
+            await session.commitTransaction();
+            transactionCommitted = true;
+          } catch (error) {
+            if (session.inTransaction()) {
+              await session.abortTransaction();
+            }
+            console.error(
+              "Failed to process driver referral wallet credit:",
+              error,
+            );
+          } finally {
+            session.endSession();
+          }
+
+          if (transactionCommitted) {
+            try {
+              const socketIo = (global as any).io;
+              if (socketIo) {
+                const latestWallet = await WalletService.getOrCreateWallet(
+                  referral.referrerId,
+                );
+                socketIo.emit(`wallet-updated::${referral.referrerId}`, {
+                  balance: latestWallet.balance,
+                });
+                socketIo.emit(`driver-referral-paid::${referral.referrerId}`, {
+                  amount: referral.rewardAmount,
+                  transactionId: createdTransactionId,
+                });
+              }
+
+              await sendNotifications({
+                title: "Referral Reward Paid",
+                text: `Your referral reward of ${referral.rewardAmount} ${referral.rewardCurrency} has been credited to your wallet.`,
+                receiver: referral.referrerId,
+                type: NOTIFICATION_TYPE.DRIVER,
+              });
+
+              // Admin notification
+              await sendNotifications({
+                title: "Referral Payout Processed",
+                text: `Driver referral reward of ${referral.rewardAmount} paid to referrer ${referral.referrerId}.`,
+                type: NOTIFICATION_TYPE.ADMIN,
+              });
+            } catch (notifErr) {
+              console.error("Failed to send referral notifications:", notifErr);
+            }
+          }
+        } else {
+          referral.auditLogs.push({
+            action: "LIMIT_EXCEEDED",
+            details: {
+              message: "Referrer driver has reached maximum reward payout cap.",
+            },
+            timestamp: new Date(),
+          });
+        }
+      }
+
+      await referral.save();
+    }
+
+    // Realtime events (only if not already completed)
+    if (qualificationTarget !== 0) {
+      const socketIo = (global as any).io;
+      if (socketIo) {
+        socketIo.emit(`driver-referral-progress::${referrer._id}`, {
+          refereeId: referee._id,
+          progress: 0,
+          target: referral.qualificationTarget,
+          status: REFERRAL_STATUS.ACTIVE,
+        });
+        socketIo.emit("referral-updated", {
+          referralId: referral._id,
+          type: "DRIVER",
+        });
+      }
     }
 
     // Push notification to Referrer Driver
@@ -183,7 +354,7 @@ const handleReferralSignup = async (
       status: REFERRAL_STATUS.PENDING,
       qualificationProgress: 0,
       qualificationTarget:
-        config.referral.passenger.requiredCompletedTrips || 1,
+        config.referral.passenger.requiredCompletedTrips ?? 1,
       rewardAmount: config.referral.passenger.rewardAmount || 20,
       rewardCurrency: platformCurrency.toUpperCase(),
       rewardStatus: REWARD_STATUS.PENDING,
@@ -339,6 +510,8 @@ const handleDriverRideCompletion = async (driverUserId: string) => {
       if (paidRewardsCount < config.referral.driver.maximumRewardsPerDriver) {
         const session = await mongoose.startSession();
         session.startTransaction();
+        let transactionCommitted = false;
+        let createdTransactionId: any = null;
         try {
           const wallet = await WalletService.getOrCreateWallet(
             referral.referrerId,
@@ -368,6 +541,7 @@ const handleDriverRideCompletion = async (driverUserId: string) => {
             { session },
           );
 
+          createdTransactionId = transaction._id;
           referral.rewardPaid = true;
           referral.rewardPaidAt = new Date();
           referral.rewardStatus = REWARD_STATUS.PAID;
@@ -385,39 +559,50 @@ const handleDriverRideCompletion = async (driverUserId: string) => {
 
           await referral.save({ session });
           await session.commitTransaction();
-          session.endSession();
-
-          // Sockets & notifications
-          if (socketIo) {
-            socketIo.emit(`wallet-updated::${referral.referrerId}`, {
-              balance: wallet.balance,
-            });
-            socketIo.emit(`driver-referral-paid::${referral.referrerId}`, {
-              amount: referral.rewardAmount,
-              transactionId: transaction._id,
-            });
-          }
-
-          await sendNotifications({
-            title: "Referral Reward Paid",
-            text: `Your referral reward of ${referral.rewardAmount} ${referral.rewardCurrency} has been credited to your wallet.`,
-            receiver: referral.referrerId,
-            type: NOTIFICATION_TYPE.DRIVER,
-          });
-
-          // Admin notification
-          await sendNotifications({
-            title: "Referral Payout Processed",
-            text: `Driver referral reward of ${referral.rewardAmount} paid to referrer ${referral.referrerId}.`,
-            type: NOTIFICATION_TYPE.ADMIN,
-          });
+          transactionCommitted = true;
         } catch (error) {
-          await session.abortTransaction();
-          session.endSession();
+          if (session.inTransaction()) {
+            await session.abortTransaction();
+          }
           console.error(
             "Failed to process driver referral wallet credit:",
             error,
           );
+        } finally {
+          session.endSession();
+        }
+
+        if (transactionCommitted) {
+          try {
+            if (socketIo) {
+              const latestWallet = await WalletService.getOrCreateWallet(
+                referral.referrerId,
+              );
+              socketIo.emit(`wallet-updated::${referral.referrerId}`, {
+                balance: latestWallet.balance,
+              });
+              socketIo.emit(`driver-referral-paid::${referral.referrerId}`, {
+                amount: referral.rewardAmount,
+                transactionId: createdTransactionId,
+              });
+            }
+
+            await sendNotifications({
+              title: "Referral Reward Paid",
+              text: `Your referral reward of ${referral.rewardAmount} ${referral.rewardCurrency} has been credited to your wallet.`,
+              receiver: referral.referrerId,
+              type: NOTIFICATION_TYPE.DRIVER,
+            });
+
+            // Admin notification
+            await sendNotifications({
+              title: "Referral Payout Processed",
+              text: `Driver referral reward of ${referral.rewardAmount} paid to referrer ${referral.referrerId}.`,
+              type: NOTIFICATION_TYPE.ADMIN,
+            });
+          } catch (notifErr) {
+            console.error("Failed to send referral notifications:", notifErr);
+          }
         }
       } else {
         referral.auditLogs.push({
@@ -584,6 +769,8 @@ const checkAndProcessPassengerReferral = async (passengerUserId: string) => {
       ) {
         const session = await mongoose.startSession();
         session.startTransaction();
+        let transactionCommitted = false;
+        let createdTransactionId: any = null;
         try {
           const wallet = await WalletService.getOrCreateWallet(
             referral.referrerId,
@@ -613,6 +800,7 @@ const checkAndProcessPassengerReferral = async (passengerUserId: string) => {
             { session },
           );
 
+          createdTransactionId = transaction._id;
           referral.rewardPaid = true;
           referral.rewardPaidAt = new Date();
           referral.rewardStatus = REWARD_STATUS.PAID;
@@ -630,39 +818,50 @@ const checkAndProcessPassengerReferral = async (passengerUserId: string) => {
 
           await referral.save({ session });
           await session.commitTransaction();
-          session.endSession();
-
-          // Sockets & notifications
-          if (socketIo) {
-            socketIo.emit(`wallet-updated::${referral.referrerId}`, {
-              balance: wallet.balance,
-            });
-            socketIo.emit(`referral-reward::${referral.referrerId}`, {
-              amount: referral.rewardAmount,
-              transactionId: transaction._id,
-            });
-          }
-
-          await sendNotifications({
-            title: "Referral Reward Paid",
-            text: `Your referral bonus of ${referral.rewardAmount} ${referral.rewardCurrency} has been credited to your wallet.`,
-            receiver: referral.referrerId,
-            type: NOTIFICATION_TYPE.USER,
-          });
-
-          // Admin notification
-          await sendNotifications({
-            title: "Referral Reward Issued",
-            text: `Passenger referral reward of ${referral.rewardAmount} paid to referrer ${referral.referrerId}.`,
-            type: NOTIFICATION_TYPE.ADMIN,
-          });
+          transactionCommitted = true;
         } catch (error) {
-          await session.abortTransaction();
-          session.endSession();
+          if (session.inTransaction()) {
+            await session.abortTransaction();
+          }
           console.error(
             "Failed to process passenger referral wallet credit:",
             error,
           );
+        } finally {
+          session.endSession();
+        }
+
+        if (transactionCommitted) {
+          try {
+            if (socketIo) {
+              const latestWallet = await WalletService.getOrCreateWallet(
+                referral.referrerId,
+              );
+              socketIo.emit(`wallet-updated::${referral.referrerId}`, {
+                balance: latestWallet.balance,
+              });
+              socketIo.emit(`referral-reward::${referral.referrerId}`, {
+                amount: referral.rewardAmount,
+                transactionId: createdTransactionId,
+              });
+            }
+
+            await sendNotifications({
+              title: "Referral Reward Paid",
+              text: `Your referral bonus of ${referral.rewardAmount} ${referral.rewardCurrency} has been credited to your wallet.`,
+              receiver: referral.referrerId,
+              type: NOTIFICATION_TYPE.USER,
+            });
+
+            // Admin notification
+            await sendNotifications({
+              title: "Referral Reward Issued",
+              text: `Passenger referral reward of ${referral.rewardAmount} paid to referrer ${referral.referrerId}.`,
+              type: NOTIFICATION_TYPE.ADMIN,
+            });
+          } catch (notifErr) {
+            console.error("Failed to send referral notifications:", notifErr);
+          }
         }
       } else {
         referral.auditLogs.push({
@@ -892,8 +1091,7 @@ const getDriverProgressList = async (
     joinedDate: ref.refereeId?.createdAt || ref.joinedAt,
     rideProgress: ref.qualificationProgress,
     requiredRideCount: ref.qualificationTarget,
-    earnedReward:
-      ref.status === REFERRAL_STATUS.COMPLETED ? ref.rewardAmount : 0,
+    earnedReward: ref.rewardPaid ? ref.rewardAmount : 0,
     status: ref.status,
   }));
 
@@ -909,7 +1107,7 @@ const getRewardPayoutHistory = async (
   query: Record<string, unknown>,
 ) => {
   const referralType =
-    role.toUpperCase() === USER_ROLES.DRIVER ? "DRIVER" : "USER";
+    role.toLowerCase() === USER_ROLES.DRIVER.toLowerCase() ? "DRIVER" : "USER";
 
   const baseQuery = Referral.find({
     referrerId: userId,

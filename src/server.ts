@@ -139,9 +139,7 @@ async function main() {
       },
     );
     logger.info(
-      colors.green(
-        "✅ Broadcast processing job scheduled (every 1 minute)",
-      ),
+      colors.green("✅ Broadcast processing job scheduled (every 1 minute)"),
     );
   } catch (error) {
     errorLogger.error(colors.red("🤢 Failed to connect Database"));

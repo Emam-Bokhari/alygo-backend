@@ -36,4 +36,3 @@ export interface IBroadcast {
 }
 
 export type BroadcastModel = ISoftDeleteModel<IBroadcast>;
-

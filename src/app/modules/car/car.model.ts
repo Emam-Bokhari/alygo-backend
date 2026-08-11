@@ -166,8 +166,6 @@ const carSchema = new Schema<ICar>(
       ],
       default: [],
     },
-
-
   },
   {
     timestamps: true,

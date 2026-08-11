@@ -30,14 +30,17 @@ export type IDriver = {
     ssn: boolean;
     drivingLicense: boolean;
     taxDocuments: boolean;
+    licensePlate: boolean;
+    personalAutoInsurance: boolean;
+    vehicleRegistration: boolean;
+    carInsurance: boolean;
+    vehicleInspection: boolean;
   };
 
   // Service Area
   serviceAreaId?: Types.ObjectId;
   serviceAreaAssignedAt?: Date;
   serviceAreaChangedAt?: Date;
-
-
 
   taxClassification: CLASSIFICATION;
 

@@ -43,10 +43,7 @@ const createBroadcastToDB = async (
 
   const broadcast = await Broadcast.create(payload);
   if (!broadcast) {
-    throw new ApiError(
-      StatusCodes.BAD_REQUEST,
-      "Failed to create broadcast",
-    );
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to create broadcast");
   }
 
   // For immediate delivery, process in background (non-blocking)
@@ -265,14 +262,13 @@ const processAndSendBroadcast = async (broadcastId: string): Promise<void> => {
     await Broadcast.findByIdAndUpdate(broadcastId, {
       $set: {
         status: BROADCAST_STATUS.FAILED,
-        failureReason: error.message || "Unknown error during broadcast processing",
+        failureReason:
+          error.message || "Unknown error during broadcast processing",
       },
     });
 
     logger.error(
-      colors.red(
-        `❌ [Broadcast] ${broadcastId} failed: ${error.message}`,
-      ),
+      colors.red(`❌ [Broadcast] ${broadcastId} failed: ${error.message}`),
     );
   }
 };
@@ -391,8 +387,6 @@ const cancelScheduledBroadcast = async (id: string) => {
 
   return result;
 };
-
-
 
 export const BroadcastService = {
   createBroadcastToDB,

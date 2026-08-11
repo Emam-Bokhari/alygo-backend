@@ -142,7 +142,9 @@ const updateReportIssueCategoryStatusToDB = async (
     );
   }
 
-  const isCategoryExist = await ReportIssueCategory.findById(id).setOptions({ withDeleted: true });
+  const isCategoryExist = await ReportIssueCategory.findById(id).setOptions({
+    withDeleted: true,
+  });
   if (!isCategoryExist) {
     throw new ApiError(404, "Report issue category not found");
   }

@@ -79,6 +79,11 @@ const driverSchema = new Schema<IDriver, DriverModel>(
       ssn: { type: Boolean, default: false },
       drivingLicense: { type: Boolean, default: false },
       taxDocuments: { type: Boolean, default: false },
+      licensePlate: { type: Boolean, default: false },
+      personalAutoInsurance: { type: Boolean, default: false },
+      vehicleRegistration: { type: Boolean, default: false },
+      carInsurance: { type: Boolean, default: false },
+      vehicleInspection: { type: Boolean, default: false },
     },
 
     // Service Area
@@ -95,8 +100,6 @@ const driverSchema = new Schema<IDriver, DriverModel>(
       type: Date,
       default: null,
     },
-
-
 
     taxClassification: {
       type: String,

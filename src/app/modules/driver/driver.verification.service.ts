@@ -101,7 +101,10 @@ const triggerMVRVerification = async (driverId: string): Promise<void> => {
       text: "Your driving license / MVR verification has started.",
     });
   } catch (error: any) {
-    console.error("Failed to automatically trigger Checkr MVR Verification:", error.message || error);
+    console.error(
+      "Failed to automatically trigger Checkr MVR Verification:",
+      error.message || error,
+    );
     // Mark status as failed in case of unrecoverable candidate/report creation error
     await Driver.findByIdAndUpdate(driverId, {
       $set: {
@@ -124,7 +127,9 @@ const initiateBackgroundCheck = async (
     taxZipCode?: string;
   },
 ) => {
-  const driver = await Driver.findOne({ userId: new Types.ObjectId(driverUserId) });
+  const driver = await Driver.findOne({
+    userId: new Types.ObjectId(driverUserId),
+  });
   if (!driver) {
     throw new ApiError(404, "Driver profile not found");
   }
@@ -170,7 +175,10 @@ const initiateBackgroundCheck = async (
       driver.backgroundCheckStatus === VERIFICATION_STATUS.PROCESSING ||
       driver.backgroundCheckStatus === VERIFICATION_STATUS.VERIFIED)
   ) {
-    throw new ApiError(400, "Background check is already in progress or has been verified.");
+    throw new ApiError(
+      400,
+      "Background check is already in progress or has been verified.",
+    );
   }
 
   // Validate required information for Candidate & Background Check
@@ -184,11 +192,17 @@ const initiateBackgroundCheck = async (
   const zipcode = driver.taxZipCode;
 
   if (!firstName || !lastName || !email || !phone || !dob) {
-    throw new ApiError(400, "User profile is missing name, email, phone, or date of birth.");
+    throw new ApiError(
+      400,
+      "User profile is missing name, email, phone, or date of birth.",
+    );
   }
 
   if (!ssn || !zipcode) {
-    throw new ApiError(400, "Driver profile requires SSN and Zip Code to run background check.");
+    throw new ApiError(
+      400,
+      "Driver profile requires SSN and Zip Code to run background check.",
+    );
   }
 
   const formattedDob = dob.toISOString().split("T")[0];

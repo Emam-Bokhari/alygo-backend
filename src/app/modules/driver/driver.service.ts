@@ -21,12 +21,23 @@ const calculateDocumentsStatus = async (userId: string, driverDoc?: any) => {
     driverDoc || (await Driver.findOne({ userId: new Types.ObjectId(userId) }));
   if (!driver) return null;
 
+  const car = await Car.findOne({ driverId: driver._id });
+
   return {
     profilePhoto: !!user?.profileImage,
     liveSelfie: !!driver?.liveSelfie,
     ssn: !!(driver?.ssn || driver?.ssnCard),
-    drivingLicense: !!(driver?.drivingLicense && driver?.drivingLicenseNumber),
+    drivingLicense: !!(driver?.drivingLicense || driver?.drivingLicenseNumber),
     taxDocuments: !!(driver?.taxDocument || driver?.taxIdValue),
+    licensePlate: !!car?.licensePlate,
+    personalAutoInsurance: !!car?.personalAutoInsurance,
+    vehicleRegistration: !!car?.vehicleRegistration,
+    carInsurance: !!(
+      car?.commercialInsurance ||
+      car?.personalAutoInsurance ||
+      (car?.insuranceHub && car.insuranceHub.length > 0)
+    ),
+    vehicleInspection: !!car?.vehicleInspection,
   };
 };
 
@@ -77,8 +88,13 @@ const createDriverToDB = async (userId: string, payload: Partial<IDriver>) => {
   }
 
   // Trigger Checkr MVR Verification automatically behind the scenes
-  DriverVerificationService.triggerMVRVerification(existingDriver!._id.toString()).catch((err) => {
-    console.error("MVR Verification trigger error in createDriverToDB:", err.message || err);
+  DriverVerificationService.triggerMVRVerification(
+    existingDriver!._id.toString(),
+  ).catch((err) => {
+    console.error(
+      "MVR Verification trigger error in createDriverToDB:",
+      err.message || err,
+    );
   });
 
   const populatedDriver = await Driver.findById(existingDriver!._id)
@@ -248,9 +264,13 @@ const updateDriverFromDB = async (
 
   // Reset verification status if license info changes to trigger a new MVR check
   const isLicenseUpdated =
-    (updatePayload.drivingLicense !== undefined && updatePayload.drivingLicense !== existingDriver.drivingLicense) ||
-    (updatePayload.drivingLicenseNumber !== undefined && updatePayload.drivingLicenseNumber !== existingDriver.drivingLicenseNumber) ||
-    (updatePayload.drivingLicenseState !== undefined && updatePayload.drivingLicenseState !== existingDriver.drivingLicenseState);
+    (updatePayload.drivingLicense !== undefined &&
+      updatePayload.drivingLicense !== existingDriver.drivingLicense) ||
+    (updatePayload.drivingLicenseNumber !== undefined &&
+      updatePayload.drivingLicenseNumber !==
+        existingDriver.drivingLicenseNumber) ||
+    (updatePayload.drivingLicenseState !== undefined &&
+      updatePayload.drivingLicenseState !== existingDriver.drivingLicenseState);
 
   if (isLicenseUpdated) {
     updatePayload.mvrStatus = VERIFICATION_STATUS.PENDING;
@@ -272,8 +292,13 @@ const updateDriverFromDB = async (
   }
 
   // Trigger Checkr MVR Verification automatically behind the scenes
-  DriverVerificationService.triggerMVRVerification(existingDriver._id.toString()).catch((err) => {
-    console.error("MVR Verification trigger error in updateDriverFromDB:", err.message || err);
+  DriverVerificationService.triggerMVRVerification(
+    existingDriver._id.toString(),
+  ).catch((err) => {
+    console.error(
+      "MVR Verification trigger error in updateDriverFromDB:",
+      err.message || err,
+    );
   });
 
   const finalDriver = await Driver.findOne({
@@ -315,7 +340,11 @@ const getDriverAvailability = async (userId: string) => {
 };
 
 import { Ride } from "../ride/ride.model";
-import { RIDE_TYPE, RIDE_STATUS, DRIVER_MATCHING_STATUS } from "../ride/ride.constant";
+import {
+  RIDE_TYPE,
+  RIDE_STATUS,
+  DRIVER_MATCHING_STATUS,
+} from "../ride/ride.constant";
 import QueryBuilder from "../../builder/queryBuilder";
 import { getSystemConfig } from "../../../helpers/systemConfigHelper";
 import { getCurrentTimeInTimezone } from "../../../shared/timezoneHelper";
@@ -1338,6 +1367,7 @@ const getDriverDrivingHoursLedger = async (
 };
 
 export const DriverServices = {
+  calculateDocumentsStatus,
   createDriverToDB,
   getDriverProfileFromDB,
   updateDriverFromDB,

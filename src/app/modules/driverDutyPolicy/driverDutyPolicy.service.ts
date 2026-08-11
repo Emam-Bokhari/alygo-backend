@@ -102,11 +102,16 @@ const getAllDriverDutyPoliciesFromDB = async (
   // Match initial query parameters before lookups for better performance and correct ObjectId matching
   const matchQuery: Record<string, any> = {};
   if (query.scopeType) matchQuery.scopeType = query.scopeType;
-  if (query.countryId) matchQuery.countryId = new Types.ObjectId(query.countryId as string);
-  if (query.stateId) matchQuery.stateId = new Types.ObjectId(query.stateId as string);
-  if (query.cityId) matchQuery.cityId = new Types.ObjectId(query.cityId as string);
-  if (query.zoneId) matchQuery.zoneId = new Types.ObjectId(query.zoneId as string);
-  if (query.airportId) matchQuery.airportId = new Types.ObjectId(query.airportId as string);
+  if (query.countryId)
+    matchQuery.countryId = new Types.ObjectId(query.countryId as string);
+  if (query.stateId)
+    matchQuery.stateId = new Types.ObjectId(query.stateId as string);
+  if (query.cityId)
+    matchQuery.cityId = new Types.ObjectId(query.cityId as string);
+  if (query.zoneId)
+    matchQuery.zoneId = new Types.ObjectId(query.zoneId as string);
+  if (query.airportId)
+    matchQuery.airportId = new Types.ObjectId(query.airportId as string);
   if (query.status) matchQuery.status = query.status;
 
   // Build aggregation pipeline
@@ -414,11 +419,16 @@ const getActiveDriverDutyPoliciesFromDB = async (
   // Match initial query parameters before lookups for better performance and correct ObjectId matching
   const matchQuery: Record<string, any> = { status: STATUS.ACTIVE };
   if (query.scopeType) matchQuery.scopeType = query.scopeType;
-  if (query.countryId) matchQuery.countryId = new Types.ObjectId(query.countryId as string);
-  if (query.stateId) matchQuery.stateId = new Types.ObjectId(query.stateId as string);
-  if (query.cityId) matchQuery.cityId = new Types.ObjectId(query.cityId as string);
-  if (query.zoneId) matchQuery.zoneId = new Types.ObjectId(query.zoneId as string);
-  if (query.airportId) matchQuery.airportId = new Types.ObjectId(query.airportId as string);
+  if (query.countryId)
+    matchQuery.countryId = new Types.ObjectId(query.countryId as string);
+  if (query.stateId)
+    matchQuery.stateId = new Types.ObjectId(query.stateId as string);
+  if (query.cityId)
+    matchQuery.cityId = new Types.ObjectId(query.cityId as string);
+  if (query.zoneId)
+    matchQuery.zoneId = new Types.ObjectId(query.zoneId as string);
+  if (query.airportId)
+    matchQuery.airportId = new Types.ObjectId(query.airportId as string);
 
   // Build aggregation pipeline
   const pipeline: any[] = [

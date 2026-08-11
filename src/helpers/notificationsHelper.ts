@@ -2,6 +2,8 @@ import { INotification } from "../app/modules/notification/notification.interfac
 import { Notification } from "../app/modules/notification/notification.model";
 import { notificationHelper } from "../app/builder/pushNotification";
 import { NOTIFICATION_TYPE } from "../app/modules/notification/notification.constant";
+import { User } from "../app/modules/user/user.model";
+import { USER_ROLES } from "../enums/user";
 
 export const sendNotifications = async (
   data: Partial<INotification>,
@@ -30,6 +32,23 @@ export const sendNotifications = async (
     );
   } else {
     // For Admin and others, keep the existing Socket.io logic
+    if (!data.receiver && data.type === NOTIFICATION_TYPE.ADMIN) {
+      const superAdmin = await User.findOne({
+        role: { $in: [USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN] },
+      }).select("_id");
+      if (superAdmin) {
+        data.receiver = superAdmin._id;
+      }
+    }
+
+    if (!data.receiver) {
+      console.warn(
+        "sendNotifications: Skipping notification without receiver:",
+        data.title,
+      );
+      return null;
+    }
+
     const result = await (
       await Notification.create(data)
     ).populate("receiver sender referenceId");
@@ -39,6 +58,7 @@ export const sendNotifications = async (
 
     if (socketIo) {
       socketIo.emit(`send-notification::${data?.receiver}`, result);
+      socketIo.emit("send-notification::admin", result);
     }
 
     return result;

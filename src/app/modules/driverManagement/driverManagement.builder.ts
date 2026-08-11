@@ -174,8 +174,7 @@ export class DriverQueryBuilder {
         }
       } else if (complianceStatus === "verified") {
         this.filterQuery.backgroundCheckStatus = VERIFICATION_STATUS.VERIFIED;
-        this.filterQuery.mvrStatus =
-          VERIFICATION_STATUS.VERIFIED;
+        this.filterQuery.mvrStatus = VERIFICATION_STATUS.VERIFIED;
 
         const expiryOr = [
           { licenseExpiryDate: null },

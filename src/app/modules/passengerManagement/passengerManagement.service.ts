@@ -515,7 +515,7 @@ const getLivePassengerDetails = async (passengerId: string) => {
     Tracking.findOne({ rideId: ride._id }),
   ]);
 
-   const carDoc = driverDoc
+  const carDoc = driverDoc
     ? await Car.findOne({ driverId: driverDoc._id }).lean()
     : null;
 

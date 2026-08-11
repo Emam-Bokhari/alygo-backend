@@ -3,6 +3,7 @@ import ApiError from "../../../errors/ApiErrors";
 import { Car } from "./car.model";
 import { ICar } from "./car.interface";
 import { Driver } from "../driver/driver.model";
+import { DriverServices } from "../driver/driver.service";
 
 const createCarToDB = async (userId: string, payload: Partial<ICar>) => {
   const driverId = await Driver.findOne({ userId });
@@ -16,6 +17,17 @@ const createCarToDB = async (userId: string, payload: Partial<ICar>) => {
   };
 
   const car = await Car.create(carPayload);
+
+  const docStatus = await DriverServices.calculateDocumentsStatus(
+    userId,
+    driverId,
+  );
+  if (docStatus) {
+    await Driver.updateOne(
+      { _id: driverId._id },
+      { $set: { documentsStatus: docStatus } },
+    );
+  }
 
   return car;
 };
@@ -54,6 +66,20 @@ const updateCarFromDB = async (carId: string, payload: Partial<ICar>) => {
 
   if (!updatedCar) {
     throw new ApiError(404, "Car not found");
+  }
+
+  const driver = await Driver.findById(updatedCar.driverId);
+  if (driver) {
+    const docStatus = await DriverServices.calculateDocumentsStatus(
+      driver.userId.toString(),
+      driver,
+    );
+    if (docStatus) {
+      await Driver.updateOne(
+        { _id: driver._id },
+        { $set: { documentsStatus: docStatus } },
+      );
+    }
   }
 
   return updatedCar;

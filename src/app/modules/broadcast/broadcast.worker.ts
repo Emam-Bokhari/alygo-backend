@@ -48,9 +48,7 @@ const processDueBroadcasts = async (): Promise<void> => {
   // so duplicate processing is prevented even with concurrent workers
   for (const broadcast of dueBroadcasts) {
     try {
-      await BroadcastService.processAndSendBroadcast(
-        broadcast._id.toString(),
-      );
+      await BroadcastService.processAndSendBroadcast(broadcast._id.toString());
     } catch (err: any) {
       logger.error(
         colors.red(

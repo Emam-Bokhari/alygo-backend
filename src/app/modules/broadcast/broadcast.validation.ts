@@ -8,8 +8,14 @@ import {
 const createBroadcastValidationSchema = z.object({
   body: z
     .object({
-      title: z.string({ required_error: "Title is required" }).trim().min(1, "Title is required"),
-      message: z.string({ required_error: "Message is required" }).trim().min(1, "Message is required"),
+      title: z
+        .string({ required_error: "Title is required" })
+        .trim()
+        .min(1, "Title is required"),
+      message: z
+        .string({ required_error: "Message is required" })
+        .trim()
+        .min(1, "Message is required"),
       type: z.nativeEnum(BROADCAST_TYPE, {
         required_error: "Broadcast type is required",
         invalid_type_error: "Invalid broadcast type",
@@ -24,9 +30,18 @@ const createBroadcastValidationSchema = z.object({
       }),
       targetFilters: z
         .object({
-          city: z.string().regex(/^[a-f\d]{24}$/i, "Invalid city ID").optional(),
-          state: z.string().regex(/^[a-f\d]{24}$/i, "Invalid state ID").optional(),
-          tier: z.string().regex(/^[a-f\d]{24}$/i, "Invalid tier ID").optional(),
+          city: z
+            .string()
+            .regex(/^[a-f\d]{24}$/i, "Invalid city ID")
+            .optional(),
+          state: z
+            .string()
+            .regex(/^[a-f\d]{24}$/i, "Invalid state ID")
+            .optional(),
+          tier: z
+            .string()
+            .regex(/^[a-f\d]{24}$/i, "Invalid tier ID")
+            .optional(),
         })
         .optional(),
       scheduledAt: z.string().datetime({ offset: true }).optional(),

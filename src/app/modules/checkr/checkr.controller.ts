@@ -38,7 +38,10 @@ const handleWebhook = catchAsync(async (req, res) => {
   const sigBuffer = Buffer.from(signature.toLowerCase(), "hex");
   const compBuffer = Buffer.from(computedHex.toLowerCase(), "hex");
 
-  if (sigBuffer.length !== compBuffer.length || !crypto.timingSafeEqual(sigBuffer, compBuffer)) {
+  if (
+    sigBuffer.length !== compBuffer.length ||
+    !crypto.timingSafeEqual(sigBuffer, compBuffer)
+  ) {
     throw new ApiError(401, "Invalid webhook signature");
   }
 
@@ -96,7 +99,8 @@ const handleWebhook = catchAsync(async (req, res) => {
             updateData.verificationSource = "Checkr MVR";
             updateData.verificationNotes = "Checkr MVR verification clear.";
           } else if (mappedStatus === VERIFICATION_STATUS.REVIEW_REQUIRED) {
-            updateData.verificationNotes = "Checkr MVR verification requires manual review.";
+            updateData.verificationNotes =
+              "Checkr MVR verification requires manual review.";
           } else if (mappedStatus === VERIFICATION_STATUS.FAILED) {
             updateData.verificationNotes = "Checkr MVR verification failed.";
           }
@@ -108,10 +112,12 @@ const handleWebhook = catchAsync(async (req, res) => {
           let text = `Your driving license MVR verification status is now ${mappedStatus}.`;
           if (mappedStatus === VERIFICATION_STATUS.VERIFIED) {
             title = "MVR Verification Clear";
-            text = "Your driving license MVR verification completed successfully.";
+            text =
+              "Your driving license MVR verification completed successfully.";
           } else if (mappedStatus === VERIFICATION_STATUS.REVIEW_REQUIRED) {
             title = "MVR Verification Review Required";
-            text = "Your driving license verification requires admin manual review.";
+            text =
+              "Your driving license verification requires admin manual review.";
           }
 
           await sendNotifications({
@@ -123,7 +129,9 @@ const handleWebhook = catchAsync(async (req, res) => {
 
           // Notify Admin
           if (mappedStatus === VERIFICATION_STATUS.REVIEW_REQUIRED) {
-            const superAdmin = await User.findOne({ role: USER_ROLES.SUPER_ADMIN }).select("_id");
+            const superAdmin = await User.findOne({
+              role: USER_ROLES.SUPER_ADMIN,
+            }).select("_id");
             if (superAdmin) {
               await sendNotifications({
                 receiver: superAdmin._id.toString(),
@@ -169,7 +177,9 @@ const handleWebhook = catchAsync(async (req, res) => {
 
           // Notify Admin
           if (mappedStatus === VERIFICATION_STATUS.REVIEW_REQUIRED) {
-            const superAdmin = await User.findOne({ role: USER_ROLES.SUPER_ADMIN }).select("_id");
+            const superAdmin = await User.findOne({
+              role: USER_ROLES.SUPER_ADMIN,
+            }).select("_id");
             if (superAdmin) {
               await sendNotifications({
                 receiver: superAdmin._id.toString(),

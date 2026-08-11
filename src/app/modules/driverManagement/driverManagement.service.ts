@@ -522,9 +522,7 @@ const getDriverDetailsFromDB = async (
     ].includes(log.action),
   );
 
-  let verificationStatus = capitalize(
-    driver.mvrStatus || "pending",
-  );
+  let verificationStatus = capitalize(driver.mvrStatus || "pending");
   let verificationDate: string | null = null;
   let lastVerificationDate: string | null = formatTime(
     driver.lastVerificationDate || (driver as any).updatedAt,
@@ -564,9 +562,7 @@ const getDriverDetailsFromDB = async (
       (latestVerificationLog.action === "DRIVER_APPROVED"
         ? "Live selfie captured via in-app camera. Gallery uploads disabled."
         : "");
-  } else if (
-    driver.mvrStatus === VERIFICATION_STATUS.VERIFIED
-  ) {
+  } else if (driver.mvrStatus === VERIFICATION_STATUS.VERIFIED) {
     verificationDate = formatTime(
       driver.mvrVerifiedAt || (driver as any).updatedAt,
       timezone,

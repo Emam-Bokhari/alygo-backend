@@ -100,7 +100,9 @@ const getDateRangeForFilter = async (
       };
     case "custom":
       if (startDate && endDate) {
-        const customStart = DateTime.fromISO(startDate, { zone: tz }).startOf("day");
+        const customStart = DateTime.fromISO(startDate, { zone: tz }).startOf(
+          "day",
+        );
         const customEnd = DateTime.fromISO(endDate, { zone: tz }).endOf("day");
         return {
           start: customStart.toUTC().toJSDate(),
@@ -113,11 +115,19 @@ const getDateRangeForFilter = async (
   }
 };
 
-const getOverviewFromDB = async (query: IAnalyticsQuery): Promise<IOverviewData> => {
-  const tz = await resolveAnalyticsTimezone(query.serviceAreaId, query.timezone);
+const getOverviewFromDB = async (
+  query: IAnalyticsQuery,
+): Promise<IOverviewData> => {
+  const tz = await resolveAnalyticsTimezone(
+    query.serviceAreaId,
+    query.timezone,
+  );
   const nowInTz = DateTime.now().setZone(tz);
 
-  const { start: startOfToday, end: endOfToday } = getDayRangeInTimezone("today", tz);
+  const { start: startOfToday, end: endOfToday } = getDayRangeInTimezone(
+    "today",
+    tz,
+  );
   const startOfMonth = nowInTz.startOf("month").toUTC().toJSDate();
   const endOfMonth = nowInTz.endOf("month").toUTC().toJSDate();
   const startOfWeek = nowInTz.startOf("week").toUTC().toJSDate();
@@ -234,11 +244,21 @@ const getOverviewFromDB = async (query: IAnalyticsQuery): Promise<IOverviewData>
               { $ifNull: ["$commission", 0] },
               {
                 $cond: [
-                  { $eq: ["$transactionType", TRANSACTION_TYPE.CANCELLATION_FEE] },
+                  {
+                    $eq: [
+                      "$transactionType",
+                      TRANSACTION_TYPE.CANCELLATION_FEE,
+                    ],
+                  },
                   "$amount",
                   {
                     $cond: [
-                      { $eq: ["$transactionType", TRANSACTION_TYPE.CANCELLATION_COMPENSATION] },
+                      {
+                        $eq: [
+                          "$transactionType",
+                          TRANSACTION_TYPE.CANCELLATION_COMPENSATION,
+                        ],
+                      },
                       { $subtract: [0, "$amount"] },
                       0,
                     ],
@@ -292,7 +312,9 @@ const getOverviewFromDB = async (query: IAnalyticsQuery): Promise<IOverviewData>
         $group: {
           _id: null,
           completed: {
-            $sum: { $cond: [{ $eq: ["$status", RIDE_STATUS.COMPLETED] }, 1, 0] },
+            $sum: {
+              $cond: [{ $eq: ["$status", RIDE_STATUS.COMPLETED] }, 1, 0],
+            },
           },
           cancelled: {
             $sum: {
@@ -339,11 +361,21 @@ const getOverviewFromDB = async (query: IAnalyticsQuery): Promise<IOverviewData>
               { $ifNull: ["$commission", 0] },
               {
                 $cond: [
-                  { $eq: ["$transactionType", TRANSACTION_TYPE.CANCELLATION_FEE] },
+                  {
+                    $eq: [
+                      "$transactionType",
+                      TRANSACTION_TYPE.CANCELLATION_FEE,
+                    ],
+                  },
                   "$amount",
                   {
                     $cond: [
-                      { $eq: ["$transactionType", TRANSACTION_TYPE.CANCELLATION_COMPENSATION] },
+                      {
+                        $eq: [
+                          "$transactionType",
+                          TRANSACTION_TYPE.CANCELLATION_COMPENSATION,
+                        ],
+                      },
                       { $subtract: [0, "$amount"] },
                       0,
                     ],
@@ -392,19 +424,36 @@ const getOverviewFromDB = async (query: IAnalyticsQuery): Promise<IOverviewData>
                   "6AM",
                   {
                     $cond: [
-                      { $and: [{ $gte: ["$hour", 9] }, { $lt: ["$hour", 12] }] },
+                      {
+                        $and: [{ $gte: ["$hour", 9] }, { $lt: ["$hour", 12] }],
+                      },
                       "9AM",
                       {
                         $cond: [
-                          { $and: [{ $gte: ["$hour", 12] }, { $lt: ["$hour", 15] }] },
+                          {
+                            $and: [
+                              { $gte: ["$hour", 12] },
+                              { $lt: ["$hour", 15] },
+                            ],
+                          },
                           "12PM",
                           {
                             $cond: [
-                              { $and: [{ $gte: ["$hour", 15] }, { $lt: ["$hour", 18] }] },
+                              {
+                                $and: [
+                                  { $gte: ["$hour", 15] },
+                                  { $lt: ["$hour", 18] },
+                                ],
+                              },
                               "3PM",
                               {
                                 $cond: [
-                                  { $and: [{ $gte: ["$hour", 18] }, { $lt: ["$hour", 21] }] },
+                                  {
+                                    $and: [
+                                      { $gte: ["$hour", 18] },
+                                      { $lt: ["$hour", 21] },
+                                    ],
+                                  },
                                   "6PM",
                                   "9PM",
                                 ],
@@ -428,17 +477,30 @@ const getOverviewFromDB = async (query: IAnalyticsQuery): Promise<IOverviewData>
   // Formulate Rates
   const offered = matchingStats[0]?.offered || 0;
   const accepted = matchingStats[0]?.accepted || 0;
-  const acceptanceRate = offered > 0 ? parseFloat(((accepted / offered) * 100).toFixed(1)) : 100;
+  const acceptanceRate =
+    offered > 0 ? parseFloat(((accepted / offered) * 100).toFixed(1)) : 100;
 
   const completed = completionStats[0]?.completed || 0;
   const cancelled = completionStats[0]?.cancelled || 0;
   const totalFinished = completed + cancelled;
-  const completionRate = totalFinished > 0 ? parseFloat(((completed / totalFinished) * 100).toFixed(1)) : 100;
-  const cancellationRate = totalFinished > 0 ? parseFloat(((cancelled / totalFinished) * 100).toFixed(1)) : 0;
+  const completionRate =
+    totalFinished > 0
+      ? parseFloat(((completed / totalFinished) * 100).toFixed(1))
+      : 100;
+  const cancellationRate =
+    totalFinished > 0
+      ? parseFloat(((cancelled / totalFinished) * 100).toFixed(1))
+      : 0;
 
   // Format Revenue Trend
   const revenueTrendMap: Record<string, number> = {
-    "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0,
+    "1": 0,
+    "2": 0,
+    "3": 0,
+    "4": 0,
+    "5": 0,
+    "6": 0,
+    "7": 0,
   };
   for (const item of revenueTrendResult) {
     if (item._id && revenueTrendMap[item._id] !== undefined) {
@@ -457,7 +519,13 @@ const getOverviewFromDB = async (query: IAnalyticsQuery): Promise<IOverviewData>
 
   // Format Demand Trend
   const demandTrendMap: Record<string, number> = {
-    "6AM": 0, "9AM": 0, "12PM": 0, "3PM": 0, "6PM": 0, "9PM": 0, "12AM": 0,
+    "6AM": 0,
+    "9AM": 0,
+    "12PM": 0,
+    "3PM": 0,
+    "6PM": 0,
+    "9PM": 0,
+    "12AM": 0,
   };
   for (const item of demandTrendResult) {
     if (item._id && demandTrendMap[item._id] !== undefined) {
@@ -475,7 +543,9 @@ const getOverviewFromDB = async (query: IAnalyticsQuery): Promise<IOverviewData>
     totalDrivers: totalDriversResult[0]?.count || 0,
     totalPassengers,
     activeTrips,
-    revenueThisMonth: parseFloat((revenueThisMonthResult[0]?.totalRevenue || 0).toFixed(2)),
+    revenueThisMonth: parseFloat(
+      (revenueThisMonthResult[0]?.totalRevenue || 0).toFixed(2),
+    ),
     scheduledRides,
     completedTripsToday,
     acceptanceRate,
@@ -487,8 +557,13 @@ const getOverviewFromDB = async (query: IAnalyticsQuery): Promise<IOverviewData>
   };
 };
 
-const getDriverGrowthFromDB = async (query: IAnalyticsQuery): Promise<IDriverGrowthData[]> => {
-  const tz = await resolveAnalyticsTimezone(query.serviceAreaId, query.timezone);
+const getDriverGrowthFromDB = async (
+  query: IAnalyticsQuery,
+): Promise<IDriverGrowthData[]> => {
+  const tz = await resolveAnalyticsTimezone(
+    query.serviceAreaId,
+    query.timezone,
+  );
   const nowInTz = DateTime.now().setZone(tz);
 
   let monthsCount = 12;
@@ -502,11 +577,15 @@ const getDriverGrowthFromDB = async (query: IAnalyticsQuery): Promise<IDriverGro
   const months: DateTime[] = [];
   if (monthsCount === 6) {
     for (let m = 1; m <= 6; m++) {
-      months.push(DateTime.fromObject({ year: currentYear, month: m }).setZone(tz));
+      months.push(
+        DateTime.fromObject({ year: currentYear, month: m }).setZone(tz),
+      );
     }
   } else {
     for (let m = 1; m <= 12; m++) {
-      months.push(DateTime.fromObject({ year: currentYear, month: m }).setZone(tz));
+      months.push(
+        DateTime.fromObject({ year: currentYear, month: m }).setZone(tz),
+      );
     }
   }
 
@@ -611,8 +690,13 @@ const getDriverGrowthFromDB = async (query: IAnalyticsQuery): Promise<IDriverGro
   return result;
 };
 
-const getPassengerGrowthFromDB = async (query: IAnalyticsQuery): Promise<IPassengerGrowthData[]> => {
-  const tz = await resolveAnalyticsTimezone(query.serviceAreaId, query.timezone);
+const getPassengerGrowthFromDB = async (
+  query: IAnalyticsQuery,
+): Promise<IPassengerGrowthData[]> => {
+  const tz = await resolveAnalyticsTimezone(
+    query.serviceAreaId,
+    query.timezone,
+  );
   const nowInTz = DateTime.now().setZone(tz);
 
   let monthsCount = 12;
@@ -626,11 +710,15 @@ const getPassengerGrowthFromDB = async (query: IAnalyticsQuery): Promise<IPassen
   const months: DateTime[] = [];
   if (monthsCount === 6) {
     for (let m = 1; m <= 6; m++) {
-      months.push(DateTime.fromObject({ year: currentYear, month: m }).setZone(tz));
+      months.push(
+        DateTime.fromObject({ year: currentYear, month: m }).setZone(tz),
+      );
     }
   } else {
     for (let m = 1; m <= 12; m++) {
-      months.push(DateTime.fromObject({ year: currentYear, month: m }).setZone(tz));
+      months.push(
+        DateTime.fromObject({ year: currentYear, month: m }).setZone(tz),
+      );
     }
   }
 
@@ -712,9 +800,19 @@ const getPassengerGrowthFromDB = async (query: IAnalyticsQuery): Promise<IPassen
   return result;
 };
 
-const getRevenueTrendFromDB = async (query: IAnalyticsQuery): Promise<IRevenueTrendData[]> => {
-  const tz = await resolveAnalyticsTimezone(query.serviceAreaId, query.timezone);
-  const dateRange = await getDateRangeForFilter(query.filter, query.startDate, query.endDate, tz);
+const getRevenueTrendFromDB = async (
+  query: IAnalyticsQuery,
+): Promise<IRevenueTrendData[]> => {
+  const tz = await resolveAnalyticsTimezone(
+    query.serviceAreaId,
+    query.timezone,
+  );
+  const dateRange = await getDateRangeForFilter(
+    query.filter,
+    query.startDate,
+    query.endDate,
+    tz,
+  );
 
   const matchStage: any = { paymentStatus: PAYMENT_STATUS.PAID };
   if (dateRange) {
@@ -741,11 +839,18 @@ const getRevenueTrendFromDB = async (query: IAnalyticsQuery): Promise<IRevenueTr
             { $ifNull: ["$commission", 0] },
             {
               $cond: [
-                { $eq: ["$transactionType", TRANSACTION_TYPE.CANCELLATION_FEE] },
+                {
+                  $eq: ["$transactionType", TRANSACTION_TYPE.CANCELLATION_FEE],
+                },
                 "$amount",
                 {
                   $cond: [
-                    { $eq: ["$transactionType", TRANSACTION_TYPE.CANCELLATION_COMPENSATION] },
+                    {
+                      $eq: [
+                        "$transactionType",
+                        TRANSACTION_TYPE.CANCELLATION_COMPENSATION,
+                      ],
+                    },
                     { $subtract: [0, "$amount"] },
                     0,
                   ],
@@ -833,11 +938,21 @@ const getRevenueTrendFromDB = async (query: IAnalyticsQuery): Promise<IRevenueTr
   return resultList;
 };
 
-const getDemandByHourFromDB = async (query: IAnalyticsQuery): Promise<IDemandByHourData[]> => {
-  const tz = await resolveAnalyticsTimezone(query.serviceAreaId, query.timezone);
+const getDemandByHourFromDB = async (
+  query: IAnalyticsQuery,
+): Promise<IDemandByHourData[]> => {
+  const tz = await resolveAnalyticsTimezone(
+    query.serviceAreaId,
+    query.timezone,
+  );
   // Default filter is 'today' if none specified
   const filter = query.filter || "today";
-  const dateRange = await getDateRangeForFilter(filter, query.startDate, query.endDate, tz);
+  const dateRange = await getDateRangeForFilter(
+    filter,
+    query.startDate,
+    query.endDate,
+    tz,
+  );
 
   const matchStage: any = {};
   if (dateRange) {
@@ -875,15 +990,30 @@ const getDemandByHourFromDB = async (query: IAnalyticsQuery): Promise<IDemandByH
                     "9AM",
                     {
                       $cond: [
-                        { $and: [{ $gte: ["$hour", 12] }, { $lt: ["$hour", 15] }] },
+                        {
+                          $and: [
+                            { $gte: ["$hour", 12] },
+                            { $lt: ["$hour", 15] },
+                          ],
+                        },
                         "12PM",
                         {
                           $cond: [
-                            { $and: [{ $gte: ["$hour", 15] }, { $lt: ["$hour", 18] }] },
+                            {
+                              $and: [
+                                { $gte: ["$hour", 15] },
+                                { $lt: ["$hour", 18] },
+                              ],
+                            },
                             "3PM",
                             {
                               $cond: [
-                                { $and: [{ $gte: ["$hour", 18] }, { $lt: ["$hour", 21] }] },
+                                {
+                                  $and: [
+                                    { $gte: ["$hour", 18] },
+                                    { $lt: ["$hour", 21] },
+                                  ],
+                                },
                                 "6PM",
                                 "9PM",
                               ],
@@ -904,7 +1034,13 @@ const getDemandByHourFromDB = async (query: IAnalyticsQuery): Promise<IDemandByH
   ]);
 
   const bucketCounts: Record<string, number> = {
-    "6AM": 0, "9AM": 0, "12PM": 0, "3PM": 0, "6PM": 0, "9PM": 0, "12AM": 0,
+    "6AM": 0,
+    "9AM": 0,
+    "12PM": 0,
+    "3PM": 0,
+    "6PM": 0,
+    "9PM": 0,
+    "12AM": 0,
   };
 
   for (const item of rides) {
@@ -915,7 +1051,13 @@ const getDemandByHourFromDB = async (query: IAnalyticsQuery): Promise<IDemandByH
 
   const labels = ["6AM", "9AM", "12PM", "3PM", "6PM", "9PM", "12AM"];
   const labelHours: Record<string, number> = {
-    "12AM": 0, "6AM": 6, "9AM": 9, "12PM": 12, "3PM": 15, "6PM": 18, "9PM": 21,
+    "12AM": 0,
+    "6AM": 6,
+    "9AM": 9,
+    "12PM": 12,
+    "3PM": 15,
+    "6PM": 18,
+    "9PM": 21,
   };
 
   return labels.map((label) => ({

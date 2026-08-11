@@ -16,10 +16,7 @@ router
     validateRequest(BroadcastValidation.createBroadcastValidationSchema),
     BroadcastController.createBroadcast,
   )
-  .get(
-    isAuthenticated,
-    BroadcastController.getAllBroadcasts,
-  );
+  .get(isAuthenticated, BroadcastController.getAllBroadcasts);
 
 router.patch(
   "/:id/cancel",
@@ -30,10 +27,7 @@ router.patch(
 
 router
   .route("/:id")
-  .get(
-    isAuthenticated,
-    BroadcastController.getSingleBroadcast,
-  )
+  .get(isAuthenticated, BroadcastController.getSingleBroadcast)
   .delete(
     auth(),
     requirePermission("broadcast.delete"),

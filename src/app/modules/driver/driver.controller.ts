@@ -149,7 +149,10 @@ const initiateBackgroundCheck = catchAsync(async (req, res) => {
   }
 
   const { id } = req.user as { id: string };
-  const result = await DriverVerificationService.initiateBackgroundCheck(id, req.body);
+  const result = await DriverVerificationService.initiateBackgroundCheck(
+    id,
+    req.body,
+  );
 
   sendResponse(res, {
     success: true,

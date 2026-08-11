@@ -30,9 +30,7 @@ const getAllBroadcasts = catchAsync(async (req, res) => {
 });
 
 const getSingleBroadcast = catchAsync(async (req, res) => {
-  const result = await BroadcastService.getSingleBroadcastFromDB(
-    req.params.id,
-  );
+  const result = await BroadcastService.getSingleBroadcastFromDB(req.params.id);
 
   sendResponse(res, {
     statusCode: StatusCodes.OK,
@@ -54,9 +52,7 @@ const deleteBroadcast = catchAsync(async (req, res) => {
 });
 
 const cancelBroadcast = catchAsync(async (req, res) => {
-  const result = await BroadcastService.cancelScheduledBroadcast(
-    req.params.id,
-  );
+  const result = await BroadcastService.cancelScheduledBroadcast(req.params.id);
 
   sendResponse(res, {
     statusCode: StatusCodes.OK,
