@@ -64,6 +64,21 @@ router.get(
   RideController.getReservationDetails,
 );
 
+// Get driver reservation list (Driver only)
+router.get(
+  "/driver/reservations",
+  isDriver,
+  validateRequest(RideValidations.getMyReservationsQuerySchema),
+  RideController.getDriverReservations,
+);
+
+// Get driver reservation details by ID (Driver only)
+router.get(
+  "/driver/reservations/:id",
+  isDriver,
+  RideController.getDriverReservationDetails,
+);
+
 // Request ride (Passenger only)
 router.post(
   "/",

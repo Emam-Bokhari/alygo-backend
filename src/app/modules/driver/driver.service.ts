@@ -315,7 +315,7 @@ const getDriverAvailability = async (userId: string) => {
 };
 
 import { Ride } from "../ride/ride.model";
-import { RIDE_TYPE, RIDE_STATUS } from "../ride/ride.constant";
+import { RIDE_TYPE, RIDE_STATUS, DRIVER_MATCHING_STATUS } from "../ride/ride.constant";
 import QueryBuilder from "../../builder/queryBuilder";
 import { getSystemConfig } from "../../../helpers/systemConfigHelper";
 import { getCurrentTimeInTimezone } from "../../../shared/timezoneHelper";
@@ -339,6 +339,19 @@ const getDriverReservationsFromDB = async (
     $or: [
       { assignedDriverId: new Types.ObjectId(driverUserId) },
       { driverId: new Types.ObjectId(driverUserId) },
+      {
+        $and: [
+          { status: RIDE_STATUS.SEARCHING_DRIVER },
+          {
+            "driverMatching.notifiedDrivers": {
+              $elemMatch: {
+                driverId: new Types.ObjectId(driverUserId),
+                status: DRIVER_MATCHING_STATUS.SENT,
+              },
+            },
+          },
+        ],
+      },
     ],
   };
 

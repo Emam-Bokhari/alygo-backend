@@ -4541,6 +4541,225 @@ const getReservationDetails = async (userId: string, rideId: string) => {
   };
 };
 
+/**
+ * Retrieve paginated reservation history for a driver
+ */
+const getDriverReservations = async (
+  driverUserId: string,
+  query: Record<string, unknown>,
+) => {
+  const page = Number(query.page) || 1;
+  const limit = Number(query.limit) || 10;
+  const skip = (page - 1) * limit;
+
+  const driverObjectId = new Types.ObjectId(driverUserId);
+
+  const baseConditions: FilterQuery<IRide>[] = [
+    {
+      $or: [
+        { driverId: driverObjectId },
+        { assignedDriverId: driverObjectId },
+        {
+          $and: [
+            { status: RIDE_STATUS.SEARCHING_DRIVER },
+            {
+              "driverMatching.notifiedDrivers": {
+                $elemMatch: {
+                  driverId: driverObjectId,
+                  status: DRIVER_MATCHING_STATUS.SENT,
+                },
+              },
+            },
+          ],
+        },
+      ],
+    },
+    { rideType: RIDE_TYPE.SCHEDULED },
+  ];
+
+  // Optional: filters for reservation status if passed in query
+  if (query.reservationStatus) {
+    baseConditions.push({
+      reservationStatus: query.reservationStatus as string,
+    });
+  }
+
+  // Optional: filters for status if passed in query
+  if (query.status) {
+    baseConditions.push({ status: query.status as string });
+  }
+
+  const filter: FilterQuery<IRide> = { $and: baseConditions };
+
+  // Sort by createdAt descending so that the latest reservation shows first (sobar upore)
+  const sortOption: Record<string, 1 | -1> = { createdAt: -1 };
+
+  const total = await Ride.countDocuments(filter);
+  const totalPage = Math.ceil(total / limit);
+
+  const rides = await Ride.find(filter)
+    .sort(sortOption)
+    .skip(skip)
+    .limit(limit)
+    .populate(
+      "userId",
+      "name profileImage phone email averageRating totalRatings",
+    )
+    .populate("serviceCategoryId", "name description image")
+    .populate("carId", "brand model year licensePlate")
+    .lean();
+
+  const data = rides.map((ride: any) => {
+    const passenger = ride.userId
+      ? {
+          id: ride.userId._id,
+          name: ride.userId.name,
+          profileImage: ride.userId.profileImage,
+          phone: ride.userId.phone,
+          email: ride.userId.email,
+          rating: ride.userId.averageRating || 0,
+          averageRating: ride.userId.averageRating || 0,
+          totalRatings: ride.userId.totalRatings || 0,
+        }
+      : null;
+
+    return {
+      rideId: ride._id,
+      rideType: ride.rideType,
+      status: ride.status,
+      reservationStatus: ride.reservationStatus,
+      passenger,
+      car: ride.carId
+        ? {
+            name: `${ride.carId.brand} ${ride.carId.model}`,
+            brand: ride.carId.brand,
+            model: ride.carId.model,
+            year: ride.carId.year,
+            licensePlate: ride.carId.licensePlate,
+          }
+        : null,
+      pickup: ride.pickup,
+      destination: ride.destination,
+      stops: ride.stops || [],
+      rideCategory: ride.rideCategory,
+      serviceCategory: ride.serviceCategoryId,
+      fare: ride.fare,
+      payment: {
+        method: ride.payment?.method,
+        status: ride.payment?.status,
+        paidAt: ride.payment?.paidAt,
+      },
+      scheduledAt: ride.scheduledAt,
+      acceptedAt: ride.acceptedAt,
+      startedAt: ride.startedAt,
+      completedAt: ride.completedAt,
+      cancelledAt: ride.cancellation?.cancelledAt,
+      createdAt: ride.createdAt,
+    };
+  });
+
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+      totalPage,
+      hasNextPage: page < totalPage,
+      hasPrevPage: page > 1,
+    },
+    data,
+  };
+};
+
+/**
+ * Retrieve specific reservation details for driver
+ */
+const getDriverReservationDetails = async (
+  driverUserId: string,
+  rideId: string,
+) => {
+  if (!Types.ObjectId.isValid(rideId)) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid reservation ID");
+  }
+
+  const driverObjectId = new Types.ObjectId(driverUserId);
+  const rideObjectId = new Types.ObjectId(rideId);
+
+  const ride = await Ride.findOne({
+    _id: rideObjectId,
+    $or: [
+      { driverId: driverObjectId },
+      { assignedDriverId: driverObjectId },
+      {
+        $and: [
+          { status: RIDE_STATUS.SEARCHING_DRIVER },
+          {
+            "driverMatching.notifiedDrivers": {
+              $elemMatch: {
+                driverId: driverObjectId,
+                status: DRIVER_MATCHING_STATUS.SENT,
+              },
+            },
+          },
+        ],
+      },
+    ],
+    rideType: RIDE_TYPE.SCHEDULED,
+  })
+    .populate(
+      "userId",
+      "name profileImage phone email averageRating totalRatings",
+    )
+    .populate("serviceCategoryId", "name description image")
+    .populate("carId")
+    .lean();
+
+  if (!ride) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "Reservation details not found");
+  }
+
+  const passenger = ride.userId
+    ? {
+        id: (ride.userId as any)._id,
+        name: (ride.userId as any).name,
+        profileImage: (ride.userId as any).profileImage,
+        phone: (ride.userId as any).phone,
+        email: (ride.userId as any).email,
+        rating: (ride.userId as any).averageRating || 0,
+        averageRating: (ride.userId as any).averageRating || 0,
+        totalRatings: (ride.userId as any).totalRatings || 0,
+      }
+    : null;
+
+  return {
+    rideId: ride._id,
+    rideType: ride.rideType,
+    status: ride.status,
+    reservationStatus: ride.reservationStatus,
+    passenger,
+    pickup: ride.pickup,
+    destination: ride.destination,
+    stops: ride.stops || [],
+    rideCategory: ride.rideCategory,
+    serviceCategory: ride.serviceCategoryId,
+    car: ride.carId,
+    fare: ride.fare,
+    payment: {
+      method: ride.payment?.method,
+      status: ride.payment?.status,
+      paidAt: ride.payment?.paidAt,
+    },
+    scheduledAt: ride.scheduledAt,
+    acceptedAt: ride.acceptedAt,
+    startedAt: ride.startedAt,
+    completedAt: ride.completedAt,
+    cancelledAt: ride.cancellation?.cancelledAt,
+    cancellation: ride.cancellation,
+    createdAt: ride.createdAt,
+    updatedAt: ride.updatedAt,
+  };
+};
+
 export const RideServices = {
   estimateFareAndRoute,
   requestRide,
@@ -4564,4 +4783,6 @@ export const RideServices = {
   getUserRideHistoryDetails,
   getMyReservations,
   getReservationDetails,
+  getDriverReservations,
+  getDriverReservationDetails,
 };
