@@ -69,6 +69,7 @@ import { CallRoutes } from "../modules/call/call.route";
 import { RbacRoutes } from "../modules/rbac/rbac.route";
 import { ReservationRoutes } from "../modules/reservation/reservation.route";
 import { FinancialCenterRoutes } from "../modules/financialCenter/financialCenter.route";
+import { AnalyticsRoutes } from "../modules/analytics/analytics.route";
 
 const router = express.Router();
 
@@ -296,6 +297,10 @@ const apiRoutes = [
   {
     path: "/admin/analytics",
     route: CancellationAnalyticsRoutes,
+  },
+  {
+    path: "/analytics",
+    route: AnalyticsRoutes,
   },
   {
     path: "/live-trips",
