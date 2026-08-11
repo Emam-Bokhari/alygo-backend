@@ -73,7 +73,7 @@ const updateAdminStatusByIdToDB = async (
   const user = await User.findOne({
     _id: id,
     role: USER_ROLES.ADMIN,
-  });
+  }).setOptions({ withDeleted: true });
   if (!user) {
     throw new ApiError(404, "No admin is found by this user ID");
   }
@@ -229,7 +229,7 @@ const updateUserStatusByIdToDB = async (
   const user = await User.findOne({
     _id: id,
     role: USER_ROLES.USER,
-  });
+  }).setOptions({ withDeleted: true });
   if (!user) {
     throw new ApiError(404, "No user is found by this user ID");
   }

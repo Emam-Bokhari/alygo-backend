@@ -43,8 +43,6 @@ export interface ICar {
     collisionDeductible?: string;
     comprehensive?: string;
   }[];
-  isVerified: boolean;
-  verifiedAt?: Date;
 }
 
 export type CarModel = ISoftDeleteModel<ICar>;

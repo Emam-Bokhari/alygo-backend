@@ -13,6 +13,7 @@ import { NotificationRoutes } from "../modules/notification/notification.routes"
 import { FcmTokenRoutes } from "../modules/fcmToken/fcmToken.route";
 import { ReferralRoutes } from "../modules/referral/referral.route";
 import { DriverRoutes } from "../modules/driver/driver.route";
+import { CheckrRoutes } from "../modules/checkr/checkr.route";
 import { DriverManagementRoutes } from "../modules/driverManagement/driverManagement.route";
 import { PassengerManagementRoutes } from "../modules/passengerManagement/passengerManagement.route";
 import { CarRoutes } from "../modules/car/car.routes";
@@ -131,6 +132,10 @@ const apiRoutes = [
   {
     path: "/drivers",
     route: DriverRoutes,
+  },
+  {
+    path: "/checkr",
+    route: CheckrRoutes,
   },
   {
     path: "/driver-management",

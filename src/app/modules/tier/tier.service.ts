@@ -126,7 +126,7 @@ const updateTierStatusToDB = async (
     throw new ApiError(StatusCodes.NOT_ACCEPTABLE, "Invalid ID");
   }
 
-  const tier = await Tier.findOne({ _id: tierId, isDeleted: false });
+  const tier = await Tier.findOne({ _id: tierId }).setOptions({ withDeleted: true });
   if (!tier) {
     throw new ApiError(StatusCodes.NOT_FOUND, "Tier not found");
   }

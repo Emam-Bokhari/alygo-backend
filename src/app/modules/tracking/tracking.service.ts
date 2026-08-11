@@ -406,7 +406,7 @@ const updateDriverLocation = async (
     "userId",
     "name profileImage",
   );
-  const car = await Car.findOne({ driverId: driverDoc?._id, isVerified: true });
+  const car = await Car.findOne({ driverId: driverDoc?._id });
   const driverSummary = await buildDriverSummary(driverDoc, car);
 
   for (const transition of transitions) {

@@ -6,7 +6,7 @@ import { Ride } from "../ride/ride.model";
 import { Transaction } from "../transaction/transaction.model";
 import { ServiceArea } from "../serviceArea/serviceArea.model";
 import { VERIFICATION_STATUS } from "../driver/driver.constant";
-import { STATUS, USER_ROLES } from "../../../enums/user";
+import { DRIVER_STATUS, STATUS, USER_ROLES } from "../../../enums/user";
 import { PAYMENT_STATUS, RIDE_STATUS, RIDE_TYPE } from "../ride/ride.constant";
 import { TRANSACTION_TYPE } from "../transaction/transaction.constant";
 import {
@@ -61,7 +61,7 @@ const getSummaryFromDB = async () => {
     Driver.aggregate([
       {
         $match: {
-          taxVerificationStatus: VERIFICATION_STATUS.VERIFIED,
+          approvalStatus: DRIVER_STATUS.APPROVED,
         },
       },
       {
@@ -250,7 +250,7 @@ const getSummaryFromDB = async () => {
     Driver.aggregate([
       {
         $match: {
-          taxVerificationStatus: VERIFICATION_STATUS.PENDING,
+          approvalStatus: DRIVER_STATUS.PENDING,
         },
       },
       {
@@ -278,8 +278,7 @@ const getSummaryFromDB = async () => {
       const airportIds = airports.map((a) => a._id);
       return Driver.countDocuments({
         driverAvailabilityStatus: "online",
-        taxVerified: true,
-        taxVerificationStatus: VERIFICATION_STATUS.VERIFIED,
+        approvalStatus: DRIVER_STATUS.APPROVED,
         serviceAreaId: { $in: airportIds },
       });
     }),
@@ -565,7 +564,7 @@ const getDriverGrowthFromDB = async (
   const initialDriversResult = await Driver.aggregate([
     {
       $match: {
-        taxVerificationStatus: VERIFICATION_STATUS.VERIFIED,
+        approvalStatus: DRIVER_STATUS.APPROVED,
       },
     },
     {
@@ -588,7 +587,7 @@ const getDriverGrowthFromDB = async (
     },
     {
       $project: {
-        verificationDate: { $ifNull: ["$taxVerifiedAt", "$createdAt"] },
+        verificationDate: "$createdAt",
       },
     },
     {
@@ -605,7 +604,7 @@ const getDriverGrowthFromDB = async (
   const monthlyDriversResult = await Driver.aggregate([
     {
       $match: {
-        taxVerificationStatus: VERIFICATION_STATUS.VERIFIED,
+        approvalStatus: DRIVER_STATUS.APPROVED,
       },
     },
     {
@@ -628,7 +627,7 @@ const getDriverGrowthFromDB = async (
     },
     {
       $project: {
-        verificationDate: { $ifNull: ["$taxVerifiedAt", "$createdAt"] },
+        verificationDate: "$createdAt",
       },
     },
     {

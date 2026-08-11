@@ -3,6 +3,8 @@ import ApiError from "../../../errors/ApiErrors";
 import { User } from "../user/user.model";
 import { Driver } from "./driver.model";
 import { IDriver } from "./driver.interface";
+import { VERIFICATION_STATUS } from "./driver.constant";
+import { DriverVerificationService } from "./driver.verification.service";
 import { DriverDutyPolicyServices } from "../driverDutyPolicy/driverDutyPolicy.service";
 import { Review } from "../review/review.model";
 import { calculateDriverAcceptanceRate } from "../tier/points.service";
@@ -73,6 +75,11 @@ const createDriverToDB = async (userId: string, payload: Partial<IDriver>) => {
       { new: true },
     );
   }
+
+  // Trigger Checkr MVR Verification automatically behind the scenes
+  DriverVerificationService.triggerMVRVerification(existingDriver!._id.toString()).catch((err) => {
+    console.error("MVR Verification trigger error in createDriverToDB:", err.message || err);
+  });
 
   const populatedDriver = await Driver.findById(existingDriver!._id)
     .populate("userId", "name profileImage phone email")
@@ -239,6 +246,16 @@ const updateDriverFromDB = async (
     updatePayload.approvalStatus = DRIVER_STATUS.PENDING;
   }
 
+  // Reset verification status if license info changes to trigger a new MVR check
+  const isLicenseUpdated =
+    (updatePayload.drivingLicense !== undefined && updatePayload.drivingLicense !== existingDriver.drivingLicense) ||
+    (updatePayload.drivingLicenseNumber !== undefined && updatePayload.drivingLicenseNumber !== existingDriver.drivingLicenseNumber) ||
+    (updatePayload.drivingLicenseState !== undefined && updatePayload.drivingLicenseState !== existingDriver.drivingLicenseState);
+
+  if (isLicenseUpdated) {
+    updatePayload.mvrStatus = VERIFICATION_STATUS.PENDING;
+  }
+
   const updatedDriver = await Driver.findOneAndUpdate(
     { userId: new Types.ObjectId(userId) },
     updatePayload,
@@ -253,6 +270,11 @@ const updateDriverFromDB = async (
       { $set: { documentsStatus: docStatus } },
     );
   }
+
+  // Trigger Checkr MVR Verification automatically behind the scenes
+  DriverVerificationService.triggerMVRVerification(existingDriver._id.toString()).catch((err) => {
+    console.error("MVR Verification trigger error in updateDriverFromDB:", err.message || err);
+  });
 
   const finalDriver = await Driver.findOne({
     userId: new Types.ObjectId(userId),

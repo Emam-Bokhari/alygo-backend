@@ -145,9 +145,9 @@ const getDriversOverviewFromDB = async (queryParams: Record<string, any>) => {
       }
 
       // 6. Compliance / Verification Statuses
-      const compliance = driver.taxVerificationStatus;
+      const compliance = driver.mvrStatus;
       const backgroundCheck = driver.backgroundCheckStatus;
-      const identityVerification = driver.identityVerificationStatus;
+      const mvrStatus = driver.mvrStatus;
 
       // 7. Overall status
       let overallStatus = driver.approvalStatus || DRIVER_STATUS.PENDING;
@@ -163,7 +163,7 @@ const getDriversOverviewFromDB = async (queryParams: Record<string, any>) => {
           lifetimePoints: driver.lifetimePoints,
           approvalStatus: driver.approvalStatus,
           backgroundCheckStatus: driver.backgroundCheckStatus,
-          identityVerificationStatus: driver.identityVerificationStatus,
+          mvrStatus: driver.mvrStatus,
           licenseExpiryDate: driver.licenseExpiryDate,
           suspension: driver.suspension,
         },
@@ -193,7 +193,7 @@ const getDriversOverviewFromDB = async (queryParams: Record<string, any>) => {
         rideCategories: matchedCategories,
         compliance,
         backgroundCheck,
-        identityVerification,
+        mvrStatus,
         status: overallStatus,
         city: driverCity,
       };
@@ -259,17 +259,12 @@ const getOverviewSummaryFromDB = async () => {
     Driver.countDocuments({
       $or: [
         {
-          taxVerificationStatus: {
-            $in: [VERIFICATION_STATUS.PENDING, VERIFICATION_STATUS.REJECTED],
-          },
-        },
-        {
           backgroundCheckStatus: {
             $in: [VERIFICATION_STATUS.PENDING, VERIFICATION_STATUS.REJECTED],
           },
         },
         {
-          identityVerificationStatus: {
+          mvrStatus: {
             $in: [VERIFICATION_STATUS.PENDING, VERIFICATION_STATUS.REJECTED],
           },
         },
@@ -278,9 +273,8 @@ const getOverviewSummaryFromDB = async () => {
     }),
     Driver.countDocuments({
       approvalStatus: DRIVER_STATUS.APPROVED,
-      taxVerified: true,
       backgroundCheckStatus: VERIFICATION_STATUS.VERIFIED,
-      identityVerificationStatus: VERIFICATION_STATUS.VERIFIED,
+      mvrStatus: VERIFICATION_STATUS.VERIFIED,
     }),
   ]);
 
@@ -529,7 +523,7 @@ const getDriverDetailsFromDB = async (
   );
 
   let verificationStatus = capitalize(
-    driver.identityVerificationStatus || "pending",
+    driver.mvrStatus || "pending",
   );
   let verificationDate: string | null = null;
   let lastVerificationDate: string | null = formatTime(
@@ -571,10 +565,10 @@ const getDriverDetailsFromDB = async (
         ? "Live selfie captured via in-app camera. Gallery uploads disabled."
         : "");
   } else if (
-    driver.identityVerificationStatus === VERIFICATION_STATUS.VERIFIED
+    driver.mvrStatus === VERIFICATION_STATUS.VERIFIED
   ) {
     verificationDate = formatTime(
-      driver.identityVerifiedAt || (driver as any).updatedAt,
+      driver.mvrVerifiedAt || (driver as any).updatedAt,
       timezone,
     );
   }
@@ -602,7 +596,7 @@ const getDriverDetailsFromDB = async (
     ? {
         imageUrl: driver.liveSelfie,
         capturedAt: formatTime(
-          driver.identityVerifiedAt || (driver as any).updatedAt,
+          driver.mvrVerifiedAt || (driver as any).updatedAt,
           timezone,
         ),
       }
@@ -693,6 +687,8 @@ const approveDriverInDB = async (
     {
       $set: {
         approvalStatus: DRIVER_STATUS.APPROVED,
+        mvrStatus: VERIFICATION_STATUS.VERIFIED,
+        mvrVerifiedAt: new Date(),
         "suspension.isSuspended": false,
         "suspension.suspendedBy": null,
         "suspension.suspendedAt": null,

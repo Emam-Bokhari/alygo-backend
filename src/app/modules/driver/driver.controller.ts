@@ -2,6 +2,7 @@ import ApiError from "../../../errors/ApiErrors";
 import catchAsync from "../../../shared/catchAsync";
 import sendResponse from "../../../shared/sendResponse";
 import { DriverServices } from "./driver.service";
+import { DriverVerificationService } from "./driver.verification.service";
 
 const createDriver = catchAsync(async (req, res) => {
   if (!req.user) {
@@ -142,6 +143,22 @@ const getDrivingHoursLedger = catchAsync(async (req, res) => {
   });
 });
 
+const initiateBackgroundCheck = catchAsync(async (req, res) => {
+  if (!req.user) {
+    throw new ApiError(401, "User not authenticated");
+  }
+
+  const { id } = req.user as { id: string };
+  const result = await DriverVerificationService.initiateBackgroundCheck(id, req.body);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Background check initiated successfully",
+    data: result,
+  });
+});
+
 export const DriverController = {
   createDriver,
   getDriverProfile,
@@ -152,4 +169,5 @@ export const DriverController = {
   getDrivingHours,
   getDrivingHoursHistory,
   getDrivingHoursLedger,
+  initiateBackgroundCheck,
 };

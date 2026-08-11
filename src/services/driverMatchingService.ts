@@ -131,8 +131,6 @@ export const findEligibleDriversInRadius = async ({
       },
     },
     driverAvailabilityStatus: "online",
-    taxVerified: true,
-    taxVerificationStatus: "verified",
     approvalStatus: "approved",
     "suspension.isSuspended": { $ne: true },
     serviceAreaId: new Types.ObjectId(resolvedRideServiceAreaId),
@@ -269,7 +267,6 @@ export const findEligibleDriversInRadius = async ({
     // B. Check verified car
     const car = await Car.findOne({
       driverId: driverDoc._id,
-      isVerified: true,
     });
 
     if (!car) continue;

@@ -515,8 +515,8 @@ const getLivePassengerDetails = async (passengerId: string) => {
     Tracking.findOne({ rideId: ride._id }),
   ]);
 
-  const carDoc = driverDoc
-    ? await Car.findOne({ driverId: driverDoc._id, isVerified: true }).lean()
+   const carDoc = driverDoc
+    ? await Car.findOne({ driverId: driverDoc._id }).lean()
     : null;
 
   const tz = ride.timezone || "UTC";

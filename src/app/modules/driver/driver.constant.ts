@@ -3,6 +3,8 @@ export enum VERIFICATION_STATUS {
   PROCESSING = "processing",
   VERIFIED = "verified",
   REJECTED = "rejected",
+  REVIEW_REQUIRED = "review_required",
+  FAILED = "failed",
 }
 
 export enum CLASSIFICATION {

@@ -10,7 +10,7 @@ import { Event } from "../app/modules/event/event.model";
 import { Tracking } from "../app/modules/tracking/tracking.model";
 import { ReservationServices } from "../app/modules/reservation/reservation.service";
 import { RIDE_TYPE, RIDE_STATUS } from "../app/modules/ride/ride.constant";
-import { STATUS, USER_ROLES } from "../enums/user";
+import { DRIVER_STATUS, STATUS, USER_ROLES } from "../enums/user";
 
 const assert = (condition: boolean, message: string) => {
   if (!condition) {
@@ -60,7 +60,7 @@ async function run() {
     const driver = await Driver.create({
       userId: driverUser._id,
       driverAvailabilityStatus: "online",
-      taxVerified: true,
+      approvalStatus: DRIVER_STATUS.APPROVED,
       availability: { canReceiveRide: true },
     });
 
@@ -75,7 +75,6 @@ async function run() {
       seatNumber: 4,
       licensePlate: "RESERVE1",
       vehicleId: new Types.ObjectId().toString(),
-      isVerified: true,
       createdAt: new Date(),
       updatedAt: new Date(),
     });

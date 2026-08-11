@@ -64,7 +64,6 @@ export const buildDriverSummary = async (
   if (!carDoc && driver._id) {
     carDoc = await Car.findOne({
       driverId: driver._id,
-      isVerified: true,
     });
   }
 

@@ -149,9 +149,8 @@ export class DriverQueryBuilder {
         };
       } else if (complianceStatus === "pending") {
         const complianceOr: any[] = [
-          { taxVerificationStatus: VERIFICATION_STATUS.PENDING },
           { backgroundCheckStatus: VERIFICATION_STATUS.PENDING },
-          { identityVerificationStatus: VERIFICATION_STATUS.PENDING },
+          { mvrStatus: VERIFICATION_STATUS.PENDING },
         ];
         if (this.filterQuery.$or) {
           this.filterQuery.$and = this.filterQuery.$and || [];
@@ -164,9 +163,8 @@ export class DriverQueryBuilder {
         complianceStatus === "failed"
       ) {
         const complianceOr: any[] = [
-          { taxVerificationStatus: VERIFICATION_STATUS.REJECTED },
           { backgroundCheckStatus: VERIFICATION_STATUS.REJECTED },
-          { identityVerificationStatus: VERIFICATION_STATUS.REJECTED },
+          { mvrStatus: VERIFICATION_STATUS.REJECTED },
         ];
         if (this.filterQuery.$or) {
           this.filterQuery.$and = this.filterQuery.$and || [];
@@ -175,9 +173,8 @@ export class DriverQueryBuilder {
           this.filterQuery.$or = complianceOr;
         }
       } else if (complianceStatus === "verified") {
-        this.filterQuery.taxVerificationStatus = VERIFICATION_STATUS.VERIFIED;
         this.filterQuery.backgroundCheckStatus = VERIFICATION_STATUS.VERIFIED;
-        this.filterQuery.identityVerificationStatus =
+        this.filterQuery.mvrStatus =
           VERIFICATION_STATUS.VERIFIED;
 
         const expiryOr = [

@@ -217,4 +217,12 @@ export default {
       process.env.CALL_MAX_DURATION_MINUTES || "120",
     ),
   },
+  checkr: {
+    apiKey: process.env.CHECKR_API_KEY || "",
+    baseUrl: process.env.CHECKR_BASE_URL || "https://api.checkr.com",
+    signingKey: process.env.CHECKR_SIGNING_KEY || "",
+    mvrPackage: process.env.CHECKR_MVR_PACKAGE || "driver_pro_mvr",
+    backgroundCheckPackage: process.env.CHECKR_BACKGROUND_CHECK_PACKAGE || "driver_pro",
+  },
 };
+

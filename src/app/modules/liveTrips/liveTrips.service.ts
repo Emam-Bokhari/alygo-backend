@@ -269,7 +269,7 @@ const getLiveTripByIdFromDB = async (rideId: string): Promise<any> => {
   // Fetch car and cancellation reason if needed
   const [carDoc, cancellationReasonDoc] = await Promise.all([
     driverDoc
-      ? Car.findOne({ driverId: driverDoc._id, isVerified: true })
+      ? Car.findOne({ driverId: driverDoc._id })
       : null,
     ride.cancellation?.cancellationReasonId
       ? CancellationReason.findById(ride.cancellation.cancellationReasonId)

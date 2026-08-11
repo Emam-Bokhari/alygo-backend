@@ -167,15 +167,7 @@ const carSchema = new Schema<ICar>(
       default: [],
     },
 
-    isVerified: {
-      type: Boolean,
-      default: false,
-    },
 
-    verifiedAt: {
-      type: Date,
-      default: null,
-    },
   },
   {
     timestamps: true,

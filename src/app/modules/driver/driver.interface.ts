@@ -37,9 +37,7 @@ export type IDriver = {
   serviceAreaAssignedAt?: Date;
   serviceAreaChangedAt?: Date;
 
-  taxVerificationStatus: VERIFICATION_STATUS;
-  taxVerified: boolean;
-  taxVerifiedAt?: Date;
+
 
   taxClassification: CLASSIFICATION;
 
@@ -114,12 +112,18 @@ export type IDriver = {
   // Driver approval and compliance
   approvalStatus?: DRIVER_STATUS;
   backgroundCheckStatus?: VERIFICATION_STATUS;
-  identityVerificationStatus?: VERIFICATION_STATUS;
+  mvrStatus?: VERIFICATION_STATUS;
   licenseExpiryDate?: Date;
-  identityVerifiedAt?: Date;
+  mvrVerifiedAt?: Date;
   lastVerificationDate?: Date;
   verificationSource?: string;
   verificationNotes?: string;
+  checkrCandidateId?: string;
+  checkrMVRReportId?: string;
+  checkrBackgroundReportId?: string;
+  backgroundCheckPassed?: boolean;
+  backgroundCheckPassedAt?: Date;
+  drivingLicenseState?: string;
   suspension?: {
     isSuspended: boolean;
     suspendedBy?: Types.ObjectId | null;

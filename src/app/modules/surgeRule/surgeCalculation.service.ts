@@ -171,8 +171,7 @@ const calculateSupply = async (
     {
       $match: {
         driverAvailabilityStatus: "online",
-        taxVerified: true,
-        taxVerificationStatus: "verified",
+        approvalStatus: "approved",
         serviceAreaId: new Types.ObjectId(serviceAreaId),
       },
     },
@@ -200,11 +199,6 @@ const calculateSupply = async (
         localField: "_id",
         foreignField: "driverId",
         as: "cars",
-      },
-    },
-    {
-      $match: {
-        "cars.isVerified": true,
       },
     },
     // Join active rides

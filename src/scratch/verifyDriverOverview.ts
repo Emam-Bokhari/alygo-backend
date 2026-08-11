@@ -109,10 +109,8 @@ async function runVerification() {
       serviceAreaId: serviceArea._id,
       driverAvailabilityStatus: "online",
       approvalStatus: DRIVER_STATUS.APPROVED,
-      taxVerified: true,
-      taxVerificationStatus: VERIFICATION_STATUS.VERIFIED,
       backgroundCheckStatus: VERIFICATION_STATUS.VERIFIED,
-      identityVerificationStatus: VERIFICATION_STATUS.VERIFIED,
+      mvrStatus: VERIFICATION_STATUS.VERIFIED,
       currentPoints: 20, // Meets tier requirements
       averageRating: 4.2, // Meets tier requirements
       currentTier: tier._id,
@@ -139,7 +137,6 @@ async function runVerification() {
       seatNumber: 5,
       licensePlate: "OVERPLATE",
       vehicleId: new Types.ObjectId().toString(),
-      isVerified: true,
       createdAt: new Date(),
       updatedAt: new Date(),
     });

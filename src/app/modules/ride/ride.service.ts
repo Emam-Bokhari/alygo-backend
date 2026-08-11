@@ -1102,7 +1102,6 @@ const acceptRide = async (
     // Find driver's verified vehicle
     const car = await Car.findOne({
       driverId: driverDoc._id,
-      isVerified: true,
     }).session(session);
     if (car) {
       ride.carId = car._id;
@@ -1431,7 +1430,7 @@ const arriveAtPickup = async (
     driverDoc.driverAvailabilityStatus = "on_trip" as any;
     await driverDoc.save();
   }
-  const car = await Car.findOne({ driverId: driverDoc?._id, isVerified: true });
+  const car = await Car.findOne({ driverId: driverDoc?._id });
   const driverSummary = await buildDriverSummary(driverDoc, car);
 
   // Send real-time updates with enriched driver summary
@@ -1671,7 +1670,7 @@ const startRide = async (
     "userId",
     "name profileImage",
   );
-  const car = await Car.findOne({ driverId: driverDoc?._id, isVerified: true });
+  const car = await Car.findOne({ driverId: driverDoc?._id });
   const driverSummary = await buildDriverSummary(driverDoc, car);
 
   const userDoc = await User.findById(ride.userId).select(
@@ -2017,7 +2016,6 @@ const completeRide = async (
     );
     const car = await Car.findOne({
       driverId: driverDoc?._id,
-      isVerified: true,
     });
     const driverSummary = await buildDriverSummary(driverDoc, car);
 
@@ -2305,7 +2303,6 @@ const completeRidePayment = async (
       }).populate("userId", "name profileImage");
       const car = await Car.findOne({
         driverId: driverDoc?._id,
-        isVerified: true,
       });
       driverSummary = await buildDriverSummary(driverDoc, car);
     }
@@ -2453,7 +2450,6 @@ const confirmCashPayment = async (
     );
     const car = await Car.findOne({
       driverId: driverDoc?._id,
-      isVerified: true,
     });
     const driverSummary = await buildDriverSummary(driverDoc, car);
 
@@ -2771,7 +2767,6 @@ const cancelRide = async (
         }).populate("userId", "name profileImage");
         const car = await Car.findOne({
           driverId: driverDoc?._id,
-          isVerified: true,
         });
         driverSummary = await buildDriverSummary(driverDoc, car);
       }

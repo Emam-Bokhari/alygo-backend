@@ -14,6 +14,57 @@ export interface ISoftDeleteStatics<T> extends Model<T> {
   restoreMany(filter: Record<string, any>, options?: any): Promise<any>;
 }
 
+function getUpdatedStatus(update: any): string | undefined {
+  if (!update) return undefined;
+  if (Array.isArray(update)) {
+    for (const stage of update) {
+      if (stage && stage.$set && stage.$set.status) {
+        return stage.$set.status;
+      }
+    }
+    return undefined;
+  }
+  if (update.$set && update.$set.status) {
+    return update.$set.status;
+  }
+  if (update.status) {
+    return update.status;
+  }
+  return undefined;
+}
+
+function setRestoreInUpdate(update: any) {
+  if (!update) return;
+
+  if (Array.isArray(update)) {
+    for (const stage of update) {
+      if (stage && stage.$set) {
+        stage.$set.isDeleted = false;
+        stage.$set.deletedAt = null;
+      }
+    }
+    return;
+  }
+
+  if (update.$set) {
+    update.$set.isDeleted = false;
+    update.$set.deletedAt = null;
+  } else {
+    const keys = Object.keys(update);
+    const hasOperators = keys.some((key) => key.startsWith("$"));
+    if (hasOperators) {
+      if (!update.$set) {
+        update.$set = {};
+      }
+      update.$set.isDeleted = false;
+      update.$set.deletedAt = null;
+    } else {
+      update.isDeleted = false;
+      update.deletedAt = null;
+    }
+  }
+}
+
 export function softDeletePlugin<T>(schema: Schema<T>) {
   // add isDeleted fields to schema if not already defined
   schema.add({
@@ -22,7 +73,12 @@ export function softDeletePlugin<T>(schema: Schema<T>) {
   } as any);
 
   // query protection
-  const excludeDeletedFilter = function (this: Query<any, any>) {
+  const excludeDeletedFilter = async function (this: Query<any, any>) {
+    if ((this as any)._softDeleteProcessed) {
+      return;
+    }
+    (this as any)._softDeleteProcessed = true;
+
     const filters = this.getFilter();
     const options = this.getOptions();
     const isPopulate =
@@ -36,9 +92,42 @@ export function softDeletePlugin<T>(schema: Schema<T>) {
     if (isPopulate || (options && options.withDeleted)) {
       return;
     }
-    if ((filters as Record<string, any>).isDeleted === undefined) {
-      this.where({ isDeleted: { $ne: true } });
+    if ((filters as Record<string, any>).isDeleted !== undefined) {
+      return;
     }
+
+    let isReactivation = false;
+    if (schema.path("status")) {
+      const update = this.getUpdate();
+      const statusValue = getUpdatedStatus(update);
+      const hasStatusActive =
+        typeof statusValue === "string" &&
+        statusValue.toLowerCase() === "active";
+      if (hasStatusActive) {
+        const queryOptions: any = { withDeleted: true };
+        if (options && options.session) {
+          queryOptions.session = options.session;
+        }
+        const model = (this as any).model;
+        if (model) {
+          const doc = await model.findOne(filters).setOptions(queryOptions);
+          const currentStatus = doc?.status;
+          const isCurrentInactive =
+            typeof currentStatus === "string" &&
+            currentStatus.toLowerCase() === "inactive";
+          if (doc && doc.isDeleted === true && isCurrentInactive) {
+            isReactivation = true;
+            setRestoreInUpdate(update);
+          }
+        }
+      }
+    }
+
+    if (isReactivation) {
+      return;
+    }
+
+    this.where({ isDeleted: { $ne: true } });
   };
 
   const queryMethods = [
@@ -51,19 +140,28 @@ export function softDeletePlugin<T>(schema: Schema<T>) {
     "distinct",
   ];
   queryMethods.forEach((method) => {
-    schema.pre(method as any, excludeDeletedFilter);
+    schema.pre(method as any, excludeDeletedFilter as any);
   });
 
   // update hooks
-  schema.pre(/update/i, function (this: Query<any, any>) {
-    const filters = this.getFilter();
-    const options = this.getOptions();
-    if (options && options.withDeleted) {
-      return;
+  schema.pre(/update/i, excludeDeletedFilter as any);
+
+  // pre-save hook for document reactivation
+  schema.pre("save", function (this: any, next) {
+    if (schema.path("status")) {
+      const statusVal = this.status;
+      const isStatusActive =
+        typeof statusVal === "string" && statusVal.toLowerCase() === "active";
+      if (
+        this.isModified("status") &&
+        isStatusActive &&
+        this.isDeleted === true
+      ) {
+        this.isDeleted = false;
+        this.deletedAt = null;
+      }
     }
-    if ((filters as Record<string, any>).isDeleted === undefined) {
-      this.where({ isDeleted: { $ne: true } });
-    }
+    next();
   });
 
   // aggregation projection

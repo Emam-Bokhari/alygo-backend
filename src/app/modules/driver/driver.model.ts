@@ -96,21 +96,7 @@ const driverSchema = new Schema<IDriver, DriverModel>(
       default: null,
     },
 
-    taxVerificationStatus: {
-      type: String,
-      enum: Object.values(VERIFICATION_STATUS),
-      default: VERIFICATION_STATUS.PENDING,
-    },
 
-    taxVerified: {
-      type: Boolean,
-      default: false,
-    },
-
-    taxVerifiedAt: {
-      type: Date,
-      default: null,
-    },
 
     taxClassification: {
       type: String,
@@ -368,7 +354,7 @@ const driverSchema = new Schema<IDriver, DriverModel>(
       enum: Object.values(VERIFICATION_STATUS),
       default: VERIFICATION_STATUS.PENDING,
     },
-    identityVerificationStatus: {
+    mvrStatus: {
       type: String,
       enum: Object.values(VERIFICATION_STATUS),
       default: VERIFICATION_STATUS.PENDING,
@@ -377,7 +363,7 @@ const driverSchema = new Schema<IDriver, DriverModel>(
       type: Date,
       default: null,
     },
-    identityVerifiedAt: {
+    mvrVerifiedAt: {
       type: Date,
       default: null,
     },
@@ -390,6 +376,30 @@ const driverSchema = new Schema<IDriver, DriverModel>(
       default: "",
     },
     verificationNotes: {
+      type: String,
+      default: "",
+    },
+    checkrCandidateId: {
+      type: String,
+      default: "",
+    },
+    checkrMVRReportId: {
+      type: String,
+      default: "",
+    },
+    checkrBackgroundReportId: {
+      type: String,
+      default: "",
+    },
+    backgroundCheckPassed: {
+      type: Boolean,
+      default: false,
+    },
+    backgroundCheckPassedAt: {
+      type: Date,
+      default: null,
+    },
+    drivingLicenseState: {
       type: String,
       default: "",
     },
@@ -428,8 +438,7 @@ const driverSchema = new Schema<IDriver, DriverModel>(
 driverSchema.index({ location: "2dsphere" });
 driverSchema.index({
   driverAvailabilityStatus: 1,
-  taxVerificationStatus: 1,
-  taxVerified: 1,
+  approvalStatus: 1,
 });
 
 driverSchema.plugin(softDeletePlugin);

@@ -103,8 +103,6 @@ async function runVerification() {
       userId: user._id,
       serviceAreaId: serviceArea._id,
       driverAvailabilityStatus: "online",
-      taxVerified: true,
-      taxVerificationStatus: VERIFICATION_STATUS.VERIFIED,
       currentTier: tier._id,
       location: {
         type: "Point",
@@ -127,7 +125,6 @@ async function runVerification() {
       seatNumber: 4,
       licensePlate: "TESTPLATE",
       vehicleId: new Types.ObjectId().toString(),
-      isVerified: true,
       createdAt: new Date(),
       updatedAt: new Date(),
     });

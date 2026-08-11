@@ -58,6 +58,12 @@ router.get(
   DriverController.getAvailability,
 );
 
+router.post(
+  "/me/background-check",
+  isAuthenticated,
+  DriverController.initiateBackgroundCheck,
+);
+
 router.get(
   "/me/performance-metrics",
   isDriver,

@@ -112,7 +112,7 @@ const updateServiceCategoryStatusToDB = async (
     throw new ApiError(400, "Status must be either 'ACTIVE' or 'INACTIVE'");
   }
 
-  const serviceCategory = await ServiceCategory.findById(serviceCategoryId);
+  const serviceCategory = await ServiceCategory.findById(serviceCategoryId).setOptions({ withDeleted: true });
   if (!serviceCategory) {
     throw new ApiError(404, "No service category found in the database");
   }
