@@ -18,6 +18,7 @@ export const QUEUE_NAMES = {
   DRIVER_AVAILABILITY_CHECK: "driver-availability-check",
   RESERVATION_REMINDER: "reservation-reminder",
   DRIVER_REWARDS_CHECK: "driver-rewards-check",
+  BROADCAST_PROCESSING: "broadcast-processing",
 };
 
 // Create queues

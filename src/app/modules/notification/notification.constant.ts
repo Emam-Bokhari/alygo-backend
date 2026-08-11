@@ -4,4 +4,5 @@ export enum NOTIFICATION_TYPE {
   USER = "user",
   DRIVER = "driver",
   MESSAGE_NEW = "message_new",
+  BROADCAST = "broadcast",
 }

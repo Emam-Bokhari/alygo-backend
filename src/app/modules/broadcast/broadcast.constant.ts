@@ -24,5 +24,8 @@ export enum BROADCAST_TARGET {
 export enum BROADCAST_STATUS {
   PENDING = "pending",
   SCHEDULED = "scheduled",
+  PROCESSING = "processing",
   SENT = "sent",
+  FAILED = "failed",
+  CANCELLED = "cancelled",
 }

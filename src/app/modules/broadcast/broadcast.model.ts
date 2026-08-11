@@ -37,16 +37,16 @@ const broadcastSchema = new Schema<IBroadcast, BroadcastModel>(
     },
     targetFilters: {
       city: {
-        type: String,
-        trim: true,
+        type: Schema.Types.ObjectId,
+        ref: "ServiceArea",
       },
       state: {
-        type: String,
-        trim: true,
+        type: Schema.Types.ObjectId,
+        ref: "ServiceArea",
       },
       tier: {
-        type: String,
-        trim: true,
+        type: Schema.Types.ObjectId,
+        ref: "Tier",
       },
       userIds: {
         type: [Schema.Types.ObjectId],
@@ -72,6 +72,22 @@ const broadcastSchema = new Schema<IBroadcast, BroadcastModel>(
       type: Schema.Types.ObjectId,
       ref: "User",
       required: false,
+    },
+    recipientCount: {
+      type: Number,
+      default: 0,
+    },
+    deliveredCount: {
+      type: Number,
+      default: 0,
+    },
+    failedCount: {
+      type: Number,
+      default: 0,
+    },
+    failureReason: {
+      type: String,
+      default: "",
     },
   },
   {

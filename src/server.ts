@@ -9,6 +9,8 @@ import seedSuperAdmin from "./DB";
 import "./workers/rideMatchingWorkers";
 import "./app/modules/call/workers/call.worker";
 import { callCleanupQueue } from "./app/modules/call/workers/call.worker";
+import "./app/modules/broadcast/broadcast.worker";
+import { broadcastProcessingQueue } from "./app/modules/broadcast/broadcast.worker";
 import {
   driverAvailabilityCheckQueue,
   reservationReminderQueue,
@@ -123,6 +125,23 @@ async function main() {
     );
     logger.info(
       colors.green("✅ Call cleanup job scheduled (every 15 seconds)"),
+    );
+
+    // Schedule recurring broadcast processing job (every 60 seconds)
+    await broadcastProcessingQueue.add(
+      "broadcast-processing-check",
+      {},
+      {
+        repeat: {
+          every: 60000, // Run every 60 seconds (1 minute)
+        },
+        jobId: "recurring-broadcast-processing-check",
+      },
+    );
+    logger.info(
+      colors.green(
+        "✅ Broadcast processing job scheduled (every 1 minute)",
+      ),
     );
   } catch (error) {
     errorLogger.error(colors.red("🤢 Failed to connect Database"));

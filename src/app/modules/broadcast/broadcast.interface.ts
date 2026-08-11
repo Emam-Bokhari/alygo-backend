@@ -15,9 +15,9 @@ export interface IBroadcast {
 
   targetAudience: BROADCAST_TARGET;
   targetFilters?: {
-    city?: string;
-    state?: string;
-    tier?: string;
+    city?: Types.ObjectId;
+    state?: Types.ObjectId;
+    tier?: Types.ObjectId;
     userIds?: Types.ObjectId[];
   };
 
@@ -25,9 +25,15 @@ export interface IBroadcast {
   status: BROADCAST_STATUS;
   sentAt?: Date;
 
+  recipientCount?: number;
+  deliveredCount?: number;
+  failedCount?: number;
+  failureReason?: string;
+
   createdBy?: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
 
 export type BroadcastModel = ISoftDeleteModel<IBroadcast>;
+
