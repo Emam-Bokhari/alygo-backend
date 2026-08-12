@@ -4,6 +4,7 @@ import { IUser, IUserModel, UserModal } from "./user.interface";
 import bcrypt from "bcrypt";
 import config from "../../../config";
 import { softDeletePlugin } from "../../../DB/plugins/softDeletePlugin";
+import { REFERRAL_VERIFICATION_STATUS } from "./user.constant";
 
 const userSchema = new Schema<IUser, IUserModel>(
   {
@@ -108,6 +109,19 @@ const userSchema = new Schema<IUser, IUserModel>(
       type: Schema.Types.ObjectId,
       ref: "User",
       required: false,
+    },
+    isReferralVerified: {
+      type: Boolean,
+      default: false,
+    },
+    referralStatus: {
+      type: String,
+      enum: Object.values(REFERRAL_VERIFICATION_STATUS),
+      default: REFERRAL_VERIFICATION_STATUS.NONE,
+    },
+    referralVerifiedAt: {
+      type: Date,
+      default: null,
     },
 
     authentication: {

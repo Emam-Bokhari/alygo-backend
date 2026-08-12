@@ -4,6 +4,7 @@ import { StatusCodes } from "http-status-codes";
 import ApiError from "../../../errors/ApiErrors";
 import { USER_ROLES } from "../../../enums/user";
 import { User } from "../user/user.model";
+import { REFERRAL_VERIFICATION_STATUS } from "../user/user.constant";
 import { Referral } from "./referral.model";
 import { REFERRAL_STATUS, REWARD_STATUS } from "./referral.interface";
 import { Ride } from "../ride/ride.model";
@@ -113,11 +114,15 @@ const handleReferralSignup = async (
     const config = await getSystemConfig();
     if (!config.referral?.driver?.enabled) return;
 
-    referee.referredById = referrer._id;
-    await referee.save();
-
     const qualificationTarget =
       config.referral.driver.requiredCompletedTrips ?? 10;
+
+    referee.referredById = referrer._id;
+    referee.referralStatus =
+      qualificationTarget === 0
+        ? REFERRAL_VERIFICATION_STATUS.COMPLETED
+        : REFERRAL_VERIFICATION_STATUS.PENDING;
+    await referee.save();
 
     const referral = await Referral.create({
       referrerId: referrer._id,
@@ -342,6 +347,7 @@ const handleReferralSignup = async (
     if (!config.referral?.passenger?.enabled) return;
 
     referee.referredById = referrer._id;
+    referee.referralStatus = REFERRAL_VERIFICATION_STATUS.PENDING;
     await referee.save();
 
     const referral = await Referral.create({
@@ -1153,6 +1159,60 @@ const verifyReferralCode = async (code: string) => {
   };
 };
 
+/**
+ * Verify and claim referral for logged-in user.
+ * Idempotent execution (1st time only hit tracking).
+ */
+const verifyAndClaimReferral = async (userId: string, code?: string) => {
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "User not found");
+  }
+
+  // 1. If already verified, return idempotent status response immediately
+  if (user.isReferralVerified) {
+    return {
+      isAlreadyVerified: true,
+      referralStatus: user.referralStatus || REFERRAL_VERIFICATION_STATUS.NONE,
+      message: "Referral verification has already been completed for this user.",
+    };
+  }
+
+  // 2. If a referral code is provided and user is not yet referred, process signup referral linkage
+  if (code && !user.referredById) {
+    await handleReferralSignup(userId, code);
+  }
+
+  // 3. Re-fetch user or check Referral document to update user status
+  const referral = await Referral.findOne({ refereeId: userId });
+
+  let computedStatus: REFERRAL_VERIFICATION_STATUS =
+    REFERRAL_VERIFICATION_STATUS.NONE;
+  if (referral) {
+    const uppercaseStatus = referral.status.toUpperCase();
+    if (uppercaseStatus === "ACTIVE" || uppercaseStatus === "PENDING") {
+      computedStatus = REFERRAL_VERIFICATION_STATUS.PENDING;
+    } else if (uppercaseStatus === "COMPLETED") {
+      computedStatus = REFERRAL_VERIFICATION_STATUS.COMPLETED;
+    } else if (uppercaseStatus === "EXPIRED") {
+      computedStatus = REFERRAL_VERIFICATION_STATUS.EXPIRED;
+    }
+  }
+
+  user.isReferralVerified = true;
+  user.referralVerifiedAt = new Date();
+  user.referralStatus = computedStatus;
+  await user.save();
+
+  return {
+    isAlreadyVerified: false,
+    referralStatus: user.referralStatus,
+    message: referral
+      ? "Referral code verified and linked successfully."
+      : "No referral record found; user referral verification marked as complete.",
+  };
+};
+
 export const ReferralService = {
   getOrCreateReferralCode,
   handleReferralSignup,
@@ -1165,4 +1225,5 @@ export const ReferralService = {
   getDriverProgressList,
   getRewardPayoutHistory,
   verifyReferralCode,
+  verifyAndClaimReferral,
 };

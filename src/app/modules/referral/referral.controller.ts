@@ -125,6 +125,22 @@ const verifyCode = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// --- VERIFY & CLAIM REFERRAL (AUTHENTICATED 1-TIME HIT) ---
+const verifyAndClaimReferral = catchAsync(
+  async (req: Request, res: Response) => {
+    const userId = (req.user as any).id;
+    const { code } = req.body;
+    const result = await ReferralService.verifyAndClaimReferral(userId, code);
+
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: result.message,
+      data: result,
+    });
+  },
+);
+
 export const ReferralController = {
   getUserDashboard,
   getReferredUsersHistory,
@@ -134,4 +150,5 @@ export const ReferralController = {
   getDriverRewardHistory,
   getRules,
   verifyCode,
+  verifyAndClaimReferral,
 };

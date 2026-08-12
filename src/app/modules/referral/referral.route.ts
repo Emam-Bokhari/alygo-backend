@@ -2,6 +2,7 @@ import express from "express";
 import auth from "../../middlewares/auth";
 import { USER_ROLES } from "../../../enums/user";
 import { ReferralController } from "./referral.controller";
+import { isUserOrDriver } from "../../../helpers/authHelper";
 
 const router = express.Router();
 
@@ -46,5 +47,10 @@ router.get(
 // --- OTHER ROUTES ---
 router.get("/rules", ReferralController.getRules);
 router.post("/verify", ReferralController.verifyCode);
+router.post(
+  "/verify-claim",
+  isUserOrDriver,
+  ReferralController.verifyAndClaimReferral,
+);
 
 export const ReferralRoutes = router;

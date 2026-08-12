@@ -1,6 +1,7 @@
 import { Model, Types } from "mongoose";
 import { GENDER, STATUS, USER_ROLES } from "../../../enums/user";
 import { ISoftDeleteModel } from "../../../types/softDelete";
+import { REFERRAL_VERIFICATION_STATUS } from "./user.constant";
 
 export type IUser = {
   name: string;
@@ -21,6 +22,9 @@ export type IUser = {
   stripeCustomerId?: string;
   referralCode?: string;
   referredById?: Types.ObjectId;
+  isReferralVerified?: boolean;
+  referralStatus?: REFERRAL_VERIFICATION_STATUS;
+  referralVerifiedAt?: Date;
 
   location?: {
     type: "Point";
