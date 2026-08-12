@@ -1,5 +1,5 @@
 import express from "express";
-import { isSuperAdmin } from "../../../helpers/authHelper";
+import { isAdmin, isSuperAdmin } from "../../../helpers/authHelper";
 import validateRequest from "../../middlewares/validateRequest";
 import { RbacValidation } from "./rbac.validation";
 import { RbacController } from "./rbac.controller";
@@ -34,6 +34,14 @@ router
     RbacController.updateRole,
   )
   .delete(isSuperAdmin, RbacController.deleteRole);
+
+// Admin Users with Role
+router.get("/admins", isAdmin, RbacController.getAdminsWithRole);
+router.get(
+  "/admins/:adminId",
+  isAdmin,
+  RbacController.getAdminByIdWithRole,
+);
 
 // Assign Role to Admin User
 router.patch(

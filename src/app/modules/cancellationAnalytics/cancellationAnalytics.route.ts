@@ -1,5 +1,4 @@
 import express from "express";
-import { isAdmin } from "../../../helpers/authHelper";
 import { CancellationAnalyticsController } from "./cancellationAnalytics.controller";
 import validateRequest from "../../middlewares/validateRequest";
 import { CancellationAnalyticsValidation } from "./cancellationAnalytics.validation";
@@ -15,6 +14,7 @@ router.get(
   validateRequest(CancellationAnalyticsValidation.cancellationQuerySchema),
   CancellationAnalyticsController.getSummary,
 );
+
 router.get(
   "/admin/analytics/cancellations/trend",
   auth(),
@@ -22,6 +22,7 @@ router.get(
   validateRequest(CancellationAnalyticsValidation.cancellationQuerySchema),
   CancellationAnalyticsController.getTrend,
 );
+
 router.get(
   "/admin/analytics/cancellations/reasons",
   auth(),
@@ -29,6 +30,7 @@ router.get(
   validateRequest(CancellationAnalyticsValidation.cancellationQuerySchema),
   CancellationAnalyticsController.getReasons,
 );
+
 router.get(
   "/admin/analytics/cancellations/cities",
   auth(),
@@ -36,6 +38,7 @@ router.get(
   validateRequest(CancellationAnalyticsValidation.cancellationQuerySchema),
   CancellationAnalyticsController.getCities,
 );
+
 router.get(
   "/admin/analytics/cancellations/categories",
   auth(),

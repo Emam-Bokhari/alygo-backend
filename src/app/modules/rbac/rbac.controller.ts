@@ -130,6 +130,28 @@ const createAdminWithRole = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getAdminsWithRole = catchAsync(async (req: Request, res: Response) => {
+  const result = await RBACService.getAdminsWithRole(req.query);
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Admin users with roles retrieved successfully",
+    data: result.data,
+    meta: result.meta,
+  });
+});
+
+const getAdminByIdWithRole = catchAsync(async (req: Request, res: Response) => {
+  const { adminId } = req.params;
+  const result = await RBACService.getAdminByIdWithRole(adminId);
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Admin user details retrieved successfully",
+    data: result,
+  });
+});
+
 export const RbacController = {
   getPermissions,
   getGroupedPermissions,
@@ -141,4 +163,6 @@ export const RbacController = {
   deleteRole,
   assignRole,
   createAdminWithRole,
+  getAdminsWithRole,
+  getAdminByIdWithRole,
 };

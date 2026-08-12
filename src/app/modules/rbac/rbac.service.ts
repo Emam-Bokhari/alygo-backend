@@ -235,6 +235,9 @@ const getAllRoles = async () => {
 };
 
 const getRoleById = async (roleId: string) => {
+  if (!Types.ObjectId.isValid(roleId)) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid Role ID format");
+  }
   const role = await Role.findById(roleId).populate({
     path: "permissions",
     select: "name key description status",
@@ -598,6 +601,59 @@ const createAdminWithRole = async (payload: any, creatorId: string) => {
   };
 };
 
+const getAdminsWithRole = async (query: Record<string, unknown>) => {
+  const baseQuery = User.find({
+    role: USER_ROLES.ADMIN,
+  })
+    .populate({
+      path: "roleId",
+      populate: {
+        path: "permissions",
+        select: "name key description status module",
+      },
+    })
+    .select("-password");
+
+  const queryBuilder = new QueryBuilder(baseQuery, query)
+    .search(["name", "email", "phone"])
+    .filter()
+    .sort()
+    .fields()
+    .paginate();
+
+  const data = await queryBuilder.modelQuery;
+  const meta = await queryBuilder.countTotal();
+
+  return {
+    meta,
+    data,
+  };
+};
+
+const getAdminByIdWithRole = async (adminId: string) => {
+  if (!Types.ObjectId.isValid(adminId)) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid Admin ID format");
+  }
+  const admin = await User.findOne({
+    _id: adminId,
+    role: USER_ROLES.ADMIN,
+  })
+    .populate({
+      path: "roleId",
+      populate: {
+        path: "permissions",
+        select: "name key description status module",
+      },
+    })
+    .select("-password");
+
+  if (!admin) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "Admin user not found");
+  }
+
+  return admin;
+};
+
 // --- SEEDER ---
 
 /**
@@ -627,5 +683,7 @@ export const RBACService = {
   deleteRole,
   assignRole,
   createAdminWithRole,
+  getAdminsWithRole,
+  getAdminByIdWithRole,
   seedPermissions,
 };

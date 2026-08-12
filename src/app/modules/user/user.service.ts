@@ -1,3 +1,4 @@
+import { Types } from "mongoose";
 import { STATUS, USER_ROLES } from "../../../enums/user";
 import { IUser } from "./user.interface";
 import { JwtPayload, Secret } from "jsonwebtoken";
@@ -44,7 +45,15 @@ const getAdminFromDB = async (query: any) => {
     role: { $in: [USER_ROLES.ADMIN] },
     status: STATUS.ACTIVE,
     verified: true,
-  }).select("name email role profileImage createdAt updatedAt status");
+  })
+    .populate({
+      path: "roleId",
+      populate: {
+        path: "permissions",
+        select: "name key description status module",
+      },
+    })
+    .select("name email role roleId profileImage createdAt updatedAt status");
 
   const queryBuilder = new QueryBuilder<IUser>(baseQuery, query)
     .search(["name", "email"])
@@ -207,6 +216,10 @@ const updateProfileToDB = async (
 };
 
 const getUserByIdFromDB = async (id: string) => {
+  if (!Types.ObjectId.isValid(id)) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid user ID format");
+  }
+
   const result = await User.findOne({
     _id: id,
     role: USER_ROLES.USER,
