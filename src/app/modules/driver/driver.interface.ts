@@ -21,9 +21,12 @@ export type IDriver = {
   liveSelfie?: string;
   drivingLicense?: string;
   drivingLicenseNumber?: string;
+  drivingLicenseExpirationDate?: Date;
   ssn?: string;
   ssnCard?: string;
+  ssnCardExpirationDate?: Date;
   taxDocument?: string;
+  taxDocumentExpirationDate?: Date;
   documentsStatus?: {
     profilePhoto: boolean;
     liveSelfie: boolean;

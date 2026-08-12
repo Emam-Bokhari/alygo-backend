@@ -59,6 +59,11 @@ const carSchema = new Schema<ICar>(
       default: "",
     },
 
+    vehicleLicenseExpirationDate: {
+      type: Date,
+      default: null,
+    },
+
     personalAutoInsurance: {
       type: String,
       default: "",
@@ -67,6 +72,11 @@ const carSchema = new Schema<ICar>(
     personalAutoInsuranceNumber: {
       type: String,
       default: "",
+    },
+
+    personalAutoInsuranceExpirationDate: {
+      type: Date,
+      default: null,
     },
 
     color: {
@@ -84,6 +94,11 @@ const carSchema = new Schema<ICar>(
       default: "",
     },
 
+    vehicleRegistrationExpirationDate: {
+      type: Date,
+      default: null,
+    },
+
     commercialInsurance: {
       type: String,
       default: "",
@@ -94,6 +109,11 @@ const carSchema = new Schema<ICar>(
       default: "",
     },
 
+    commercialInsuranceExpirationDate: {
+      type: Date,
+      default: null,
+    },
+
     vehicleInspection: {
       type: String,
       default: "",
@@ -102,6 +122,11 @@ const carSchema = new Schema<ICar>(
     vehicleInspectionNumber: {
       type: String,
       default: "",
+    },
+
+    vehicleInspectionExpirationDate: {
+      type: Date,
+      default: null,
     },
 
     insuranceHub: {

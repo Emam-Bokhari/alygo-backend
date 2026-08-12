@@ -19,15 +19,20 @@ export interface ICar {
   vin?: string;
 
   vehicleLicense?: string;
+  vehicleLicenseExpirationDate?: Date;
   personalAutoInsurance?: string;
   personalAutoInsuranceNumber?: string;
+  personalAutoInsuranceExpirationDate?: Date;
   color?: string;
   vehicleRegistration?: string;
   vehicleRegistrationNumber?: string;
+  vehicleRegistrationExpirationDate?: Date;
   commercialInsurance?: string;
   commercialInsuranceNumber?: string;
+  commercialInsuranceExpirationDate?: Date;
   vehicleInspection?: string;
   vehicleInspectionNumber?: string;
+  vehicleInspectionExpirationDate?: Date;
   insuranceHub: {
     fileUrl: string;
     fileName?: string;

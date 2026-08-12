@@ -58,6 +58,11 @@ const driverSchema = new Schema<IDriver, DriverModel>(
       default: "",
     },
 
+    drivingLicenseExpirationDate: {
+      type: Date,
+      default: null,
+    },
+
     ssn: {
       type: String,
       default: "",
@@ -68,9 +73,19 @@ const driverSchema = new Schema<IDriver, DriverModel>(
       default: "",
     },
 
+    ssnCardExpirationDate: {
+      type: Date,
+      default: null,
+    },
+
     taxDocument: {
       type: String,
       default: "",
+    },
+
+    taxDocumentExpirationDate: {
+      type: Date,
+      default: null,
     },
 
     documentsStatus: {
@@ -442,6 +457,16 @@ driverSchema.index({ location: "2dsphere" });
 driverSchema.index({
   driverAvailabilityStatus: 1,
   approvalStatus: 1,
+});
+
+// Sync drivingLicenseExpirationDate and licenseExpiryDate if one is populated
+driverSchema.pre("save", function (next) {
+  if (this.drivingLicenseExpirationDate && !this.licenseExpiryDate) {
+    this.licenseExpiryDate = this.drivingLicenseExpirationDate;
+  } else if (this.licenseExpiryDate && !this.drivingLicenseExpirationDate) {
+    this.drivingLicenseExpirationDate = this.licenseExpiryDate;
+  }
+  next();
 });
 
 driverSchema.plugin(softDeletePlugin);
