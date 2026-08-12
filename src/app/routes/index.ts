@@ -70,6 +70,7 @@ import { RbacRoutes } from "../modules/rbac/rbac.route";
 import { ReservationRoutes } from "../modules/reservation/reservation.route";
 import { FinancialCenterRoutes } from "../modules/financialCenter/financialCenter.route";
 import { AnalyticsRoutes } from "../modules/analytics/analytics.route";
+import { DemandIntelligenceRoutes } from "../modules/demandIntelligence/demandIntelligence.route";
 import { BroadcastRoutes } from "../modules/broadcast/broadcast.route";
 
 const router = express.Router();
@@ -302,6 +303,10 @@ const apiRoutes = [
   {
     path: "/analytics",
     route: AnalyticsRoutes,
+  },
+  {
+    path: "/demand-intelligence",
+    route: DemandIntelligenceRoutes,
   },
   {
     path: "/live-trips",
