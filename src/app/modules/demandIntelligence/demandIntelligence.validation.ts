@@ -5,7 +5,8 @@ export const demandIntelligenceQuerySchema = z.object({
     serviceAreaId: z
       .string()
       .refine((val) => /^[0-9a-fA-F]{24}$/.test(val), {
-        message: "Invalid serviceAreaId format. Must be a 24-character hex string.",
+        message:
+          "Invalid serviceAreaId format. Must be a 24-character hex string.",
       })
       .optional(),
     city: z.string().optional(),

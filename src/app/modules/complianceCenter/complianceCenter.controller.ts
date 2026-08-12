@@ -54,8 +54,10 @@ const updateBackgroundCheckFee = catchAsync(
   async (req: Request, res: Response) => {
     const { id } = req.params;
     const payload = req.body;
-    const result =
-      await ComplianceCenterService.updateBackgroundCheckFeeInDB(id, payload);
+    const result = await ComplianceCenterService.updateBackgroundCheckFeeInDB(
+      id,
+      payload,
+    );
 
     sendResponse(res, {
       statusCode: StatusCodes.OK,

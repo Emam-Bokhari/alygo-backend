@@ -1174,7 +1174,8 @@ const verifyAndClaimReferral = async (userId: string, code?: string) => {
     return {
       isAlreadyVerified: true,
       referralStatus: user.referralStatus || REFERRAL_VERIFICATION_STATUS.NONE,
-      message: "Referral verification has already been completed for this user.",
+      message:
+        "Referral verification has already been completed for this user.",
     };
   }
 

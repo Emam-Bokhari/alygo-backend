@@ -55,32 +55,41 @@ const getSummaryFromDB = async (
     }
   }
 
-  const [activeRequests, availableDrivers, activeSurgeZones, upcomingEvents, trackingAvg, zonesData] =
-    await Promise.all([
-      Ride.countDocuments(rideMatch),
-      Driver.countDocuments(driverMatch),
-      SurgeRule.countDocuments({ status: STATUS.ACTIVE, isDeleted: false } as any),
-      Event.countDocuments({
-        status: STATUS.ACTIVE,
-        endDateTime: { $gte: new Date() },
-        isDeleted: false,
-      } as any),
-      Tracking.aggregate([
-        {
-          $match: {
-            estimatedArrivalMinutes: { $exists: true, $ne: null, $gt: 0 },
-            isDeleted: false,
-          },
+  const [
+    activeRequests,
+    availableDrivers,
+    activeSurgeZones,
+    upcomingEvents,
+    trackingAvg,
+    zonesData,
+  ] = await Promise.all([
+    Ride.countDocuments(rideMatch),
+    Driver.countDocuments(driverMatch),
+    SurgeRule.countDocuments({
+      status: STATUS.ACTIVE,
+      isDeleted: false,
+    } as any),
+    Event.countDocuments({
+      status: STATUS.ACTIVE,
+      endDateTime: { $gte: new Date() },
+      isDeleted: false,
+    } as any),
+    Tracking.aggregate([
+      {
+        $match: {
+          estimatedArrivalMinutes: { $exists: true, $ne: null, $gt: 0 },
+          isDeleted: false,
         },
-        {
-          $group: {
-            _id: null,
-            avgEta: { $avg: "$estimatedArrivalMinutes" },
-          },
+      },
+      {
+        $group: {
+          _id: null,
+          avgEta: { $avg: "$estimatedArrivalMinutes" },
         },
-      ]),
-      getZonesFromDB(query),
-    ]);
+      },
+    ]),
+    getZonesFromDB(query),
+  ]);
 
   const highDemandZones = zonesData.filter((z) => z.status === "high").length;
   const averageEtaMinutes =
@@ -418,7 +427,10 @@ const getUpcomingEventsFromDB = async (
       const relatedReservations = await Ride.countDocuments(reservationMatch);
 
       let status: "active" | "upcoming" | "completed" = "upcoming";
-      if (now >= new Date(event.startDateTime) && now <= new Date(event.endDateTime)) {
+      if (
+        now >= new Date(event.startDateTime) &&
+        now <= new Date(event.endDateTime)
+      ) {
         status = "active";
       } else if (now > new Date(event.endDateTime)) {
         status = "completed";

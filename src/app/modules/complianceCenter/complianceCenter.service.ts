@@ -25,15 +25,25 @@ import { DRIVER_STATUS } from "../../../enums/user";
 // 1. BACKGROUND CHECK FEES — CRUD SERVICES
 // ==========================================
 
-const populateFeeLocationData = async (payload: Partial<IBackgroundCheckFee>) => {
+const populateFeeLocationData = async (
+  payload: Partial<IBackgroundCheckFee>,
+) => {
   if (payload.serviceAreaId) {
     const serviceArea = await ServiceArea.findById(payload.serviceAreaId);
     if (serviceArea) {
       if (!payload.applicableState) {
         payload.applicableState =
-          serviceArea.state || serviceArea.city || serviceArea.zone || serviceArea.country || "";
+          serviceArea.state ||
+          serviceArea.city ||
+          serviceArea.zone ||
+          serviceArea.country ||
+          "";
       }
-      if (serviceArea.location?.coordinates && serviceArea.location.coordinates.length === 2 && !payload.location) {
+      if (
+        serviceArea.location?.coordinates &&
+        serviceArea.location.coordinates.length === 2 &&
+        !payload.location
+      ) {
         payload.location = serviceArea.location;
       }
     }

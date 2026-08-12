@@ -7,6 +7,9 @@ import { ComplianceCenterService } from "../src/app/modules/complianceCenter/com
 console.log("Compliance Center Constants Test:");
 console.log("DOCUMENT_EXPIRY_WARNING_DAYS:", DOCUMENT_EXPIRY_WARNING_DAYS);
 console.log("FEE_STATUS:", FEE_STATUS);
-console.log("ComplianceCenterService exported:", typeof ComplianceCenterService.getAllBackgroundCheckFeesFromDB === "function");
+console.log(
+  "ComplianceCenterService exported:",
+  typeof ComplianceCenterService.getAllBackgroundCheckFeesFromDB === "function",
+);
 
 console.log("SUCCESS: Compliance Center module loaded properly.");
