@@ -72,6 +72,7 @@ import { FinancialCenterRoutes } from "../modules/financialCenter/financialCente
 import { AnalyticsRoutes } from "../modules/analytics/analytics.route";
 import { DemandIntelligenceRoutes } from "../modules/demandIntelligence/demandIntelligence.route";
 import { BroadcastRoutes } from "../modules/broadcast/broadcast.route";
+import { ComplianceCenterRoutes } from "../modules/complianceCenter/complianceCenter.route";
 
 const router = express.Router();
 
@@ -331,6 +332,10 @@ const apiRoutes = [
   {
     path: "/broadcasts",
     route: BroadcastRoutes,
+  },
+  {
+    path: "/compliance-center",
+    route: ComplianceCenterRoutes,
   },
 ];
 
