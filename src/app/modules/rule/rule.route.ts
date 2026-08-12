@@ -6,12 +6,7 @@ import { requirePermission } from "../../middlewares/requirePermission";
 
 const router = Router();
 
-router.post(
-  "/",
-  auth(),
-  requirePermission("rule"),
-  RuleControllers.upsertRule,
-);
+router.post("/", auth(), requirePermission("rule"), RuleControllers.upsertRule);
 
 router.get("/:type", RuleControllers.getRule);
 

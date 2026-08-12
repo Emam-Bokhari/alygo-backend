@@ -42,10 +42,6 @@ router
     validateRequest(EventZodValidation.updateEventValidationSchema),
     EventController.updateEvent,
   )
-  .delete(
-    auth(),
-    requirePermission("event"),
-    EventController.deleteEvent,
-  );
+  .delete(auth(), requirePermission("event"), EventController.deleteEvent);
 
 export const EventRoutes = router;

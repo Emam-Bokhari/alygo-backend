@@ -16,11 +16,7 @@ router
     validateRequest(HolidayZodValidation.createHolidayValidationSchema),
     HolidayController.createHoliday,
   )
-  .get(
-    auth(),
-    requirePermission("holiday"),
-    HolidayController.getAllHoliday,
-  );
+  .get(auth(), requirePermission("holiday"), HolidayController.getAllHoliday);
 
 router.get(
   "/active",

@@ -39,11 +39,7 @@ router.patch(
 
 router
   .route("/:peakHourId")
-  .get(
-    auth(),
-    requirePermission("peakhour"),
-    PeakHourController.getPeakHour,
-  )
+  .get(auth(), requirePermission("peakhour"), PeakHourController.getPeakHour)
   .patch(
     auth(),
     requirePermission("peakhour"),

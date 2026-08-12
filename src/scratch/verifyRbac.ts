@@ -136,10 +136,7 @@ async function runTests() {
 
       const cached = await redisClient.get(cacheKey);
       assert(!!cached, "Permissions saved to Redis cache");
-      assert(
-        JSON.parse(cached!).includes("faq"),
-        "Cached permissions match",
-      );
+      assert(JSON.parse(cached!).includes("faq"), "Cached permissions match");
 
       // Verify clear cache on role update
       await RBACService.updateRole(
