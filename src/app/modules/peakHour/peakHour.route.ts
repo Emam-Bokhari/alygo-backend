@@ -12,27 +12,27 @@ router
   .route("/")
   .post(
     auth(),
-    requirePermission("peakhour.create"),
+    requirePermission("peakhour"),
     validateRequest(PeakHourZodValidation.createPeakHourValidationSchema),
     PeakHourController.createPeakHour,
   )
   .get(
     auth(),
-    requirePermission("peakhour.read"),
+    requirePermission("peakhour"),
     PeakHourController.getAllPeakHour,
   );
 
 router.get(
   "/active",
   auth(),
-  requirePermission("peakhour.read"),
+  requirePermission("peakhour"),
   PeakHourController.getActivePeakHour,
 );
 
 router.patch(
   "/status/:peakHourId",
   auth(),
-  requirePermission("peakhour.update"),
+  requirePermission("peakhour"),
   validateRequest(PeakHourZodValidation.updatePeakHourStatusValidationSchema),
   PeakHourController.updatePeakHourStatus,
 );
@@ -41,18 +41,18 @@ router
   .route("/:peakHourId")
   .get(
     auth(),
-    requirePermission("peakhour.read"),
+    requirePermission("peakhour"),
     PeakHourController.getPeakHour,
   )
   .patch(
     auth(),
-    requirePermission("peakhour.update"),
+    requirePermission("peakhour"),
     validateRequest(PeakHourZodValidation.updatePeakHourValidationSchema),
     PeakHourController.updatePeakHour,
   )
   .delete(
     auth(),
-    requirePermission("peakhour.delete"),
+    requirePermission("peakhour"),
     PeakHourController.deletePeakHour,
   );
 

@@ -12,39 +12,39 @@ router
   .route("/")
   .post(
     auth(),
-    requirePermission("event.create"),
+    requirePermission("event"),
     validateRequest(EventZodValidation.createEventValidationSchema),
     EventController.createEvent,
   )
-  .get(auth(), requirePermission("event.read"), EventController.getAllEvent);
+  .get(auth(), requirePermission("event"), EventController.getAllEvent);
 
 router.get(
   "/active",
   auth(),
-  requirePermission("event.read"),
+  requirePermission("event"),
   EventController.getActiveEvent,
 );
 
 router.patch(
   "/status/:eventId",
   auth(),
-  requirePermission("event.update"),
+  requirePermission("event"),
   validateRequest(EventZodValidation.updateEventStatusValidationSchema),
   EventController.updateEventStatus,
 );
 
 router
   .route("/:eventId")
-  .get(auth(), requirePermission("event.read"), EventController.getEvent)
+  .get(auth(), requirePermission("event"), EventController.getEvent)
   .patch(
     auth(),
-    requirePermission("event.update"),
+    requirePermission("event"),
     validateRequest(EventZodValidation.updateEventValidationSchema),
     EventController.updateEvent,
   )
   .delete(
     auth(),
-    requirePermission("event.delete"),
+    requirePermission("event"),
     EventController.deleteEvent,
   );
 

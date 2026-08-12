@@ -10,14 +10,14 @@ const router = express.Router();
 router.get(
   "/dashboard",
   auth(),
-  requirePermission("adminrewards.read"),
+  requirePermission("adminrewards"),
   AdminRewardsController.getAdminRewardsDashboard,
 );
 
 router.get(
   "/export",
   auth(),
-  requirePermission("adminrewards.export"),
+  requirePermission("adminrewards"),
   AdminRewardsController.exportRewardsCSV,
 );
 
@@ -25,14 +25,14 @@ router.get(
 router.post(
   "/override-points",
   auth(),
-  requirePermission("adminrewards.override"),
+  requirePermission("adminrewards"),
   AdminRewardsController.overrideDriverPoints,
 );
 
 router.post(
   "/override-tier",
   auth(),
-  requirePermission("adminrewards.override"),
+  requirePermission("adminrewards"),
   AdminRewardsController.overrideDriverTier,
 );
 
@@ -41,7 +41,7 @@ router
   .route("/point-rules")
   .post(
     auth(),
-    requirePermission("adminrewards.create"),
+    requirePermission("adminrewards"),
     AdminRewardsController.createPointRule,
   )
   .get(isAuthenticated, AdminRewardsController.getPointRules);
@@ -50,12 +50,12 @@ router
   .route("/point-rules/:id")
   .patch(
     auth(),
-    requirePermission("adminrewards.update"),
+    requirePermission("adminrewards"),
     AdminRewardsController.updatePointRule,
   )
   .delete(
     auth(),
-    requirePermission("adminrewards.delete"),
+    requirePermission("adminrewards"),
     AdminRewardsController.deletePointRule,
   );
 

@@ -17,7 +17,7 @@ const permissionSchema = new Schema<IPermission, PermissionModel>(
     },
     action: {
       type: String,
-      required: true,
+      default: "manage",
       trim: true,
     },
     description: {
@@ -77,12 +77,8 @@ const permissionSchema = new Schema<IPermission, PermissionModel>(
 permissionSchema.pre("validate", function (next) {
   let lookupName = this.name || this.key || "";
 
-  // Prefer key if name has spaces or is not dotted, and key is dotted
-  if (
-    this.key &&
-    this.key.includes(".") &&
-    (!this.name || !this.name.includes("."))
-  ) {
+  // Prefer key if set
+  if (this.key && !this.name) {
     lookupName = this.key;
   }
 
@@ -91,13 +87,12 @@ permissionSchema.pre("validate", function (next) {
     if (parts.length >= 2) {
       if (!this.resource) this.resource = parts[0];
       if (!this.action) this.action = parts[1];
+      this.name = `${this.resource}.${this.action}`.toLowerCase();
     } else {
-      if (!this.resource) this.resource = lookupName;
-      if (!this.action) this.action = "read";
+      if (!this.resource) this.resource = lookupName.toLowerCase();
+      if (!this.action) this.action = "manage";
+      this.name = this.resource.toLowerCase();
     }
-
-    // Enforce lowercase name format (resource.action)
-    this.name = `${this.resource}.${this.action}`.toLowerCase();
     this.key = this.name;
   }
 

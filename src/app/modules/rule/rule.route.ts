@@ -9,7 +9,7 @@ const router = Router();
 router.post(
   "/",
   auth(),
-  requirePermission("rule.create"),
+  requirePermission("rule"),
   RuleControllers.upsertRule,
 );
 
@@ -18,14 +18,14 @@ router.get("/:type", RuleControllers.getRule);
 router.patch(
   "/:type",
   auth(),
-  requirePermission("rule.update"),
+  requirePermission("rule"),
   RuleControllers.updateRule,
 );
 
 router.delete(
   "/:type",
   auth(),
-  requirePermission("rule.delete"),
+  requirePermission("rule"),
   RuleControllers.deleteRule,
 );
 

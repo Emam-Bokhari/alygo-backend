@@ -8,49 +8,49 @@ const router = express.Router();
 router.get(
   "/summary",
   auth(),
-  requirePermission("dashboard.read"),
+  requirePermission("dashboard"),
   DashboardController.getSummary,
 );
 router.get(
   "/revenue-chart",
   auth(),
-  requirePermission("dashboard.read"),
+  requirePermission("dashboard"),
   DashboardController.getRevenueChart,
 );
 router.get(
   "/demand-chart",
   auth(),
-  requirePermission("dashboard.read"),
+  requirePermission("dashboard"),
   DashboardController.getDemandChart,
 );
 router.get(
   "/driver-growth",
   auth(),
-  requirePermission("dashboard.read"),
+  requirePermission("dashboard"),
   DashboardController.getDriverGrowth,
 );
 router.get(
   "/passenger-growth",
   auth(),
-  requirePermission("dashboard.read"),
+  requirePermission("dashboard"),
   DashboardController.getPassengerGrowth,
 );
 router.get(
   "/category-usage",
   auth(),
-  requirePermission("dashboard.read"),
+  requirePermission("dashboard"),
   DashboardController.getCategoryUsage,
 );
 router.get(
   "/top-cities",
   auth(),
-  requirePermission("dashboard.read"),
+  requirePermission("dashboard"),
   DashboardController.getTopCities,
 );
 router.get(
   "/top-airports",
   auth(),
-  requirePermission("dashboard.read"),
+  requirePermission("dashboard"),
   DashboardController.getTopAirports,
 );
 

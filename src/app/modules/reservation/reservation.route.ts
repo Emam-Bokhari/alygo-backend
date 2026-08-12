@@ -10,7 +10,7 @@ const router = express.Router();
 router.get(
   "/",
   auth(),
-  requirePermission("reservation.read"),
+  requirePermission("reservation"),
   validateRequest(ReservationValidation.getReservationsQuerySchema),
   ReservationControllers.getReservationsOverview,
 );
@@ -18,7 +18,7 @@ router.get(
 router.get(
   "/:reservationId",
   auth(),
-  requirePermission("reservation.read"),
+  requirePermission("reservation"),
   validateRequest(ReservationValidation.reservationIdParamSchema),
   ReservationControllers.getReservationDetails,
 );

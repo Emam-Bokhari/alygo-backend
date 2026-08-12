@@ -12,7 +12,7 @@ router
   .route("/")
   .post(
     auth(),
-    requirePermission("broadcast.create"),
+    requirePermission("broadcast"),
     validateRequest(BroadcastValidation.createBroadcastValidationSchema),
     BroadcastController.createBroadcast,
   )
@@ -21,7 +21,7 @@ router
 router.patch(
   "/:id/cancel",
   auth(),
-  requirePermission("broadcast.cancel"),
+  requirePermission("broadcast"),
   BroadcastController.cancelBroadcast,
 );
 
@@ -30,7 +30,7 @@ router
   .get(isAuthenticated, BroadcastController.getSingleBroadcast)
   .delete(
     auth(),
-    requirePermission("broadcast.delete"),
+    requirePermission("broadcast"),
     BroadcastController.deleteBroadcast,
   );
 

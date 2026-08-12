@@ -11,14 +11,14 @@ const router = express.Router();
 router.get(
   "/",
   auth(),
-  requirePermission("livetrips.read"),
+  requirePermission("livetrips"),
   LiveTripsController.getLiveTrips,
 );
 
 router.get(
   "/:rideId",
   auth(),
-  requirePermission("livetrips.read"),
+  requirePermission("livetrips"),
   validateRequest(LiveTripsValidation.getLiveTripByIdZodSchema),
   LiveTripsController.getLiveTripById,
 );

@@ -10,7 +10,7 @@ router
   .route("/")
   .post(
     auth(),
-    requirePermission("driverdutypolicy.create"),
+    requirePermission("driverdutypolicy"),
     DriverDutyPolicyController.createDriverDutyPolicy,
   )
   .get(isAuthenticated, DriverDutyPolicyController.getAllDriverDutyPolicies);
@@ -24,7 +24,7 @@ router.get(
 router.patch(
   "/status/:driverDutyPolicyId",
   auth(),
-  requirePermission("driverdutypolicy.update"),
+  requirePermission("driverdutypolicy"),
   DriverDutyPolicyController.updateDriverDutyPolicyStatus,
 );
 
@@ -33,12 +33,12 @@ router
   .get(isAuthenticated, DriverDutyPolicyController.getDriverDutyPolicy)
   .patch(
     auth(),
-    requirePermission("driverdutypolicy.update"),
+    requirePermission("driverdutypolicy"),
     DriverDutyPolicyController.updateDriverDutyPolicy,
   )
   .delete(
     auth(),
-    requirePermission("driverdutypolicy.delete"),
+    requirePermission("driverdutypolicy"),
     DriverDutyPolicyController.deleteDriverDutyPolicy,
   );
 
@@ -50,43 +50,43 @@ const adminRouter = express.Router();
 adminRouter.get(
   "/global",
   auth(),
-  requirePermission("driverdutypolicy.read"),
+  requirePermission("driverdutypolicy"),
   DriverDutyPolicyController.getGlobalRule,
 );
 adminRouter.get(
   "/states",
   auth(),
-  requirePermission("driverdutypolicy.read"),
+  requirePermission("driverdutypolicy"),
   DriverDutyPolicyController.getStateRules,
 );
 adminRouter.get(
   "/cities",
   auth(),
-  requirePermission("driverdutypolicy.read"),
+  requirePermission("driverdutypolicy"),
   DriverDutyPolicyController.getCityRules,
 );
 adminRouter.get(
   "/zones",
   auth(),
-  requirePermission("driverdutypolicy.read"),
+  requirePermission("driverdutypolicy"),
   DriverDutyPolicyController.getZoneRules,
 );
 adminRouter.get(
   "/airports",
   auth(),
-  requirePermission("driverdutypolicy.read"),
+  requirePermission("driverdutypolicy"),
   DriverDutyPolicyController.getAirportRules,
 );
 adminRouter.get(
   "/cards",
   auth(),
-  requirePermission("driverdutypolicy.read"),
+  requirePermission("driverdutypolicy"),
   DriverDutyPolicyController.getMonitoringCards,
 );
 adminRouter.get(
   "/monitoring/drivers",
   auth(),
-  requirePermission("driverdutypolicy.read"),
+  requirePermission("driverdutypolicy"),
   DriverDutyPolicyController.getDriverMonitoringList,
 );
 

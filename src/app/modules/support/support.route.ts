@@ -12,7 +12,7 @@ router
   .post(isAuthenticated, SupportControllers.submitSupportRequest)
   .get(
     auth(),
-    requirePermission("support.read"),
+    requirePermission("support"),
     SupportControllers.getAllSupports,
   );
 
@@ -20,12 +20,12 @@ router
   .route("/:id")
   .get(
     auth(),
-    requirePermission("support.read"),
+    requirePermission("support"),
     SupportControllers.getSupportById,
   )
   .delete(
     auth(),
-    requirePermission("support.delete"),
+    requirePermission("support"),
     SupportControllers.deleteSupportById,
   );
 

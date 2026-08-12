@@ -10,25 +10,25 @@ const router = express.Router();
 router.get(
   "/admin/trip-reports",
   auth(),
-  requirePermission("tripReport.read"),
+  requirePermission("tripReport"),
   TripReportController.getAllTripReports,
 );
 router.get(
   "/admin/trip-reports/dashboard/cards",
   auth(),
-  requirePermission("tripReport.read"),
+  requirePermission("tripReport"),
   TripReportController.getDashboardCards,
 );
 router.get(
   "/admin/trip-reports/:reportId",
   auth(),
-  requirePermission("tripReport.read"),
+  requirePermission("tripReport"),
   TripReportController.getTripReportById,
 );
 router.patch(
   "/admin/trip-reports/:reportId",
   auth(),
-  requirePermission("tripReport.update"),
+  requirePermission("tripReport"),
   TripReportController.updateTripReport,
 );
 
@@ -40,35 +40,35 @@ const complaintRouter = express.Router();
 complaintRouter.get(
   "/dashboard/cards",
   auth(),
-  requirePermission("tripreport.read"),
+  requirePermission("tripreport"),
   TripReportController.getDashboardCards,
 );
 
 complaintRouter.get(
   "/analytics/trend",
   auth(),
-  requirePermission("tripreport.read"),
+  requirePermission("tripreport"),
   TripReportController.getComplaintTrend,
 );
 
 complaintRouter.get(
   "/",
   auth(),
-  requirePermission("tripreport.read"),
+  requirePermission("tripreport"),
   TripReportController.getAllComplaints,
 );
 
 complaintRouter.get(
   "/:complaintId",
   auth(),
-  requirePermission("tripreport.read"),
+  requirePermission("tripreport"),
   TripReportController.getComplaintDetails,
 );
 
 complaintRouter.patch(
   "/status/:complaintId",
   auth(),
-  requirePermission("tripreport.update"),
+  requirePermission("tripreport"),
   TripReportController.updateComplaintStatus,
 );
 

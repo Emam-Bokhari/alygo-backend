@@ -11,7 +11,7 @@ router
   .route("/")
   .patch(
     auth(),
-    requirePermission("emergencyhelpline.update"),
+    requirePermission("emergencyhelpline"),
     validateRequest(
       EmergencyHelplineZodValidation.updateEmergencyHelplineValidationSchema,
     ),

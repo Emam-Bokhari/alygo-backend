@@ -10,12 +10,12 @@ router
   .route("/")
   .post(
     auth(),
-    requirePermission("cancellationreason.create"),
+    requirePermission("cancellationreason"),
     CancellationReasonController.createCancellationReason,
   )
   .get(
     auth(),
-    requirePermission("cancellationreason.read"),
+    requirePermission("cancellationreason"),
     CancellationReasonController.getAllCancellationReasons,
   );
 
@@ -30,19 +30,19 @@ router
   .get(isAuthenticated, CancellationReasonController.getCancellationReason)
   .patch(
     auth(),
-    requirePermission("cancellationreason.update"),
+    requirePermission("cancellationreason"),
     CancellationReasonController.updateCancellationReason,
   )
   .delete(
     auth(),
-    requirePermission("cancellationreason.delete"),
+    requirePermission("cancellationreason"),
     CancellationReasonController.deleteCancellationReason,
   );
 
 router.patch(
   "/status/:cancellationReasonId",
   auth(),
-  requirePermission("cancellationreason.update"),
+  requirePermission("cancellationreason"),
   CancellationReasonController.updateCancellationReasonStatus,
 );
 

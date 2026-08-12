@@ -15,7 +15,7 @@ router.get(
 router.patch(
   "/",
   auth(),
-  requirePermission("cancellationpolicy.update"),
+  requirePermission("cancellationpolicy"),
   CancellationPolicyController.createOrUpdateCancellationPolicy,
 );
 

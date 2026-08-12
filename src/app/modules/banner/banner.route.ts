@@ -1,11 +1,7 @@
 import express from "express";
 import { BannerController } from "./banner.controller";
-
 import validateRequest from "../../middlewares/validateRequest";
-
 import { BannerZodValidation } from "./banner.validation";
-
-import { isAdmin } from "../../../helpers/authHelper";
 import { parseFileData } from "../../middlewares/parseFileData";
 import fileUploadHandler from "../../middlewares/flieUploadHandler";
 import { requirePermission } from "../../middlewares/requirePermission";
@@ -18,7 +14,7 @@ router
   .post(
     // isAdmin,
     auth(),
-    requirePermission("banner.create"),
+    requirePermission("banner"),
     fileUploadHandler(),
     parseFileData({
       fieldName: "image",
@@ -33,7 +29,7 @@ router.patch(
   "/status/:id",
   // isAdmin,
   auth(),
-  requirePermission("banner.update"),
+  requirePermission("banner"),
   BannerController.updateBannerStatus,
 );
 
@@ -42,7 +38,7 @@ router
   .patch(
     // isAdmin,
     auth(),
-    requirePermission("banner.update"),
+    requirePermission("banner"),
     fileUploadHandler(),
     parseFileData({ fieldName: "image", mode: "single" }),
     BannerController.updateBanner,
@@ -50,14 +46,14 @@ router
   .delete(
     // isAdmin,
     auth(),
-    requirePermission("banner.delete"),
+    requirePermission("banner"),
     BannerController.deleteBanner,
   );
 
 router.get(
   "/all",
   auth(),
-  requirePermission("banner.read"),
+  requirePermission("banner"),
   BannerController.getAllBanner,
 );
 

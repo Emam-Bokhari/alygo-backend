@@ -55,8 +55,8 @@ async function runTests() {
     const count = await Permission.countDocuments();
     assert(count > 0, `Permissions exist in database (Count: ${count})`);
 
-    const faqCreate = await Permission.findOne({ key: "faq.create" });
-    assert(!!faqCreate, "faq.create permission seeded correctly");
+    const faqPerm = await Permission.findOne({ key: "faq" });
+    assert(!!faqPerm, "faq permission seeded correctly");
 
     // 2. Test Role Creation and Duplication Guards
     console.log("\n--- Test 2: Role Creation & Validations ---");
@@ -69,7 +69,7 @@ async function runTests() {
       {
         name: "Test Manager Role",
         description: "A test role for managers",
-        permissions: [faqCreate!._id.toString()],
+        permissions: [faqPerm!._id.toString()],
         status: "active",
       },
       creatorId,
@@ -88,7 +88,7 @@ async function runTests() {
           {
             name: "Test Manager Role",
             description: "A duplicate role",
-            permissions: [faqCreate!._id.toString()],
+            permissions: [faqPerm!._id.toString()],
           },
           creatorId,
         ),
@@ -132,12 +132,12 @@ async function runTests() {
 
       // Verify DB fetch & cache set
       const permKeys = await RBACService.getRolePermissions(createdRole._id);
-      assert(permKeys.includes("faq.create"), "Active permissions fetched");
+      assert(permKeys.includes("faq"), "Active permissions fetched");
 
       const cached = await redisClient.get(cacheKey);
       assert(!!cached, "Permissions saved to Redis cache");
       assert(
-        JSON.parse(cached!).includes("faq.create"),
+        JSON.parse(cached!).includes("faq"),
         "Cached permissions match",
       );
 
@@ -173,7 +173,7 @@ async function runTests() {
       nextCalled = true;
     };
 
-    const middlewareFaqCreate = requirePermission("faq.create");
+    const middlewareFaqCreate = requirePermission("faq");
     await middlewareFaqCreate(reqSuperAdmin, res, next);
     assert(nextCalled, "Super Admin bypasses permission checks immediately");
 
@@ -198,7 +198,7 @@ async function runTests() {
     const nextWithError = (err: any) => {
       errorThrown = err;
     };
-    const middlewareRideCreate = requirePermission("ride.create");
+    const middlewareRideCreate = requirePermission("ride");
 
     await middlewareRideCreate(reqAdmin, res, nextWithError);
     assert(
@@ -220,7 +220,7 @@ async function runTests() {
     });
     assert(!!failureLog, "PERMISSION_CHECK_FAILURE audit log exists");
     assert(
-      failureLog!.details.requestedPermissions.includes("ride.create"),
+      failureLog!.details.requestedPermissions.includes("ride"),
       "Logged incorrect permission target",
     );
 

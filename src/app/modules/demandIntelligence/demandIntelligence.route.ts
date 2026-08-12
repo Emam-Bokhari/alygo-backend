@@ -10,7 +10,7 @@ const router = express.Router();
 router.get(
   "/summary",
   auth(),
-  requirePermission("dashboard.read"),
+  requirePermission("demandintelligence"),
   validateRequest(DemandIntelligenceValidation.demandIntelligenceQuerySchema),
   DemandIntelligenceController.getSummary,
 );
@@ -18,7 +18,7 @@ router.get(
 router.get(
   "/zones",
   auth(),
-  requirePermission("dashboard.read"),
+  requirePermission("demandintelligence"),
   validateRequest(DemandIntelligenceValidation.demandIntelligenceQuerySchema),
   DemandIntelligenceController.getZones,
 );
@@ -26,7 +26,7 @@ router.get(
 router.get(
   "/live-map",
   auth(),
-  requirePermission("dashboard.read"),
+  requirePermission("demandintelligence"),
   validateRequest(DemandIntelligenceValidation.demandIntelligenceQuerySchema),
   DemandIntelligenceController.getLiveMap,
 );
@@ -34,7 +34,7 @@ router.get(
 router.get(
   "/upcoming-events",
   auth(),
-  requirePermission("dashboard.read"),
+  requirePermission("demandintelligence"),
   validateRequest(DemandIntelligenceValidation.demandIntelligenceQuerySchema),
   DemandIntelligenceController.getUpcomingEvents,
 );

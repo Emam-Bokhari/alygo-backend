@@ -12,43 +12,43 @@ router
   .route("/")
   .post(
     auth(),
-    requirePermission("holiday.create"),
+    requirePermission("holiday"),
     validateRequest(HolidayZodValidation.createHolidayValidationSchema),
     HolidayController.createHoliday,
   )
   .get(
     auth(),
-    requirePermission("holiday.read"),
+    requirePermission("holiday"),
     HolidayController.getAllHoliday,
   );
 
 router.get(
   "/active",
   auth(),
-  requirePermission("holiday.read"),
+  requirePermission("holiday"),
   HolidayController.getActiveHoliday,
 );
 
 router.patch(
   "/status/:holidayId",
   auth(),
-  requirePermission("holiday.update"),
+  requirePermission("holiday"),
   validateRequest(HolidayZodValidation.updateHolidayStatusValidationSchema),
   HolidayController.updateHolidayStatus,
 );
 
 router
   .route("/:holidayId")
-  .get(auth(), requirePermission("holiday.read"), HolidayController.getHoliday)
+  .get(auth(), requirePermission("holiday"), HolidayController.getHoliday)
   .patch(
     auth(),
-    requirePermission("holiday.update"),
+    requirePermission("holiday"),
     validateRequest(HolidayZodValidation.updateHolidayValidationSchema),
     HolidayController.updateHoliday,
   )
   .delete(
     auth(),
-    requirePermission("holiday.delete"),
+    requirePermission("holiday"),
     HolidayController.deleteHoliday,
   );
 

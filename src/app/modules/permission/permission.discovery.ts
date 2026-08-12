@@ -247,41 +247,24 @@ export async function discoverPermissions(options?: DiscoveryOptions): Promise<{
         continue;
       }
 
-      // Determine action from method prefix or HTTP fallback
-      let action = "";
-      const lowerMethodName = methodName.toLowerCase();
+      // If any route in this file is scanned for administrative access, discover 1 resource permission
+      const permissionName = resourceName.toLowerCase();
 
-      for (const prefix of sortedActionKeys) {
-        if (lowerMethodName.startsWith(prefix.toLowerCase())) {
-          action = actionMapping[prefix];
-          break;
-        }
-      }
+      if (!permissionNames.has(permissionName)) {
+        permissionNames.add(permissionName);
 
-      if (!action && lastHttpMethod) {
-        action = HTTP_METHOD_FALLBACK[lastHttpMethod];
-      }
+        const readablePlural = getReadableResourcePlural(resourceName);
+        const description = `Full access to ${readablePlural} management`;
 
-      // If action is resolved, construct permission object
-      if (action) {
-        const permissionName = `${resourceName}.${action}`.toLowerCase();
-
-        // Skip duplicate permissions in the local scan list
-        if (!permissionNames.has(permissionName)) {
-          permissionNames.add(permissionName);
-
-          const description = generateDescription(resourceName, action);
-
-          discoveredPermissions.push({
-            name: permissionName,
-            resource: resourceName,
-            action,
-            description,
-            module: moduleName,
-            isActive: true,
-            isSystem: true,
-          });
-        }
+        discoveredPermissions.push({
+          name: permissionName,
+          resource: resourceName,
+          action: "manage",
+          description,
+          module: resourceName,
+          isActive: true,
+          isSystem: true,
+        });
       }
     }
   }

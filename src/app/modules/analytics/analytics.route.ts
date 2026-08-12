@@ -10,7 +10,7 @@ const router = express.Router();
 router.get(
   "/overview",
   auth(),
-  requirePermission("dashboard.read"),
+  requirePermission("analytics"),
   validateRequest(AnalyticsValidation.analyticsQuerySchema),
   AnalyticsController.getOverview,
 );
@@ -18,7 +18,7 @@ router.get(
 router.get(
   "/drivers",
   auth(),
-  requirePermission("dashboard.read"),
+  requirePermission("analytics"),
   validateRequest(AnalyticsValidation.analyticsQuerySchema),
   AnalyticsController.getDriverGrowth,
 );
@@ -26,7 +26,7 @@ router.get(
 router.get(
   "/passengers",
   auth(),
-  requirePermission("dashboard.read"),
+  requirePermission("analytics"),
   validateRequest(AnalyticsValidation.analyticsQuerySchema),
   AnalyticsController.getPassengerGrowth,
 );
@@ -34,7 +34,7 @@ router.get(
 router.get(
   "/revenue",
   auth(),
-  requirePermission("dashboard.read"),
+  requirePermission("analytics"),
   validateRequest(AnalyticsValidation.analyticsQuerySchema),
   AnalyticsController.getRevenueTrend,
 );
@@ -42,7 +42,7 @@ router.get(
 router.get(
   "/demand",
   auth(),
-  requirePermission("dashboard.read"),
+  requirePermission("analytics"),
   validateRequest(AnalyticsValidation.analyticsQuerySchema),
   AnalyticsController.getDemandByHour,
 );
@@ -50,7 +50,7 @@ router.get(
 router.get(
   "/export-csv",
   auth(),
-  requirePermission("dashboard.read"),
+  requirePermission("analytics"),
   validateRequest(AnalyticsValidation.analyticsQuerySchema),
   AnalyticsController.exportCsv,
 );

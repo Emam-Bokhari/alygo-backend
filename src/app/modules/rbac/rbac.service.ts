@@ -183,7 +183,7 @@ const getGroupedPermissions = async (query: Record<string, unknown>) => {
   const groupedData = Object.entries(grouped).map(
     ([moduleName, permissions]) => ({
       module: moduleName,
-      permissions,
+      permission: permissions[0] || null,
     }),
   );
 

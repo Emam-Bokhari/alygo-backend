@@ -18,12 +18,12 @@ adminRouter
   .route("/knowledge")
   .get(
     auth(),
-    requirePermission("aisupport.read"),
+    requirePermission("aisupport"),
     AiSupportController.getKnowledgeList,
   )
   .post(
     auth(),
-    requirePermission("aisupport.create"),
+    requirePermission("aisupport"),
     validateRequest(AiKnowledgeValidation.createKnowledgeValidationSchema),
     AiSupportController.createKnowledge,
   );
@@ -32,27 +32,27 @@ adminRouter
   .route("/knowledge/:id")
   .patch(
     auth(),
-    requirePermission("aisupport.update"),
+    requirePermission("aisupport"),
     validateRequest(AiKnowledgeValidation.updateKnowledgeValidationSchema),
     AiSupportController.updateKnowledge,
   )
   .delete(
     auth(),
-    requirePermission("aisupport.delete"),
+    requirePermission("aisupport"),
     AiSupportController.deleteKnowledge,
   );
 
 adminRouter.post(
   "/knowledge/import",
   auth(),
-  requirePermission("aisupport.create"),
+  requirePermission("aisupport"),
   AiSupportController.importKnowledge,
 );
 
 adminRouter.patch(
   "/config",
   auth(),
-  requirePermission("aisupport.update"),
+  requirePermission("aisupport"),
   validateRequest(AiSupportValidation.updateConfigValidationSchema),
   AiSupportController.updateConfig,
 );
@@ -60,7 +60,7 @@ adminRouter.patch(
 adminRouter.get(
   "/dashboard/stats",
   auth(),
-  requirePermission("aisupport.read"),
+  requirePermission("aisupport"),
   AiSupportController.getDashboardStats,
 );
 

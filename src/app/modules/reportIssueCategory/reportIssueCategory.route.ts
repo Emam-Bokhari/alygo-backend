@@ -10,12 +10,12 @@ router
   .route("/")
   .post(
     auth(),
-    requirePermission("reportissuecategory.create"),
+    requirePermission("reportissuecategory"),
     ReportIssueCategoryController.createReportIssueCategory,
   )
   .get(
     auth(),
-    requirePermission("reportissuecategory.read"),
+    requirePermission("reportissuecategory"),
     ReportIssueCategoryController.getAllReportIssueCategories,
   );
 
@@ -33,19 +33,19 @@ router
   )
   .patch(
     auth(),
-    requirePermission("reportissuecategory.update"),
+    requirePermission("reportissuecategory"),
     ReportIssueCategoryController.updateReportIssueCategory,
   )
   .delete(
     auth(),
-    requirePermission("reportissuecategory.delete"),
+    requirePermission("reportissuecategory"),
     ReportIssueCategoryController.deleteReportIssueCategory,
   );
 
 router.patch(
   "/status/:categoryId",
   auth(),
-  requirePermission("reportissuecategory.update"),
+  requirePermission("reportissuecategory"),
   ReportIssueCategoryController.updateReportIssueCategoryStatus,
 );
 

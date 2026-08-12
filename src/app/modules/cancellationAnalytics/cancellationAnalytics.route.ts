@@ -11,35 +11,35 @@ const router = express.Router();
 router.get(
   "/admin/analytics/cancellations/summary",
   auth(),
-  requirePermission("cancellationanalytics.read"),
+  requirePermission("cancellationanalytics"),
   validateRequest(CancellationAnalyticsValidation.cancellationQuerySchema),
   CancellationAnalyticsController.getSummary,
 );
 router.get(
   "/admin/analytics/cancellations/trend",
   auth(),
-  requirePermission("cancellationanalytics.read"),
+  requirePermission("cancellationanalytics"),
   validateRequest(CancellationAnalyticsValidation.cancellationQuerySchema),
   CancellationAnalyticsController.getTrend,
 );
 router.get(
   "/admin/analytics/cancellations/reasons",
   auth(),
-  requirePermission("cancellationanalytics.read"),
+  requirePermission("cancellationanalytics"),
   validateRequest(CancellationAnalyticsValidation.cancellationQuerySchema),
   CancellationAnalyticsController.getReasons,
 );
 router.get(
   "/admin/analytics/cancellations/cities",
   auth(),
-  requirePermission("cancellationanalytics.read"),
+  requirePermission("cancellationanalytics"),
   validateRequest(CancellationAnalyticsValidation.cancellationQuerySchema),
   CancellationAnalyticsController.getCities,
 );
 router.get(
   "/admin/analytics/cancellations/categories",
   auth(),
-  requirePermission("cancellationanalytics.read"),
+  requirePermission("cancellationanalytics"),
   validateRequest(CancellationAnalyticsValidation.cancellationQuerySchema),
   CancellationAnalyticsController.getCategories,
 );

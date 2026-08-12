@@ -49,7 +49,7 @@ router.get(
 router.post(
   "/refund",
   auth(),
-  requirePermission("stripe.refund"),
+  requirePermission("stripe"),
   StripeControllers.refundTransaction,
 );
 

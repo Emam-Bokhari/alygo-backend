@@ -8,19 +8,19 @@ const router = express.Router();
 
 router
   .route("/")
-  .post(auth(), requirePermission("tier.create"), TierController.createTier)
+  .post(auth(), requirePermission("tier"), TierController.createTier)
   .get(isAuthenticated, TierController.getAllTiers);
 
 router
   .route("/:tierId")
   .get(isAuthenticated, TierController.getTierById)
-  .patch(auth(), requirePermission("tier.update"), TierController.updateTier)
-  .delete(auth(), requirePermission("tier.delete"), TierController.deleteTier);
+  .patch(auth(), requirePermission("tier"), TierController.updateTier)
+  .delete(auth(), requirePermission("tier"), TierController.deleteTier);
 
 router.patch(
   "/status/:tierId",
   auth(),
-  requirePermission("tier.update"),
+  requirePermission("tier"),
   TierController.updateTierStatus,
 );
 

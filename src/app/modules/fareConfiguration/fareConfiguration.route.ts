@@ -10,12 +10,12 @@ router
   .route("/")
   .post(
     auth(),
-    requirePermission("fareconfiguration.create"),
+    requirePermission("fareconfiguration"),
     FareConfigurationController.createFareConfiguration,
   )
   .get(
     auth(),
-    requirePermission("fareconfiguration.read"),
+    requirePermission("fareconfiguration"),
     FareConfigurationController.getAllFareConfiguration,
   );
 
@@ -34,7 +34,7 @@ router.get(
 router.patch(
   "/status/:fareConfigurationId",
   auth(),
-  requirePermission("fareconfiguration.update"),
+  requirePermission("fareconfiguration"),
   FareConfigurationController.updateFareConfigurationStatus,
 );
 
@@ -43,12 +43,12 @@ router
   .get(isAuthenticated, FareConfigurationController.getFareConfiguration)
   .patch(
     auth(),
-    requirePermission("fareconfiguration.update"),
+    requirePermission("fareconfiguration"),
     FareConfigurationController.updateFareConfiguration,
   )
   .delete(
     auth(),
-    requirePermission("fareconfiguration.delete"),
+    requirePermission("fareconfiguration"),
     FareConfigurationController.deleteFareConfiguration,
   );
 

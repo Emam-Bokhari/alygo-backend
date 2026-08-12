@@ -10,9 +10,9 @@ import { createAuditLog } from "../modules/rbac/rbac.utils";
  * Bypasses checks for SUPER_ADMIN.
  *
  * Examples:
- * - requirePermission("faq.create")
- * - requirePermission(["faq.create", "faq.update"], "ANY")
- * - requirePermission(["faq.create", "faq.update"], "ALL")
+ * - requirePermission("faq")
+ * - requirePermission(["faq", "banner"], "ANY")
+ * - requirePermission(["faq", "banner"], "ALL")
  */
 export const requirePermission = (
   permissions: string | string[],

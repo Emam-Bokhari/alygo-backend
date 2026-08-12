@@ -17,7 +17,7 @@ router
   .route("/")
   .post(
     auth(),
-    requirePermission("surgerule.create"),
+    requirePermission("surgerule"),
     SurgeRuleController.createSurgeRule,
   )
   .get(isAuthenticated, SurgeRuleController.getAllSurgeRules);
@@ -27,12 +27,12 @@ router
   .get(isAuthenticated, SurgeRuleController.getSurgeRuleById)
   .patch(
     auth(),
-    requirePermission("surgerule.update"),
+    requirePermission("surgerule"),
     SurgeRuleController.updateSurgeRule,
   )
   .delete(
     auth(),
-    requirePermission("surgerule.delete"),
+    requirePermission("surgerule"),
     SurgeRuleController.deleteSurgeRule,
   );
 
@@ -41,7 +41,7 @@ router
   .route("/status/:surgeRuleId")
   .patch(
     auth(),
-    requirePermission("surgerule.update"),
+    requirePermission("surgerule"),
     SurgeRuleController.updateSurgeRuleStatus,
   );
 

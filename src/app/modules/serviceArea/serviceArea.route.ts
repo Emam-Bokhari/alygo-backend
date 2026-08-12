@@ -10,7 +10,7 @@ router
   .route("/")
   .post(
     auth(),
-    requirePermission("servicearea.create"),
+    requirePermission("servicearea"),
     ServiceAreaController.createServiceArea,
   )
   .get(isAuthenticated, ServiceAreaController.getAllServiceAreas);
@@ -59,12 +59,12 @@ router
   .get(isAuthenticated, ServiceAreaController.getServiceArea)
   .patch(
     auth(),
-    requirePermission("servicearea.update"),
+    requirePermission("servicearea"),
     ServiceAreaController.updateServiceArea,
   )
   .delete(
     auth(),
-    requirePermission("servicearea.delete"),
+    requirePermission("servicearea"),
     ServiceAreaController.deleteServiceArea,
   );
 

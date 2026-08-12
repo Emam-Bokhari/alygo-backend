@@ -10,12 +10,12 @@ router
   .route("/")
   .post(
     auth(),
-    requirePermission("lostandfounditemcategory.create"),
+    requirePermission("lostandfounditemcategory"),
     LostAndFoundItemCategoryController.createLostAndFoundItemCategory,
   )
   .get(
     auth(),
-    requirePermission("lostandfounditemcategory.read"),
+    requirePermission("lostandfounditemcategory"),
     LostAndFoundItemCategoryController.getAllLostAndFoundItemCategories,
   );
 
@@ -28,7 +28,7 @@ router.get(
 router.patch(
   "/status/:lostAndFoundItemCategoryId",
   auth(),
-  requirePermission("lostandfounditemcategory.update"),
+  requirePermission("lostandfounditemcategory"),
   LostAndFoundItemCategoryController.updateLostAndFoundItemCategoryStatus,
 );
 
@@ -40,12 +40,12 @@ router
   )
   .patch(
     auth(),
-    requirePermission("lostandfounditemcategory.update"),
+    requirePermission("lostandfounditemcategory"),
     LostAndFoundItemCategoryController.updateLostAndFoundItemCategory,
   )
   .delete(
     auth(),
-    requirePermission("lostandfounditemcategory.delete"),
+    requirePermission("lostandfounditemcategory"),
     LostAndFoundItemCategoryController.deleteLostAndFoundItemCategory,
   );
 

@@ -11,7 +11,7 @@ router
   .get(PlatformSettingsController.getPlatformSettings)
   .patch(
     auth(),
-    requirePermission("platformsettings.create"),
+    requirePermission("platformsettings"),
     PlatformSettingsController.createOrUpdatePlatformSettings,
   );
 

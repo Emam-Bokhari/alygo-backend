@@ -10,28 +10,28 @@ const router = express.Router();
 router.get(
   "/",
   auth(),
-  requirePermission("passengermanagement.read"),
+  requirePermission("passengermanagement"),
   PassengerManagementControllers.getPassengersOverview,
 );
 
 router.get(
   "/live-activity",
   auth(),
-  requirePermission("passengermanagement.read"),
+  requirePermission("passengermanagement"),
   PassengerManagementControllers.getLivePassengers,
 );
 
 router.get(
   "/suspended",
   auth(),
-  requirePermission("passengermanagement.read"),
+  requirePermission("passengermanagement"),
   PassengerManagementControllers.getSuspendedPassengers,
 );
 
 router.get(
   "/live-activity/:passengerId",
   auth(),
-  requirePermission("passengermanagement.read"),
+  requirePermission("passengermanagement"),
   validateRequest(PassengerManagementValidation.passengerIdParamSchema),
   PassengerManagementControllers.getLivePassengerDetails,
 );
@@ -39,7 +39,7 @@ router.get(
 router.get(
   "/:passengerId",
   auth(),
-  requirePermission("passengermanagement.read"),
+  requirePermission("passengermanagement"),
   validateRequest(PassengerManagementValidation.passengerIdParamSchema),
   PassengerManagementControllers.getPassengerDetails,
 );
@@ -47,7 +47,7 @@ router.get(
 router.post(
   "/:passengerId/suspend",
   auth(),
-  requirePermission("passengermanagement.creaate"),
+  requirePermission("passengermanagement"),
   validateRequest(PassengerManagementValidation.suspendPassengerZodSchema),
   PassengerManagementControllers.suspendPassenger,
 );
@@ -55,7 +55,7 @@ router.post(
 router.post(
   "/:passengerId/create",
   auth(),
-  requirePermission("passengermanagement.creaate"),
+  requirePermission("passengermanagement"),
   PassengerManagementControllers.unsuspendPassenger,
 );
 

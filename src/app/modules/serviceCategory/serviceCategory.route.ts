@@ -12,7 +12,7 @@ router
   .route("/")
   .post(
     auth(),
-    requirePermission("servicecategory.create"),
+    requirePermission("servicecategory"),
     fileUploadHandler(),
     parseFileData({
       fieldName: "image",
@@ -22,7 +22,7 @@ router
   )
   .get(
     auth(),
-    requirePermission("servicecategory.read"),
+    requirePermission("servicecategory"),
     ServiceCategoryController.getAllServiceCategory,
   );
 
@@ -35,7 +35,7 @@ router.get(
 router.patch(
   "/status/:serviceCategoryId",
   auth(),
-  requirePermission("servicecategory.update"),
+  requirePermission("servicecategory"),
   ServiceCategoryController.updateServiceCategoryStatus,
 );
 
@@ -43,19 +43,19 @@ router
   .route("/:serviceCategoryId")
   .get(
     auth(),
-    requirePermission("servicecategory.read"),
+    requirePermission("servicecategory"),
     ServiceCategoryController.getServiceCategory,
   )
   .patch(
     auth(),
-    requirePermission("servicecategory.update"),
+    requirePermission("servicecategory"),
     fileUploadHandler(),
     parseFileData({ fieldName: "image", mode: "single" }),
     ServiceCategoryController.updateServiceCategory,
   )
   .delete(
     auth(),
-    requirePermission("servicecategory.delete"),
+    requirePermission("servicecategory"),
     ServiceCategoryController.deleteServiceCategory,
   );
 

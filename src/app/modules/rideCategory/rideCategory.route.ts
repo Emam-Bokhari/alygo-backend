@@ -12,13 +12,13 @@ router
   .route("/")
   .post(
     auth(),
-    requirePermission("ridecategory.create"),
+    requirePermission("ridecategory"),
     validateRequest(RideCategoryValidation.createRideCategoryValidationSchema),
     RideCategoryController.createRideCategory,
   )
   .get(
     auth(),
-    requirePermission("ridecategory.read"),
+    requirePermission("ridecategory"),
     RideCategoryController.getAllRideCategories,
   );
 
@@ -31,7 +31,7 @@ router.get(
 router.patch(
   "/status/:rideCategoryId",
   auth(),
-  requirePermission("ridecategory.update"),
+  requirePermission("ridecategory"),
   RideCategoryController.updateRideCategoryStatus,
 );
 
@@ -40,13 +40,13 @@ router
   .get(isAuthenticated, RideCategoryController.getRideCategory)
   .patch(
     auth(),
-    requirePermission("ridecategory.update"),
+    requirePermission("ridecategory"),
     validateRequest(RideCategoryValidation.updateRideCategoryValidationSchema),
     RideCategoryController.updateRideCategory,
   )
   .delete(
     auth(),
-    requirePermission("ridecategory.delete"),
+    requirePermission("ridecategory"),
     RideCategoryController.deleteRideCategory,
   );
 

@@ -11,7 +11,7 @@ router
   .get(isAuthenticated, SystemConfigurationController.getSystemConfiguration)
   .patch(
     auth(),
-    requirePermission("systemconfiguration.update"),
+    requirePermission("systemconfiguration"),
     SystemConfigurationController.createOrUpdateSystemConfiguration,
   );
 

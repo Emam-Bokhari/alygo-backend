@@ -2,7 +2,7 @@ import { ISoftDeleteModel } from "../../../types/softDelete";
 export type IPermission = {
   name: string;
   resource: string;
-  action: string;
+  action?: string;
   description: string;
   module: string;
   isActive: boolean;
