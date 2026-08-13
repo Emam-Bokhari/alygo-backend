@@ -470,7 +470,6 @@ const getCategoriesFromDB = async (
   }));
 };
 
-
 export const CancellationAnalyticsService = {
   getSummaryFromDB,
   getTrendFromDB,

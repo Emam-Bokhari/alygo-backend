@@ -37,11 +37,7 @@ router
 
 // Admin Users with Role
 router.get("/admins", isAdmin, RbacController.getAdminsWithRole);
-router.get(
-  "/admins/:adminId",
-  isAdmin,
-  RbacController.getAdminByIdWithRole,
-);
+router.get("/admins/:adminId", isAdmin, RbacController.getAdminByIdWithRole);
 
 // Assign Role to Admin User
 router.patch(

@@ -74,6 +74,8 @@ const getRolePermissions = async (
   return permissionKeys;
 };
 
+const ALWAYS_ALLOWED_PERMISSIONS = new Set(["auth", "authentication"]);
+
 /**
  * Check if a role has the required permission(s).
  */
@@ -91,11 +93,15 @@ const checkPermissions = async (
     return true;
   }
 
+  const isGranted = (reqKey: string) =>
+    ALWAYS_ALLOWED_PERMISSIONS.has(reqKey.toLowerCase()) ||
+    keys.includes(reqKey);
+
   if (strategy === "ANY") {
-    return requiredList.some((reqKey) => keys.includes(reqKey));
+    return requiredList.some(isGranted);
   }
 
-  return requiredList.every((reqKey) => keys.includes(reqKey));
+  return requiredList.every(isGranted);
 };
 
 /**
@@ -150,6 +156,29 @@ const getAllPermissions = async (query: Record<string, unknown>) => {
   };
 };
 
+const EXCLUDED_MODULE_KEYS = new Set([
+  "auth",
+  "authentication",
+  "call",
+  "calls",
+  "chat",
+  "emergencycontact",
+  "emergency_contact",
+  "referral",
+  "ride",
+  "user",
+  "users",
+  "fcmtoken",
+  "fcm_token",
+  "message",
+  "rbac",
+  "review",
+  "stripe",
+  "stripepayment",
+  "stripe_payment",
+  "driver",
+]);
+
 const getGroupedPermissions = async (query: Record<string, unknown>) => {
   const permissionQuery = new QueryBuilder<IPermission>(
     Permission.find({}),
@@ -158,16 +187,21 @@ const getGroupedPermissions = async (query: Record<string, unknown>) => {
     .search(["name", "resource", "action", "module", "description"])
     .filter()
     .sort()
-    .paginate()
     .fields();
 
   const data = await permissionQuery.modelQuery;
-  const meta = await permissionQuery.countTotal();
 
   // Group the queried results by module in memory
   const grouped: Record<string, any[]> = {};
   data.forEach((permission: any) => {
     const moduleName = permission.module;
+    const normalizedKey = moduleName
+      ? moduleName.toLowerCase().replace(/[\s_-]+/g, "")
+      : "";
+    if (EXCLUDED_MODULE_KEYS.has(normalizedKey)) {
+      return; // Skip excluded modules
+    }
+
     if (!grouped[moduleName]) {
       grouped[moduleName] = [];
     }
@@ -190,9 +224,22 @@ const getGroupedPermissions = async (query: Record<string, unknown>) => {
   // Sort alphabetically by module name
   groupedData.sort((a, b) => a.module.localeCompare(b.module));
 
+  const page = Number(query.page) || 1;
+  const limit = query.limit !== undefined ? Number(query.limit) : 10;
+  const skip = (page - 1) * limit;
+
+  const paginatedData =
+    limit > 0 ? groupedData.slice(skip, skip + limit) : groupedData;
+  const totalPage = limit > 0 ? Math.ceil(groupedData.length / limit) : 1;
+
   return {
-    meta,
-    data: groupedData,
+    meta: {
+      page,
+      limit,
+      total: groupedData.length,
+      totalPage,
+    },
+    data: paginatedData,
   };
 };
 
@@ -206,19 +253,26 @@ const getModules = async (query: Record<string, unknown>) => {
 
   const modules = await permissionQuery.modelQuery.distinct("module");
 
-  // Paginate distinct modules in memory (JS)
+  const filteredModules = modules.filter((mod: string) => {
+    const normalizedKey = mod ? mod.toLowerCase().replace(/[\s_-]+/g, "") : "";
+    return !EXCLUDED_MODULE_KEYS.has(normalizedKey);
+  });
+
+  filteredModules.sort((a, b) => a.localeCompare(b));
+
   const page = Number(query.page) || 1;
-  const limit = Number(query.limit) || 10;
+  const limit = query.limit !== undefined ? Number(query.limit) : 10;
   const skip = (page - 1) * limit;
 
-  const paginatedModules = modules.slice(skip, skip + limit);
-  const totalPage = Math.ceil(modules.length / limit);
+  const paginatedModules =
+    limit > 0 ? filteredModules.slice(skip, skip + limit) : filteredModules;
+  const totalPage = limit > 0 ? Math.ceil(filteredModules.length / limit) : 1;
 
   return {
     meta: {
       page,
       limit,
-      total: modules.length,
+      total: filteredModules.length,
       totalPage,
     },
     data: paginatedModules,
@@ -260,6 +314,21 @@ const createRole = async (payload: any, creatorId: string) => {
       StatusCodes.CONFLICT,
       "Role with this name or slug already exists",
     );
+  }
+
+  // Auto-assign auth permission ID if available in DB
+  const authPermission = await Permission.findOne({
+    $or: [{ name: "auth" }, { name: "authentication" }],
+    status: "active",
+  });
+  if (
+    authPermission &&
+    Array.isArray(payload.permissions) &&
+    !payload.permissions.some(
+      (pId: any) => pId.toString() === authPermission._id.toString(),
+    )
+  ) {
+    payload.permissions.push(authPermission._id);
   }
 
   // Verify all permissions are active
