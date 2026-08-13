@@ -1,6 +1,7 @@
 import { model, Schema } from "mongoose";
 import { IAiKnowledge, AiKnowledgeModel } from "./aiKnowledge.interface";
 import { softDeletePlugin } from "../../../DB/plugins/softDeletePlugin";
+import { AiKnowledgeModule, AiKnowledgeCategory, AiKnowledgeTag } from "./aiKnowledge.constant";
 
 const aiKnowledgeSchema = new Schema<IAiKnowledge, AiKnowledgeModel>(
   {
@@ -12,12 +13,14 @@ const aiKnowledgeSchema = new Schema<IAiKnowledge, AiKnowledgeModel>(
     module: {
       type: String,
       required: true,
+      enum: Object.values(AiKnowledgeModule),
       trim: true,
       index: true,
     },
     category: {
       type: String,
       required: true,
+      enum: Object.values(AiKnowledgeCategory),
       trim: true,
       index: true,
     },
@@ -33,6 +36,7 @@ const aiKnowledgeSchema = new Schema<IAiKnowledge, AiKnowledgeModel>(
     },
     tags: {
       type: [String],
+      enum: Object.values(AiKnowledgeTag),
       default: [],
       index: true,
     },

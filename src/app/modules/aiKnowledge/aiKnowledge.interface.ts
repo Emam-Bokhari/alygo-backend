@@ -1,14 +1,15 @@
 import { Types } from "mongoose";
 import { ISoftDeleteModel } from "../../../types/softDelete";
+import { AiKnowledgeModule, AiKnowledgeCategory, AiKnowledgeTag } from "./aiKnowledge.constant";
 
 export interface IAiKnowledge {
   _id?: Types.ObjectId;
   title: string;
-  module: string;
-  category: string;
+  module: AiKnowledgeModule;
+  category: AiKnowledgeCategory;
   content: string;
   searchableContent: string;
-  tags?: string[];
+  tags?: AiKnowledgeTag[];
   keywords?: string[];
   language: string;
   priority: number;
@@ -22,7 +23,7 @@ export interface IAiKnowledge {
   publishedAt?: Date;
   publishedBy?: Types.ObjectId;
   changeLog?: string;
-  isLatest: boolean;
+  isLatest: boolean; 
   createdBy: Types.ObjectId;
   updatedBy: Types.ObjectId;
   createdAt: Date;

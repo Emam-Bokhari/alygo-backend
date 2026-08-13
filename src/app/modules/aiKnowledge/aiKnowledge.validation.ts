@@ -1,21 +1,22 @@
 import { z } from "zod";
+import { AiKnowledgeModule, AiKnowledgeCategory, AiKnowledgeTag } from "./aiKnowledge.constant";
 
 const createKnowledgeValidationSchema = z.object({
   body: z.object({
     title: z.string({
       required_error: "Title is required",
     }),
-    module: z.string({
+    module: z.nativeEnum(AiKnowledgeModule, {
       required_error: "Module name is required",
     }),
-    category: z.string({
+    category: z.nativeEnum(AiKnowledgeCategory, {
       required_error: "Category is required",
     }),
     content: z.string({
       required_error: "Content is required",
     }),
     searchableContent: z.string().optional(),
-    tags: z.array(z.string()).optional(),
+    tags: z.array(z.nativeEnum(AiKnowledgeTag)).optional(),
     keywords: z.array(z.string()).optional(),
     language: z.string().optional(),
     priority: z.number().optional(),
@@ -35,11 +36,11 @@ const createKnowledgeValidationSchema = z.object({
 const updateKnowledgeValidationSchema = z.object({
   body: z.object({
     title: z.string().optional(),
-    module: z.string().optional(),
-    category: z.string().optional(),
+    module: z.nativeEnum(AiKnowledgeModule).optional(),
+    category: z.nativeEnum(AiKnowledgeCategory).optional(),
     content: z.string().optional(),
     searchableContent: z.string().optional(),
-    tags: z.array(z.string()).optional(),
+    tags: z.array(z.nativeEnum(AiKnowledgeTag)).optional(),
     keywords: z.array(z.string()).optional(),
     language: z.string().optional(),
     priority: z.number().optional(),
@@ -60,3 +61,4 @@ export const AiKnowledgeValidation = {
   createKnowledgeValidationSchema,
   updateKnowledgeValidationSchema,
 };
+
