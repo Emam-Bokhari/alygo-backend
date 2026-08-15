@@ -208,7 +208,9 @@ const buildPassengerSummaryForRide = async (
 /**
  * Fetch detailed info for a list of nearby drivers
  */
-export const getNearbyDriversDetails = async (selectedDrivers: any[]): Promise<any[]> => {
+export const getNearbyDriversDetails = async (
+  selectedDrivers: any[],
+): Promise<any[]> => {
   const details = [];
   for (const item of selectedDrivers) {
     const driverDoc = await Driver.findOne({ userId: item.driverId });
@@ -226,4 +228,3 @@ export const getNearbyDriversDetails = async (selectedDrivers: any[]): Promise<a
   }
   return details;
 };
-

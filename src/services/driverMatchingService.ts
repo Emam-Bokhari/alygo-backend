@@ -127,7 +127,10 @@ export const findEligibleDriversInRadius = async ({
     const currentIdStr = currentId.toString();
     visited.add(currentIdStr);
 
-    const area = await ServiceArea.findOne({ _id: currentId, status: "active" });
+    const area = await ServiceArea.findOne({
+      _id: currentId,
+      status: "active",
+    });
     if (!area) break;
 
     activeServiceAreaIds.push(area._id);
@@ -309,7 +312,10 @@ export const findEligibleDriversInRadius = async ({
       category.vehicleRequirements.vehicleType ||
       (category.vehicleRequirements as any).vehicleTypes?.[0];
     const minimumSeats = category.vehicleRequirements.minimumSeats;
-    const isCarTypeMatched = vehicleType && car.carType && (vehicleType.toLowerCase() === car.carType.toLowerCase());
+    const isCarTypeMatched =
+      vehicleType &&
+      car.carType &&
+      vehicleType.toLowerCase() === car.carType.toLowerCase();
     const isSeatsSufficient = car.seatNumber >= minimumSeats;
 
     if (!isCarTypeMatched || !isSeatsSufficient) continue;

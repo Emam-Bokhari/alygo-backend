@@ -99,7 +99,10 @@ const getDriversOverviewFromDB = async (queryParams: Record<string, any>) => {
             cat.vehicleRequirements?.vehicleType ||
             (cat.vehicleRequirements as any)?.vehicleTypes?.[0];
           const minimumSeats = cat.vehicleRequirements?.minimumSeats || 0;
-          const isCarTypeMatched = vehicleType && car.carType && (vehicleType.toLowerCase() === car.carType.toLowerCase());
+          const isCarTypeMatched =
+            vehicleType &&
+            car.carType &&
+            vehicleType.toLowerCase() === car.carType.toLowerCase();
           const isSeatsSufficient = car.seatNumber >= minimumSeats;
 
           if (isCarTypeMatched && isSeatsSufficient) {

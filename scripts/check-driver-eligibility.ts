@@ -1,19 +1,19 @@
-import mongoose from 'mongoose';
-import dotenv from 'dotenv';
-import path from 'path';
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+import path from "path";
 
 // Load env
 dotenv.config();
 
-import { Driver } from '../src/app/modules/driver/driver.model';
-import { User } from '../src/app/modules/user/user.model';
-import { ServiceArea } from '../src/app/modules/serviceArea/serviceArea.model';
-import { RideCategory } from '../src/app/modules/rideCategory/rideCategory.model';
-import { ServiceCategory } from '../src/app/modules/serviceCategory/serviceCategory.model';
-import { Tier } from '../src/app/modules/tier/tier.model';
-import { Car } from '../src/app/modules/car/car.model';
-import { findEligibleDriversInRadius } from '../src/services/driverMatchingService';
-import { ServiceAreaServices } from '../src/app/modules/serviceArea/serviceArea.service';
+import { Driver } from "../src/app/modules/driver/driver.model";
+import { User } from "../src/app/modules/user/user.model";
+import { ServiceArea } from "../src/app/modules/serviceArea/serviceArea.model";
+import { RideCategory } from "../src/app/modules/rideCategory/rideCategory.model";
+import { ServiceCategory } from "../src/app/modules/serviceCategory/serviceCategory.model";
+import { Tier } from "../src/app/modules/tier/tier.model";
+import { Car } from "../src/app/modules/car/car.model";
+import { findEligibleDriversInRadius } from "../src/services/driverMatchingService";
+import { ServiceAreaServices } from "../src/app/modules/serviceArea/serviceArea.service";
 
 async function run() {
   const dbUrl = process.env.DATABASE_URL;
@@ -104,7 +104,10 @@ async function run() {
     pickupCoordinates[1],
   );
   if (!resolvedArea) {
-    console.warn("❌ Could not determine service area for coordinates:", pickupCoordinates);
+    console.warn(
+      "❌ Could not determine service area for coordinates:",
+      pickupCoordinates,
+    );
   } else {
     console.log("Resolved Area:", {
       id: resolvedArea._id,

@@ -1,7 +1,11 @@
 import { model, Schema } from "mongoose";
 import { IAiKnowledge, AiKnowledgeModel } from "./aiKnowledge.interface";
 import { softDeletePlugin } from "../../../DB/plugins/softDeletePlugin";
-import { AiKnowledgeModule, AiKnowledgeCategory, AiKnowledgeTag } from "./aiKnowledge.constant";
+import {
+  AiKnowledgeModule,
+  AiKnowledgeCategory,
+  AiKnowledgeTag,
+} from "./aiKnowledge.constant";
 
 const aiKnowledgeSchema = new Schema<IAiKnowledge, AiKnowledgeModel>(
   {

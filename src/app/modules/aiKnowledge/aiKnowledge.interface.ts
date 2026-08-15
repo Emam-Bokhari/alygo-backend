@@ -1,6 +1,10 @@
 import { Types } from "mongoose";
 import { ISoftDeleteModel } from "../../../types/softDelete";
-import { AiKnowledgeModule, AiKnowledgeCategory, AiKnowledgeTag } from "./aiKnowledge.constant";
+import {
+  AiKnowledgeModule,
+  AiKnowledgeCategory,
+  AiKnowledgeTag,
+} from "./aiKnowledge.constant";
 
 export interface IAiKnowledge {
   _id?: Types.ObjectId;
@@ -23,7 +27,7 @@ export interface IAiKnowledge {
   publishedAt?: Date;
   publishedBy?: Types.ObjectId;
   changeLog?: string;
-  isLatest: boolean; 
+  isLatest: boolean;
   createdBy: Types.ObjectId;
   updatedBy: Types.ObjectId;
   createdAt: Date;

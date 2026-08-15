@@ -21,8 +21,10 @@ async function run() {
   const pickupLng = 90.4075871;
   const pickupLat = 23.7809006;
 
-  console.log(`=== STEP 1: RESOLVING SERVICE AREA FOR [${pickupLng}, ${pickupLat}] ===`);
-  
+  console.log(
+    `=== STEP 1: RESOLVING SERVICE AREA FOR [${pickupLng}, ${pickupLat}] ===`,
+  );
+
   let serviceArea = await ServiceAreaServices.findServiceAreaByCoordinates(
     pickupLng,
     pickupLat,
@@ -31,7 +33,9 @@ async function run() {
   if (serviceArea) {
     console.log(`✅ Found Service Area by coordinates:`);
     console.log(`   - ID: ${serviceArea._id}`);
-    console.log(`   - City/Zone/Airport: ${serviceArea.city || serviceArea.zone || serviceArea.airport || "N/A"}`);
+    console.log(
+      `   - City/Zone/Airport: ${serviceArea.city || serviceArea.zone || serviceArea.airport || "N/A"}`,
+    );
     console.log(`   - City: ${serviceArea.city}`);
     console.log(`   - Status: ${serviceArea.status}`);
   } else {
@@ -40,15 +44,17 @@ async function run() {
     // For now we don't have googleMapsHelper here, let's look at all active Service Areas
     const allActiveAreas = await ServiceArea.find({ status: "active" });
     console.log(`   Available Active Service Areas in DB:`);
-    allActiveAreas.forEach(sa => {
-      console.log(`   - ID: ${sa._id}, City/Zone: ${sa.city || sa.zone || sa.airport || "N/A"}, Status: ${sa.status}`);
+    allActiveAreas.forEach((sa) => {
+      console.log(
+        `   - ID: ${sa._id}, City/Zone: ${sa.city || sa.zone || sa.airport || "N/A"}, Status: ${sa.status}`,
+      );
     });
   }
 
   console.log("\n=== STEP 2: LOAD ACTIVE RIDE CATEGORIES ===");
   const categories = await RideCategory.find({ status: "active" });
   console.log(`Found ${categories.length} active ride categories:`);
-  categories.forEach(cat => {
+  categories.forEach((cat) => {
     console.log(`- ID: ${cat._id.toString()}`);
     console.log(`  Name: ${cat.name}`);
     console.log(`  ServiceCategory ID: ${cat.serviceCategoryId?.toString()}`);
@@ -70,7 +76,7 @@ async function run() {
     console.log("\n=== STEP 4: SIMULATING QUERY FOR EACH ACTIVE CATEGORY ===");
     for (const cat of categories) {
       console.log(`\nChecking Ride Category: ${cat.name} (${cat._id})`);
-      
+
       const query1 = {
         serviceAreaId: serviceArea._id,
         serviceCategoryId: cat.serviceCategoryId,
@@ -90,7 +96,10 @@ async function run() {
         rideCategoryId: cat._id,
         status: "active",
       };
-      console.log(`- Trying Query 2 (No ServiceCategory):`, JSON.stringify(query2));
+      console.log(
+        `- Trying Query 2 (No ServiceCategory):`,
+        JSON.stringify(query2),
+      );
       fc = await FareConfiguration.findOne(query2);
       if (fc) {
         console.log(`  ✅ Match found! ID: ${fc._id}`);
@@ -103,7 +112,10 @@ async function run() {
         rideCategoryId: cat._id,
         status: "active",
       };
-      console.log(`- Trying Query 3 (Global ServiceCategory):`, JSON.stringify(query3));
+      console.log(
+        `- Trying Query 3 (Global ServiceCategory):`,
+        JSON.stringify(query3),
+      );
       fc = await FareConfiguration.findOne(query3);
       if (fc) {
         console.log(`  ✅ Match found! ID: ${fc._id}`);
@@ -123,7 +135,9 @@ async function run() {
         continue;
       }
 
-      console.log(`  ❌ No matching active Fare Configuration found for category ${cat.name}!`);
+      console.log(
+        `  ❌ No matching active Fare Configuration found for category ${cat.name}!`,
+      );
     }
   }
 

@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { AiKnowledgeModule, AiKnowledgeCategory, AiKnowledgeTag } from "./aiKnowledge.constant";
+import {
+  AiKnowledgeModule,
+  AiKnowledgeCategory,
+  AiKnowledgeTag,
+} from "./aiKnowledge.constant";
 
 const createKnowledgeValidationSchema = z.object({
   body: z.object({
@@ -61,4 +65,3 @@ export const AiKnowledgeValidation = {
   createKnowledgeValidationSchema,
   updateKnowledgeValidationSchema,
 };
-

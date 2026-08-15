@@ -825,13 +825,16 @@ const requestRide = async (
   // Get and emit nearby drivers details to the passenger via Socket.io
   if (selectedDrivers && selectedDrivers.length > 0) {
     try {
-      const nearbyDriversDetails = await getNearbyDriversDetails(selectedDrivers);
+      const nearbyDriversDetails =
+        await getNearbyDriversDetails(selectedDrivers);
       rideUserSocketHelper.emitNearbyDriversFound(userId, {
         rideId: ride._id.toString(),
         drivers: nearbyDriversDetails,
       });
     } catch (err) {
-      logger.error(`[RideService] Error emitting nearby drivers to user: ${err}`);
+      logger.error(
+        `[RideService] Error emitting nearby drivers to user: ${err}`,
+      );
     }
   }
 

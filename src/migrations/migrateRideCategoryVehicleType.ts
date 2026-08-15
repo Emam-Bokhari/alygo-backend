@@ -6,7 +6,9 @@ import { logger } from "../shared/logger";
 export const migrateRideCategoryVehicleType = async () => {
   try {
     // Fetch all documents including soft-deleted ones
-    const categories = await RideCategory.find({}).setOptions({ withDeleted: true }).lean();
+    const categories = await RideCategory.find({})
+      .setOptions({ withDeleted: true })
+      .lean();
     logger.info(`Found ${categories.length} ride categories in database.`);
 
     let migratedCount = 0;
@@ -56,7 +58,9 @@ if (require.main === module) {
   mongoose
     .connect(dbUrl)
     .then(async () => {
-      logger.info("Connected to MongoDB for RideCategory vehicleType migration");
+      logger.info(
+        "Connected to MongoDB for RideCategory vehicleType migration",
+      );
       await migrateRideCategoryVehicleType();
       process.exit(0);
     })

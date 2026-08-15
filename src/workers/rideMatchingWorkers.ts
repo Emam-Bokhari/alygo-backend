@@ -287,7 +287,9 @@ const radiusExpansionWorker = new Worker(
           isExpansion: true,
         });
       } catch (err) {
-        logger.error(`[RideMatchingWorker] Error emitting nearby drivers during expansion to user: ${err}`);
+        logger.error(
+          `[RideMatchingWorker] Error emitting nearby drivers during expansion to user: ${err}`,
+        );
       }
 
       // Calculate driver search timing for notifications
