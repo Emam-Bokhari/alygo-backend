@@ -2,7 +2,6 @@ import { FilterQuery, Types } from "mongoose";
 import mongoose from "mongoose";
 import { StatusCodes } from "http-status-codes";
 import ApiError from "../../../errors/ApiErrors";
-import config from "../../../config";
 import { Ride } from "./ride.model";
 import { PlatformSettingsService } from "../platformSettings/platformSettings.service";
 import { IRide } from "./rider.interface";
@@ -14,10 +13,8 @@ import { ServiceAreaServices } from "../serviceArea/serviceArea.service";
 import { ServiceCategory } from "../serviceCategory/serviceCategory.model";
 import { RideCategory } from "../rideCategory/rideCategory.model";
 import { FareConfiguration } from "../fareConfiguration/fareConfiguration.model";
-import { DriverDutyPolicy } from "../driverDutyPolicy/driverDutyPolicy.model";
 import { DriverDutyPolicyServices } from "../driverDutyPolicy/driverDutyPolicy.service";
 import { Transaction } from "../transaction/transaction.model";
-import { Wallet } from "../wallet/wallet.model";
 import { WalletService } from "../wallet/wallet.service";
 import { ReferralService } from "../referral/referral.service";
 import { Tracking } from "../tracking/tracking.model";
@@ -44,7 +41,6 @@ import {
   CANCELLED_BY,
   RIDE_TYPE,
 } from "./ride.constant";
-import stripe from "../../../config/stripe";
 import { logger } from "../../../shared/logger";
 import { findEligibleDriversInRadius } from "../../../services/driverMatchingService";
 import { SurgeCalculationService } from "../surgeRule/surgeCalculation.service";
@@ -61,6 +57,7 @@ import {
   buildPassengerSummary,
   buildPassengerSocketPayload,
   buildDriverSocketPayload,
+  getNearbyDriversDetails,
 } from "./helpers/buildRideParticipantSummary";
 import {
   timezoneToUtc,
@@ -372,7 +369,10 @@ const estimateFareAndRoute = async (payload: {
         rideCategoryId: cat._id.toString(),
         categoryName: cat.name,
         categoryDescription: cat.description || "",
-        vehicleType: cat.vehicleRequirements?.vehicleTypes || [],
+        vehicleType:
+          cat.vehicleRequirements?.vehicleType ||
+          (cat.vehicleRequirements as any)?.vehicleTypes?.[0] ||
+          "",
         vehicleCapacity: cat.vehicleRequirements?.minimumSeats || 0,
         luggageCapacity: cat.vehicleRequirements?.luggageCapacity || 0,
         estimatedFare: fare.total,
@@ -430,7 +430,6 @@ const estimateFareAndRoute = async (payload: {
     estimatedDuration: routeInfo.totalDurationMinutes,
     serviceArea,
     rideCategories: categoryEstimations,
-    categories: categoryEstimations,
   };
 };
 
@@ -675,8 +674,8 @@ const requestRide = async (
     0,
   );
 
-  // Find the fare for the selected category from the categories array
-  const selectedCategoryEstimation = routeEstimation.categories.find(
+  // Find the fare for the selected category from the rideCategories array
+  const selectedCategoryEstimation = routeEstimation.rideCategories.find(
     (cat) => cat.rideCategoryId === payload.rideCategoryId,
   );
 
@@ -822,6 +821,19 @@ const requestRide = async (
     },
     lastUpdatedAt: new Date(),
   });
+
+  // Get and emit nearby drivers details to the passenger via Socket.io
+  if (selectedDrivers && selectedDrivers.length > 0) {
+    try {
+      const nearbyDriversDetails = await getNearbyDriversDetails(selectedDrivers);
+      rideUserSocketHelper.emitNearbyDriversFound(userId, {
+        rideId: ride._id.toString(),
+        drivers: nearbyDriversDetails,
+      });
+    } catch (err) {
+      logger.error(`[RideService] Error emitting nearby drivers to user: ${err}`);
+    }
+  }
 
   // 5. Emit socket events to eligible drivers in real-time
   // Build passenger summary once for all drivers

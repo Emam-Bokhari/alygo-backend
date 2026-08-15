@@ -556,6 +556,38 @@ const processDriverLocationUpdate = async (
     logger.info(
       `[TrackingService] Driver ${driverUserId} location updated in DB (no active ride)`,
     );
+
+    // Find if the driver is a notified driver for any ride currently searching for a driver
+    try {
+      const searchingRides = await Ride.find({
+        status: RIDE_STATUS.SEARCHING_DRIVER,
+        "driverMatching.notifiedDrivers": {
+          $elemMatch: {
+            driverId: driverDoc.userId,
+            status: "sent",
+          },
+        },
+      });
+
+      if (searchingRides.length > 0) {
+        for (const ride of searchingRides) {
+          rideUserSocketHelper.emitNearbyDriverLocationUpdated(
+            ride.userId.toString(),
+            {
+              rideId: ride._id.toString(),
+              driverId: driverDoc.userId.toString(),
+              coordinates: [longitude, latitude],
+              updatedAt: new Date(),
+            },
+          );
+        }
+      }
+    } catch (err) {
+      logger.error(
+        `[TrackingService] Error emitting nearby driver location update: ${err}`,
+      );
+    }
+
     return;
   }
 

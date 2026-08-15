@@ -87,6 +87,14 @@ const emitReservationReminder = (userId: string, data: any): boolean => {
   return socketHelper.sendToUser(userId, "reservation-reminder", data);
 };
 
+const emitNearbyDriversFound = (userId: string, data: any): boolean => {
+  return socketHelper.sendToUser(userId, "nearby-drivers-found", data);
+};
+
+const emitNearbyDriverLocationUpdated = (userId: string, data: any): boolean => {
+  return socketHelper.sendToUser(userId, "nearby-driver-location-updated", data);
+};
+
 export const rideUserSocketHelper = {
   emitReservationCreated,
   emitReservationSearchingDriver,
@@ -109,4 +117,6 @@ export const rideUserSocketHelper = {
   emitRideExpired,
   emitStopsAdded,
   emitReservationReminder,
+  emitNearbyDriversFound,
+  emitNearbyDriverLocationUpdated,
 };

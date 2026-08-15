@@ -1,5 +1,6 @@
 import { Types } from "mongoose";
 import { ISoftDeleteModel } from "../../../types/softDelete";
+import { VEHICLE_TYPE } from "../../../enums/vehicle";
 
 export interface ICar {
   _id: Types.ObjectId;
@@ -10,7 +11,7 @@ export interface ICar {
   model: string;
   year: number;
 
-  carType: string;
+  carType: VEHICLE_TYPE;
 
   seatNumber: number;
 

@@ -2,11 +2,13 @@ import { Schema, model } from "mongoose";
 import { IRideCategory, RideCategoryModel } from "./rideCategory.interface";
 import { STATUS } from "../../../constants/status";
 import { softDeletePlugin } from "../../../DB/plugins/softDeletePlugin";
+import { VEHICLE_TYPE } from "../../../enums/vehicle";
 
 const vehicleRequirementSchema = new Schema(
   {
-    vehicleTypes: {
-      type: [String],
+    vehicleType: {
+      type: String,
+      enum: Object.values(VEHICLE_TYPE),
       required: true,
     },
 

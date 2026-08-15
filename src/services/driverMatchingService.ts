@@ -110,13 +110,47 @@ export const findEligibleDriversInRadius = async ({
     return [];
   }
 
+  // Find all active ancestors of the ride service area (for hierarchical matching)
+  const activeServiceAreaIds: Types.ObjectId[] = [rideServiceArea._id];
+  const visited = new Set<string>([rideServiceArea._id.toString()]);
+  let currentId: Types.ObjectId | null = null;
+
+  if (rideServiceArea.cityId) {
+    currentId = rideServiceArea.cityId;
+  } else if (rideServiceArea.stateId) {
+    currentId = rideServiceArea.stateId;
+  } else if (rideServiceArea.countryId) {
+    currentId = rideServiceArea.countryId;
+  }
+
+  while (currentId && !visited.has(currentId.toString())) {
+    const currentIdStr = currentId.toString();
+    visited.add(currentIdStr);
+
+    const area = await ServiceArea.findOne({ _id: currentId, status: "active" });
+    if (!area) break;
+
+    activeServiceAreaIds.push(area._id);
+
+    // Follow the hierarchy up
+    if (area.cityId) {
+      currentId = area.cityId;
+    } else if (area.stateId) {
+      currentId = area.stateId;
+    } else if (area.countryId) {
+      currentId = area.countryId;
+    } else {
+      currentId = null;
+    }
+  }
+
   // Get ride category for vehicle requirements
   const category = await RideCategory.findById(rideCategoryId);
   if (!category) {
     throw new Error("Ride category not found");
   }
 
-  // Use GeoNear to query drivers within search radius that belong to the correct service area
+  // Use GeoNear to query drivers within search radius that belong to any covering service area (itself or ancestors)
   const nearbyDrivers = await Driver.find({
     location: {
       $nearSphere: {
@@ -133,7 +167,7 @@ export const findEligibleDriversInRadius = async ({
     driverAvailabilityStatus: "online",
     approvalStatus: "approved",
     "suspension.isSuspended": { $ne: true },
-    serviceAreaId: new Types.ObjectId(resolvedRideServiceAreaId),
+    serviceAreaId: { $in: activeServiceAreaIds },
   });
 
   const eligibleDrivers: any[] = [];
@@ -153,13 +187,13 @@ export const findEligibleDriversInRadius = async ({
       continue;
     }
 
-    // 2. Verify driver's assigned service area matches the ride's service area
-    if (
-      driverDoc.serviceAreaId.toString() !==
-      resolvedRideServiceAreaId.toString()
-    ) {
+    // 2. Verify driver's assigned service area matches or covers the ride's service area
+    const isMatchingServiceArea = activeServiceAreaIds.some(
+      (id) => id.toString() === driverDoc.serviceAreaId!.toString(),
+    );
+    if (!isMatchingServiceArea) {
       logger.info(
-        `Driver ${driverDoc.userId} excluded because their service area ${driverDoc.serviceAreaId} does not match ride service area ${resolvedRideServiceAreaId}.`,
+        `Driver ${driverDoc.userId} excluded because their service area ${driverDoc.serviceAreaId} does not cover ride service area ${resolvedRideServiceAreaId}.`,
       );
       continue;
     }
@@ -271,10 +305,11 @@ export const findEligibleDriversInRadius = async ({
 
     if (!car) continue;
 
-    const { vehicleTypes, minimumSeats } = category.vehicleRequirements;
-    const isCarTypeMatched = vehicleTypes.some(
-      (type) => type.toLowerCase() === car.carType.toLowerCase(),
-    );
+    const vehicleType =
+      category.vehicleRequirements.vehicleType ||
+      (category.vehicleRequirements as any).vehicleTypes?.[0];
+    const minimumSeats = category.vehicleRequirements.minimumSeats;
+    const isCarTypeMatched = vehicleType && car.carType && (vehicleType.toLowerCase() === car.carType.toLowerCase());
     const isSeatsSufficient = car.seatNumber >= minimumSeats;
 
     if (!isCarTypeMatched || !isSeatsSufficient) continue;

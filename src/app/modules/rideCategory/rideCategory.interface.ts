@@ -1,9 +1,10 @@
 import { Types } from "mongoose";
 import { STATUS } from "../../../constants/status";
 import { ISoftDeleteModel } from "../../../types/softDelete";
+import { VEHICLE_TYPE } from "../../../enums/vehicle";
 
 interface IVehicleRequirement {
-  vehicleTypes: string[];
+  vehicleType: VEHICLE_TYPE;
   minimumSeats: number;
   luggageCapacity?: number;
 }

@@ -3730,7 +3730,7 @@ paths:
           application/json:
             schema:
               type: object
-            example: "{\r\n  // \"serviceCategoryId\": \"6a586a978571b23c1e37fe3c\",\r\n  \"name\": \"Alygo Standard\",\r\n  \"description\": \"Premium ride service with experienced drivers and high-quality vehicles.\",\r\n  \"commissionRate\": 20,\r\n  \"minimumDriverRating\": 0,\r\n  \"vehicleRequirements\": {\r\n    \"vehicleTypes\": [\r\n      \"Car\",\r\n      \"Bike\"\r\n    ],\r\n    \"minimumSeats\": 1\r\n  }\r\n}"
+            example: "{\r\n  // \"serviceCategoryId\": \"6a586a978571b23c1e37fe3c\",\r\n  \"name\": \"Alygo Standard\",\r\n  \"description\": \"Premium ride service with experienced drivers and high-quality vehicles.\",\r\n  \"commissionRate\": 20,\r\n  \"minimumDriverRating\": 0,\r\n  \"vehicleRequirements\": {\r\n    \"vehicleType\": \"car\",\r\n    \"minimumSeats\": 1\r\n  }\r\n}"
     get:
       summary: Get All Ride Categories
       parameters:

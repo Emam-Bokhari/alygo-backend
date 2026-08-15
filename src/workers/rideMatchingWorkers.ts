@@ -4,6 +4,7 @@ import { Ride } from "../app/modules/ride/ride.model";
 import { RIDE_STATUS, CANCELLED_BY } from "../app/modules/ride/ride.constant";
 import { rideDriverSocketHelper } from "../app/modules/ride/socket/driver.socket";
 import { rideUserSocketHelper } from "../app/modules/ride/socket/user.socket";
+import { getNearbyDriversDetails } from "../app/modules/ride/helpers/buildRideParticipantSummary";
 import { logger } from "../shared/logger";
 import { calculateDriverSearchTiming } from "../helpers/rideSearchTimingHelper";
 import { getRideScheduleInfo } from "../shared/timezoneHelper";
@@ -276,6 +277,18 @@ const radiusExpansionWorker = new Worker(
       ride.driverMatching.notifiedDrivers.push(...newDriverNotifications);
       ride.driverMatching.searchRadiusKm = newRadius;
       await ride.save();
+
+      // Get and emit newly matching drivers details to the passenger via Socket.io
+      try {
+        const newDriversDetails = await getNearbyDriversDetails(newDrivers);
+        rideUserSocketHelper.emitNearbyDriversFound(userId, {
+          rideId: ride._id.toString(),
+          drivers: newDriversDetails,
+          isExpansion: true,
+        });
+      } catch (err) {
+        logger.error(`[RideMatchingWorker] Error emitting nearby drivers during expansion to user: ${err}`);
+      }
 
       // Calculate driver search timing for notifications
       const driverSearchTiming = calculateDriverSearchTiming(ride);

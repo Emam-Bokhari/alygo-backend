@@ -204,3 +204,26 @@ const buildPassengerSummaryForRide = async (
 
   return buildPassengerSummary(user);
 };
+
+/**
+ * Fetch detailed info for a list of nearby drivers
+ */
+export const getNearbyDriversDetails = async (selectedDrivers: any[]): Promise<any[]> => {
+  const details = [];
+  for (const item of selectedDrivers) {
+    const driverDoc = await Driver.findOne({ userId: item.driverId });
+    if (!driverDoc) continue;
+
+    const driverSummary = await buildDriverSummary(driverDoc);
+
+    details.push({
+      driverId: item.driverId.toString(),
+      distance: item.distance,
+      dispatchScore: item.dispatchScore,
+      location: driverDoc.location,
+      driverInfo: driverSummary,
+    });
+  }
+  return details;
+};
+

@@ -95,11 +95,12 @@ const getDriversOverviewFromDB = async (queryParams: Record<string, any>) => {
       const matchedCategories: string[] = [];
       if (car) {
         for (const cat of activeCategories) {
-          const { vehicleTypes, minimumSeats } = cat.vehicleRequirements || {};
-          const isCarTypeMatched = vehicleTypes?.some(
-            (type: string) => type.toLowerCase() === car.carType?.toLowerCase(),
-          );
-          const isSeatsSufficient = car.seatNumber >= (minimumSeats || 0);
+          const vehicleType =
+            cat.vehicleRequirements?.vehicleType ||
+            (cat.vehicleRequirements as any)?.vehicleTypes?.[0];
+          const minimumSeats = cat.vehicleRequirements?.minimumSeats || 0;
+          const isCarTypeMatched = vehicleType && car.carType && (vehicleType.toLowerCase() === car.carType.toLowerCase());
+          const isSeatsSufficient = car.seatNumber >= minimumSeats;
 
           if (isCarTypeMatched && isSeatsSufficient) {
             matchedCategories.push(cat.name);

@@ -1,6 +1,7 @@
 import { Schema, model } from "mongoose";
 import { ICar, CarModel } from "./car.interface";
 import { softDeletePlugin } from "../../../DB/plugins/softDeletePlugin";
+import { VEHICLE_TYPE } from "../../../enums/vehicle";
 
 const carSchema = new Schema<ICar>(
   {
@@ -30,6 +31,7 @@ const carSchema = new Schema<ICar>(
 
     carType: {
       type: String,
+      enum: Object.values(VEHICLE_TYPE),
       required: true,
       trim: true,
     },

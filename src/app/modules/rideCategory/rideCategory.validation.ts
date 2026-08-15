@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { STATUS } from "../../../constants/status";
+import { VEHICLE_TYPE } from "../../../enums/vehicle";
 
 const createRideCategoryValidationSchema = z.object({
   body: z.object({
@@ -21,8 +22,8 @@ const createRideCategoryValidationSchema = z.object({
       .min(0)
       .max(5),
     vehicleRequirements: z.object({
-      vehicleTypes: z.array(z.string(), {
-        required_error: "vehicleTypes is required",
+      vehicleType: z.nativeEnum(VEHICLE_TYPE, {
+        required_error: "vehicleType is required",
       }),
       minimumSeats: z
         .number({
@@ -43,7 +44,7 @@ const updateRideCategoryValidationSchema = z.object({
     minimumDriverRating: z.number().min(0).max(5).optional(),
     vehicleRequirements: z
       .object({
-        vehicleTypes: z.array(z.string()).optional(),
+        vehicleType: z.nativeEnum(VEHICLE_TYPE).optional(),
         minimumSeats: z.number().min(1).optional(),
       })
       .optional(),
