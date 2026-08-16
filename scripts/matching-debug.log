@@ -1,0 +1,413 @@
+=== PICKUP LOCATION SERVICE AREA ===
+Resolved Area: {
+  "id": "6a6af42690eaf8727971f604",
+  "status": "active",
+  "type": "airport",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.3978,
+      23.8433
+    ]
+  },
+  "coverageRadiusKm": 10
+}
+
+
+=== RIDE CATEGORY ===
+{
+  "id": "6a6af42890eaf8727971f6a9",
+  "name": "Alygo Standard",
+  "status": "active",
+  "vehicleRequirements": {
+    "minimumSeats": 1,
+    "luggageCapacity": 0,
+    "vehicleType": "car"
+  }
+}
+
+
+=== ONLINE & APPROVED DRIVERS (Count: 14) ===
+{
+  "driverId": "6a59b25aec029a501f10cd9f",
+  "userId": "6a59af155d294c2c4111585d",
+  "userStatus": "active",
+  "userVerified": true,
+  "suspension": {
+    "suspendedBy": null,
+    "suspendedAt": null,
+    "isSuspended": false,
+    "note": "",
+    "reason": ""
+  },
+  "availability": {
+    "blockedReason": null,
+    "blockedUntil": null,
+    "canReceiveRide": true
+  },
+  "serviceAreaId": "6a5b0c44ae072853104f8357",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      91.368864,
+      24.804092999999998
+    ],
+    "address": "Banani 11, Dhaka"
+  },
+  "distanceFromPickupKm": "149.79",
+  "car": {
+    "carType": "car",
+    "seatNumber": 2
+  }
+}
+{
+  "driverId": "6a6c124eb43bde98016110fe",
+  "userId": "6a6c124db43bde98016110fb",
+  "suspension": {
+    "suspendedBy": null,
+    "suspendedAt": null,
+    "isSuspended": false,
+    "note": "",
+    "reason": ""
+  },
+  "availability": {
+    "canReceiveRide": true,
+    "blockedReason": null,
+    "blockedUntil": null
+  },
+  "serviceAreaId": "6a6c124db43bde98016110f0",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.5,
+      23.5
+    ],
+    "address": "Test Location"
+  },
+  "distanceFromPickupKm": "32.62",
+  "car": "No car doc"
+}
+{
+  "driverId": "6a6c12654d0be5e7ab4cac87",
+  "userId": "6a6c12654d0be5e7ab4cac83",
+  "suspension": {
+    "suspendedBy": null,
+    "suspendedAt": null,
+    "isSuspended": false,
+    "note": "",
+    "reason": ""
+  },
+  "availability": {
+    "canReceiveRide": true,
+    "blockedReason": null,
+    "blockedUntil": null
+  },
+  "serviceAreaId": "6a6c12654d0be5e7ab4cac79",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.5,
+      23.5
+    ],
+    "address": "Test Location"
+  },
+  "distanceFromPickupKm": "32.62",
+  "car": "No car doc"
+}
+{
+  "driverId": "6a6c128904a9a817c21f73fe",
+  "userId": "6a6c128904a9a817c21f73fa",
+  "suspension": {
+    "suspendedBy": null,
+    "suspendedAt": null,
+    "isSuspended": false,
+    "note": "",
+    "reason": ""
+  },
+  "availability": {
+    "canReceiveRide": true,
+    "blockedReason": null,
+    "blockedUntil": null
+  },
+  "serviceAreaId": "6a6c128904a9a817c21f73f2",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.5,
+      23.5
+    ],
+    "address": "Test Location"
+  },
+  "distanceFromPickupKm": "32.62",
+  "car": "No car doc"
+}
+{
+  "driverId": "6a6c13be9d1292fe6e2b7759",
+  "userId": "6a6c13be9d1292fe6e2b7756",
+  "suspension": {
+    "isSuspended": false,
+    "suspendedBy": null,
+    "suspendedAt": null,
+    "reason": "",
+    "note": ""
+  },
+  "availability": {
+    "canReceiveRide": true,
+    "blockedReason": null,
+    "blockedUntil": null
+  },
+  "serviceAreaId": "6a6c13bd9d1292fe6e2b774d",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.5,
+      23.5
+    ],
+    "address": "Test Location"
+  },
+  "distanceFromPickupKm": "32.62",
+  "car": "No car doc"
+}
+{
+  "driverId": "6a75ab84dc7b332a76aac5df",
+  "userId": "6a75ab83dc7b332a76aac5dd",
+  "suspension": {
+    "isSuspended": false,
+    "suspendedBy": null,
+    "suspendedAt": null,
+    "reason": "",
+    "note": ""
+  },
+  "availability": {
+    "canReceiveRide": true,
+    "blockedReason": null,
+    "blockedUntil": null
+  },
+  "serviceAreaId": "6a75ab83dc7b332a76aac5d1",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.5,
+      23.5
+    ],
+    "address": "Test Location"
+  },
+  "distanceFromPickupKm": "32.62",
+  "car": "No car doc"
+}
+{
+  "driverId": "6a75ac971a4236964d4c9a18",
+  "userId": "6a75ac971a4236964d4c9a14",
+  "suspension": {
+    "isSuspended": false,
+    "suspendedBy": null,
+    "suspendedAt": null,
+    "reason": "",
+    "note": ""
+  },
+  "availability": {
+    "canReceiveRide": true,
+    "blockedReason": null,
+    "blockedUntil": null
+  },
+  "serviceAreaId": "6a75ac971a4236964d4c9a0b",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.5,
+      23.5
+    ],
+    "address": "Test Location"
+  },
+  "distanceFromPickupKm": "32.62",
+  "car": "No car doc"
+}
+{
+  "driverId": "6a75acb244f775a43ed7527b",
+  "userId": "6a75acb244f775a43ed75278",
+  "suspension": {
+    "isSuspended": false,
+    "suspendedBy": null,
+    "suspendedAt": null,
+    "reason": "",
+    "note": ""
+  },
+  "availability": {
+    "canReceiveRide": true,
+    "blockedReason": null,
+    "blockedUntil": null
+  },
+  "serviceAreaId": "6a75acb244f775a43ed7526c",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.5,
+      23.5
+    ],
+    "address": "Test Location"
+  },
+  "distanceFromPickupKm": "32.62",
+  "car": "No car doc"
+}
+{
+  "driverId": "6a75ae57d937773bf7b7d651",
+  "userId": "6a75ae57d937773bf7b7d64d",
+  "suspension": {
+    "isSuspended": false,
+    "suspendedBy": null,
+    "suspendedAt": null,
+    "reason": "",
+    "note": ""
+  },
+  "availability": {
+    "canReceiveRide": true,
+    "blockedReason": null,
+    "blockedUntil": null
+  },
+  "serviceAreaId": "6a75ae57d937773bf7b7d63d",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.5,
+      23.5
+    ],
+    "address": "Overview City Address, Dhaka"
+  },
+  "distanceFromPickupKm": "32.62",
+  "car": "No car doc"
+}
+{
+  "driverId": "6a75ae6f7b748ee098d01f8b",
+  "userId": "6a75ae6f7b748ee098d01f89",
+  "suspension": {
+    "isSuspended": false,
+    "suspendedBy": null,
+    "suspendedAt": null,
+    "reason": "",
+    "note": ""
+  },
+  "availability": {
+    "canReceiveRide": true,
+    "blockedReason": null,
+    "blockedUntil": null
+  },
+  "serviceAreaId": "6a75ae6f7b748ee098d01f79",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.5,
+      23.5
+    ],
+    "address": "Overview City Address, Dhaka"
+  },
+  "distanceFromPickupKm": "32.62",
+  "car": "No car doc"
+}
+{
+  "driverId": "6a75ae82749024bd192dc70c",
+  "userId": "6a75ae82749024bd192dc70a",
+  "suspension": {
+    "isSuspended": false,
+    "suspendedBy": null,
+    "suspendedAt": null,
+    "reason": "",
+    "note": ""
+  },
+  "availability": {
+    "canReceiveRide": true,
+    "blockedReason": null,
+    "blockedUntil": null
+  },
+  "serviceAreaId": "6a75ae82749024bd192dc6fa",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.5,
+      23.5
+    ],
+    "address": "Overview City Address, Dhaka"
+  },
+  "distanceFromPickupKm": "32.62",
+  "car": "No car doc"
+}
+{
+  "driverId": "6a75aece6f5aab4637220b88",
+  "userId": "6a75aece6f5aab4637220b84",
+  "suspension": {
+    "isSuspended": false,
+    "suspendedBy": null,
+    "suspendedAt": null,
+    "reason": "",
+    "note": ""
+  },
+  "availability": {
+    "canReceiveRide": true,
+    "blockedReason": null,
+    "blockedUntil": null
+  },
+  "serviceAreaId": "6a75aece6f5aab4637220b78",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.5,
+      23.5
+    ],
+    "address": "Overview City Address, Dhaka"
+  },
+  "distanceFromPickupKm": "32.62",
+  "car": "No car doc"
+}
+{
+  "driverId": "6a75af11a0b2114b856394eb",
+  "userId": "6a75af11a0b2114b856394e7",
+  "suspension": {
+    "isSuspended": false,
+    "suspendedBy": null,
+    "suspendedAt": null,
+    "reason": "",
+    "note": ""
+  },
+  "availability": {
+    "canReceiveRide": true,
+    "blockedReason": null,
+    "blockedUntil": null
+  },
+  "serviceAreaId": "6a75af11a0b2114b856394d4",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.5,
+      23.5
+    ],
+    "address": "Overview City Address, Dhaka"
+  },
+  "distanceFromPickupKm": "32.62",
+  "car": "No car doc"
+}
+{
+  "driverId": "6a75af4dd5596410508c7bb6",
+  "userId": "6a75af4cd5596410508c7bb0",
+  "suspension": {
+    "isSuspended": false,
+    "suspendedBy": null,
+    "suspendedAt": null,
+    "reason": "",
+    "note": ""
+  },
+  "availability": {
+    "canReceiveRide": true,
+    "blockedReason": null,
+    "blockedUntil": null
+  },
+  "serviceAreaId": "6a75af4cd5596410508c7b9f",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.5,
+      23.5
+    ],
+    "address": "Overview City Address, Dhaka"
+  },
+  "distanceFromPickupKm": "32.62",
+  "car": "No car doc"
+}

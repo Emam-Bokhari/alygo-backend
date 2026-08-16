@@ -1,0 +1,750 @@
+=== ALL DRIVERS IN DATABASE (Count: 25) ===
+{
+  "driverId": "6a59b25aec029a501f10cd9f",
+  "userId": "6a59af155d294c2c4111585d",
+  "driverAvailabilityStatus": "online",
+  "approvalStatus": "approved",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      91.368864,
+      24.804092999999998
+    ],
+    "address": "Banani 11, Dhaka"
+  },
+  "suspension": {
+    "suspendedBy": null,
+    "suspendedAt": null,
+    "isSuspended": false,
+    "note": "",
+    "reason": ""
+  },
+  "availability": {
+    "blockedReason": null,
+    "blockedUntil": null,
+    "canReceiveRide": true
+  },
+  "user": {
+    "status": "active",
+    "verified": true,
+    "role": "driver"
+  },
+  "cars": [
+    {
+      "carId": "6a59bd28b475e0a1fc2aa5c0",
+      "carType": "car",
+      "seatNumber": 2
+    },
+    {
+      "carId": "6a7aba6aa377dc1ecd92a8be",
+      "carType": "car",
+      "seatNumber": 6
+    }
+  ]
+}
+{
+  "driverId": "6a6c1227aecb7880a0d96094",
+  "userId": "6a6c1227aecb7880a0d96090",
+  "driverAvailabilityStatus": "online",
+  "approvalStatus": "rejected",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.5,
+      23.5
+    ],
+    "address": "Test Location"
+  },
+  "suspension": {
+    "suspendedBy": null,
+    "suspendedAt": null,
+    "isSuspended": false,
+    "note": "",
+    "reason": ""
+  },
+  "availability": {
+    "canReceiveRide": true,
+    "blockedReason": null,
+    "blockedUntil": null
+  },
+  "user": null,
+  "cars": []
+}
+{
+  "driverId": "6a6c123a771c0f7b8bed9c48",
+  "userId": "6a6c123a771c0f7b8bed9c44",
+  "driverAvailabilityStatus": "online",
+  "approvalStatus": "pending",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.5,
+      23.5
+    ],
+    "address": "Test Location"
+  },
+  "suspension": {
+    "suspendedBy": null,
+    "suspendedAt": null,
+    "isSuspended": false,
+    "note": "",
+    "reason": ""
+  },
+  "availability": {
+    "canReceiveRide": true,
+    "blockedReason": null,
+    "blockedUntil": null
+  },
+  "user": null,
+  "cars": []
+}
+{
+  "driverId": "6a6c124eb43bde98016110fe",
+  "userId": "6a6c124db43bde98016110fb",
+  "driverAvailabilityStatus": "online",
+  "approvalStatus": "approved",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.5,
+      23.5
+    ],
+    "address": "Test Location"
+  },
+  "suspension": {
+    "suspendedBy": null,
+    "suspendedAt": null,
+    "isSuspended": false,
+    "note": "",
+    "reason": ""
+  },
+  "availability": {
+    "canReceiveRide": true,
+    "blockedReason": null,
+    "blockedUntil": null
+  },
+  "user": null,
+  "cars": []
+}
+{
+  "driverId": "6a6c12654d0be5e7ab4cac87",
+  "userId": "6a6c12654d0be5e7ab4cac83",
+  "driverAvailabilityStatus": "online",
+  "approvalStatus": "approved",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.5,
+      23.5
+    ],
+    "address": "Test Location"
+  },
+  "suspension": {
+    "suspendedBy": null,
+    "suspendedAt": null,
+    "isSuspended": false,
+    "note": "",
+    "reason": ""
+  },
+  "availability": {
+    "canReceiveRide": true,
+    "blockedReason": null,
+    "blockedUntil": null
+  },
+  "user": null,
+  "cars": []
+}
+{
+  "driverId": "6a6c128904a9a817c21f73fe",
+  "userId": "6a6c128904a9a817c21f73fa",
+  "driverAvailabilityStatus": "online",
+  "approvalStatus": "approved",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.5,
+      23.5
+    ],
+    "address": "Test Location"
+  },
+  "suspension": {
+    "suspendedBy": null,
+    "suspendedAt": null,
+    "isSuspended": false,
+    "note": "",
+    "reason": ""
+  },
+  "availability": {
+    "canReceiveRide": true,
+    "blockedReason": null,
+    "blockedUntil": null
+  },
+  "user": null,
+  "cars": []
+}
+{
+  "driverId": "6a6c13be9d1292fe6e2b7759",
+  "userId": "6a6c13be9d1292fe6e2b7756",
+  "driverAvailabilityStatus": "online",
+  "approvalStatus": "approved",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.5,
+      23.5
+    ],
+    "address": "Test Location"
+  },
+  "suspension": {
+    "isSuspended": false,
+    "suspendedBy": null,
+    "suspendedAt": null,
+    "reason": "",
+    "note": ""
+  },
+  "availability": {
+    "canReceiveRide": true,
+    "blockedReason": null,
+    "blockedUntil": null
+  },
+  "user": null,
+  "cars": []
+}
+{
+  "driverId": "6a75ab84dc7b332a76aac5df",
+  "userId": "6a75ab83dc7b332a76aac5dd",
+  "driverAvailabilityStatus": "online",
+  "approvalStatus": "approved",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.5,
+      23.5
+    ],
+    "address": "Test Location"
+  },
+  "suspension": {
+    "isSuspended": false,
+    "suspendedBy": null,
+    "suspendedAt": null,
+    "reason": "",
+    "note": ""
+  },
+  "availability": {
+    "canReceiveRide": true,
+    "blockedReason": null,
+    "blockedUntil": null
+  },
+  "user": null,
+  "cars": []
+}
+{
+  "driverId": "6a75ac971a4236964d4c9a18",
+  "userId": "6a75ac971a4236964d4c9a14",
+  "driverAvailabilityStatus": "online",
+  "approvalStatus": "approved",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.5,
+      23.5
+    ],
+    "address": "Test Location"
+  },
+  "suspension": {
+    "isSuspended": false,
+    "suspendedBy": null,
+    "suspendedAt": null,
+    "reason": "",
+    "note": ""
+  },
+  "availability": {
+    "canReceiveRide": true,
+    "blockedReason": null,
+    "blockedUntil": null
+  },
+  "user": null,
+  "cars": []
+}
+{
+  "driverId": "6a75acb244f775a43ed7527b",
+  "userId": "6a75acb244f775a43ed75278",
+  "driverAvailabilityStatus": "online",
+  "approvalStatus": "approved",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.5,
+      23.5
+    ],
+    "address": "Test Location"
+  },
+  "suspension": {
+    "isSuspended": false,
+    "suspendedBy": null,
+    "suspendedAt": null,
+    "reason": "",
+    "note": ""
+  },
+  "availability": {
+    "canReceiveRide": true,
+    "blockedReason": null,
+    "blockedUntil": null
+  },
+  "user": null,
+  "cars": []
+}
+{
+  "driverId": "6a75ae57d937773bf7b7d651",
+  "userId": "6a75ae57d937773bf7b7d64d",
+  "driverAvailabilityStatus": "online",
+  "approvalStatus": "approved",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.5,
+      23.5
+    ],
+    "address": "Overview City Address, Dhaka"
+  },
+  "suspension": {
+    "isSuspended": false,
+    "suspendedBy": null,
+    "suspendedAt": null,
+    "reason": "",
+    "note": ""
+  },
+  "availability": {
+    "canReceiveRide": true,
+    "blockedReason": null,
+    "blockedUntil": null
+  },
+  "user": null,
+  "cars": []
+}
+{
+  "driverId": "6a75ae6f7b748ee098d01f8b",
+  "userId": "6a75ae6f7b748ee098d01f89",
+  "driverAvailabilityStatus": "online",
+  "approvalStatus": "approved",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.5,
+      23.5
+    ],
+    "address": "Overview City Address, Dhaka"
+  },
+  "suspension": {
+    "isSuspended": false,
+    "suspendedBy": null,
+    "suspendedAt": null,
+    "reason": "",
+    "note": ""
+  },
+  "availability": {
+    "canReceiveRide": true,
+    "blockedReason": null,
+    "blockedUntil": null
+  },
+  "user": null,
+  "cars": []
+}
+{
+  "driverId": "6a75ae82749024bd192dc70c",
+  "userId": "6a75ae82749024bd192dc70a",
+  "driverAvailabilityStatus": "online",
+  "approvalStatus": "approved",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.5,
+      23.5
+    ],
+    "address": "Overview City Address, Dhaka"
+  },
+  "suspension": {
+    "isSuspended": false,
+    "suspendedBy": null,
+    "suspendedAt": null,
+    "reason": "",
+    "note": ""
+  },
+  "availability": {
+    "canReceiveRide": true,
+    "blockedReason": null,
+    "blockedUntil": null
+  },
+  "user": null,
+  "cars": []
+}
+{
+  "driverId": "6a75aece6f5aab4637220b88",
+  "userId": "6a75aece6f5aab4637220b84",
+  "driverAvailabilityStatus": "online",
+  "approvalStatus": "approved",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.5,
+      23.5
+    ],
+    "address": "Overview City Address, Dhaka"
+  },
+  "suspension": {
+    "isSuspended": false,
+    "suspendedBy": null,
+    "suspendedAt": null,
+    "reason": "",
+    "note": ""
+  },
+  "availability": {
+    "canReceiveRide": true,
+    "blockedReason": null,
+    "blockedUntil": null
+  },
+  "user": null,
+  "cars": []
+}
+{
+  "driverId": "6a75af11a0b2114b856394eb",
+  "userId": "6a75af11a0b2114b856394e7",
+  "driverAvailabilityStatus": "online",
+  "approvalStatus": "approved",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.5,
+      23.5
+    ],
+    "address": "Overview City Address, Dhaka"
+  },
+  "suspension": {
+    "isSuspended": false,
+    "suspendedBy": null,
+    "suspendedAt": null,
+    "reason": "",
+    "note": ""
+  },
+  "availability": {
+    "canReceiveRide": true,
+    "blockedReason": null,
+    "blockedUntil": null
+  },
+  "user": null,
+  "cars": []
+}
+{
+  "driverId": "6a75af4dd5596410508c7bb6",
+  "userId": "6a75af4cd5596410508c7bb0",
+  "driverAvailabilityStatus": "online",
+  "approvalStatus": "approved",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.5,
+      23.5
+    ],
+    "address": "Overview City Address, Dhaka"
+  },
+  "suspension": {
+    "isSuspended": false,
+    "suspendedBy": null,
+    "suspendedAt": null,
+    "reason": "",
+    "note": ""
+  },
+  "availability": {
+    "canReceiveRide": true,
+    "blockedReason": null,
+    "blockedUntil": null
+  },
+  "user": null,
+  "cars": []
+}
+{
+  "driverId": "6a76a3f134032ef48d9879df",
+  "userId": "6a76a3f134032ef48d9879db",
+  "driverAvailabilityStatus": "online",
+  "approvalStatus": "pending",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      0,
+      0
+    ],
+    "address": ""
+  },
+  "suspension": {
+    "isSuspended": false,
+    "suspendedBy": null,
+    "suspendedAt": null,
+    "reason": "",
+    "note": ""
+  },
+  "availability": {
+    "canReceiveRide": true,
+    "blockedReason": null,
+    "blockedUntil": null
+  },
+  "user": null,
+  "cars": []
+}
+{
+  "driverId": "6a76a40350d042cff7ad19e5",
+  "userId": "6a76a40350d042cff7ad19e3",
+  "driverAvailabilityStatus": "online",
+  "approvalStatus": "pending",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      0,
+      0
+    ],
+    "address": ""
+  },
+  "suspension": {
+    "isSuspended": false,
+    "suspendedBy": null,
+    "suspendedAt": null,
+    "reason": "",
+    "note": ""
+  },
+  "availability": {
+    "canReceiveRide": true,
+    "blockedReason": null,
+    "blockedUntil": null
+  },
+  "user": null,
+  "cars": [
+    {
+      "carId": "6a76a40350d042cff7ad19e7",
+      "carType": "bike",
+      "seatNumber": 4
+    }
+  ]
+}
+{
+  "driverId": "6a76a419d8c749bd36c01e77",
+  "userId": "6a76a419d8c749bd36c01e75",
+  "driverAvailabilityStatus": "online",
+  "approvalStatus": "pending",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      0,
+      0
+    ],
+    "address": ""
+  },
+  "suspension": {
+    "isSuspended": false,
+    "suspendedBy": null,
+    "suspendedAt": null,
+    "reason": "",
+    "note": ""
+  },
+  "availability": {
+    "canReceiveRide": true,
+    "blockedReason": null,
+    "blockedUntil": null
+  },
+  "user": null,
+  "cars": [
+    {
+      "carId": "6a76a419d8c749bd36c01e79",
+      "carType": "bike",
+      "seatNumber": 4
+    }
+  ]
+}
+{
+  "driverId": "6a76a433b03ad079e9697edd",
+  "userId": "6a76a433b03ad079e9697eda",
+  "driverAvailabilityStatus": "online",
+  "approvalStatus": "pending",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      0,
+      0
+    ],
+    "address": ""
+  },
+  "suspension": {
+    "isSuspended": false,
+    "suspendedBy": null,
+    "suspendedAt": null,
+    "reason": "",
+    "note": ""
+  },
+  "availability": {
+    "canReceiveRide": true,
+    "blockedReason": null,
+    "blockedUntil": null
+  },
+  "user": null,
+  "cars": [
+    {
+      "carId": "6a76a433b03ad079e9697edf",
+      "carType": "bike",
+      "seatNumber": 4
+    }
+  ]
+}
+{
+  "driverId": "6a76a449c4b2d5f01767521b",
+  "userId": "6a76a449c4b2d5f017675218",
+  "driverAvailabilityStatus": "online",
+  "approvalStatus": "pending",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      0,
+      0
+    ],
+    "address": ""
+  },
+  "suspension": {
+    "isSuspended": false,
+    "suspendedBy": null,
+    "suspendedAt": null,
+    "reason": "",
+    "note": ""
+  },
+  "availability": {
+    "canReceiveRide": true,
+    "blockedReason": null,
+    "blockedUntil": null
+  },
+  "user": null,
+  "cars": [
+    {
+      "carId": "6a76a449c4b2d5f017675221",
+      "carType": "bike",
+      "seatNumber": 4
+    }
+  ]
+}
+{
+  "driverId": "6a7a9211d6a3a4f13413e605",
+  "userId": "6a7a9211d6a3a4f13413e603",
+  "driverAvailabilityStatus": "offline",
+  "approvalStatus": "pending",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      0,
+      0
+    ],
+    "address": ""
+  },
+  "suspension": {
+    "isSuspended": false,
+    "suspendedBy": null,
+    "suspendedAt": null,
+    "reason": "",
+    "note": ""
+  },
+  "availability": {
+    "canReceiveRide": true,
+    "blockedReason": null,
+    "blockedUntil": null
+  },
+  "user": null,
+  "cars": []
+}
+{
+  "driverId": "6a7a9229c2d6f5bda047d60c",
+  "userId": "6a7a9228c2d6f5bda047d609",
+  "driverAvailabilityStatus": "offline",
+  "approvalStatus": "pending",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      0,
+      0
+    ],
+    "address": ""
+  },
+  "suspension": {
+    "isSuspended": false,
+    "suspendedBy": null,
+    "suspendedAt": null,
+    "reason": "",
+    "note": ""
+  },
+  "availability": {
+    "canReceiveRide": true,
+    "blockedReason": null,
+    "blockedUntil": null
+  },
+  "user": null,
+  "cars": []
+}
+{
+  "driverId": "6a7a92404a4891134a66a521",
+  "userId": "6a7a92404a4891134a66a51f",
+  "driverAvailabilityStatus": "offline",
+  "approvalStatus": "approved",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      0,
+      0
+    ],
+    "address": ""
+  },
+  "suspension": {
+    "isSuspended": false,
+    "suspendedBy": null,
+    "suspendedAt": null,
+    "reason": "",
+    "note": ""
+  },
+  "availability": {
+    "canReceiveRide": true,
+    "blockedReason": null,
+    "blockedUntil": null
+  },
+  "user": null,
+  "cars": []
+}
+{
+  "driverId": "6a7a9b57f69d2a3fddb518f9",
+  "userId": "6a7a9a79f69d2a3fddb5187f",
+  "driverAvailabilityStatus": "offline",
+  "approvalStatus": "approved",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.4125,
+      23.8103
+    ],
+    "address": "Dhaka, Bangladesh"
+  },
+  "suspension": {
+    "isSuspended": false,
+    "suspendedBy": null,
+    "suspendedAt": null,
+    "reason": "",
+    "note": ""
+  },
+  "availability": {
+    "canReceiveRide": true,
+    "blockedReason": null,
+    "blockedUntil": null
+  },
+  "user": {
+    "status": "active",
+    "verified": true,
+    "role": "driver"
+  },
+  "cars": [
+    {
+      "carId": "6a7a9c7af69d2a3fddb51951",
+      "carType": "car",
+      "seatNumber": 5
+    }
+  ]
+}

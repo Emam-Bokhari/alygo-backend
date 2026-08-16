@@ -3,7 +3,6 @@ import { Server, Socket } from "socket.io";
 import { logger } from "../shared/logger";
 import { jwtHelper } from "./jwtHelper";
 import config from "../config";
-import { Driver } from "../app/modules/driver/driver.model";
 import { User } from "../app/modules/user/user.model";
 import { Ride } from "../app/modules/ride/ride.model";
 import { RIDE_STATUS, RIDE_TYPE } from "../app/modules/ride/ride.constant";

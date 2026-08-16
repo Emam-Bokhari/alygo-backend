@@ -3,7 +3,6 @@ import ApiError from "../../../errors/ApiErrors";
 import QueryBuilder from "../../builder/queryBuilder";
 import { Driver } from "../driver/driver.model";
 import { Car } from "../car/car.model";
-import { User } from "../user/user.model";
 import {
   BACKGROUND_CHECK_FEE_SEARCHABLE_FIELDS,
   DOCUMENT_EXPIRY_WARNING_DAYS,
@@ -30,22 +29,25 @@ const populateFeeLocationData = async (
 ) => {
   if (payload.serviceAreaId) {
     const serviceArea = await ServiceArea.findById(payload.serviceAreaId);
-    if (serviceArea) {
-      if (!payload.applicableState) {
-        payload.applicableState =
-          serviceArea.state ||
-          serviceArea.city ||
-          serviceArea.zone ||
-          serviceArea.country ||
-          "";
-      }
-      if (
-        serviceArea.location?.coordinates &&
-        serviceArea.location.coordinates.length === 2 &&
-        !payload.location
-      ) {
-        payload.location = serviceArea.location;
-      }
+    if (!serviceArea) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, "Service area not found");
+    }
+
+    payload.applicableState =
+      serviceArea.state ||
+      serviceArea.city ||
+      serviceArea.zone ||
+      serviceArea.country ||
+      "";
+
+    if (
+      serviceArea.location?.coordinates &&
+      serviceArea.location.coordinates.length === 2
+    ) {
+      payload.location = {
+        type: "Point",
+        coordinates: serviceArea.location.coordinates as [number, number],
+      };
     }
   }
 };

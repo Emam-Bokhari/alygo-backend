@@ -1,0 +1,185 @@
+=== ALL CARS IN DATABASE (Count: 10) ===
+{
+  "carId": "6a76a40350d042cff7ad19e7",
+  "carType": "bike",
+  "seatNumber": 4,
+  "driverId": "6a76a40350d042cff7ad19e5",
+  "driverFound": true,
+  "driverDetails": {
+    "approvalStatus": "pending",
+    "driverAvailabilityStatus": "online",
+    "location": {
+      "type": "Point",
+      "coordinates": [
+        0,
+        0
+      ],
+      "address": ""
+    },
+    "userId": "6a76a40350d042cff7ad19e3",
+    "isSuspended": false,
+    "canReceiveRide": true
+  }
+}
+{
+  "carId": "6a76a419d8c749bd36c01e79",
+  "carType": "bike",
+  "seatNumber": 4,
+  "driverId": "6a76a419d8c749bd36c01e77",
+  "driverFound": true,
+  "driverDetails": {
+    "approvalStatus": "pending",
+    "driverAvailabilityStatus": "online",
+    "location": {
+      "type": "Point",
+      "coordinates": [
+        0,
+        0
+      ],
+      "address": ""
+    },
+    "userId": "6a76a419d8c749bd36c01e75",
+    "isSuspended": false,
+    "canReceiveRide": true
+  }
+}
+{
+  "carId": "6a76a433b03ad079e9697edf",
+  "carType": "bike",
+  "seatNumber": 4,
+  "driverId": "6a76a433b03ad079e9697edd",
+  "driverFound": true,
+  "driverDetails": {
+    "approvalStatus": "pending",
+    "driverAvailabilityStatus": "online",
+    "location": {
+      "type": "Point",
+      "coordinates": [
+        0,
+        0
+      ],
+      "address": ""
+    },
+    "userId": "6a76a433b03ad079e9697eda",
+    "isSuspended": false,
+    "canReceiveRide": true
+  }
+}
+{
+  "carId": "6a76a449c4b2d5f017675221",
+  "carType": "bike",
+  "seatNumber": 4,
+  "driverId": "6a76a449c4b2d5f01767521b",
+  "driverFound": true,
+  "driverDetails": {
+    "approvalStatus": "pending",
+    "driverAvailabilityStatus": "online",
+    "location": {
+      "type": "Point",
+      "coordinates": [
+        0,
+        0
+      ],
+      "address": ""
+    },
+    "userId": "6a76a449c4b2d5f017675218",
+    "isSuspended": false,
+    "canReceiveRide": true
+  }
+}
+{
+  "carId": "6a59bd28b475e0a1fc2aa5c0",
+  "carType": "car",
+  "seatNumber": 2,
+  "driverId": "6a59b25aec029a501f10cd9f",
+  "driverFound": true,
+  "driverDetails": {
+    "approvalStatus": "approved",
+    "driverAvailabilityStatus": "online",
+    "location": {
+      "type": "Point",
+      "coordinates": [
+        91.368864,
+        24.804092999999998
+      ],
+      "address": "Banani 11, Dhaka"
+    },
+    "userId": "6a59af155d294c2c4111585d",
+    "userStatus": "active",
+    "userVerified": true,
+    "isSuspended": false,
+    "canReceiveRide": true
+  }
+}
+{
+  "carId": "6a5c8b77aab9fb4ab5779c02",
+  "carType": "car",
+  "seatNumber": 4,
+  "driverId": "6a5c8b76aab9fb4ab5779bf8",
+  "driverFound": false,
+  "driverDetails": null
+}
+{
+  "carId": "6a5c8b9f27c77a061ccd98f0",
+  "carType": "car",
+  "seatNumber": 4,
+  "driverId": "6a5c8b9f27c77a061ccd98e6",
+  "driverFound": false,
+  "driverDetails": null
+}
+{
+  "carId": "6a5c8bc45013e2c6433f87bb",
+  "carType": "car",
+  "seatNumber": 4,
+  "driverId": "6a5c8bc35013e2c6433f87a9",
+  "driverFound": false,
+  "driverDetails": null
+}
+{
+  "carId": "6a7a9c7af69d2a3fddb51951",
+  "carType": "car",
+  "seatNumber": 5,
+  "driverId": "6a7a9b57f69d2a3fddb518f9",
+  "driverFound": true,
+  "driverDetails": {
+    "approvalStatus": "approved",
+    "driverAvailabilityStatus": "offline",
+    "location": {
+      "type": "Point",
+      "coordinates": [
+        90.4125,
+        23.8103
+      ],
+      "address": "Dhaka, Bangladesh"
+    },
+    "userId": "6a7a9a79f69d2a3fddb5187f",
+    "userStatus": "active",
+    "userVerified": true,
+    "isSuspended": false,
+    "canReceiveRide": true
+  }
+}
+{
+  "carId": "6a7aba6aa377dc1ecd92a8be",
+  "carType": "car",
+  "seatNumber": 6,
+  "driverId": "6a59b25aec029a501f10cd9f",
+  "driverFound": true,
+  "driverDetails": {
+    "approvalStatus": "approved",
+    "driverAvailabilityStatus": "online",
+    "location": {
+      "type": "Point",
+      "coordinates": [
+        91.368864,
+        24.804092999999998
+      ],
+      "address": "Banani 11, Dhaka"
+    },
+    "userId": "6a59af155d294c2c4111585d",
+    "userStatus": "active",
+    "userVerified": true,
+    "isSuspended": false,
+    "canReceiveRide": true
+  }
+}
