@@ -162,6 +162,28 @@ const initiateBackgroundCheck = catchAsync(async (req, res) => {
   });
 });
 
+const verifySelfie = catchAsync(async (req, res) => {
+  if (!req.user) {
+    throw new ApiError(401, "User not authenticated");
+  }
+
+  const { id } = req.user as { id: string };
+  const selfieUrl = req.body.liveSelfie;
+
+  if (!selfieUrl) {
+    throw new ApiError(400, "Verification selfie file was not uploaded");
+  }
+
+  const result = await DriverServices.verifySelfieFaceToDB(id, selfieUrl);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Selfie verified successfully",
+    data: result,
+  });
+});
+
 export const DriverController = {
   createDriver,
   getDriverProfile,
@@ -173,4 +195,5 @@ export const DriverController = {
   getDrivingHoursHistory,
   getDrivingHoursLedger,
   initiateBackgroundCheck,
+  verifySelfie,
 };

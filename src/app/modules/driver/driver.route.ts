@@ -64,6 +64,14 @@ router.post(
   DriverController.initiateBackgroundCheck,
 );
 
+router.post(
+  "/me/verify-selfie",
+  isAuthenticated,
+  fileUploadHandler(["liveSelfie"]),
+  parseFileData({ fieldName: "liveSelfie", mode: "single" }),
+  DriverController.verifySelfie,
+);
+
 router.get(
   "/me/performance-metrics",
   isDriver,

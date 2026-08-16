@@ -47,6 +47,7 @@
     "typescript": "^5.5.4"
   },
   "dependencies": {
+    "@aws-sdk/client-rekognition": "^3.1111.0",
     "agora-token": "^2.0.5",
     "axios": "^1.13.2",
     "bcrypt": "^5.1.1",

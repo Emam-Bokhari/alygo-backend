@@ -14,6 +14,9 @@ import { getDayRangeInTimezone } from "../../../shared/timezoneHelper";
 import { DateTime } from "luxon";
 import { Car } from "../car/car.model";
 import { DRIVER_STATUS } from "../../../enums/user";
+import path from "path";
+import fs from "fs";
+import { compareFaces } from "../../../helpers/rekognitionHelper";
 
 const calculateDocumentsStatus = async (userId: string, driverDoc?: any) => {
   const user = await User.findById(userId);
@@ -67,6 +70,16 @@ const createDriverToDB = async (userId: string, payload: Partial<IDriver>) => {
   } else {
     // Reset approval status to pending when updating verification details
     payloadRest.approvalStatus = DRIVER_STATUS.PENDING;
+
+    // Prevent updating liveSelfie if it already exists
+    if (
+      existingDriver.liveSelfie &&
+      existingDriver.liveSelfie.trim() !== "" &&
+      payloadRest.liveSelfie
+    ) {
+      delete payloadRest.liveSelfie;
+    }
+
     existingDriver = await Driver.findOneAndUpdate(
       { userId: new Types.ObjectId(userId) },
       payloadRest,
@@ -163,6 +176,15 @@ const updateDriverFromDB = async (
   const { userId: _, ...updatePayload } = payloadRest as Partial<IDriver> & {
     userId?: Types.ObjectId;
   };
+
+  // Prevent updating liveSelfie if it already exists
+  if (
+    existingDriver.liveSelfie &&
+    existingDriver.liveSelfie.trim() !== "" &&
+    updatePayload.liveSelfie
+  ) {
+    delete updatePayload.liveSelfie;
+  }
 
   // Determine if driver is going online or changing service area while online
   const isGoingOnline =
@@ -1366,6 +1388,77 @@ const getDriverDrivingHoursLedger = async (
   };
 };
 
+const verifySelfieFaceToDB = async (userId: string, selfieUrl: string) => {
+  const driver = await Driver.findOne({ userId: new Types.ObjectId(userId) });
+
+  if (!driver) {
+    throw new ApiError(404, "Driver profile not found");
+  }
+
+  if (!driver.liveSelfie || driver.liveSelfie.trim() === "") {
+    throw new ApiError(
+      400,
+      "Driver has no reference selfie record. Please upload a selfie first during onboarding.",
+    );
+  }
+
+  // Map both to absolute paths
+  const referenceRelativePath = driver.liveSelfie.replace(/^\//, "");
+  const referenceFilePath = path.join(process.cwd(), referenceRelativePath);
+
+  const verificationRelativePath = selfieUrl.replace(/^\//, "");
+  const verificationFilePath = path.join(process.cwd(), verificationRelativePath);
+
+  // Check if reference selfie exists on disk
+  if (!fs.existsSync(referenceFilePath)) {
+    throw new ApiError(500, "Failed to read reference selfie from server storage");
+  }
+
+  // Check if uploaded verification selfie exists on disk
+  if (!fs.existsSync(verificationFilePath)) {
+    throw new ApiError(400, "Verification selfie file was not uploaded correctly");
+  }
+
+  let referenceSelfieBuffer: Buffer;
+  let verificationSelfieBuffer: Buffer;
+
+  try {
+    referenceSelfieBuffer = fs.readFileSync(referenceFilePath);
+    verificationSelfieBuffer = fs.readFileSync(verificationFilePath);
+  } catch (error) {
+    throw new ApiError(500, "Failed to read selfie files for comparison");
+  }
+
+  // Perform AWS Rekognition Face Comparison
+  let result;
+  try {
+    result = await compareFaces(referenceSelfieBuffer, verificationSelfieBuffer, 80);
+  } finally {
+    // Always clean up/delete the temporary verification selfie file from disk
+    if (fs.existsSync(verificationFilePath) && verificationFilePath !== referenceFilePath) {
+      try {
+        fs.unlinkSync(verificationFilePath);
+      } catch (err) {
+        console.error("Error deleting temporary verification file:", err);
+      }
+    }
+  }
+
+  if (!result.match) {
+    throw new ApiError(400, "Face verification failed. Faces do not match.");
+  }
+
+  // Update lastVerificationDate
+  driver.lastVerificationDate = new Date();
+  await driver.save();
+
+  return {
+    match: result.match,
+    similarity: result.similarity,
+    confidence: result.confidence,
+  };
+};
+
 export const DriverServices = {
   calculateDocumentsStatus,
   createDriverToDB,
@@ -1377,4 +1470,5 @@ export const DriverServices = {
   getDriverDrivingHours,
   getDriverDrivingHoursHistory,
   getDriverDrivingHoursLedger,
+  verifySelfieFaceToDB,
 };
