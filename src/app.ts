@@ -74,6 +74,17 @@ app.get("/", (req: Request, res: Response) => {
   res.send("Server is running...");
 });
 
+// Socket Monitor and Diagnostic Web Views
+app.get("/driver-monitor", (req: Request, res: Response) => {
+  res.sendFile(path.join(__dirname, "..", "driver-socket-monitor.html"));
+});
+app.get("/passenger-monitor", (req: Request, res: Response) => {
+  res.sendFile(path.join(__dirname, "..", "passenger-socket-monitor.html"));
+});
+app.get("/diagnostics-monitor", (req: Request, res: Response) => {
+  res.sendFile(path.join(__dirname, "..", "driver-location-update.html"));
+});
+
 // handle not found route
 app.use((req: Request, res: Response) => {
   res.status(StatusCodes.NOT_FOUND).json({
