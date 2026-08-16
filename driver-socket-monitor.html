@@ -324,6 +324,28 @@
       </button>
     </div>
 
+    <!-- Driver Availability Status (Emit) -->
+    <div class="card">
+      <h2 style="margin-top: 0; font-size: 1.2rem; margin-bottom: 0.5rem">
+        Driver Availability Status (Emit)
+      </h2>
+      <p style="
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+          ">
+        Send <code>go-online</code> or <code>go-offline</code> to backend to update driver availability.
+      </p>
+      <div style="display: flex; gap: 1rem;">
+        <button id="goOnlineBtn" class="btn">
+          Emit go-online
+        </button>
+        <button id="goOfflineBtn" class="btn btn-danger">
+          Emit go-offline
+        </button>
+      </div>
+    </div>
+
     <!-- Monitored Events Overview -->
     <div class="card">
       <h2 style="margin-top: 0; font-size: 1.1rem; margin-bottom: 0.5rem">
@@ -375,6 +397,8 @@
     const logsDiv = document.getElementById("logs");
     const clearBtn = document.getElementById("clearBtn");
     const sendLocationBtn = document.getElementById("sendLocationBtn");
+    const goOnlineBtn = document.getElementById("goOnlineBtn");
+    const goOfflineBtn = document.getElementById("goOfflineBtn");
     const eventsListDiv = document.getElementById("eventsList");
 
     // Complete static driver event list from Alygo backend codebase
@@ -440,6 +464,11 @@
       "call-token-refreshed",
     ];
 
+    const driverOnlineOfflineEvents = [
+      "go-online",
+      "go-offline"
+    ]
+
     function parseUserIdFromToken(token) {
       try {
         const parts = token.split(".");
@@ -457,6 +486,11 @@
       driverRideEvents.forEach((e) => {
         eventsListDiv.innerHTML += `<span class="event-tag tag-ride">🚗 ${e}</span>`;
       });
+
+      driverOnlineOfflineEvents.forEach((e) => {
+        eventsListDiv.innerHTML += `<span class="event-tag tag-ride">🚗 ${e}</span>`;
+      });
+
       driverReservationEvents.forEach((e) => {
         eventsListDiv.innerHTML += `<span class="event-tag tag-reservation">📋 ${e}</span>`;
       });
@@ -550,6 +584,36 @@
       const data = { coordinates: [lng, lat], address };
       socket.emit("driver-location-update", data);
       log(`EMITTED EVENT: driver-location-update`, "info", data);
+    });
+
+    goOnlineBtn.addEventListener("click", () => {
+      if (!socket || !socket.connected) {
+        log("Socket is not connected!", "danger");
+        return;
+      }
+      log(`EMITTING EVENT: go-online`, "info");
+      socket.emit("go-online", (response) => {
+        if (response && response.success) {
+          log(`CALLBACK RESPONSE (go-online): Success`, "success", response);
+        } else {
+          log(`CALLBACK RESPONSE (go-online): Failed`, "danger", response);
+        }
+      });
+    });
+
+    goOfflineBtn.addEventListener("click", () => {
+      if (!socket || !socket.connected) {
+        log("Socket is not connected!", "danger");
+        return;
+      }
+      log(`EMITTING EVENT: go-offline`, "info");
+      socket.emit("go-offline", (response) => {
+        if (response && response.success) {
+          log(`CALLBACK RESPONSE (go-offline): Success`, "success", response);
+        } else {
+          log(`CALLBACK RESPONSE (go-offline): Failed`, "danger", response);
+        }
+      });
     });
 
     disconnectBtn.addEventListener("click", () => {

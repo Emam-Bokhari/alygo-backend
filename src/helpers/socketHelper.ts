@@ -12,6 +12,9 @@ import { Secret } from "jsonwebtoken";
 // Map to store connected userId -> Socket object
 const socketMap = new Map<string, Socket>();
 
+// Map to store active disconnect timeouts (userId -> NodeJS.Timeout)
+const disconnectTimeouts = new Map<string, NodeJS.Timeout>();
+
 const socket = (io: Server) => {
   io.on("connection", async (socket: Socket) => {
     logger.info(colors.blue("A User connected to Socket.IO"));
@@ -44,6 +47,16 @@ const socket = (io: Server) => {
 
           socketMap.set(userId, socket);
           socket.data = { userId, role: decoded.role };
+
+          // Clear any active disconnect timeout for this user since they reconnected
+          if (disconnectTimeouts.has(userId)) {
+            clearTimeout(disconnectTimeouts.get(userId));
+            disconnectTimeouts.delete(userId);
+            logger.info(
+              colors.cyan(`Driver ${userId} reconnected within grace period. Cancelled offline timeout.`),
+            );
+          }
+
           logger.info(
             colors.green(
               `Socket successfully authenticated for User: ${userId} (${decoded.role})`,
@@ -65,6 +78,16 @@ const socket = (io: Server) => {
         const userId = data.userId.toString();
         socketMap.set(userId, socket);
         socket.data = { ...socket.data, userId };
+
+        // Clear any active disconnect timeout for this user since they reconnected
+        if (disconnectTimeouts.has(userId)) {
+          clearTimeout(disconnectTimeouts.get(userId));
+          disconnectTimeouts.delete(userId);
+          logger.info(
+            colors.cyan(`Driver ${userId} reconnected within grace period via manual registration. Cancelled offline timeout.`),
+          );
+        }
+
         logger.info(
           colors.green(`Socket manually registered User ID: ${userId}`),
         );
@@ -241,14 +264,145 @@ const socket = (io: Server) => {
       },
     );
 
+    // Handle go-online event
+    socket.on(
+      "go-online",
+      async (
+        callback?: (response: {
+          success: boolean;
+          message: string;
+          data?: any;
+        }) => void,
+      ) => {
+        try {
+          const userId = socket.data?.userId;
+          if (!userId) {
+            logger.warn("go-online socket event failed: No userId in socket data");
+            if (callback) callback({ success: false, message: "User not authenticated" });
+            return;
+          }
+
+          const { DriverServices } = require("../app/modules/driver/driver.service");
+          const result = await DriverServices.updateDriverFromDB(userId, {
+            driverAvailabilityStatus: "online",
+          });
+          logger.info(`Driver ${userId} went online via socket.`);
+          
+          const responseData = result ? {
+            _id: result._id,
+            userId: result.userId,
+            location: result.location,
+            lastOnlineAt: result.lastOnlineAt,
+            lastOfflineAt: result.lastOfflineAt,
+            driverAvailabilityStatus: result.driverAvailabilityStatus,
+          } : undefined;
+
+          if (callback) callback({ success: true, message: "Went online successfully", data: responseData });
+        } catch (error: any) {
+          logger.error(`Error in go-online socket event: ${error.message || error}`);
+          if (callback) callback({ success: false, message: error.message || "Failed to go online" });
+        }
+      },
+    );
+
+    // Handle go-offline event
+    socket.on(
+      "go-offline",
+      async (
+        callback?: (response: {
+          success: boolean;
+          message: string;
+          data?: any;
+        }) => void,
+      ) => {
+        try {
+          const userId = socket.data?.userId;
+          if (!userId) {
+            logger.warn("go-offline socket event failed: No userId in socket data");
+            if (callback) callback({ success: false, message: "User not authenticated" });
+            return;
+          }
+
+          const { DriverServices } = require("../app/modules/driver/driver.service");
+          const result = await DriverServices.updateDriverFromDB(userId, {
+            driverAvailabilityStatus: "offline",
+          });
+          logger.info(`Driver ${userId} went offline via socket.`);
+
+          const responseData = result ? {
+            _id: result._id,
+            userId: result.userId,
+            location: result.location,
+            lastOnlineAt: result.lastOnlineAt,
+            lastOfflineAt: result.lastOfflineAt,
+            driverAvailabilityStatus: result.driverAvailabilityStatus,
+          } : undefined;
+
+          if (callback) callback({ success: true, message: "Went offline successfully", data: responseData });
+        } catch (error: any) {
+          logger.error(`Error in go-offline socket event: ${error.message || error}`);
+          if (callback) callback({ success: false, message: error.message || "Failed to go offline" });
+        }
+      },
+    );
+
     // disconnect
     socket.on("disconnect", (reason) => {
       const userId = socket.data?.userId;
+      const role = socket.data?.role;
       if (userId) {
         socketMap.delete(userId);
         logger.info(
           colors.red(`User ${userId} disconnected. Reason: ${reason}`),
         );
+
+        const handleDriverDisconnect = () => {
+          if (disconnectTimeouts.has(userId)) {
+            clearTimeout(disconnectTimeouts.get(userId));
+          }
+
+          const timeout = setTimeout(async () => {
+            try {
+              if (!socketMap.has(userId)) {
+                const { DriverServices } = require("../app/modules/driver/driver.service");
+                await DriverServices.updateDriverFromDB(userId, {
+                  driverAvailabilityStatus: "offline",
+                });
+                logger.info(
+                  `Driver ${userId} marked offline automatically after grace period.`,
+                );
+              }
+              disconnectTimeouts.delete(userId);
+            } catch (err: any) {
+              logger.error(
+                `Failed to automatically set disconnected driver ${userId} to offline: ${err.message}`,
+              );
+              disconnectTimeouts.delete(userId);
+            }
+          }, 60000); // 60 seconds grace period
+
+          disconnectTimeouts.set(userId, timeout);
+          logger.info(
+            `Started 60-second offline grace period for disconnected Driver: ${userId}`,
+          );
+        };
+
+        if (role === "driver") {
+          handleDriverDisconnect();
+        } else if (!role) {
+          const { Driver } = require("../app/modules/driver/driver.model");
+          Driver.findOne({ userId })
+            .then((driver: any) => {
+              if (driver) {
+                handleDriverDisconnect();
+              }
+            })
+            .catch((err: any) => {
+              logger.error(
+                `Error checking driver profile on disconnect: ${err.message}`,
+              );
+            });
+        }
       } else {
         logger.info(colors.red(`A user disconnect. Reason: ${reason}`));
       }
