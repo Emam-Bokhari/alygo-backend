@@ -9,14 +9,15 @@ export type INotification = {
   read: boolean;
   referenceId?: Types.ObjectId | string;
   referenceModel?:
-    | "Car"
-    | "Review"
-    | "User"
-    | "Ride"
-    | "Wallet"
-    | "Payout"
-    | "LostFound";
-  type?: string;
+  | "Car"
+  | "Review"
+  | "User"
+  | "Ride"
+  | "Wallet"
+  | "Payout"
+  | "LostFound"
+  | "Broadcast";
+type ?: string;
 };
 
 export type NotificationModel = ISoftDeleteModel<INotification>;

@@ -6,6 +6,7 @@ import config from "../config";
 import { User } from "../app/modules/user/user.model";
 import { Ride } from "../app/modules/ride/ride.model";
 import { RIDE_STATUS, RIDE_TYPE } from "../app/modules/ride/ride.constant";
+import { DRIVER_AVAILABILITY_STATUS } from "../app/modules/driver/driver.constant";
 import { Tracking } from "../app/modules/tracking/tracking.model";
 import { Secret } from "jsonwebtoken";
 
@@ -59,6 +60,9 @@ const socket = (io: Server) => {
             );
           }
 
+          // Check if driver has an active trip and restore status if needed
+          checkAndRestoreDriverOnTrip(userId, decoded.role);
+
           logger.info(
             colors.green(
               `Socket successfully authenticated for User: ${userId} (${decoded.role})`,
@@ -91,6 +95,9 @@ const socket = (io: Server) => {
             ),
           );
         }
+
+        // Check if driver has an active trip and restore status if needed
+        checkAndRestoreDriverOnTrip(userId, socket.data?.role);
 
         logger.info(
           colors.green(`Socket manually registered User ID: ${userId}`),
@@ -486,6 +493,47 @@ const sendToUsers = (
 ): void => {
   for (const id of userIds) {
     sendToUser(id, event, data);
+  }
+};
+
+/**
+ * Helper to check if a connecting driver has an active ride,
+ * and if so, restore their status in the database to 'on_trip'.
+ */
+const checkAndRestoreDriverOnTrip = async (userId: string, role?: string) => {
+  try {
+    const { Driver } = require("../app/modules/driver/driver.model");
+    const isDriver = role === "driver" || (await Driver.findOne({ userId }));
+    if (!isDriver) return;
+
+    const { Ride } = require("../app/modules/ride/ride.model");
+    const { RIDE_STATUS } = require("../app/modules/ride/ride.constant");
+
+    const activeRide = await Ride.findOne({
+      driverId: userId,
+      status: {
+        $in: [
+          RIDE_STATUS.DRIVER_ACCEPTED,
+          RIDE_STATUS.DRIVER_ON_THE_WAY,
+          RIDE_STATUS.DRIVER_ARRIVED,
+          RIDE_STATUS.STARTED,
+        ],
+      },
+    });
+
+    if (activeRide) {
+      const { DriverServices } = require("../app/modules/driver/driver.service");
+      await DriverServices.updateDriverFromDB(userId, {
+        driverAvailabilityStatus: DRIVER_AVAILABILITY_STATUS.ON_TRIP,
+      });
+      logger.info(
+        colors.cyan(
+          `Driver ${userId} reconnected with active ride ${activeRide._id}. Restored status to on_trip.`,
+        ),
+      );
+    }
+  } catch (err: any) {
+    logger.error(`Error in checkAndRestoreDriverOnTrip: ${err.message}`);
   }
 };
 

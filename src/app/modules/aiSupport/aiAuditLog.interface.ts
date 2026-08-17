@@ -1,9 +1,9 @@
 import { ISoftDeleteModel } from "../../../types/softDelete";
-import { Model, Types } from "mongoose";
+import { Types } from "mongoose";
 
 export interface IAiAuditLog {
   _id?: Types.ObjectId;
-  action: string; // e.g. "KNOWLEDGE_CREATED", "KNOWLEDGE_UPDATED", "KNOWLEDGE_DELETED", "AI_CONFIG_CHANGED", "DRIVER_ASKED_QUESTION", "DRIVER_FEEDBACK", "RESPONSE_REGENERATED"
+  action: string; 
   performedBy?: Types.ObjectId;
   userType: "admin" | "driver" | "system";
   details?: Record<string, any>;
