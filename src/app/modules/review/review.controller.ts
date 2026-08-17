@@ -14,8 +14,11 @@ import ApiError from "../../../errors/ApiErrors";
  * Create review handler (passenger or driver).
  */
 const createReview = catchAsync(async (req: Request, res: Response) => {
-  const reviewerId = req.user.id;
-  const reviewerRole = req.user.role; // "user" | "driver"
+  if (!req.user) {
+    throw new ApiError(StatusCodes.UNAUTHORIZED, "User not authenticated");
+  }
+  const reviewerId = (req.user as any).id;
+  const reviewerRole = (req.user as any).role; // "user" | "driver"
   const { rideId } = req.params;
 
   // Validate request dynamically based on user role
@@ -165,7 +168,10 @@ const getDriverReviewSummary = catchAsync(
  * Get reviews received by the authenticated driver.
  */
 const getMyReviews = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user.id;
+  if (!req.user) {
+    throw new ApiError(StatusCodes.UNAUTHORIZED, "User not authenticated");
+  }
+  const userId = (req.user as any).id;
   const result = await ReviewServices.getMyReviewsFromDB(userId, req.query);
 
   sendResponse(res, {
@@ -180,7 +186,10 @@ const getMyReviews = catchAsync(async (req: Request, res: Response) => {
  * Get review summary for the authenticated driver.
  */
 const getMyReviewSummary = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user.id;
+  if (!req.user) {
+    throw new ApiError(StatusCodes.UNAUTHORIZED, "User not authenticated");
+  }
+  const userId = (req.user as any).id;
   const driver = await Driver.findOne({ userId: new Types.ObjectId(userId) });
   if (!driver) {
     throw new ApiError(StatusCodes.NOT_FOUND, "Driver profile not found");

@@ -6,12 +6,20 @@ import { CheckrService } from "../checkr/checkr.service";
 import { VERIFICATION_STATUS } from "./driver.constant";
 import { sendNotifications } from "../../../helpers/notificationsHelper";
 import { NOTIFICATION_TYPE } from "../notification/notification.constant";
+import config from "../../../config";
+import { logger } from "../../../shared/logger";
 
 /**
  * Automatically evaluates and triggers driving license / MVR check on Checkr
  */
 const triggerMVRVerification = async (driverId: string): Promise<void> => {
   try {
+    if (!config.checkr.apiKey) {
+      logger.warn(
+        "Checkr API Key is not configured. Skipping MVR Verification.",
+      );
+      return;
+    }
     const driver = await Driver.findById(driverId);
     if (!driver) return;
 
@@ -127,6 +135,12 @@ const initiateBackgroundCheck = async (
     taxZipCode?: string;
   },
 ) => {
+  if (!config.checkr.apiKey) {
+    throw new ApiError(
+      503,
+      "Checkr background verification is not configured on this server (missing CHECKR_API_KEY).",
+    );
+  }
   const driver = await Driver.findOne({
     userId: new Types.ObjectId(driverUserId),
   });

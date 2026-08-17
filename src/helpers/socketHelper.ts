@@ -53,7 +53,9 @@ const socket = (io: Server) => {
             clearTimeout(disconnectTimeouts.get(userId));
             disconnectTimeouts.delete(userId);
             logger.info(
-              colors.cyan(`Driver ${userId} reconnected within grace period. Cancelled offline timeout.`),
+              colors.cyan(
+                `Driver ${userId} reconnected within grace period. Cancelled offline timeout.`,
+              ),
             );
           }
 
@@ -84,7 +86,9 @@ const socket = (io: Server) => {
           clearTimeout(disconnectTimeouts.get(userId));
           disconnectTimeouts.delete(userId);
           logger.info(
-            colors.cyan(`Driver ${userId} reconnected within grace period via manual registration. Cancelled offline timeout.`),
+            colors.cyan(
+              `Driver ${userId} reconnected within grace period via manual registration. Cancelled offline timeout.`,
+            ),
           );
         }
 
@@ -267,40 +271,59 @@ const socket = (io: Server) => {
     // Handle go-online event
     socket.on(
       "go-online",
-      async (
-        callback?: (response: {
-          success: boolean;
-          message: string;
-          data?: any;
-        }) => void,
-      ) => {
+      async (payloadOrCallback?: any, maybeCallback?: any) => {
+        const callback =
+          typeof payloadOrCallback === "function"
+            ? payloadOrCallback
+            : maybeCallback;
         try {
           const userId = socket.data?.userId;
           if (!userId) {
-            logger.warn("go-online socket event failed: No userId in socket data");
-            if (callback) callback({ success: false, message: "User not authenticated" });
+            logger.warn(
+              "go-online socket event failed: No userId in socket data",
+            );
+            if (typeof callback === "function") {
+              callback({ success: false, message: "User not authenticated" });
+            }
             return;
           }
 
-          const { DriverServices } = require("../app/modules/driver/driver.service");
+          const {
+            DriverServices,
+          } = require("../app/modules/driver/driver.service");
           const result = await DriverServices.updateDriverFromDB(userId, {
             driverAvailabilityStatus: "online",
           });
           logger.info(`Driver ${userId} went online via socket.`);
-          
-          const responseData = result ? {
-            _id: result._id,
-            userId: result.userId,
-            location: result.location,
-            lastOnlineAt: result.lastOnlineAt,
-            lastOfflineAt: result.lastOfflineAt,
-            driverAvailabilityStatus: result.driverAvailabilityStatus,
-          } : undefined;
 
-          if (callback) callback({ success: true, message: "Went online successfully", data: responseData });
+          const responseData = result
+            ? {
+                _id: result._id,
+                userId: result.userId,
+                location: result.location,
+                lastOnlineAt: result.lastOnlineAt,
+                lastOfflineAt: result.lastOfflineAt,
+                driverAvailabilityStatus: result.driverAvailabilityStatus,
+              }
+            : undefined;
+
+          if (typeof callback === "function") {
+            callback({
+              success: true,
+              message: "Went online successfully",
+              data: responseData,
+            });
+          }
         } catch (error: any) {
-          logger.error(`Error in go-online socket event: ${error.message || error}`);
-          if (callback) callback({ success: false, message: error.message || "Failed to go online" });
+          logger.error(
+            `Error in go-online socket event: ${error.message || error}`,
+          );
+          if (typeof callback === "function") {
+            callback({
+              success: false,
+              message: error.message || "Failed to go online",
+            });
+          }
         }
       },
     );
@@ -308,40 +331,59 @@ const socket = (io: Server) => {
     // Handle go-offline event
     socket.on(
       "go-offline",
-      async (
-        callback?: (response: {
-          success: boolean;
-          message: string;
-          data?: any;
-        }) => void,
-      ) => {
+      async (payloadOrCallback?: any, maybeCallback?: any) => {
+        const callback =
+          typeof payloadOrCallback === "function"
+            ? payloadOrCallback
+            : maybeCallback;
         try {
           const userId = socket.data?.userId;
           if (!userId) {
-            logger.warn("go-offline socket event failed: No userId in socket data");
-            if (callback) callback({ success: false, message: "User not authenticated" });
+            logger.warn(
+              "go-offline socket event failed: No userId in socket data",
+            );
+            if (typeof callback === "function") {
+              callback({ success: false, message: "User not authenticated" });
+            }
             return;
           }
 
-          const { DriverServices } = require("../app/modules/driver/driver.service");
+          const {
+            DriverServices,
+          } = require("../app/modules/driver/driver.service");
           const result = await DriverServices.updateDriverFromDB(userId, {
             driverAvailabilityStatus: "offline",
           });
           logger.info(`Driver ${userId} went offline via socket.`);
 
-          const responseData = result ? {
-            _id: result._id,
-            userId: result.userId,
-            location: result.location,
-            lastOnlineAt: result.lastOnlineAt,
-            lastOfflineAt: result.lastOfflineAt,
-            driverAvailabilityStatus: result.driverAvailabilityStatus,
-          } : undefined;
+          const responseData = result
+            ? {
+                _id: result._id,
+                userId: result.userId,
+                location: result.location,
+                lastOnlineAt: result.lastOnlineAt,
+                lastOfflineAt: result.lastOfflineAt,
+                driverAvailabilityStatus: result.driverAvailabilityStatus,
+              }
+            : undefined;
 
-          if (callback) callback({ success: true, message: "Went offline successfully", data: responseData });
+          if (typeof callback === "function") {
+            callback({
+              success: true,
+              message: "Went offline successfully",
+              data: responseData,
+            });
+          }
         } catch (error: any) {
-          logger.error(`Error in go-offline socket event: ${error.message || error}`);
-          if (callback) callback({ success: false, message: error.message || "Failed to go offline" });
+          logger.error(
+            `Error in go-offline socket event: ${error.message || error}`,
+          );
+          if (typeof callback === "function") {
+            callback({
+              success: false,
+              message: error.message || "Failed to go offline",
+            });
+          }
         }
       },
     );
@@ -364,7 +406,9 @@ const socket = (io: Server) => {
           const timeout = setTimeout(async () => {
             try {
               if (!socketMap.has(userId)) {
-                const { DriverServices } = require("../app/modules/driver/driver.service");
+                const {
+                  DriverServices,
+                } = require("../app/modules/driver/driver.service");
                 await DriverServices.updateDriverFromDB(userId, {
                   driverAvailabilityStatus: "offline",
                 });

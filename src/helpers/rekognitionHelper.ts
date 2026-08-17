@@ -1,4 +1,7 @@
-import { RekognitionClient, CompareFacesCommand } from "@aws-sdk/client-rekognition";
+import {
+  RekognitionClient,
+  CompareFacesCommand,
+} from "@aws-sdk/client-rekognition";
 import config from "../config";
 import ApiError from "../errors/ApiErrors";
 import { StatusCodes } from "http-status-codes";

@@ -1132,6 +1132,7 @@ const acceptRide = async (
     // Set driver details in the Tracking record with enhanced tracking fields and initial Google route
     let initialRemainingDistanceKm = 0;
     let initialEstimatedArrivalMinutes = 0;
+    let initialPolyline = "";
     if (driverDoc.location && driverDoc.location.coordinates) {
       try {
         const route = await GoogleRouteService.calculateRoute(
@@ -1146,6 +1147,7 @@ const acceptRide = async (
         );
         initialRemainingDistanceKm = route.totalDistanceKm;
         initialEstimatedArrivalMinutes = route.totalDurationMinutes;
+        initialPolyline = route.polyline || "";
       } catch (err: any) {
         logger.error(
           `[RideService] Error calculating initial driver-to-pickup route: ${err.message}`,
@@ -1168,6 +1170,7 @@ const acceptRide = async (
           remainingDistanceKm: initialRemainingDistanceKm,
           estimatedArrivalMinutes: initialEstimatedArrivalMinutes,
           etaCalculatedAt: new Date(),
+          polyline: initialPolyline,
         },
       },
       { session, upsert: true },
@@ -1242,8 +1245,17 @@ const acceptRide = async (
       pickupLocation: ride.pickup,
       rideCategory: ride.rideCategory,
       price: ride.fare.total,
-      estimatedArrivalMinutes: tracking?.estimatedArrivalMinutes,
-      remainingDistanceKm: tracking?.remainingDistanceKm,
+      estimatedArrivalMinutes: tracking?.estimatedArrivalMinutes || 0,
+      remainingDistanceKm: tracking?.remainingDistanceKm || 0,
+      polyline: tracking?.polyline || "",
+      driverLocation: tracking?.driverLocation?.coordinates
+        ? {
+            latitude: tracking.driverLocation.coordinates[1],
+            longitude: tracking.driverLocation.coordinates[0],
+          }
+        : undefined,
+      status: ride.status,
+      timestamp: new Date(),
     });
 
     if (ride.rideType === RIDE_TYPE.SCHEDULED) {

@@ -1,5 +1,6 @@
 import { Types } from "mongoose";
 import ApiError from "../../../errors/ApiErrors";
+import config from "../../../config";
 import { User } from "../user/user.model";
 import { Driver } from "./driver.model";
 import { IDriver } from "./driver.interface";
@@ -101,14 +102,16 @@ const createDriverToDB = async (userId: string, payload: Partial<IDriver>) => {
   }
 
   // Trigger Checkr MVR Verification automatically behind the scenes
-  DriverVerificationService.triggerMVRVerification(
-    existingDriver!._id.toString(),
-  ).catch((err) => {
-    console.error(
-      "MVR Verification trigger error in createDriverToDB:",
-      err.message || err,
-    );
-  });
+  if (config.checkr.apiKey) {
+    DriverVerificationService.triggerMVRVerification(
+      existingDriver!._id.toString(),
+    ).catch((err) => {
+      console.error(
+        "MVR Verification trigger error in createDriverToDB:",
+        err.message || err,
+      );
+    });
+  }
 
   const populatedDriver = await Driver.findById(existingDriver!._id)
     .populate("userId", "name profileImage phone email")
@@ -314,14 +317,16 @@ const updateDriverFromDB = async (
   }
 
   // Trigger Checkr MVR Verification automatically behind the scenes
-  DriverVerificationService.triggerMVRVerification(
-    existingDriver._id.toString(),
-  ).catch((err) => {
-    console.error(
-      "MVR Verification trigger error in updateDriverFromDB:",
-      err.message || err,
-    );
-  });
+  if (hasUpdatedDetails && config.checkr.apiKey) {
+    DriverVerificationService.triggerMVRVerification(
+      existingDriver._id.toString(),
+    ).catch((err) => {
+      console.error(
+        "MVR Verification trigger error in updateDriverFromDB:",
+        err.message || err,
+      );
+    });
+  }
 
   const finalDriver = await Driver.findOne({
     userId: new Types.ObjectId(userId),
@@ -1407,16 +1412,25 @@ const verifySelfieFaceToDB = async (userId: string, selfieUrl: string) => {
   const referenceFilePath = path.join(process.cwd(), referenceRelativePath);
 
   const verificationRelativePath = selfieUrl.replace(/^\//, "");
-  const verificationFilePath = path.join(process.cwd(), verificationRelativePath);
+  const verificationFilePath = path.join(
+    process.cwd(),
+    verificationRelativePath,
+  );
 
   // Check if reference selfie exists on disk
   if (!fs.existsSync(referenceFilePath)) {
-    throw new ApiError(500, "Failed to read reference selfie from server storage");
+    throw new ApiError(
+      500,
+      "Failed to read reference selfie from server storage",
+    );
   }
 
   // Check if uploaded verification selfie exists on disk
   if (!fs.existsSync(verificationFilePath)) {
-    throw new ApiError(400, "Verification selfie file was not uploaded correctly");
+    throw new ApiError(
+      400,
+      "Verification selfie file was not uploaded correctly",
+    );
   }
 
   let referenceSelfieBuffer: Buffer;
@@ -1432,10 +1446,17 @@ const verifySelfieFaceToDB = async (userId: string, selfieUrl: string) => {
   // Perform AWS Rekognition Face Comparison
   let result;
   try {
-    result = await compareFaces(referenceSelfieBuffer, verificationSelfieBuffer, 80);
+    result = await compareFaces(
+      referenceSelfieBuffer,
+      verificationSelfieBuffer,
+      80,
+    );
   } finally {
     // Always clean up/delete the temporary verification selfie file from disk
-    if (fs.existsSync(verificationFilePath) && verificationFilePath !== referenceFilePath) {
+    if (
+      fs.existsSync(verificationFilePath) &&
+      verificationFilePath !== referenceFilePath
+    ) {
       try {
         fs.unlinkSync(verificationFilePath);
       } catch (err) {
