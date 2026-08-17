@@ -205,7 +205,29 @@ class NotificationHelper {
         referenceModel: payload.data?.referenceModel || undefined,
       }));
 
-      await Notification.insertMany(notifications);
+      const results = await Notification.insertMany(notifications);
+
+      // Populate references for client socket delivery
+      const populatedResults = await Notification.populate(results, [
+        { path: "receiver" },
+        { path: "sender" },
+        { path: "referenceId" },
+      ]);
+
+      // Emit socket events
+      //@ts-ignore
+      const socketIo = global.io;
+      if (socketIo) {
+        populatedResults.forEach((result) => {
+          const receiverId = (result.receiver as any)?._id?.toString() || result.receiver?.toString();
+          if (receiverId) {
+            socketIo.emit(`send-notification::${receiverId}`, result);
+          }
+          if (result.type === NOTIFICATION_TYPE.ADMIN) {
+            socketIo.emit("send-notification::admin", result);
+          }
+        });
+      }
     } catch (error) {
       logger.error(colors.red("DB Save Error:"), error);
     }

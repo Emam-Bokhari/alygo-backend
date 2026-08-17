@@ -84,8 +84,8 @@ const aiKnowledgeSchema = new Schema<IAiKnowledge, AiKnowledgeModel>(
     status: {
       type: String,
       required: true,
-      enum: ["draft", "under_review", "published", "archived"],
-      default: "draft",
+      enum: ["under_review", "published", "archived"],
+      default: "published",
       index: true,
     },
     allowedRoles: {

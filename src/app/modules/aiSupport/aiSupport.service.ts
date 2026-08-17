@@ -1066,6 +1066,8 @@ const createKnowledgeInDB = async (
   payload: IAiKnowledge,
   adminId: string,
 ): Promise<IAiKnowledge> => {
+  const targetStatus = payload.status || "published";
+
   // Programmatic Uniqueness check for isLatest published knowledge titles
   const duplicate = await AiKnowledge.findOne({
     title: payload.title,
@@ -1073,7 +1075,7 @@ const createKnowledgeInDB = async (
     status: "published",
   });
 
-  if (duplicate && payload.status === "published") {
+  if (duplicate && targetStatus === "published") {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
       "A published knowledge base document with this title already exists.",
@@ -1084,6 +1086,7 @@ const createKnowledgeInDB = async (
 
   const docData = {
     ...payload,
+    status: targetStatus,
     version: 1,
     isLatest: true,
     searchableContent,
@@ -1091,7 +1094,7 @@ const createKnowledgeInDB = async (
     updatedBy: new Types.ObjectId(adminId),
   };
 
-  if (payload.status === "published") {
+  if (targetStatus === "published") {
     docData.publishedAt = new Date();
     docData.publishedBy = new Types.ObjectId(adminId);
   }
@@ -1159,7 +1162,7 @@ const updateKnowledgeInDB = async (
 
     return newDoc;
   } else {
-    // In-place update for drafts / review documents
+    // In-place update for review / archived documents
     const updated = await AiKnowledge.findByIdAndUpdate(
       id,
       {
@@ -1247,6 +1250,14 @@ const updateSystemConfig = async (
       "Support",
       "FAQ",
       "Documents",
+      "Account",
+      "Vehicle",
+      "Safety",
+      "Cancellation",
+      "Ratings",
+      "Compliance",
+      "Fares",
+      "Service Area",
     ],
     suggestedQuestions: [
       "How do I receive payments?",

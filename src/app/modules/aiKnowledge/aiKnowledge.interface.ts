@@ -21,7 +21,7 @@ export interface IAiKnowledge {
   isActive: boolean;
   aiEnabled: boolean;
   visibility: "driver" | "internal" | "admin_only";
-  status: "draft" | "under_review" | "published" | "archived";
+  status: "under_review" | "published" | "archived";
   allowedRoles: ("driver" | "passenger" | "admin" | "super_admin")[];
   previousVersionId?: Types.ObjectId;
   publishedAt?: Date;
