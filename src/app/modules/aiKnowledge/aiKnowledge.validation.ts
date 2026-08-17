@@ -27,9 +27,7 @@ const createKnowledgeValidationSchema = z.object({
     isActive: z.boolean().optional(),
     aiEnabled: z.boolean().optional(),
     visibility: z.enum(["driver", "internal", "admin_only"]).optional(),
-    status: z
-      .enum(["under_review", "published", "archived"])
-      .optional(),
+    status: z.enum(["under_review", "published", "archived"]).optional(),
     allowedRoles: z
       .array(z.enum(["driver", "passenger", "admin", "super_admin"]))
       .optional(),
@@ -51,9 +49,7 @@ const updateKnowledgeValidationSchema = z.object({
     isActive: z.boolean().optional(),
     aiEnabled: z.boolean().optional(),
     visibility: z.enum(["driver", "internal", "admin_only"]).optional(),
-    status: z
-      .enum(["under_review", "published", "archived"])
-      .optional(),
+    status: z.enum(["under_review", "published", "archived"]).optional(),
     allowedRoles: z
       .array(z.enum(["driver", "passenger", "admin", "super_admin"]))
       .optional(),

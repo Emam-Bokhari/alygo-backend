@@ -20,13 +20,13 @@ const runAiSupportMigrations = async () => {
     // 1. Migrate any legacy "draft" knowledge documents to "published"
     const draftUpdateResult = await AiKnowledge.updateMany(
       { status: "draft" as any },
-      { $set: { status: "published" } }
+      { $set: { status: "published" } },
     );
     if (draftUpdateResult.modifiedCount > 0) {
       logger.info(
         colors.yellow(
-          `✔ Migrated ${draftUpdateResult.modifiedCount} legacy "draft" knowledge articles to "published".`
-        )
+          `✔ Migrated ${draftUpdateResult.modifiedCount} legacy "draft" knowledge articles to "published".`,
+        ),
       );
     }
 
@@ -36,7 +36,7 @@ const runAiSupportMigrations = async () => {
     if (sysConfig && sysConfig.aiSupport) {
       const existingModules = sysConfig.aiSupport.enabledModules || [];
       const missingModules = allModules.filter(
-        (m) => !existingModules.includes(m)
+        (m) => !existingModules.includes(m),
       );
       if (missingModules.length > 0) {
         sysConfig.aiSupport.enabledModules = [
@@ -46,8 +46,8 @@ const runAiSupportMigrations = async () => {
         await sysConfig.save();
         logger.info(
           colors.yellow(
-            `✔ Added missing modules to enabledModules: ${missingModules.join(", ")}`
-          )
+            `✔ Added missing modules to enabledModules: ${missingModules.join(", ")}`,
+          ),
         );
       }
     }

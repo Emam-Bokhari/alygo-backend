@@ -294,7 +294,7 @@ export const getSystemConfig = async () => {
     );
   }
 
-  // Fallback to .env values
+  // fallback to .env values
   cachedConfig = {
     driverMatching: config.driverMatching,
     tracking: config.tracking,

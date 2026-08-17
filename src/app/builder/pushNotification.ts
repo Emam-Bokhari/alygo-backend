@@ -219,7 +219,9 @@ class NotificationHelper {
       const socketIo = global.io;
       if (socketIo) {
         populatedResults.forEach((result) => {
-          const receiverId = (result.receiver as any)?._id?.toString() || result.receiver?.toString();
+          const receiverId =
+            (result.receiver as any)?._id?.toString() ||
+            result.receiver?.toString();
           if (receiverId) {
             socketIo.emit(`send-notification::${receiverId}`, result);
           }

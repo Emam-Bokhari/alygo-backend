@@ -4,7 +4,10 @@ import config from "../../../config";
 import { User } from "../user/user.model";
 import { Driver } from "./driver.model";
 import { IDriver } from "./driver.interface";
-import { DRIVER_AVAILABILITY_STATUS, VERIFICATION_STATUS } from "./driver.constant";
+import {
+  DRIVER_AVAILABILITY_STATUS,
+  VERIFICATION_STATUS,
+} from "./driver.constant";
 import { DriverVerificationService } from "./driver.verification.service";
 import { DriverDutyPolicyServices } from "../driverDutyPolicy/driverDutyPolicy.service";
 import { Review } from "../review/review.model";
@@ -18,6 +21,16 @@ import { DRIVER_STATUS } from "../../../enums/user";
 import path from "path";
 import fs from "fs";
 import { compareFaces } from "../../../helpers/rekognitionHelper";
+import { Ride } from "../ride/ride.model";
+import {
+  RIDE_TYPE,
+  RIDE_STATUS,
+  DRIVER_MATCHING_STATUS,
+} from "../ride/ride.constant";
+import QueryBuilder from "../../builder/queryBuilder";
+import { getSystemConfig } from "../../../helpers/systemConfigHelper";
+import { getCurrentTimeInTimezone } from "../../../shared/timezoneHelper";
+import { ServiceArea } from "../serviceArea/serviceArea.model";
 
 const calculateDocumentsStatus = async (userId: string, driverDoc?: any) => {
   const user = await User.findById(userId);
@@ -191,7 +204,9 @@ const updateDriverFromDB = async (
 
   // If driver attempts to go online, check if they have an active ride/trip.
   // If they do, their availability status must remain or revert to "on_trip".
-  if (updatePayload.driverAvailabilityStatus === DRIVER_AVAILABILITY_STATUS.ONLINE) {
+  if (
+    updatePayload.driverAvailabilityStatus === DRIVER_AVAILABILITY_STATUS.ONLINE
+  ) {
     const { Ride } = require("../ride/ride.model");
     const { RIDE_STATUS } = require("../ride/ride.constant");
     const activeRide = await Ride.findOne({
@@ -207,19 +222,24 @@ const updateDriverFromDB = async (
     });
 
     if (activeRide) {
-      updatePayload.driverAvailabilityStatus = DRIVER_AVAILABILITY_STATUS.ON_TRIP;
+      updatePayload.driverAvailabilityStatus =
+        DRIVER_AVAILABILITY_STATUS.ON_TRIP;
     }
   }
 
   // Determine if driver is going online or changing service area while online
   const isGoingOnline =
-    updatePayload.driverAvailabilityStatus === DRIVER_AVAILABILITY_STATUS.ONLINE &&
-    existingDriver.driverAvailabilityStatus !== DRIVER_AVAILABILITY_STATUS.ONLINE;
+    updatePayload.driverAvailabilityStatus ===
+      DRIVER_AVAILABILITY_STATUS.ONLINE &&
+    existingDriver.driverAvailabilityStatus !==
+      DRIVER_AVAILABILITY_STATUS.ONLINE;
 
   const isOnlineOrGoingOnline =
-    updatePayload.driverAvailabilityStatus === DRIVER_AVAILABILITY_STATUS.ONLINE ||
+    updatePayload.driverAvailabilityStatus ===
+      DRIVER_AVAILABILITY_STATUS.ONLINE ||
     (updatePayload.driverAvailabilityStatus === undefined &&
-      existingDriver.driverAvailabilityStatus === DRIVER_AVAILABILITY_STATUS.ONLINE);
+      existingDriver.driverAvailabilityStatus ===
+        DRIVER_AVAILABILITY_STATUS.ONLINE);
 
   const hasNewServiceArea =
     updatePayload.serviceAreaId !== undefined &&
@@ -284,19 +304,25 @@ const updateDriverFromDB = async (
       existingDriver.driverAvailabilityStatus
   ) {
     if (
-      updatePayload.driverAvailabilityStatus === DRIVER_AVAILABILITY_STATUS.ONLINE ||
-      updatePayload.driverAvailabilityStatus === DRIVER_AVAILABILITY_STATUS.ON_TRIP
+      updatePayload.driverAvailabilityStatus ===
+        DRIVER_AVAILABILITY_STATUS.ONLINE ||
+      updatePayload.driverAvailabilityStatus ===
+        DRIVER_AVAILABILITY_STATUS.ON_TRIP
     ) {
       // Set lastOnlineAt only if transitioning from an inactive status (offline or break)
       if (
-        existingDriver.driverAvailabilityStatus === DRIVER_AVAILABILITY_STATUS.OFFLINE ||
-        existingDriver.driverAvailabilityStatus === DRIVER_AVAILABILITY_STATUS.BREAK
+        existingDriver.driverAvailabilityStatus ===
+          DRIVER_AVAILABILITY_STATUS.OFFLINE ||
+        existingDriver.driverAvailabilityStatus ===
+          DRIVER_AVAILABILITY_STATUS.BREAK
       ) {
         updatePayload.lastOnlineAt = new Date();
       }
     } else if (
-      updatePayload.driverAvailabilityStatus === DRIVER_AVAILABILITY_STATUS.OFFLINE ||
-      updatePayload.driverAvailabilityStatus === DRIVER_AVAILABILITY_STATUS.BREAK
+      updatePayload.driverAvailabilityStatus ===
+        DRIVER_AVAILABILITY_STATUS.OFFLINE ||
+      updatePayload.driverAvailabilityStatus ===
+        DRIVER_AVAILABILITY_STATUS.BREAK
     ) {
       updatePayload.lastOfflineAt = new Date();
     }
@@ -396,17 +422,6 @@ const getDriverAvailability = async (userId: string) => {
 
   return availabilityData;
 };
-
-import { Ride } from "../ride/ride.model";
-import {
-  RIDE_TYPE,
-  RIDE_STATUS,
-  DRIVER_MATCHING_STATUS,
-} from "../ride/ride.constant";
-import QueryBuilder from "../../builder/queryBuilder";
-import { getSystemConfig } from "../../../helpers/systemConfigHelper";
-import { getCurrentTimeInTimezone } from "../../../shared/timezoneHelper";
-import { ServiceArea } from "../serviceArea/serviceArea.model";
 
 const getDriverReservationsFromDB = async (
   driverUserId: string,

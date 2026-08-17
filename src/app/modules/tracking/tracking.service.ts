@@ -15,9 +15,7 @@ import { logger } from "../../../shared/logger";
 import { GoogleRouteService } from "../../../services/googleRouteService";
 import { Driver } from "../driver/driver.model";
 import { Car } from "../car/car.model";
-import {
-  buildDriverSummary,
-} from "../ride/helpers/buildRideParticipantSummary";
+import { buildDriverSummary } from "../ride/helpers/buildRideParticipantSummary";
 import { getRideScheduleInfo } from "../../../shared/timezoneHelper";
 
 const updatePromises = new Map<string, Promise<any>>();
@@ -92,7 +90,7 @@ const getTargetDetails = (
   };
 };
 
-const getTrackingByRideId = async ( 
+const getTrackingByRideId = async (
   userId: string,
   rideId: string,
 ): Promise<ITracking> => {
@@ -310,7 +308,8 @@ const updateDriverLocation = async (
     tracking.targetStopOrder !== expectedTarget.targetStopOrder ||
     !tracking.targetLocation ||
     !tracking.targetLocation.coordinates ||
-    tracking.targetLocation.coordinates[0] !== expectedTarget.targetLocation[0] ||
+    tracking.targetLocation.coordinates[0] !==
+      expectedTarget.targetLocation[0] ||
     tracking.targetLocation.coordinates[1] !== expectedTarget.targetLocation[1];
 
   // 3. Check distance to target
@@ -347,19 +346,22 @@ const updateDriverLocation = async (
     if (needsRouteRecalculation) {
       try {
         // Resolve tracking state using resolveCurrentTrackingState()
-        const resolution = await GoogleRouteService.resolveCurrentTrackingState({
-          driverLocation: { lat: latitude, lng: longitude },
-          ride,
-          tracking,
-          arrivalRadiusKm,
-        });
+        const resolution = await GoogleRouteService.resolveCurrentTrackingState(
+          {
+            driverLocation: { lat: latitude, lng: longitude },
+            ride,
+            tracking,
+            arrivalRadiusKm,
+          },
+        );
 
         resolvedState = resolution.trackingState;
         transitions = resolution.transitions;
 
         // Map resolved state fields onto tracking document
         tracking.remainingDistanceKm = resolvedState.remainingDistanceKm;
-        tracking.estimatedArrivalMinutes = resolvedState.estimatedArrivalMinutes;
+        tracking.estimatedArrivalMinutes =
+          resolvedState.estimatedArrivalMinutes;
         tracking.etaCalculatedAt = new Date();
         tracking.targetIsPickup = resolvedState.targetIsPickup;
         tracking.targetIsDestination = resolvedState.targetIsDestination;
@@ -384,7 +386,7 @@ const updateDriverLocation = async (
       }
     } else {
       logger.info(
-        `[TrackingService] Skipping route recalculation for ride ${ride._id}. Reusing cached polyline and ETA.`
+        `[TrackingService] Skipping route recalculation for ride ${ride._id}. Reusing cached polyline and ETA.`,
       );
     }
   }
@@ -591,10 +593,7 @@ const updateDriverLocation = async (
   }
 
   // Emit final driver-location-updated event to passenger
-  if (
-    systemConfig.tracking.enableSocketOptimization &&
-    ride.userId
-  ) {
+  if (systemConfig.tracking.enableSocketOptimization && ride.userId) {
     const driverUser = driverDoc?.userId as any;
     rideUserSocketHelper.emitDriverLocationUpdated(ride.userId.toString(), {
       rideId: ride._id,

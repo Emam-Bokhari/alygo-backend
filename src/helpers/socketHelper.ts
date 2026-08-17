@@ -522,7 +522,9 @@ const checkAndRestoreDriverOnTrip = async (userId: string, role?: string) => {
     });
 
     if (activeRide) {
-      const { DriverServices } = require("../app/modules/driver/driver.service");
+      const {
+        DriverServices,
+      } = require("../app/modules/driver/driver.service");
       await DriverServices.updateDriverFromDB(userId, {
         driverAvailabilityStatus: DRIVER_AVAILABILITY_STATUS.ON_TRIP,
       });

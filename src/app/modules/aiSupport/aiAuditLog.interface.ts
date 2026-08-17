@@ -3,7 +3,7 @@ import { Types } from "mongoose";
 
 export interface IAiAuditLog {
   _id?: Types.ObjectId;
-  action: string; 
+  action: string;
   performedBy?: Types.ObjectId;
   userType: "admin" | "driver" | "system";
   details?: Record<string, any>;
