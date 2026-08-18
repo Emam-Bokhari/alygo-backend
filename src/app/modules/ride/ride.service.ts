@@ -1244,6 +1244,8 @@ const acceptRide = async (
     // Get tracking info for ETA
     const tracking = await Tracking.findOne({ rideId: ride._id });
 
+    const cancellationFeePreview = await CancellationPolicyService.calculateCancellationFeeForRide(ride);
+
     rideUserSocketHelper.emitRideAccepted(ride.userId.toString(), {
       ride: populatedRide,
       ...getRideScheduleInfo(ride),
@@ -1252,6 +1254,7 @@ const acceptRide = async (
       pickupLocation: ride.pickup,
       rideCategory: ride.rideCategory,
       price: ride.fare.total,
+      cancellationFeePreview,
       estimatedArrivalMinutes: tracking?.estimatedArrivalMinutes || 0,
       remainingDistanceKm: tracking?.remainingDistanceKm || 0,
       polyline: tracking?.polyline || "",
@@ -1269,6 +1272,7 @@ const acceptRide = async (
       rideUserSocketHelper.emitReservationConfirmed(ride.userId.toString(), {
         ride: populatedRide,
         driver: driverSummary,
+        cancellationFeePreview,
       });
       rideUserSocketHelper.emitReservationDriverAssigned(
         ride.userId.toString(),
@@ -1276,6 +1280,7 @@ const acceptRide = async (
           rideId: ride._id,
           ...getRideScheduleInfo(ride),
           driver: driverSummary,
+          cancellationFeePreview,
         },
       );
     }
@@ -1472,6 +1477,8 @@ const arriveAtPickup = async (
   );
   const passengerSummary = userDoc ? buildPassengerSummary(userDoc) : undefined;
 
+  const cancellationFeePreview = await CancellationPolicyService.calculateCancellationFeeForRide(ride);
+
   const baseEventData = {
     rideId: ride._id,
     ...getRideScheduleInfo(ride),
@@ -1480,6 +1487,7 @@ const arriveAtPickup = async (
     price: ride.fare.total,
     estimatedArrivalMinutes: 0,
     remainingDistanceKm: 0,
+    cancellationFeePreview,
   };
 
   // Send real-time updates with enriched participant summaries
@@ -2664,11 +2672,6 @@ const cancelRide = async (
           { $set: { driverAvailabilityStatus: "online" } },
           { session },
         );
-
-        // Update driver availability after cancellation
-        await DriverDutyPolicyServices.updateDriverAvailability(
-          ride.driverId.toString(),
-        );
       }
 
       ride.status =
@@ -2756,6 +2759,13 @@ const cancelRide = async (
 
       await session.commitTransaction();
       session.endSession();
+
+      // Update driver availability after cancellation (outside transaction to prevent write conflict/blocking)
+      if (ride.driverId) {
+        await DriverDutyPolicyServices.updateDriverAvailability(
+          ride.driverId.toString(),
+        );
+      }
 
       if (isRiderDriver) {
         PointsService.deductPoints(
@@ -2982,11 +2992,6 @@ const cancelRide = async (
         { session },
       );
 
-      // Update driver availability after cancellation
-      await DriverDutyPolicyServices.updateDriverAvailability(
-        cancellingDriverUserId,
-      );
-
       // 2. Update Ride details
       // Remove driverId and carId, revert status to SEARCHING_DRIVER
       ride.status = RIDE_STATUS.SEARCHING_DRIVER;
@@ -3013,6 +3018,11 @@ const cancelRide = async (
       await ride.save({ session });
       await session.commitTransaction();
       session.endSession();
+
+      // Update driver availability after cancellation (outside transaction to prevent write conflict/blocking)
+      await DriverDutyPolicyServices.updateDriverAvailability(
+        cancellingDriverUserId,
+      );
 
       // Deduct points for accepted ride cancellation
       PointsService.deductPoints(
@@ -3493,6 +3503,9 @@ const getRideDetails = async (
   if (ride.status === RIDE_STATUS.SEARCHING_DRIVER) {
     (rideObj as any).driverSearch = await calculateDriverSearchTiming(ride);
   }
+
+  // Add dynamic cancellation fee preview
+  (rideObj as any).cancellationFeePreview = await CancellationPolicyService.calculateCancellationFeeForRide(ride);
 
   return rideObj as IRide;
 };

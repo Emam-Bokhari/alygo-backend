@@ -17,6 +17,7 @@ import { Driver } from "../driver/driver.model";
 import { Car } from "../car/car.model";
 import { buildDriverSummary, buildPassengerSummary } from "../ride/helpers/buildRideParticipantSummary";
 import { getRideScheduleInfo } from "../../../shared/timezoneHelper";
+import { CancellationPolicyService } from "../cancellationPolicy/cancellationPolicy.service";
 
 const updatePromises = new Map<string, Promise<any>>();
 
@@ -522,8 +523,10 @@ const updateDriverLocation = async (
 
   const userDoc = await User.findById(ride.userId).select(
     "name profileImage averageRating totalRatings",
-  );
+  ); 
   const passengerSummary = userDoc ? buildPassengerSummary(userDoc) : undefined;
+
+  const cancellationFeePreview = await CancellationPolicyService.calculateCancellationFeeForRide(ride);
 
   for (const transition of transitions) {
     if (transition.type === "driver-on-the-way") {
@@ -533,6 +536,7 @@ const updateDriverLocation = async (
         pickupLocation: ride.pickup,
         rideCategory: ride.rideCategory,
         price: ride.fare.total,
+        cancellationFeePreview,
         estimatedArrivalMinutes: transition.payload.estimatedArrivalMinutes,
         remainingDistanceKm: transition.payload.remainingDistanceKm,
         polyline: tracking.polyline || "",
@@ -564,6 +568,7 @@ const updateDriverLocation = async (
         pickupLocation: ride.pickup,
         rideCategory: ride.rideCategory,
         price: ride.fare.total,
+        cancellationFeePreview,
         estimatedArrivalMinutes: 0,
         remainingDistanceKm: 0,
         polyline: tracking.polyline || "",

@@ -1,4 +1,5 @@
 import { StatusCodes } from "http-status-codes";
+import mongoose from "mongoose";
 import { CancellationPolicy } from "./cancellationPolicy.model";
 import { ICancellationPolicy } from "./cancellationPolicy.interface";
 import ApiError from "../../../errors/ApiErrors";
@@ -110,8 +111,44 @@ const getActiveCancellationPolicyFromDB =
     return await getPolicyConfig();
   };
 
+const calculateCancellationFeeForRide = async (ride: any): Promise<number> => {
+  try {
+    const policyConfig = await getPolicyConfig();
+    const isDriverAccepted = !!ride.driverId;
+    const isDriverArrived = ride.status === "driver_arrived";
+
+    let scenario: any;
+    if (!isDriverAccepted) {
+      scenario = policyConfig.passenger.beforeDriverAccepted;
+    } else if (isDriverArrived) {
+      scenario = policyConfig.passenger.afterDriverArrived;
+    } else {
+      scenario = policyConfig.passenger.afterDriverAccepted;
+    }
+
+    const surgeMultiplier = ride.fare?.surgeMultiplier || 1.0;
+    const cancellationFee = (scenario?.cancellationFee || 0) * surgeMultiplier;
+
+    // Check if the rider themselves is a driver (cancellation fee is 0 if so)
+    let isRiderDriver = false;
+    if (isDriverAccepted && ride.userId) {
+      const passengerDriver = await mongoose.model("Driver").findOne({
+        userId: typeof ride.userId === "object" && ride.userId._id ? ride.userId._id : ride.userId,
+      });
+      if (passengerDriver) {
+        isRiderDriver = true;
+      }
+    }
+
+    return isRiderDriver ? 0 : cancellationFee;
+  } catch (error) {
+    return 0;
+  }
+};
+
 export const CancellationPolicyService = {
   getPolicyConfig,
   createOrUpdateCancellationPolicyToDB,
   getActiveCancellationPolicyFromDB,
+  calculateCancellationFeeForRide,
 };
