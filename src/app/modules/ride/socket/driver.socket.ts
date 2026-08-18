@@ -63,6 +63,14 @@ const emitUserLocationUpdated = (driverId: string, data: any): boolean => {
   return socketHelper.sendToUser(driverId, "user-location-updated", data);
 };
 
+const emitDriverOnTheWay = (driverId: string, data: any): boolean => {
+  return socketHelper.sendToUser(driverId, "driver-on-the-way", data);
+};
+
+const emitDriverArrived = (driverId: string, data: any): boolean => {
+  return socketHelper.sendToUser(driverId, "driver-arrived", data);
+};
+
 export const rideDriverSocketHelper = {
   emitRideRequest,
   emitRideRequestCancelled,
@@ -79,4 +87,7 @@ export const rideDriverSocketHelper = {
   emitStopsAdded,
   emitReservationReminder,
   emitUserLocationUpdated,
+  emitDriverOnTheWay,
+  emitDriverArrived,
 };
+

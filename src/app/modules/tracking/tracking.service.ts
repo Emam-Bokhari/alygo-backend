@@ -15,7 +15,7 @@ import { logger } from "../../../shared/logger";
 import { GoogleRouteService } from "../../../services/googleRouteService";
 import { Driver } from "../driver/driver.model";
 import { Car } from "../car/car.model";
-import { buildDriverSummary } from "../ride/helpers/buildRideParticipantSummary";
+import { buildDriverSummary, buildPassengerSummary } from "../ride/helpers/buildRideParticipantSummary";
 import { getRideScheduleInfo } from "../../../shared/timezoneHelper";
 
 const updatePromises = new Map<string, Promise<any>>();
@@ -520,12 +520,16 @@ const updateDriverLocation = async (
   const car = await Car.findOne({ driverId: driverDoc?._id });
   const driverSummary = await buildDriverSummary(driverDoc, car);
 
+  const userDoc = await User.findById(ride.userId).select(
+    "name profileImage averageRating totalRatings",
+  );
+  const passengerSummary = userDoc ? buildPassengerSummary(userDoc) : undefined;
+
   for (const transition of transitions) {
     if (transition.type === "driver-on-the-way") {
-      rideUserSocketHelper.emitDriverOnTheWay(ride.userId.toString(), {
+      const baseEventData = {
         rideId: ride._id,
         ...getRideScheduleInfo(ride),
-        driver: driverSummary,
         pickupLocation: ride.pickup,
         rideCategory: ride.rideCategory,
         price: ride.fare.total,
@@ -540,16 +544,23 @@ const updateDriverLocation = async (
           : undefined,
         status: ride.status,
         timestamp: new Date(),
+      };
+      rideUserSocketHelper.emitDriverOnTheWay(ride.userId.toString(), {
+        ...baseEventData,
+        driver: driverSummary,
+      });
+      rideDriverSocketHelper.emitDriverOnTheWay(driverUserId, {
+        ...baseEventData,
+        user: passengerSummary,
       });
       logger.info(
         `[TrackingService] Emitted driver-on-the-way for ride ${ride._id}`,
       );
     } else if (transition.type === "driver-arrived") {
-      rideUserSocketHelper.emitDriverArrived(ride.userId.toString(), {
+      const baseEventData = {
         rideId: ride._id,
         ...getRideScheduleInfo(ride),
         automaticDetection: true,
-        driver: driverSummary,
         pickupLocation: ride.pickup,
         rideCategory: ride.rideCategory,
         price: ride.fare.total,
@@ -564,6 +575,14 @@ const updateDriverLocation = async (
           : undefined,
         status: ride.status,
         timestamp: new Date(),
+      };
+      rideUserSocketHelper.emitDriverArrived(ride.userId.toString(), {
+        ...baseEventData,
+        driver: driverSummary,
+      });
+      rideDriverSocketHelper.emitDriverArrived(driverUserId, {
+        ...baseEventData,
+        user: passengerSummary,
       });
       logger.info(
         `[TrackingService] Emitted driver-arrived for ride ${ride._id}`,

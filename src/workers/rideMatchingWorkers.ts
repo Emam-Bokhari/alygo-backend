@@ -78,7 +78,7 @@ const rideExpirationWorker = new Worker(
       await ride.save();
 
       // Calculate driver search timing for notification
-      const driverSearchTiming = calculateDriverSearchTiming(ride);
+      const driverSearchTiming = await calculateDriverSearchTiming(ride);
 
       // Notify user
       rideUserSocketHelper.emitRideExpired(userId, {
@@ -134,7 +134,7 @@ const driverVisibilityWorker = new Worker(
         await ride.save();
 
         // Calculate driver search timing for notification
-        const driverSearchTiming = calculateDriverSearchTiming(ride);
+        const driverSearchTiming = await calculateDriverSearchTiming(ride);
 
         // Notify driver to remove the request from their screen
         rideDriverSocketHelper.emitRideRequestExpired(driverId, {
@@ -293,7 +293,11 @@ const radiusExpansionWorker = new Worker(
       }
 
       // Calculate driver search timing for notifications
-      const driverSearchTiming = calculateDriverSearchTiming(ride);
+      const driverSearchTiming = await calculateDriverSearchTiming(ride);
+
+      const startTime = new Date();
+      const visibilityDurationSeconds = systemConfig.driverMatching.driverVisibilityDurationSeconds;
+      const endTime = new Date(startTime.getTime() + visibilityDurationSeconds * 1000);
 
       // Send ride requests to new drivers via socket
       newDrivers.forEach((driver: any) => {
@@ -306,6 +310,9 @@ const radiusExpansionWorker = new Worker(
           fare: ride.fare.total,
           routeInfo: ride.routeInfo,
           driverSearch: driverSearchTiming,
+          startTime: startTime.toISOString(),
+          endTime: endTime.toISOString(),
+          timeoutSeconds: visibilityDurationSeconds,
         });
       });
 

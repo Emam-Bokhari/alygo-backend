@@ -809,7 +809,7 @@ const requestRide = async (
   }
 
   // Calculate driver search timing information for response
-  const driverSearchTiming = calculateDriverSearchTiming(ride);
+  const driverSearchTiming = await calculateDriverSearchTiming(ride);
 
   // Initialize live tracking record for the ride
   await Tracking.create({
@@ -842,6 +842,10 @@ const requestRide = async (
   // Build passenger summary once for all drivers
   const passengerSummary = buildPassengerSummary(user);
 
+  const startTime = new Date();
+  const visibilityDurationSeconds = systemConfig.driverMatching.driverVisibilityDurationSeconds;
+  const endTime = new Date(startTime.getTime() + visibilityDurationSeconds * 1000);
+
   logger.info(
     `Attempting to send ride-request to ${selectedDrivers.length} drivers`,
   );
@@ -861,6 +865,9 @@ const requestRide = async (
         routeInfo: ride.routeInfo,
         driverSearch: driverSearchTiming,
         user: passengerSummary,
+        startTime: startTime.toISOString(),
+        endTime: endTime.toISOString(),
+        timeoutSeconds: visibilityDurationSeconds,
       },
     );
     logger.info(
@@ -1232,7 +1239,7 @@ const acceptRide = async (
 
     // Real-time socket events:
     // A. Notify Passenger that ride is accepted
-    const driverSearchTiming = calculateDriverSearchTiming(ride);
+    const driverSearchTiming = await calculateDriverSearchTiming(ride);
 
     // Get tracking info for ETA
     const tracking = await Tracking.findOne({ rideId: ride._id });
@@ -1460,16 +1467,29 @@ const arriveAtPickup = async (
   const car = await Car.findOne({ driverId: driverDoc?._id });
   const driverSummary = await buildDriverSummary(driverDoc, car);
 
-  // Send real-time updates with enriched driver summary
-  rideUserSocketHelper.emitDriverArrived(ride.userId.toString(), {
+  const userDoc = await User.findById(ride.userId).select(
+    "name profileImage averageRating totalRatings",
+  );
+  const passengerSummary = userDoc ? buildPassengerSummary(userDoc) : undefined;
+
+  const baseEventData = {
     rideId: ride._id,
     ...getRideScheduleInfo(ride),
-    driver: driverSummary,
     pickupLocation: ride.pickup,
     rideCategory: ride.rideCategory,
     price: ride.fare.total,
     estimatedArrivalMinutes: 0,
     remainingDistanceKm: 0,
+  };
+
+  // Send real-time updates with enriched participant summaries
+  rideUserSocketHelper.emitDriverArrived(ride.userId.toString(), {
+    ...baseEventData,
+    driver: driverSummary,
+  });
+  rideDriverSocketHelper.emitDriverArrived(driverUserId, {
+    ...baseEventData,
+    user: passengerSummary,
   });
 
   await sendNotifications({
@@ -3030,7 +3050,7 @@ const cancelRide = async (
         rideUserSocketHelper.emitRideExpired(ride.userId.toString(), {
           rideId: ride._id,
           message: "Request expired. No driver found within the time limit.",
-          driverSearch: calculateDriverSearchTiming(ride),
+          driverSearch: await calculateDriverSearchTiming(ride),
         });
       } else {
         // Schedule overall expiration with remaining timer
@@ -3080,13 +3100,17 @@ const cancelRide = async (
           ride.driverMatching.notifiedDrivers.push(...newDriverNotifications);
           await ride.save();
 
-          const driverSearchTiming = calculateDriverSearchTiming(ride);
+          const driverSearchTiming = await calculateDriverSearchTiming(ride);
 
           // Build passenger summary for new drivers
           const userDoc = await User.findById(ride.userId).select(
             "name profileImage averageRating totalRatings",
           );
           const passengerSummary = buildPassengerSummary(userDoc);
+
+          const startTime = new Date();
+          const visibilityDurationSeconds = systemConfig.driverMatching.driverVisibilityDurationSeconds;
+          const endTime = new Date(startTime.getTime() + visibilityDurationSeconds * 1000);
 
           newDrivers.forEach((driver: any) => {
             rideDriverSocketHelper.emitRideRequest(driver.driverId.toString(), {
@@ -3099,6 +3123,9 @@ const cancelRide = async (
               routeInfo: ride.routeInfo,
               driverSearch: driverSearchTiming,
               user: passengerSummary,
+              startTime: startTime.toISOString(),
+              endTime: endTime.toISOString(),
+              timeoutSeconds: visibilityDurationSeconds,
             });
 
             driverVisibilityQueue.add(
@@ -3464,7 +3491,7 @@ const getRideDetails = async (
   // Add driver search timing if ride is in searching state
   const rideObj = ride.toObject();
   if (ride.status === RIDE_STATUS.SEARCHING_DRIVER) {
-    (rideObj as any).driverSearch = calculateDriverSearchTiming(ride);
+    (rideObj as any).driverSearch = await calculateDriverSearchTiming(ride);
   }
 
   return rideObj as IRide;
@@ -3554,7 +3581,7 @@ const getActiveRide = async (
   // Add driver search timing if ride is in searching state
   const rideObj = ride.toObject();
   if (ride.status === RIDE_STATUS.SEARCHING_DRIVER) {
-    (rideObj as any).driverSearch = calculateDriverSearchTiming(ride);
+    (rideObj as any).driverSearch = await calculateDriverSearchTiming(ride);
   }
 
   return rideObj as IRide;
