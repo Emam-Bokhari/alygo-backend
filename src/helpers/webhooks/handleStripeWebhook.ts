@@ -134,6 +134,38 @@ export const handleStripeWebhook = async (event: any): Promise<void> => {
           paymentIntentId,
           session,
         );
+      } else if (metadata.type === "background_check_payment") {
+        const driverId = metadata.driverId;
+        const userId = metadata.userId;
+        const paymentIntentId = session.payment_intent as string;
+
+        const tx = await Transaction.findOne({
+          stripeCheckoutSessionId: session.id,
+          paymentStatus: PAYMENT_STATUS.PENDING,
+        });
+
+        if (tx) {
+          tx.paymentStatus = PAYMENT_STATUS.PAID;
+          if (paymentIntentId) {
+            tx.stripePaymentIntentId = paymentIntentId;
+            tx.gatewayTransactionId = paymentIntentId;
+          }
+          tx.gatewayResponse = session;
+          await tx.save();
+        }
+
+        await Driver.findByIdAndUpdate(driverId, {
+          $set: {
+            backgroundCheckPaymentStatus: "paid",
+          },
+        });
+
+        await sendNotifications({
+          receiver: new Types.ObjectId(userId),
+          type: NOTIFICATION_TYPE.DRIVER,
+          title: "Background Check Payment Successful",
+          text: "Your background check payment was successful. You can now initiate your background check.",
+        });
       }
       break;
     }

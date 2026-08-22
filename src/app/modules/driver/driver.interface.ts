@@ -129,6 +129,7 @@ export type IDriver = {
   checkrBackgroundReportId?: string;
   backgroundCheckPassed?: boolean;
   backgroundCheckPassedAt?: Date;
+  backgroundCheckPaymentStatus?: "unpaid" | "pending" | "paid";
   drivingLicenseState?: string;
   suspension?: {
     isSuspended: boolean;

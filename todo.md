@@ -1,7 +1,6 @@
 <!--
 # Driver:
-4. background check baki ase
-5. live selfie ar kaj ta baki ase
+1. background check ar jonno payment korte hobe ta k arpor e kebol she background check korte parbe, tu aitar jonno payment ta implement korar baki ase
 -->
 
 <!-- ========================================================================= -->

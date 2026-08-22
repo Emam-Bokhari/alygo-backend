@@ -184,6 +184,40 @@ const verifySelfie = catchAsync(async (req, res) => {
   });
 });
 
+const getBackgroundCheckFee = catchAsync(async (req, res) => {
+  if (!req.user) {
+    throw new ApiError(401, "User not authenticated");
+  }
+
+  const { id } = req.user as { id: string };
+  const result = await DriverVerificationService.getBackgroundCheckFee(id);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Background check fee retrieved successfully",
+    data: result,
+  });
+});
+
+const createBackgroundCheckPaymentSession = catchAsync(async (req, res) => {
+  if (!req.user) {
+    throw new ApiError(401, "User not authenticated");
+  }
+
+  const { id } = req.user as { id: string };
+  const result = await DriverVerificationService.createBackgroundCheckPaymentSession(
+    id,
+  );
+
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Background check payment session created successfully",
+    data: result,
+  });
+});
+
 export const DriverController = {
   createDriver,
   getDriverProfile,
@@ -196,4 +230,6 @@ export const DriverController = {
   getDrivingHoursLedger,
   initiateBackgroundCheck,
   verifySelfie,
+  getBackgroundCheckFee,
+  createBackgroundCheckPaymentSession,
 };

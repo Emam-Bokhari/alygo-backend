@@ -97,7 +97,7 @@ const getTransactionsByUser = async (
       };
     } else if (normalizedFilter === "spend") {
       query.transactionType = {
-        $in: [TRANSACTION_TYPE.PAYOUT],
+        $in: [TRANSACTION_TYPE.PAYOUT, TRANSACTION_TYPE.BACKGROUND_CHECK_PAYMENT],
       };
     } else {
       // "all"
@@ -112,6 +112,7 @@ const getTransactionsByUser = async (
           TRANSACTION_TYPE.LOST_FOUND_DELIVERY,
           TRANSACTION_TYPE.DRIVER_REFERRAL_REWARD,
           TRANSACTION_TYPE.USER_REFERRAL_REWARD,
+          TRANSACTION_TYPE.BACKGROUND_CHECK_PAYMENT,
         ],
       };
     }
@@ -166,7 +167,10 @@ const getTransactionsByUser = async (
       txType === TRANSACTION_TYPE.DRIVER_REFERRAL_REWARD
     ) {
       flowType = "add_money";
-    } else if (txType === TRANSACTION_TYPE.PAYOUT) {
+    } else if (
+      txType === TRANSACTION_TYPE.PAYOUT ||
+      txType === TRANSACTION_TYPE.BACKGROUND_CHECK_PAYMENT
+    ) {
       flowType = "spend";
     } else if (
       txType === TRANSACTION_TYPE.BOOKING_PAYMENT ||
@@ -253,6 +257,8 @@ const getTransactions = async (
       matchQuery.transactionType = TRANSACTION_TYPE.BOOKING_PAYMENT;
     } else if (filter === "withdrawal") {
       matchQuery.transactionType = TRANSACTION_TYPE.PAYOUT;
+    } else if (filter === "background_check_payment") {
+      matchQuery.transactionType = TRANSACTION_TYPE.BACKGROUND_CHECK_PAYMENT;
     } else if (filter === "refund") {
       matchQuery.transactionType = TRANSACTION_TYPE.REFUND;
     } else if (filter === "bonus") {
@@ -272,6 +278,7 @@ const getTransactions = async (
           TRANSACTION_TYPE.REFUND,
           TRANSACTION_TYPE.PAYOUT,
           TRANSACTION_TYPE.LOST_FOUND_DELIVERY,
+          TRANSACTION_TYPE.BACKGROUND_CHECK_PAYMENT,
         ],
       };
     }
@@ -446,6 +453,12 @@ const getTransactions = async (
         icon = "car";
         displayColor = "green";
         amount = txObj.amount;
+      } else if (txType === TRANSACTION_TYPE.BACKGROUND_CHECK_PAYMENT) {
+        transactionType = "BACKGROUND_CHECK_PAYMENT";
+        title = "Background Check Fee";
+        icon = "shield-check";
+        displayColor = "red";
+        amount = -txObj.amount;
       } else if (txType === TRANSACTION_TYPE.PAYOUT) {
         transactionType = "WITHDRAWAL";
         title = "Stripe Payout";

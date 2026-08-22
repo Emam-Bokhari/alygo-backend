@@ -417,6 +417,11 @@ const driverSchema = new Schema<IDriver, DriverModel>(
       type: Date,
       default: null,
     },
+    backgroundCheckPaymentStatus: {
+      type: String,
+      enum: ["unpaid", "pending", "paid"],
+      default: "unpaid",
+    },
     drivingLicenseState: {
       type: String,
       default: "",

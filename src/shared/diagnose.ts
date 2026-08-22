@@ -60,7 +60,7 @@ export async function runDiagnostics() {
             userId: d.userId,
             driverAvailabilityStatus: d.driverAvailabilityStatus,
             approvalStatus: d.approvalStatus,
-            isDeleted: d.isDeleted,
+            isDeleted: (d as any).isDeleted,
             location: d.location,
             serviceAreaId: d.serviceAreaId,
             availability: d.availability,
@@ -83,7 +83,7 @@ export async function runDiagnostics() {
             userId: specDriver.userId,
             driverAvailabilityStatus: specDriver.driverAvailabilityStatus,
             approvalStatus: specDriver.approvalStatus,
-            isDeleted: specDriver.isDeleted,
+            isDeleted: (specDriver as any).isDeleted,
             location: specDriver.location,
             serviceAreaId: specDriver.serviceAreaId,
             availability: specDriver.availability,
@@ -143,7 +143,7 @@ export async function runDiagnostics() {
         JSON.stringify(
           {
             _id: sa._id,
-            name: sa.name,
+            name: (sa as any).name,
             status: sa.status,
             type: sa.type,
             location: sa.location,

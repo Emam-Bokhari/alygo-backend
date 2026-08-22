@@ -64,6 +64,18 @@ router.post(
   DriverController.initiateBackgroundCheck,
 );
 
+router.get(
+  "/me/background-check/fee",
+  isAuthenticated,
+  DriverController.getBackgroundCheckFee,
+);
+
+router.post(
+  "/me/background-check/payment-session",
+  isAuthenticated,
+  DriverController.createBackgroundCheckPaymentSession,
+);
+
 router.post(
   "/me/verify-selfie",
   isAuthenticated,

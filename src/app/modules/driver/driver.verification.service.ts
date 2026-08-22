@@ -8,6 +8,14 @@ import { sendNotifications } from "../../../helpers/notificationsHelper";
 import { NOTIFICATION_TYPE } from "../notification/notification.constant";
 import config from "../../../config";
 import { logger } from "../../../shared/logger";
+import { BackgroundCheckFee } from "../complianceCenter/complianceCenter.model";
+import { FEE_STATUS } from "../complianceCenter/complianceCenter.constant";
+import StripeService from "../stripe/stripe.service";
+import { TransactionService } from "../transaction/transaction.service";
+import { TRANSACTION_TYPE } from "../transaction/transaction.constant";
+import { PAYMENT_METHOD, PAYMENT_STATUS } from "../ride/ride.constant";
+import { ServiceAreaServices } from "../serviceArea/serviceArea.service";
+import { ServiceArea } from "../serviceArea/serviceArea.model";
 
 /**
  * Automatically evaluates and triggers driving license / MVR check on Checkr
@@ -215,6 +223,14 @@ const initiateBackgroundCheck = async (
     await Driver.findByIdAndUpdate(driver._id, { $set: driverUpdates });
   }
 
+  // Assert driver has paid for the background check
+  if (driver.backgroundCheckPaymentStatus !== "paid") {
+    throw new ApiError(
+      400,
+      "You must pay for the background check before initiating it.",
+    );
+  }
+
   // Prevent duplicate background check reports
   if (
     driver.checkrBackgroundReportId &&
@@ -340,6 +356,7 @@ const initiateBackgroundCheck = async (
         checkrBackgroundReportId: report.id,
         backgroundCheckStatus: VERIFICATION_STATUS.PENDING,
         backgroundCheckPassed: false,
+        backgroundCheckPaymentStatus: "unpaid", // Consume the payment
       },
     },
     { new: true },
@@ -356,7 +373,196 @@ const initiateBackgroundCheck = async (
   return updatedDriver;
 };
 
+const getBackgroundCheckFee = async (driverUserId: string) => {
+  const driver = await Driver.findOne({ userId: new Types.ObjectId(driverUserId) });
+  if (!driver) {
+    throw new ApiError(404, "Driver profile not found");
+  }
+
+  // Find active background check fees
+  const activeFees = await BackgroundCheckFee.find({ status: FEE_STATUS.ACTIVE });
+  if (activeFees.length === 0) {
+    throw new ApiError(404, "No active background check fee configuration found.");
+  }
+
+  let matchedFee = null;
+
+  // 1. Try matching by serviceAreaId directly
+  if (driver.serviceAreaId) {
+    matchedFee = activeFees.find(
+      (fee) => fee.serviceAreaId && fee.serviceAreaId.toString() === driver.serviceAreaId!.toString()
+    );
+
+    // If not found, check if that service area has parent city/state and match their fees
+    if (!matchedFee) {
+      const serviceAreaDoc = await ServiceArea.findById(driver.serviceAreaId);
+      if (serviceAreaDoc) {
+        const parentIds: string[] = [];
+        if (serviceAreaDoc.cityId) parentIds.push(serviceAreaDoc.cityId.toString());
+        if (serviceAreaDoc.stateId) parentIds.push(serviceAreaDoc.stateId.toString());
+
+        if (parentIds.length > 0) {
+          matchedFee = activeFees.find(
+            (fee) => fee.serviceAreaId && parentIds.includes(fee.serviceAreaId.toString())
+          );
+        }
+      }
+    }
+  }
+
+  // 2. Try matching by coordinates using ServiceAreaServices.findServiceAreaByCoordinates
+  if (!matchedFee && driver.location?.coordinates && driver.location.coordinates.length === 2 &&
+      (driver.location.coordinates[0] !== 0 || driver.location.coordinates[1] !== 0)) {
+    const [lon, lat] = driver.location.coordinates;
+    const resolvedArea = await ServiceAreaServices.findServiceAreaByCoordinates(lon, lat);
+    if (resolvedArea) {
+      matchedFee = activeFees.find(
+        (fee) => fee.serviceAreaId && fee.serviceAreaId.toString() === resolvedArea._id.toString()
+      );
+
+      // If not found, check parents of resolved area
+      if (!matchedFee) {
+        const parentIds: string[] = [];
+        if (resolvedArea.cityId) parentIds.push(resolvedArea.cityId.toString());
+        if (resolvedArea.stateId) parentIds.push(resolvedArea.stateId.toString());
+
+        if (parentIds.length > 0) {
+          matchedFee = activeFees.find(
+            (fee) => fee.serviceAreaId && parentIds.includes(fee.serviceAreaId.toString())
+          );
+        }
+      }
+    }
+  }
+
+  // 3. Try matching case-insensitively using driver's registered taxCity against applicableState
+  if (!matchedFee) {
+    const cityInput = (driver.taxCity || "").trim().toUpperCase();
+    if (cityInput) {
+      matchedFee = activeFees.find(
+        (fee) => fee.applicableState && fee.applicableState.trim().toUpperCase() === cityInput
+      );
+    }
+  }
+
+  // 4. Try matching default fee (no serviceAreaId and no applicableState)
+  if (!matchedFee) {
+    matchedFee = activeFees.find((fee) => !fee.serviceAreaId && !fee.applicableState);
+  }
+
+  // 5. Fallback to first active fee
+  if (!matchedFee && activeFees.length > 0) {
+    matchedFee = activeFees[0];
+  }
+
+  if (!matchedFee) {
+    throw new ApiError(404, "No background check fee found for your location. Please contact support.");
+  }
+
+  // Get platform settings currency
+  const { PlatformSettingsService } = require("../platformSettings/platformSettings.service");
+  const platformCurrency = await PlatformSettingsService.getPlatformCurrency();
+
+  return {
+    feeId: matchedFee._id,
+    feeName: matchedFee.feeName,
+    amount: matchedFee.amount,
+    currency: (platformCurrency || "usd").toLowerCase(),
+    paymentStatus: driver.backgroundCheckPaymentStatus || "unpaid",
+  };
+};
+
+const createBackgroundCheckPaymentSession = async (
+  driverUserId: string,
+) => {
+  const driver = await Driver.findOne({ userId: new Types.ObjectId(driverUserId) });
+  if (!driver) {
+    throw new ApiError(404, "Driver not found");
+  }
+
+  // Prevent multiple payments:
+  // 1. If already paid
+  if (driver.backgroundCheckPaymentStatus === "paid") {
+    throw new ApiError(400, "You have already paid for the background check. You can proceed to initiate it.");
+  }
+
+  // 2. If a background check is currently in progress or verified
+  if (
+    driver.checkrBackgroundReportId &&
+    (driver.backgroundCheckStatus === VERIFICATION_STATUS.PENDING ||
+      driver.backgroundCheckStatus === VERIFICATION_STATUS.PROCESSING ||
+      driver.backgroundCheckStatus === VERIFICATION_STATUS.VERIFIED)
+  ) {
+    throw new ApiError(400, "Background check is already in progress or has been verified.");
+  }
+
+  const user = await User.findById(driver.userId);
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  // Resolve the fee amount
+  const feeInfo = await getBackgroundCheckFee(driverUserId);
+
+  // Get or create Stripe customer
+  const stripeCustomerId = await StripeService.getOrCreateCustomer(
+    user._id.toString(),
+    user.email,
+    user.name || "Driver"
+  );
+
+  // Create checkout session
+  const metadata = {
+    type: "background_check_payment",
+    driverId: driver._id.toString(),
+    userId: user._id.toString(),
+    feeId: feeInfo.feeId!.toString(),
+    amount: feeInfo.amount.toString(),
+  };
+
+  const successUrl = `${config.client_url || "http://localhost:3000"}/payment/success?session_id={CHECKOUT_SESSION_ID}&type=background_check_payment`;
+  const cancelUrl = `${config.client_url || "http://localhost:3000"}/payment/cancel?session_id={CHECKOUT_SESSION_ID}&type=background_check_payment`;
+
+  const session = await StripeService.createCheckoutSession(
+    feeInfo.amount,
+    feeInfo.currency,
+    metadata,
+    stripeCustomerId,
+    successUrl,
+    cancelUrl
+  );
+
+  // Create a pending transaction
+  await TransactionService.createTransaction({
+    userId: user._id,
+    driverId: driver._id,
+    stripeCustomerId,
+    stripeCheckoutSessionId: session.id,
+    amount: feeInfo.amount,
+    currency: feeInfo.currency.toUpperCase(),
+    paymentMethod: PAYMENT_METHOD.STRIPE,
+    paymentStatus: PAYMENT_STATUS.PENDING,
+    transactionType: TRANSACTION_TYPE.BACKGROUND_CHECK_PAYMENT,
+    description: `Background check fee: ${feeInfo.feeName}`,
+    metadata,
+  });
+
+  // Update driver payment status to pending
+  await Driver.findByIdAndUpdate(driver._id, {
+    $set: {
+      backgroundCheckPaymentStatus: "pending",
+    },
+  });
+
+  return {
+    checkoutUrl: session.url,
+    sessionId: session.id,
+  };
+};
+
 export const DriverVerificationService = {
   triggerMVRVerification,
   initiateBackgroundCheck,
+  getBackgroundCheckFee,
+  createBackgroundCheckPaymentSession,
 };

@@ -9,4 +9,5 @@ export enum TRANSACTION_TYPE {
   LOST_FOUND_DELIVERY = "lost_found_delivery",
   USER_REFERRAL_REWARD = "user_referral_reward",
   DRIVER_REFERRAL_REWARD = "driver_referral_reward",
+  BACKGROUND_CHECK_PAYMENT = "background_check_payment",
 }
