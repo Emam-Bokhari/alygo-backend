@@ -1773,18 +1773,59 @@ const startRide = async (
   );
   const passengerSummary = buildPassengerSummary(userDoc);
 
+  // Sort stops if any are present
+  const sortedStops = [...(ride.stops || [])].sort((a: any, b: any) => a.order - b.order);
+  const firstStop = sortedStops.length > 0 ? sortedStops[0] : null;
+
+  // Fetch and update tracking information for current/initial polyline
+  const tracking = await Tracking.findOneAndUpdate(
+    { rideId: ride._id },
+    {
+      $set: {
+        polyline: ride.routeInfo?.polyline || "",
+        remainingDistanceKm: ride.routeInfo?.totalDistanceKm || 0,
+        estimatedArrivalMinutes: ride.routeInfo?.totalDurationMinutes || 0,
+        etaCalculatedAt: new Date(),
+        targetIsPickup: false,
+        targetIsDestination: !firstStop,
+        targetType: firstStop ? "stop" : "destination",
+        targetLocation: firstStop
+          ? {
+              type: "Point",
+              coordinates: firstStop.location.coordinates,
+            }
+          : {
+              type: "Point",
+              coordinates: ride.destination.location.coordinates,
+            },
+        targetStopOrder: firstStop ? firstStop.order : null,
+      },
+    },
+    { new: true },
+  );
+
   // Socket update - notify both passenger and driver with enriched summaries
   rideUserSocketHelper.emitRideStarted(ride.userId.toString(), {
     rideId: ride._id,
     ...getRideScheduleInfo(ride),
     verificationMethod: methodUsed,
     driver: driverSummary,
+    estimatedArrivalMinutes: tracking?.estimatedArrivalMinutes || 0,
+    remainingDistanceKm: tracking?.remainingDistanceKm || 0,
+    polyline: tracking?.polyline || ride.routeInfo?.polyline || "",
+    status: ride.status,
+    timestamp: new Date(),
   });
 
   rideDriverSocketHelper.emitRideStarted(driverUserId, {
     rideId: ride._id,
     ...getRideScheduleInfo(ride),
     user: passengerSummary,
+    estimatedArrivalMinutes: tracking?.estimatedArrivalMinutes || 0,
+    remainingDistanceKm: tracking?.remainingDistanceKm || 0,
+    polyline: tracking?.polyline || ride.routeInfo?.polyline || "",
+    status: ride.status,
+    timestamp: new Date(),
   });
 
   await sendNotifications({
