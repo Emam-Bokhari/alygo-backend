@@ -175,7 +175,17 @@ const getSystemConfig = async (
     );
   }
 
-  return configs[0];
+  const config = configs[0];
+  if (config.driverSelfieVerificationIntervalHours === undefined) {
+    config.driverSelfieVerificationIntervalHours = 12;
+    await SystemConfiguration.updateOne(
+      { _id: config._id },
+      { $set: { driverSelfieVerificationIntervalHours: 12 } },
+      { session },
+    );
+  }
+
+  return config;
 };
 
 const getSystemConfigurationFromDB =
