@@ -45,6 +45,14 @@ const trackingSchema = new Schema<ITracking, TrackingModel>(
       default: Date.now,
       required: true,
     },
+    heading: {
+      type: Number,
+      required: false,
+    },
+    speed: {
+      type: Number,
+      required: false,
+    },
     // Live tracking enhancements
     remainingDistanceKm: {
       type: Number,

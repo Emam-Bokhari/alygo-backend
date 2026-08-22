@@ -133,7 +133,10 @@ const calculateCancellationFeeForRide = async (ride: any): Promise<number> => {
     let isRiderDriver = false;
     if (isDriverAccepted && ride.userId) {
       const passengerDriver = await mongoose.model("Driver").findOne({
-        userId: typeof ride.userId === "object" && ride.userId._id ? ride.userId._id : ride.userId,
+        userId:
+          typeof ride.userId === "object" && ride.userId._id
+            ? ride.userId._id
+            : ride.userId,
       });
       if (passengerDriver) {
         isRiderDriver = true;

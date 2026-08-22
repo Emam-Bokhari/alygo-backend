@@ -58,6 +58,8 @@ import {
   buildPassengerSocketPayload,
   buildDriverSocketPayload,
   getNearbyDriversDetails,
+  DriverSummary,
+  PassengerSummary,
 } from "./helpers/buildRideParticipantSummary";
 import {
   timezoneToUtc,
@@ -843,8 +845,11 @@ const requestRide = async (
   const passengerSummary = buildPassengerSummary(user);
 
   const startTime = new Date();
-  const visibilityDurationSeconds = systemConfig.driverMatching.driverVisibilityDurationSeconds;
-  const endTime = new Date(startTime.getTime() + visibilityDurationSeconds * 1000);
+  const visibilityDurationSeconds =
+    systemConfig.driverMatching.driverVisibilityDurationSeconds;
+  const endTime = new Date(
+    startTime.getTime() + visibilityDurationSeconds * 1000,
+  );
 
   logger.info(
     `Attempting to send ride-request to ${selectedDrivers.length} drivers`,
@@ -857,17 +862,17 @@ const requestRide = async (
       driver.driverId.toString(),
       {
         rideId: ride._id,
+        startTime: startTime.toISOString(),
+        endTime: endTime.toISOString(),
+        timeoutSeconds: visibilityDurationSeconds,
+        user: passengerSummary,
         ...getRideScheduleInfo(ride),
         pickup: ride.pickup,
         destination: ride.destination,
         stops: ride.stops,
         fare: ride.fare.total,
-        routeInfo: ride.routeInfo,
         driverSearch: driverSearchTiming,
-        user: passengerSummary,
-        startTime: startTime.toISOString(),
-        endTime: endTime.toISOString(),
-        timeoutSeconds: visibilityDurationSeconds,
+        routeInfo: ride.routeInfo,
       },
     );
     logger.info(
@@ -1234,6 +1239,10 @@ const acceptRide = async (
       .populate("userId", "name profileImage averageRating totalRatings")
       .populate("carId");
 
+    if (!populatedRide) {
+      throw new ApiError(StatusCodes.NOT_FOUND, "Ride not found");
+    }
+
     // Build enriched driver summary with ratings, total trips, and car info
     const driverSummary = await buildDriverSummary(driverDoc, car);
 
@@ -1244,12 +1253,42 @@ const acceptRide = async (
     // Get tracking info for ETA
     const tracking = await Tracking.findOne({ rideId: ride._id });
 
-    const cancellationFeePreview = await CancellationPolicyService.calculateCancellationFeeForRide(ride);
+    const cancellationFeePreview =
+      await CancellationPolicyService.calculateCancellationFeeForRide(ride);
 
     rideUserSocketHelper.emitRideAccepted(ride.userId.toString(), {
       ride: populatedRide,
       ...getRideScheduleInfo(ride),
       driver: driverSummary,
+      driverSearch: driverSearchTiming,
+      pickupLocation: ride.pickup,
+      rideCategory: ride.rideCategory,
+      price: ride.fare.total,
+      cancellationFeePreview,
+      estimatedArrivalMinutes: tracking?.estimatedArrivalMinutes || 0,
+      remainingDistanceKm: tracking?.remainingDistanceKm || 0,
+      polyline: tracking?.polyline || "",
+      driverLocation: tracking?.driverLocation?.coordinates
+        ? {
+            latitude: tracking.driverLocation.coordinates[1],
+            longitude: tracking.driverLocation.coordinates[0],
+          }
+        : undefined,
+      status: ride.status,
+      timestamp: new Date(),
+    });
+
+    // Build user (passenger) summary for the driver
+    const passengerSummary = populatedRide.userId
+      ? buildPassengerSummary(populatedRide.userId)
+      : undefined;
+
+    // Notify Driver that ride is accepted and send all ride, user details and polyline
+    rideDriverSocketHelper.emitRiderAccepted(driverUserId, {
+      ride: populatedRide,
+      ...getRideScheduleInfo(ride),
+      driver: driverSummary,
+      user: passengerSummary,
       driverSearch: driverSearchTiming,
       pickupLocation: ride.pickup,
       rideCategory: ride.rideCategory,
@@ -1477,7 +1516,8 @@ const arriveAtPickup = async (
   );
   const passengerSummary = userDoc ? buildPassengerSummary(userDoc) : undefined;
 
-  const cancellationFeePreview = await CancellationPolicyService.calculateCancellationFeeForRide(ride);
+  const cancellationFeePreview =
+    await CancellationPolicyService.calculateCancellationFeeForRide(ride);
 
   const baseEventData = {
     rideId: ride._id,
@@ -1552,8 +1592,8 @@ const requestStartVerification = async (
     }
   }
 
-  // Generate new 6-digit OTP
-  const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+  // Generate new 4-digit OTP
+  const otpCode = Math.floor(1000 + Math.random() * 9000).toString();
   const now = new Date();
   const expiresAt = new Date(now.getTime() + 5 * 60 * 1000); // 5 minutes expiration
 
@@ -1799,8 +1839,8 @@ const requestEndVerification = async (
     }
   }
 
-  // Generate new 6-digit OTP (different from start OTP)
-  const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+  // Generate new 4-digit OTP (different from start OTP)
+  const otpCode = Math.floor(1000 + Math.random() * 9000).toString();
   const now = new Date();
   const expiresAt = new Date(now.getTime() + 5 * 60 * 1000); // 5 minutes expiration
 
@@ -2349,8 +2389,8 @@ const completeRidePayment = async (
     });
 
     // Build enriched summaries for both passenger and driver
-    let driverSummary;
-    let passengerSummary;
+    let driverSummary: DriverSummary | undefined;
+    let passengerSummary: PassengerSummary | undefined;
 
     if (ride.driverId) {
       const driverDoc = await Driver.findOne({
@@ -2815,8 +2855,8 @@ const cancelRide = async (
       }
 
       // Build enriched summaries for both passenger and driver
-      let driverSummary;
-      let passengerSummary;
+      let driverSummary: DriverSummary | undefined;
+      let passengerSummary: PassengerSummary | undefined;
 
       if (ride.driverId) {
         const driverDoc = await Driver.findOne({
@@ -2849,6 +2889,13 @@ const cancelRide = async (
         ride.userId.toString(),
         cancelPayload,
       );
+
+      if (ride.driverId) {
+        rideDriverSocketHelper.emitRideCancelled(ride.driverId.toString(), {
+          ...cancelPayload,
+          user: passengerSummary,
+        });
+      }
 
       if (ride.rideType === RIDE_TYPE.SCHEDULED) {
         rideUserSocketHelper.emitReservationCancelled(
@@ -3119,23 +3166,26 @@ const cancelRide = async (
           const passengerSummary = buildPassengerSummary(userDoc);
 
           const startTime = new Date();
-          const visibilityDurationSeconds = systemConfig.driverMatching.driverVisibilityDurationSeconds;
-          const endTime = new Date(startTime.getTime() + visibilityDurationSeconds * 1000);
+          const visibilityDurationSeconds =
+            systemConfig.driverMatching.driverVisibilityDurationSeconds;
+          const endTime = new Date(
+            startTime.getTime() + visibilityDurationSeconds * 1000,
+          );
 
           newDrivers.forEach((driver: any) => {
             rideDriverSocketHelper.emitRideRequest(driver.driverId.toString(), {
               rideId: ride._id,
+              startTime: startTime.toISOString(),
+              endTime: endTime.toISOString(),
+              timeoutSeconds: visibilityDurationSeconds,
+              user: passengerSummary,
               ...getRideScheduleInfo(ride),
               pickup: ride.pickup,
               destination: ride.destination,
               stops: ride.stops,
               fare: ride.fare.total,
-              routeInfo: ride.routeInfo,
               driverSearch: driverSearchTiming,
-              user: passengerSummary,
-              startTime: startTime.toISOString(),
-              endTime: endTime.toISOString(),
-              timeoutSeconds: visibilityDurationSeconds,
+              routeInfo: ride.routeInfo,
             });
 
             driverVisibilityQueue.add(
@@ -3505,7 +3555,8 @@ const getRideDetails = async (
   }
 
   // Add dynamic cancellation fee preview
-  (rideObj as any).cancellationFeePreview = await CancellationPolicyService.calculateCancellationFeeForRide(ride);
+  (rideObj as any).cancellationFeePreview =
+    await CancellationPolicyService.calculateCancellationFeeForRide(ride);
 
   return rideObj as IRide;
 };

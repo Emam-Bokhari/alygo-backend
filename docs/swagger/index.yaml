@@ -1034,7 +1034,7 @@ paths:
                   type: string
                   format: color
             example:
-              otp: "690758"
+              otp: "6907"
     parameters:
       - name: id
         in: path
@@ -1062,7 +1062,7 @@ paths:
                   type: string
                   format: color
             example:
-              otp: "341674"
+              otp: "3416"
     parameters:
       - name: id
         in: path

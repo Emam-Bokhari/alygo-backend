@@ -21,9 +21,31 @@ const socket = (io: Server) => {
     logger.info(colors.blue("A User connected to Socket.IO"));
 
     // Attempt authentication via token in query or auth object
-    const token =
-      (socket.handshake.query?.token as string) ||
-      (socket.handshake.auth?.token as string);
+    let queryToken: string | undefined = undefined;
+    if (socket.handshake.query) {
+      for (const key of Object.keys(socket.handshake.query)) {
+        if (key.trim() === "token") {
+          queryToken = socket.handshake.query[key] as string;
+          break;
+        }
+      }
+    }
+
+    let authToken: string | undefined = undefined;
+    if (socket.handshake.auth) {
+      for (const key of Object.keys(socket.handshake.auth)) {
+        if (key.trim() === "token") {
+          authToken = socket.handshake.auth[key] as string;
+          break;
+        }
+      }
+    }
+
+    let token = queryToken || authToken;
+
+    if (token && token.startsWith("Bearer ")) {
+      token = token.split(" ")[1];
+    }
 
     if (token) {
       try {
@@ -68,6 +90,12 @@ const socket = (io: Server) => {
               `Socket successfully authenticated for User: ${userId} (${decoded.role})`,
             ),
           );
+        } else {
+          logger.error(
+            colors.red("Socket authentication failed: Invalid token payload."),
+          );
+          socket.disconnect();
+          return;
         }
       } catch (err: any) {
         logger.error(
@@ -75,6 +103,8 @@ const socket = (io: Server) => {
             `Socket connection token verification failed: ${err.message}`,
           ),
         );
+        socket.disconnect();
+        return;
       }
     }
 
@@ -111,6 +141,8 @@ const socket = (io: Server) => {
       async (data: {
         coordinates: [number, number]; // [longitude, latitude]
         address?: string;
+        heading?: number;
+        speed?: number;
       }) => {
         try {
           logger.info("Driver location update received via WebSocket");
@@ -121,7 +153,7 @@ const socket = (io: Server) => {
             return;
           }
 
-          const { coordinates, address } = data;
+          const { coordinates, address, heading, speed } = data;
           if (
             !coordinates ||
             !Array.isArray(coordinates) ||
@@ -158,6 +190,8 @@ const socket = (io: Server) => {
           await TrackingServices.processDriverLocationUpdate(userId, {
             coordinates: coords,
             address: address || "",
+            heading,
+            speed,
           });
         } catch (error: any) {
           logger.error(

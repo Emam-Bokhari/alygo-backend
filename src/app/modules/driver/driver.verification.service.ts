@@ -38,8 +38,22 @@ const triggerMVRVerification = async (driverId: string): Promise<void> => {
 
     // Check if required candidate and license details are present
     const nameParts = (user.name || "").trim().split(/\s+/);
-    const firstName = nameParts[0];
-    const lastName = nameParts.slice(1).join(" ") || firstName;
+    let firstName = "";
+    let middleName = "";
+    let lastName = "";
+
+    if (nameParts.length === 1) {
+      firstName = nameParts[0];
+      lastName = nameParts[0];
+    } else if (nameParts.length === 2) {
+      firstName = nameParts[0];
+      lastName = nameParts[1];
+    } else {
+      firstName = nameParts[0];
+      middleName = nameParts[1];
+      lastName = nameParts.slice(2).join(" ");
+    }
+
     const email = user.email;
     const phone = user.phone;
     const dob = user.dateOfBirth;
@@ -65,7 +79,7 @@ const triggerMVRVerification = async (driverId: string): Promise<void> => {
     let candidateId: string | undefined = driver.checkrCandidateId;
     if (!candidateId) {
       // Create new candidate on Checkr
-      const candidate = await CheckrService.createCandidate({
+      const candidatePayload: any = {
         first_name: firstName,
         last_name: lastName,
         email,
@@ -74,15 +88,29 @@ const triggerMVRVerification = async (driverId: string): Promise<void> => {
         driver_license_number: licenseNumber,
         driver_license_state: licenseState,
         copy_requested: true,
-        work_locations: [{ country: "US" }],
-      });
+        work_locations: [{ country: "US", state: licenseState }],
+      };
+      if (middleName) {
+        candidatePayload.middle_name = middleName;
+      } else {
+        candidatePayload.no_middle_name = true;
+      }
+
+      const candidate = await CheckrService.createCandidate(candidatePayload);
       candidateId = candidate.id;
     } else {
       // Reuse and update candidate with latest license details
-      await CheckrService.updateCandidate(candidateId, {
+      const updatePayload: any = {
         driver_license_number: licenseNumber,
         driver_license_state: licenseState,
-      });
+      };
+      if (middleName) {
+        updatePayload.middle_name = middleName;
+        updatePayload.no_middle_name = false;
+      } else {
+        updatePayload.no_middle_name = true;
+      }
+      await CheckrService.updateCandidate(candidateId, updatePayload);
     }
 
     if (!candidateId) {
@@ -90,7 +118,12 @@ const triggerMVRVerification = async (driverId: string): Promise<void> => {
     }
 
     // Create Checkr MVR report
-    const report = await CheckrService.createReport(candidateId, "mvr");
+    const report = await CheckrService.createReport(candidateId, "mvr", [
+      {
+        country: "US",
+        state: licenseState,
+      },
+    ]);
 
     // Save Checkr Candidate and Report ID to Driver and set status to pending
     await Driver.findByIdAndUpdate(driverId, {
@@ -197,13 +230,30 @@ const initiateBackgroundCheck = async (
 
   // Validate required information for Candidate & Background Check
   const nameParts = (user.name || "").trim().split(/\s+/);
-  const firstName = nameParts[0];
-  const lastName = nameParts.slice(1).join(" ") || firstName;
+  let firstName = "";
+  let middleName = "";
+  let lastName = "";
+
+  if (nameParts.length === 1) {
+    firstName = nameParts[0];
+    lastName = nameParts[0];
+  } else if (nameParts.length === 2) {
+    firstName = nameParts[0];
+    lastName = nameParts[1];
+  } else {
+    firstName = nameParts[0];
+    middleName = nameParts[1];
+    lastName = nameParts.slice(2).join(" ");
+  }
+
   const email = user.email;
   const phone = user.phone;
   const dob = user.dateOfBirth;
   const ssn = driver.ssn;
   const zipcode = driver.taxZipCode;
+  const state = driver.drivingLicenseState || driver.taxState || "CA";
+  const licenseNumber = driver.drivingLicenseNumber;
+  const licenseState = driver.drivingLicenseState || driver.taxState || "CA";
 
   if (!firstName || !lastName || !email || !phone || !dob) {
     throw new ApiError(
@@ -219,12 +269,19 @@ const initiateBackgroundCheck = async (
     );
   }
 
+  if (!licenseNumber) {
+    throw new ApiError(
+      400,
+      "Driver profile requires Driving License Number to run background check.",
+    );
+  }
+
   const formattedDob = dob.toISOString().split("T")[0];
 
   let candidateId: string | undefined = driver.checkrCandidateId;
   if (!candidateId) {
     // Create candidate
-    const candidate = await CheckrService.createCandidate({
+    const candidatePayload: any = {
       first_name: firstName,
       last_name: lastName,
       email,
@@ -232,16 +289,34 @@ const initiateBackgroundCheck = async (
       dob: formattedDob,
       ssn,
       zipcode,
+      driver_license_number: licenseNumber,
+      driver_license_state: licenseState,
       copy_requested: true,
-      work_locations: [{ country: "US" }],
-    });
+      work_locations: [{ country: "US", state }],
+    };
+    if (middleName) {
+      candidatePayload.middle_name = middleName;
+    } else {
+      candidatePayload.no_middle_name = true;
+    }
+
+    const candidate = await CheckrService.createCandidate(candidatePayload);
     candidateId = candidate.id;
   } else {
     // Update candidate details
-    await CheckrService.updateCandidate(candidateId, {
+    const updatePayload: any = {
       ssn,
       zipcode,
-    });
+      driver_license_number: licenseNumber,
+      driver_license_state: licenseState,
+    };
+    if (middleName) {
+      updatePayload.middle_name = middleName;
+      updatePayload.no_middle_name = false;
+    } else {
+      updatePayload.no_middle_name = true;
+    }
+    await CheckrService.updateCandidate(candidateId, updatePayload);
   }
 
   if (!candidateId) {
@@ -249,7 +324,12 @@ const initiateBackgroundCheck = async (
   }
 
   // Create Background Check report
-  const report = await CheckrService.createReport(candidateId, "background");
+  const report = await CheckrService.createReport(candidateId, "background", [
+    {
+      country: "US",
+      state,
+    },
+  ]);
 
   // Save report ID and update status to pending
   const updatedDriver = await Driver.findByIdAndUpdate(

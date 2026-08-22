@@ -4,7 +4,10 @@ import { Ride } from "../app/modules/ride/ride.model";
 import { RIDE_STATUS, CANCELLED_BY } from "../app/modules/ride/ride.constant";
 import { rideDriverSocketHelper } from "../app/modules/ride/socket/driver.socket";
 import { rideUserSocketHelper } from "../app/modules/ride/socket/user.socket";
-import { getNearbyDriversDetails } from "../app/modules/ride/helpers/buildRideParticipantSummary";
+import {
+  getNearbyDriversDetails,
+  PassengerSummary,
+} from "../app/modules/ride/helpers/buildRideParticipantSummary";
 import { logger } from "../shared/logger";
 import { calculateDriverSearchTiming } from "../helpers/rideSearchTimingHelper";
 import { getRideScheduleInfo } from "../shared/timezoneHelper";
@@ -295,24 +298,44 @@ const radiusExpansionWorker = new Worker(
       // Calculate driver search timing for notifications
       const driverSearchTiming = await calculateDriverSearchTiming(ride);
 
+      // Build passenger summary for new drivers
+      let passengerSummary: PassengerSummary | undefined;
+      try {
+        const { User } = await import("../app/modules/user/user.model");
+        const { buildPassengerSummary } =
+          await import("../app/modules/ride/helpers/buildRideParticipantSummary");
+        const userDoc = await User.findById(ride.userId).select(
+          "name profileImage averageRating totalRatings",
+        );
+        passengerSummary = buildPassengerSummary(userDoc);
+      } catch (err) {
+        logger.error(
+          `[RideMatchingWorker] Error building passenger summary: ${err}`,
+        );
+      }
+
       const startTime = new Date();
-      const visibilityDurationSeconds = systemConfig.driverMatching.driverVisibilityDurationSeconds;
-      const endTime = new Date(startTime.getTime() + visibilityDurationSeconds * 1000);
+      const visibilityDurationSeconds =
+        systemConfig.driverMatching.driverVisibilityDurationSeconds;
+      const endTime = new Date(
+        startTime.getTime() + visibilityDurationSeconds * 1000,
+      );
 
       // Send ride requests to new drivers via socket
       newDrivers.forEach((driver: any) => {
         rideDriverSocketHelper.emitRideRequest(driver.driverId.toString(), {
           rideId: ride._id,
+          startTime: startTime.toISOString(),
+          endTime: endTime.toISOString(),
+          timeoutSeconds: visibilityDurationSeconds,
+          user: passengerSummary,
           ...getRideScheduleInfo(ride),
           pickup: ride.pickup,
           destination: ride.destination,
           stops: ride.stops,
           fare: ride.fare.total,
-          routeInfo: ride.routeInfo,
           driverSearch: driverSearchTiming,
-          startTime: startTime.toISOString(),
-          endTime: endTime.toISOString(),
-          timeoutSeconds: visibilityDurationSeconds,
+          routeInfo: ride.routeInfo,
         });
       });
 

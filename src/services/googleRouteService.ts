@@ -182,63 +182,75 @@ class GoogleRouteServiceClass {
     const sortedStops = [...stops].sort((a, b) => a.order - b.order);
 
     if (!isRideStarted) {
-      const waypoints: ICoordinate[] = [pickup];
+      // 1. Query only driverLocation -> pickup from Google Directions API
+      const data = await this.fetchRawRoute(
+        driverLocation,
+        pickup,
+        [],
+        bypassCache,
+      );
+      const route = data.routes[0];
+      const googleLeg = route.legs[0];
+
+      const legs: ILeg[] = [];
+      const driverToPickupDistKm = parseFloat(
+        (googleLeg.distance.value / 1000).toFixed(2),
+      );
+      const driverToPickupDurMin =
+        Math.round(googleLeg.duration.value / 60) || 1;
+
+      // Leg 0: driver -> pickup (active)
+      legs.push({
+        from: "driver",
+        to: "pickup",
+        distanceKm: driverToPickupDistKm,
+        durationMinutes: driverToPickupDurMin,
+        isCurrent: true,
+      });
+
+      // Subsequent legs: pickup -> stops -> destination (estimated static)
+      const tripWaypoints: ICoordinate[] = [pickup];
       for (const stop of sortedStops) {
-        waypoints.push({
+        tripWaypoints.push({
           lat: stop.location.coordinates[1],
           lng: stop.location.coordinates[0],
         });
       }
+      tripWaypoints.push(destination);
 
-      const data = await this.fetchRawRoute(
-        driverLocation,
-        destination,
-        waypoints,
-        bypassCache,
-      );
-      const route = data.routes[0];
+      for (let i = 0; i < tripWaypoints.length - 1; i++) {
+        const fromCoord = tripWaypoints[i];
+        const toCoord = tripWaypoints[i + 1];
+        const distanceKm = this.getHaversineDistanceKm(
+          [fromCoord.lng, fromCoord.lat],
+          [toCoord.lng, toCoord.lat],
+        );
+        const durationMinutes = Math.round((distanceKm / 30) * 60) || 1;
 
-      const legs: ILeg[] = [];
-      let totalDistanceMeters = 0;
-      let totalDurationSeconds = 0;
-
-      for (let i = 0; i < route.legs.length; i++) {
-        const googleLeg = route.legs[i];
-        totalDistanceMeters += googleLeg.distance.value;
-        totalDurationSeconds += googleLeg.duration.value;
-
-        let fromName = "";
-        let toName = "";
-
-        if (i === 0) {
-          fromName = "driver";
-          toName = "pickup";
-        } else {
-          const prevStopIndex = i - 2;
-          const currentStopIndex = i - 1;
-          fromName =
-            prevStopIndex < 0
-              ? "pickup"
-              : `stop_${sortedStops[prevStopIndex].order}`;
-          toName =
-            currentStopIndex < sortedStops.length
-              ? `stop_${sortedStops[currentStopIndex].order}`
-              : "destination";
-        }
+        const prevStopIndex = i - 1;
+        const currentStopIndex = i;
+        const fromName =
+          prevStopIndex < 0
+            ? "pickup"
+            : `stop_${sortedStops[prevStopIndex].order}`;
+        const toName =
+          currentStopIndex < sortedStops.length
+            ? `stop_${sortedStops[currentStopIndex].order}`
+            : "destination";
 
         legs.push({
           from: fromName,
           to: toName,
-          distanceKm: parseFloat((googleLeg.distance.value / 1000).toFixed(2)),
-          durationMinutes: Math.round(googleLeg.duration.value / 60) || 1,
-          isCurrent: i === 0,
+          distanceKm,
+          durationMinutes,
+          isCurrent: false,
         });
       }
 
       return {
         legs,
-        totalDistanceKm: parseFloat((totalDistanceMeters / 1000).toFixed(2)),
-        totalDurationMinutes: Math.round(totalDurationSeconds / 60) || 1,
+        totalDistanceKm: driverToPickupDistKm,
+        totalDurationMinutes: driverToPickupDurMin,
         polyline: route.overview_polyline ? route.overview_polyline.points : "",
       };
     } else {

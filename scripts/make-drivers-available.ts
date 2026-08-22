@@ -41,10 +41,10 @@ async function run() {
     console.log("Dhaka Driver not found!");
   }
 
-  // Update Driver 2: Driver 6a59b25aec029a501f10cd9f -> update coordinates to Dhaka
-  const otherDriverId = "6a59b25aec029a501f10cd9f";
-  const result2 = await Driver.findByIdAndUpdate(
-    otherDriverId,
+  // Update Driver 2: Find by userId to update coordinates to Dhaka and make online
+  const targetUserId = "6a59af155d294c2c4111585d";
+  const result2 = await Driver.findOneAndUpdate(
+    { userId: targetUserId },
     {
       $set: {
         driverAvailabilityStatus: "online",
@@ -53,6 +53,7 @@ async function run() {
           coordinates: [90.4075871, 23.7809006], // exactly at user pickup
           address: "Dhaka, Bangladesh",
         },
+        serviceAreaId: new mongoose.Types.ObjectId("6a5b0c7fae072853104f835f"), // Dhaka City Service Area
         "availability.canReceiveRide": true,
         "availability.blockedReason": null,
         "availability.blockedUntil": null,
@@ -66,10 +67,11 @@ async function run() {
       id: result2._id,
       driverAvailabilityStatus: result2.driverAvailabilityStatus,
       location: result2.location,
+      serviceAreaId: result2.serviceAreaId,
       availability: result2.availability,
     });
   } else {
-    console.log("Other Driver not found!");
+    console.log("Other Driver not found for user ID!");
   }
 
   // Test finding eligible drivers

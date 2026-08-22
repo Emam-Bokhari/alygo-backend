@@ -11,38 +11,57 @@ import { NOTIFICATION_TYPE } from "../notification/notification.constant";
 import { USER_ROLES } from "../../../enums/user";
 
 const handleWebhook = catchAsync(async (req, res) => {
+  let isSignatureVerified = false;
   const signatureHeader = req.headers["x-checkr-signature"] as string;
+
   if (!signatureHeader) {
-    throw new ApiError(401, "Missing x-checkr-signature header");
+    if (process.env.NODE_ENV === "development") {
+      console.warn(
+        "⚠️ Warning: Missing x-checkr-signature header, but bypassing signature check in development mode.",
+      );
+      isSignatureVerified = true;
+    } else {
+      throw new ApiError(401, "Missing x-checkr-signature header");
+    }
   }
 
-  // Remove prefix if present
-  const signature = signatureHeader.replace("sha256=", "");
   const signingKey = config.checkr.signingKey || config.checkr.apiKey;
-
-  if (!signingKey) {
+  if (!signingKey && !isSignatureVerified) {
     throw new ApiError(500, "Checkr signing key or API key is not configured");
   }
 
-  const rawBody = (req as any).rawBody;
-  if (!rawBody) {
-    throw new ApiError(400, "Raw body is missing for signature verification");
-  }
+  if (signatureHeader && signingKey && !isSignatureVerified) {
+    // Remove prefix if present
+    const signature = signatureHeader.replace("sha256=", "");
+    const rawBody = (req as any).rawBody;
+    if (!rawBody) {
+      throw new ApiError(400, "Raw body is missing for signature verification");
+    }
 
-  // Cryptographically verify signature
-  const computedHex = crypto
-    .createHmac("sha256", signingKey)
-    .update(rawBody)
-    .digest("hex");
+    // Cryptographically verify signature
+    const computedHex = crypto
+      .createHmac("sha256", signingKey)
+      .update(rawBody)
+      .digest("hex");
 
-  const sigBuffer = Buffer.from(signature.toLowerCase(), "hex");
-  const compBuffer = Buffer.from(computedHex.toLowerCase(), "hex");
+    const sigBuffer = Buffer.from(signature.toLowerCase(), "hex");
+    const compBuffer = Buffer.from(computedHex.toLowerCase(), "hex");
 
-  if (
-    sigBuffer.length !== compBuffer.length ||
-    !crypto.timingSafeEqual(sigBuffer, compBuffer)
-  ) {
-    throw new ApiError(401, "Invalid webhook signature");
+    if (
+      sigBuffer.length === compBuffer.length &&
+      crypto.timingSafeEqual(sigBuffer, compBuffer)
+    ) {
+      isSignatureVerified = true;
+    } else {
+      if (process.env.NODE_ENV === "development") {
+        console.warn(
+          "⚠️ Warning: Invalid webhook signature, but bypassing signature check in development mode.",
+        );
+        isSignatureVerified = true;
+      } else {
+        throw new ApiError(401, "Invalid webhook signature");
+      }
+    }
   }
 
   const event = req.body;
@@ -87,7 +106,72 @@ const handleWebhook = catchAsync(async (req, res) => {
           mappedStatus = VERIFICATION_STATUS.FAILED;
         }
 
-        if (isMvr) {
+        const isCombined = dataObj.package === "alygo_driver_background_check";
+
+        if (isCombined) {
+          // Process Combined Background Check & MVR status change
+          const updateData: any = {
+            mvrStatus: mappedStatus,
+            backgroundCheckStatus: mappedStatus,
+            backgroundCheckPassed: passed,
+            lastVerificationDate: new Date(),
+            // Sync report IDs to prevent mismatched triggers
+            checkrMVRReportId: reportId,
+            checkrBackgroundReportId: reportId,
+          };
+
+          if (mappedStatus === VERIFICATION_STATUS.VERIFIED) {
+            updateData.mvrVerifiedAt = new Date();
+            updateData.backgroundCheckPassedAt = new Date();
+            updateData.verificationSource = "Checkr Combined";
+            updateData.verificationNotes =
+              "Checkr combined background and MVR verification clear.";
+          } else if (mappedStatus === VERIFICATION_STATUS.REVIEW_REQUIRED) {
+            updateData.verificationNotes =
+              "Checkr combined verification requires manual review.";
+          } else if (mappedStatus === VERIFICATION_STATUS.FAILED) {
+            updateData.verificationNotes =
+              "Checkr combined verification failed.";
+          }
+
+          await Driver.findByIdAndUpdate(driver._id, { $set: updateData });
+
+          // Send notifications
+          let title = "Verification Update";
+          let text = `Your background and MVR verification status is now ${mappedStatus}.`;
+          if (mappedStatus === VERIFICATION_STATUS.VERIFIED) {
+            title = "Verification Completed Successfully";
+            text =
+              "Your background check and driving license verification have completed successfully.";
+          } else if (mappedStatus === VERIFICATION_STATUS.REVIEW_REQUIRED) {
+            title = "Verification Review Required";
+            text = "Your verification details require manual admin review.";
+          }
+
+          await sendNotifications({
+            receiver: driver.userId,
+            type: NOTIFICATION_TYPE.DRIVER,
+            title,
+            text,
+          });
+
+          // Notify Admin
+          if (mappedStatus === VERIFICATION_STATUS.REVIEW_REQUIRED) {
+            const superAdmin = await User.findOne({
+              role: USER_ROLES.SUPER_ADMIN,
+            }).select("_id");
+            if (superAdmin) {
+              await sendNotifications({
+                receiver: superAdmin._id.toString(),
+                type: NOTIFICATION_TYPE.ADMIN,
+                title: "Driver Verification Review Required",
+                text: `Driver ${driver.drivingLicenseNumber || driver._id} requires manual verification review.`,
+                referenceId: driver._id.toString(),
+                referenceModel: "Driver" as any,
+              });
+            }
+          }
+        } else if (isMvr) {
           // Process MVR status change
           const updateData: any = {
             mvrStatus: mappedStatus,

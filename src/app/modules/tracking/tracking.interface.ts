@@ -14,6 +14,8 @@ export interface ITracking {
     coordinates: [number, number]; // [longitude, latitude]
   };
   lastUpdatedAt: Date;
+  heading?: number;
+  speed?: number;
   // Live tracking enhancements
   remainingDistanceKm?: number;
   estimatedArrivalMinutes?: number;

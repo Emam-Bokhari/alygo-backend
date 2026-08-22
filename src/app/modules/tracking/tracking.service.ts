@@ -15,7 +15,10 @@ import { logger } from "../../../shared/logger";
 import { GoogleRouteService } from "../../../services/googleRouteService";
 import { Driver } from "../driver/driver.model";
 import { Car } from "../car/car.model";
-import { buildDriverSummary, buildPassengerSummary } from "../ride/helpers/buildRideParticipantSummary";
+import {
+  buildDriverSummary,
+  buildPassengerSummary,
+} from "../ride/helpers/buildRideParticipantSummary";
 import { getRideScheduleInfo } from "../../../shared/timezoneHelper";
 import { CancellationPolicyService } from "../cancellationPolicy/cancellationPolicy.service";
 
@@ -217,6 +220,8 @@ const updateDriverLocation = async (
     rideId: string;
     coordinates: [number, number]; // [longitude, latitude]
     address?: string;
+    heading?: number;
+    speed?: number;
   },
 ): Promise<{
   tracking: ITracking;
@@ -273,6 +278,8 @@ const updateDriverLocation = async (
         type: "Point",
         coordinates: [longitude, latitude],
       },
+      heading: payload.heading,
+      speed: payload.speed,
       lastUpdatedAt: new Date(),
       lastDriverLocationUpdateAt: new Date(),
     });
@@ -313,11 +320,94 @@ const updateDriverLocation = async (
       expectedTarget.targetLocation[0] ||
     tracking.targetLocation.coordinates[1] !== expectedTarget.targetLocation[1];
 
-  // 3. Check distance to target
+  // 3. Check distance to target using haversine
   const distanceToTargetKm = getHaversineDistanceKm(
     [longitude, latitude],
     expectedTarget.targetLocation,
   );
+
+  // Update tracking location coordinates, heading, speed & timestamps
+  tracking.driverLocation = {
+    type: "Point",
+    coordinates: [longitude, latitude],
+  };
+  if (payload.heading !== undefined) {
+    tracking.heading = payload.heading;
+  }
+  if (payload.speed !== undefined) {
+    tracking.speed = payload.speed;
+  }
+  tracking.lastUpdatedAt = new Date();
+  tracking.lastDriverLocationUpdateAt = new Date();
+
+  // Also update driver's location in Driver collection
+  await Driver.findOneAndUpdate(
+    { userId: driverUserId },
+    {
+      $set: {
+        location: {
+          type: "Point",
+          coordinates: [longitude, latitude],
+          address: payload.address || "",
+        },
+      },
+    },
+    { new: true },
+  );
+
+  // Save the database states first
+  await ride.save();
+  await tracking.save();
+
+  // Fetch driver summary and emit immediate GPS update
+  const driverDoc = await Driver.findOne({ userId: driverUserId }).populate(
+    "userId",
+    "name profileImage",
+  );
+  const car = await Car.findOne({ driverId: driverDoc?._id });
+  const driverSummary = await buildDriverSummary(driverDoc, car);
+  const driverUser = driverDoc?.userId as any;
+
+  const immediateEventPayload = {
+    rideId: ride._id,
+    driverId: ride.driverId,
+    driverName: driverUser?.name || "",
+    driverProfileImage: driverUser?.profileImage,
+    driverLocation: {
+      latitude,
+      longitude,
+    },
+    heading: tracking.heading || 0,
+    speed: tracking.speed || 0,
+    remainingDistanceKm: tracking.remainingDistanceKm || 0,
+    estimatedArrivalMinutes: tracking.estimatedArrivalMinutes || 0,
+    routeLegs: tracking.routeLegs || [],
+    totalDistanceKm: tracking.totalDistanceKm || 0,
+    totalDurationMinutes: tracking.totalDurationMinutes || 0,
+    polyline: tracking.polyline || "",
+    status: ride.status,
+    timestamp: new Date(),
+    updatedAt: new Date(),
+  };
+
+  // Emit GPS update immediately
+  if (ride.userId) {
+    rideUserSocketHelper.emitDriverLocationUpdated(
+      ride.userId.toString(),
+      immediateEventPayload,
+    );
+  }
+  if (ride.driverId) {
+    rideDriverSocketHelper.emitDriverLocationUpdated(
+      ride.driverId.toString(),
+      immediateEventPayload,
+    );
+  }
+
+  // Check if route recalculation / ETA update is required
+  const systemConfig = await getSystemConfig();
+  const arrivalRadiusKm =
+    (systemConfig.tracking.arrivalRadiusMeters || 30) / 1000;
 
   const activeStatuses = [
     RIDE_STATUS.DRIVER_ACCEPTED,
@@ -326,13 +416,6 @@ const updateDriverLocation = async (
     RIDE_STATUS.STARTED,
   ];
 
-  let resolvedState: any = null;
-  let transitions: any[] = [];
-  const systemConfig = await getSystemConfig();
-  const arrivalRadiusKm =
-    (systemConfig.tracking.arrivalRadiusMeters || 30) / 1000;
-
-  // Decide if Google Route calculation / ETA update is required
   const isETARefreshNeeded = await shouldRefreshETA(tracking.etaCalculatedAt);
   const isCloseToArrival = distanceToTargetKm <= arrivalRadiusKm * 1.5;
   const isPolylineMissing = !tracking.polyline;
@@ -343,73 +426,15 @@ const updateDriverLocation = async (
     isCloseToArrival ||
     isPolylineMissing;
 
-  if (activeStatuses.includes(ride.status as RIDE_STATUS)) {
-    if (needsRouteRecalculation) {
-      try {
-        // Resolve tracking state using resolveCurrentTrackingState()
-        const resolution = await GoogleRouteService.resolveCurrentTrackingState(
-          {
-            driverLocation: { lat: latitude, lng: longitude },
-            ride,
-            tracking,
-            arrivalRadiusKm,
-          },
-        );
+  let resolvedState: any = null;
+  let transitions: any[] = [];
 
-        resolvedState = resolution.trackingState;
-        transitions = resolution.transitions;
-
-        // Map resolved state fields onto tracking document
-        tracking.remainingDistanceKm = resolvedState.remainingDistanceKm;
-        tracking.estimatedArrivalMinutes =
-          resolvedState.estimatedArrivalMinutes;
-        tracking.etaCalculatedAt = new Date();
-        tracking.targetIsPickup = resolvedState.targetIsPickup;
-        tracking.targetIsDestination = resolvedState.targetIsDestination;
-
-        // Map new schema fields
-        tracking.targetType = resolvedState.targetType;
-        tracking.targetLocation = {
-          type: "Point",
-          coordinates: resolvedState.targetLocation,
-        };
-        tracking.targetStopOrder = resolvedState.targetStopOrder;
-        tracking.activeLeg = resolvedState.activeLeg;
-        tracking.totalDistanceKm = resolvedState.totalDistanceKm;
-        tracking.totalDurationMinutes = resolvedState.totalDurationMinutes;
-        tracking.routeLegs = resolvedState.routeLegs;
-        tracking.polyline = resolvedState.polyline;
-      } catch (err: any) {
-        logger.error(
-          `[TrackingService] Error calling Tracking State Resolver: ${err.message}`,
-        );
-        throw err;
-      }
-    } else {
-      logger.info(
-        `[TrackingService] Skipping route recalculation for ride ${ride._id}. Reusing cached polyline and ETA.`,
-      );
-    }
-  }
-
-  // Update tracking location coordinates & timestamps
-  tracking.driverLocation = {
-    type: "Point",
-    coordinates: [longitude, latitude],
-  };
-  tracking.lastUpdatedAt = new Date();
-  tracking.lastDriverLocationUpdateAt = new Date();
-
-  // 10. Save Ride document & 11. Save Tracking document
-  await ride.save();
-  await tracking.save();
-
-  // 12. Re-resolve tracking state after any transition
   if (
-    transitions.length > 0 &&
-    activeStatuses.includes(ride.status as RIDE_STATUS)
+    activeStatuses.includes(ride.status as RIDE_STATUS) &&
+    needsRouteRecalculation
   ) {
     try {
+      // Resolve tracking state using resolveCurrentTrackingState()
       const resolution = await GoogleRouteService.resolveCurrentTrackingState({
         driverLocation: { lat: latitude, lng: longitude },
         ride,
@@ -418,8 +443,9 @@ const updateDriverLocation = async (
       });
 
       resolvedState = resolution.trackingState;
+      transitions = resolution.transitions;
 
-      // 13. Update remaining distance and ETA
+      // Map resolved state fields onto tracking document
       tracking.remainingDistanceKm = resolvedState.remainingDistanceKm;
       tracking.estimatedArrivalMinutes = resolvedState.estimatedArrivalMinutes;
       tracking.etaCalculatedAt = new Date();
@@ -440,30 +466,18 @@ const updateDriverLocation = async (
 
       await ride.save();
       await tracking.save();
-    } catch (err: any) {
-      logger.error(
-        `[TrackingService] Error in re-resolution phase: ${err.message}`,
-      );
-    }
-  }
 
-  // State Consistency Validation prior to emitting
-  if (resolvedState && activeStatuses.includes(ride.status as RIDE_STATUS)) {
-    if (!validateStateConsistency(ride, tracking)) {
-      logger.warn(
-        `[TrackingService] State inconsistency detected before socket emit. Rebuilding...`,
-      );
-      try {
-        const resolution = await GoogleRouteService.resolveCurrentTrackingState(
-          {
+      // Re-resolve tracking state after any transition
+      if (transitions.length > 0) {
+        const transResolution =
+          await GoogleRouteService.resolveCurrentTrackingState({
             driverLocation: { lat: latitude, lng: longitude },
             ride,
             tracking,
             arrivalRadiusKm,
-          },
-        );
+          });
 
-        resolvedState = resolution.trackingState;
+        resolvedState = transResolution.trackingState;
 
         tracking.remainingDistanceKm = resolvedState.remainingDistanceKm;
         tracking.estimatedArrivalMinutes =
@@ -486,159 +500,190 @@ const updateDriverLocation = async (
 
         await ride.save();
         await tracking.save();
-      } catch (err: any) {
-        logger.error(
-          `[TrackingService] Error in rebuild resolution phase: ${err.message}`,
+      }
+
+      // State Consistency Validation prior to emitting
+      if (!validateStateConsistency(ride, tracking)) {
+        logger.warn(
+          `[TrackingService] State inconsistency detected before socket emit. Rebuilding...`,
+        );
+        const rebuildResolution =
+          await GoogleRouteService.resolveCurrentTrackingState({
+            driverLocation: { lat: latitude, lng: longitude },
+            ride,
+            tracking,
+            arrivalRadiusKm,
+          });
+
+        resolvedState = rebuildResolution.trackingState;
+
+        tracking.remainingDistanceKm = resolvedState.remainingDistanceKm;
+        tracking.estimatedArrivalMinutes =
+          resolvedState.estimatedArrivalMinutes;
+        tracking.etaCalculatedAt = new Date();
+        tracking.targetIsPickup = resolvedState.targetIsPickup;
+        tracking.targetIsDestination = resolvedState.targetIsDestination;
+
+        tracking.targetType = resolvedState.targetType;
+        tracking.targetLocation = {
+          type: "Point",
+          coordinates: resolvedState.targetLocation,
+        };
+        tracking.targetStopOrder = resolvedState.targetStopOrder;
+        tracking.activeLeg = resolvedState.activeLeg;
+        tracking.totalDistanceKm = resolvedState.totalDistanceKm;
+        tracking.totalDurationMinutes = resolvedState.totalDurationMinutes;
+        tracking.routeLegs = resolvedState.routeLegs;
+        tracking.polyline = resolvedState.polyline;
+
+        await ride.save();
+        await tracking.save();
+      }
+
+      // Emit transitions
+      const userDoc = await User.findById(ride.userId).select(
+        "name profileImage averageRating totalRatings",
+      );
+      const passengerSummary = userDoc
+        ? buildPassengerSummary(userDoc)
+        : undefined;
+      const cancellationFeePreview =
+        await CancellationPolicyService.calculateCancellationFeeForRide(ride);
+
+      for (const transition of transitions) {
+        if (transition.type === "driver-on-the-way") {
+          const baseEventData = {
+            rideId: ride._id,
+            ...getRideScheduleInfo(ride),
+            pickupLocation: ride.pickup,
+            rideCategory: ride.rideCategory,
+            price: ride.fare.total,
+            cancellationFeePreview,
+            estimatedArrivalMinutes: transition.payload.estimatedArrivalMinutes,
+            remainingDistanceKm: transition.payload.remainingDistanceKm,
+            polyline: tracking.polyline || "",
+            driverLocation: tracking.driverLocation?.coordinates
+              ? {
+                  latitude: tracking.driverLocation.coordinates[1],
+                  longitude: tracking.driverLocation.coordinates[0],
+                }
+              : undefined,
+            status: ride.status,
+            timestamp: new Date(),
+          };
+          rideUserSocketHelper.emitDriverOnTheWay(ride.userId.toString(), {
+            ...baseEventData,
+            driver: driverSummary,
+          });
+          rideDriverSocketHelper.emitDriverOnTheWay(driverUserId, {
+            ...baseEventData,
+            user: passengerSummary,
+          });
+          logger.info(
+            `[TrackingService] Emitted driver-on-the-way for ride ${ride._id}`,
+          );
+        } else if (transition.type === "driver-arrived") {
+          const baseEventData = {
+            rideId: ride._id,
+            ...getRideScheduleInfo(ride),
+            automaticDetection: true,
+            pickupLocation: ride.pickup,
+            rideCategory: ride.rideCategory,
+            price: ride.fare.total,
+            cancellationFeePreview,
+            estimatedArrivalMinutes: 0,
+            remainingDistanceKm: 0,
+            polyline: tracking.polyline || "",
+            driverLocation: tracking.driverLocation?.coordinates
+              ? {
+                  latitude: tracking.driverLocation.coordinates[1],
+                  longitude: tracking.driverLocation.coordinates[0],
+                }
+              : undefined,
+            status: ride.status,
+            timestamp: new Date(),
+          };
+          rideUserSocketHelper.emitDriverArrived(ride.userId.toString(), {
+            ...baseEventData,
+            driver: driverSummary,
+          });
+          rideDriverSocketHelper.emitDriverArrived(driverUserId, {
+            ...baseEventData,
+            user: passengerSummary,
+          });
+          logger.info(
+            `[TrackingService] Emitted driver-arrived for ride ${ride._id}`,
+          );
+        } else if (transition.type === "stop-arrived") {
+          rideUserSocketHelper.emitStopArrived(ride.userId.toString(), {
+            rideId: ride._id,
+            ...getRideScheduleInfo(ride),
+            stopOrder: transition.payload.stopOrder,
+            stopAddress: transition.payload.stopAddress,
+            automaticDetection: true,
+            driver: driverSummary,
+            polyline: tracking.polyline || "",
+            driverLocation: tracking.driverLocation?.coordinates
+              ? {
+                  latitude: tracking.driverLocation.coordinates[1],
+                  longitude: tracking.driverLocation.coordinates[0],
+                }
+              : undefined,
+            status: ride.status,
+            timestamp: new Date(),
+          });
+          logger.info(
+            `[TrackingService] Emitted stop-arrived for ride ${ride._id}, stop order ${transition.payload.stopOrder}`,
+          );
+        }
+      }
+
+      // Emit updated polyline/ETA
+      const updatedEventPayload = {
+        rideId: ride._id,
+        driverId: ride.driverId,
+        driverName: driverUser?.name || "",
+        driverProfileImage: driverUser?.profileImage,
+        driverLocation: {
+          latitude,
+          longitude,
+        },
+        heading: tracking.heading || 0,
+        speed: tracking.speed || 0,
+        remainingDistanceKm: tracking.remainingDistanceKm || 0,
+        estimatedArrivalMinutes: tracking.estimatedArrivalMinutes || 0,
+        routeLegs: tracking.routeLegs || [],
+        totalDistanceKm: tracking.totalDistanceKm || 0,
+        totalDurationMinutes: tracking.totalDurationMinutes || 0,
+        polyline: tracking.polyline || "",
+        status: ride.status,
+        timestamp: new Date(),
+        updatedAt: new Date(),
+      };
+
+      if (ride.userId) {
+        rideUserSocketHelper.emitDriverLocationUpdated(
+          ride.userId.toString(),
+          updatedEventPayload,
         );
       }
+      if (ride.driverId) {
+        rideDriverSocketHelper.emitDriverLocationUpdated(
+          ride.driverId.toString(),
+          updatedEventPayload,
+        );
+      }
+    } catch (err: any) {
+      logger.error(
+        `[TrackingService] Error calling Tracking State Resolver: ${err.message}`,
+      );
+      throw err;
     }
   }
-
-  // Also update driver's location in Driver collection
-  await Driver.findOneAndUpdate(
-    { userId: driverUserId },
-    {
-      $set: {
-        location: {
-          type: "Point",
-          coordinates: [longitude, latitude],
-          address: payload.address || "",
-        },
-      },
-    },
-    { new: true },
-  );
 
   logger.info(
     `[TrackingService] DB successfully synchronized for ride ${ride._id}`,
   );
-
-  // 14. Emit socket events once.
-  const driverDoc = await Driver.findOne({ userId: driverUserId }).populate(
-    "userId",
-    "name profileImage",
-  );
-  const car = await Car.findOne({ driverId: driverDoc?._id });
-  const driverSummary = await buildDriverSummary(driverDoc, car);
-
-  const userDoc = await User.findById(ride.userId).select(
-    "name profileImage averageRating totalRatings",
-  ); 
-  const passengerSummary = userDoc ? buildPassengerSummary(userDoc) : undefined;
-
-  const cancellationFeePreview = await CancellationPolicyService.calculateCancellationFeeForRide(ride);
-
-  for (const transition of transitions) {
-    if (transition.type === "driver-on-the-way") {
-      const baseEventData = {
-        rideId: ride._id,
-        ...getRideScheduleInfo(ride),
-        pickupLocation: ride.pickup,
-        rideCategory: ride.rideCategory,
-        price: ride.fare.total,
-        cancellationFeePreview,
-        estimatedArrivalMinutes: transition.payload.estimatedArrivalMinutes,
-        remainingDistanceKm: transition.payload.remainingDistanceKm,
-        polyline: tracking.polyline || "",
-        driverLocation: tracking.driverLocation?.coordinates
-          ? {
-              latitude: tracking.driverLocation.coordinates[1],
-              longitude: tracking.driverLocation.coordinates[0],
-            }
-          : undefined,
-        status: ride.status,
-        timestamp: new Date(),
-      };
-      rideUserSocketHelper.emitDriverOnTheWay(ride.userId.toString(), {
-        ...baseEventData,
-        driver: driverSummary,
-      });
-      rideDriverSocketHelper.emitDriverOnTheWay(driverUserId, {
-        ...baseEventData,
-        user: passengerSummary,
-      });
-      logger.info(
-        `[TrackingService] Emitted driver-on-the-way for ride ${ride._id}`,
-      );
-    } else if (transition.type === "driver-arrived") {
-      const baseEventData = {
-        rideId: ride._id,
-        ...getRideScheduleInfo(ride),
-        automaticDetection: true,
-        pickupLocation: ride.pickup,
-        rideCategory: ride.rideCategory,
-        price: ride.fare.total,
-        cancellationFeePreview,
-        estimatedArrivalMinutes: 0,
-        remainingDistanceKm: 0,
-        polyline: tracking.polyline || "",
-        driverLocation: tracking.driverLocation?.coordinates
-          ? {
-              latitude: tracking.driverLocation.coordinates[1],
-              longitude: tracking.driverLocation.coordinates[0],
-            }
-          : undefined,
-        status: ride.status,
-        timestamp: new Date(),
-      };
-      rideUserSocketHelper.emitDriverArrived(ride.userId.toString(), {
-        ...baseEventData,
-        driver: driverSummary,
-      });
-      rideDriverSocketHelper.emitDriverArrived(driverUserId, {
-        ...baseEventData,
-        user: passengerSummary,
-      });
-      logger.info(
-        `[TrackingService] Emitted driver-arrived for ride ${ride._id}`,
-      );
-    } else if (transition.type === "stop-arrived") {
-      rideUserSocketHelper.emitStopArrived(ride.userId.toString(), {
-        rideId: ride._id,
-        ...getRideScheduleInfo(ride),
-        stopOrder: transition.payload.stopOrder,
-        stopAddress: transition.payload.stopAddress,
-        automaticDetection: true,
-        driver: driverSummary,
-        polyline: tracking.polyline || "",
-        driverLocation: tracking.driverLocation?.coordinates
-          ? {
-              latitude: tracking.driverLocation.coordinates[1],
-              longitude: tracking.driverLocation.coordinates[0],
-            }
-          : undefined,
-        status: ride.status,
-        timestamp: new Date(),
-      });
-      logger.info(
-        `[TrackingService] Emitted stop-arrived for ride ${ride._id}, stop order ${transition.payload.stopOrder}`,
-      );
-    }
-  }
-
-  // Emit final driver-location-updated event to passenger
-  if (systemConfig.tracking.enableSocketOptimization && ride.userId) {
-    const driverUser = driverDoc?.userId as any;
-    rideUserSocketHelper.emitDriverLocationUpdated(ride.userId.toString(), {
-      rideId: ride._id,
-      driverId: ride.driverId,
-      driverName: driverUser?.name || "",
-      driverProfileImage: driverUser?.profileImage,
-      driverLocation: {
-        latitude,
-        longitude,
-      },
-      remainingDistanceKm: tracking.remainingDistanceKm || 0,
-      estimatedArrivalMinutes: tracking.estimatedArrivalMinutes || 0,
-      routeLegs: tracking.routeLegs || [],
-      totalDistanceKm: tracking.totalDistanceKm || 0,
-      totalDurationMinutes: tracking.totalDurationMinutes || 0,
-      polyline: tracking.polyline || "",
-      status: ride.status,
-      timestamp: new Date(),
-      updatedAt: new Date(),
-    });
-  }
 
   return { tracking, routeLegs: resolvedState, isValid: true };
 };
@@ -652,6 +697,8 @@ const processDriverLocationUpdate = async (
   payload: {
     coordinates: [number, number];
     address?: string;
+    heading?: number;
+    speed?: number;
   },
 ): Promise<void> => {
   const [longitude, latitude] = payload.coordinates;
@@ -761,6 +808,8 @@ const processDriverLocationUpdate = async (
         rideId,
         coordinates: payload.coordinates,
         address: payload.address,
+        heading: payload.heading,
+        speed: payload.speed,
       });
     })
     .catch((err) => {
@@ -867,6 +916,20 @@ const createOrUpdateTracking = async (
 
   if (payload.driverLocation && ride.userId) {
     rideUserSocketHelper.emitDriverLocationUpdated(ride.userId.toString(), {
+      rideId: ride._id,
+      driverId: ride.driverId,
+      coordinates: payload.driverLocation.coordinates,
+      driverLocation: {
+        latitude: payload.driverLocation.coordinates[1],
+        longitude: payload.driverLocation.coordinates[0],
+      },
+      polyline: tracking.polyline,
+      updatedAt: new Date(),
+    });
+  }
+
+  if (payload.driverLocation && ride.driverId) {
+    rideDriverSocketHelper.emitDriverLocationUpdated(ride.driverId.toString(), {
       rideId: ride._id,
       driverId: ride.driverId,
       coordinates: payload.driverLocation.coordinates,

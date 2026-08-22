@@ -1,0 +1,261 @@
+=== RUNNING ALYGO DRIVER DIAGNOSTICS AT 2026-08-20T06:00:27.191Z ===
+✅ User found:
+{
+  "_id": "6a59af155d294c2c4111585d",
+  "role": "driver",
+  "status": "active",
+  "verified": true,
+  "email": "studentemam@gmail.com",
+  "phone": "1315773424"
+}
+
+Found 1 driver profile(s) for user ID 6a59af155d294c2c4111585d:
+{
+  "_id": "6a86954621b16d027663bdaf",
+  "userId": "6a59af155d294c2c4111585d",
+  "driverAvailabilityStatus": "online",
+  "approvalStatus": "approved",
+  "isDeleted": false,
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      0,
+      0
+    ],
+    "address": ""
+  },
+  "serviceAreaId": "6a6af42690eaf8727971f604",
+  "availability": {
+    "canReceiveRide": true,
+    "blockedReason": null,
+    "blockedUntil": null
+  },
+  "suspension": {
+    "isSuspended": false,
+    "suspendedBy": null,
+    "suspendedAt": null,
+    "reason": "",
+    "note": ""
+  }
+}
+
+✅ Specific Driver found with ID 6a86954621b16d027663bdaf:
+{
+  "_id": "6a86954621b16d027663bdaf",
+  "userId": "6a59af155d294c2c4111585d",
+  "driverAvailabilityStatus": "online",
+  "approvalStatus": "approved",
+  "isDeleted": false,
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      0,
+      0
+    ],
+    "address": ""
+  },
+  "serviceAreaId": "6a6af42690eaf8727971f604",
+  "availability": {
+    "canReceiveRide": true,
+    "blockedReason": null,
+    "blockedUntil": null
+  },
+  "suspension": {
+    "isSuspended": false,
+    "suspendedBy": null,
+    "suspendedAt": null,
+    "reason": "",
+    "note": ""
+  }
+}
+
+Found 1 cars matching these driver profiles:
+{
+  "_id": "6a59bd28b475e0a1fc2aa5c0",
+  "driverId": "6a86954621b16d027663bdaf",
+  "carType": "car",
+  "seatNumber": 2
+}
+
+Total cars in database: 10
+- Car 6a76a40350d042cff7ad19e7: driverId = 6a76a40350d042cff7ad19e5, carType = bike, seats = 4
+- Car 6a76a419d8c749bd36c01e79: driverId = 6a76a419d8c749bd36c01e77, carType = bike, seats = 4
+- Car 6a76a433b03ad079e9697edf: driverId = 6a76a433b03ad079e9697edd, carType = bike, seats = 4
+- Car 6a76a449c4b2d5f017675221: driverId = 6a76a449c4b2d5f01767521b, carType = bike, seats = 4
+- Car 6a59bd28b475e0a1fc2aa5c0: driverId = 6a86954621b16d027663bdaf, carType = car, seats = 2
+- Car 6a5c8b77aab9fb4ab5779c02: driverId = 6a5c8b76aab9fb4ab5779bf8, carType = car, seats = 4
+- Car 6a5c8b9f27c77a061ccd98f0: driverId = 6a5c8b9f27c77a061ccd98e6, carType = car, seats = 4
+- Car 6a5c8bc45013e2c6433f87bb: driverId = 6a5c8bc35013e2c6433f87a9, carType = car, seats = 4
+- Car 6a7a9c7af69d2a3fddb51951: driverId = 6a7a9b57f69d2a3fddb518f9, carType = car, seats = 5
+- Car 6a7aba6aa377dc1ecd92a8be: driverId = 6a59b25aec029a501f10cd9f, carType = car, seats = 6
+
+=== Active Service Areas in Database ===
+{
+  "_id": "6a5b0c44ae072853104f8357",
+  "status": "active",
+  "type": "country",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.3563,
+      23.685
+    ]
+  },
+  "coverageRadiusKm": 12000
+}
+{
+  "_id": "6a5b0c54ae072853104f835a",
+  "status": "active",
+  "type": "state",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.4074,
+      23.9078
+    ]
+  },
+  "coverageRadiusKm": 180
+}
+{
+  "_id": "6a5b0c7fae072853104f835f",
+  "status": "active",
+  "type": "city",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.4125,
+      23.8103
+    ]
+  },
+  "coverageRadiusKm": 150
+}
+{
+  "_id": "6a5b0ca5ae072853104f8362",
+  "status": "active",
+  "type": "airport",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.3978,
+      23.8433
+    ]
+  },
+  "coverageRadiusKm": 100
+}
+{
+  "_id": "6a6af42590eaf8727971f5b0",
+  "status": "active",
+  "type": "airport",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.3978,
+      23.8433
+    ]
+  },
+  "coverageRadiusKm": 10
+}
+{
+  "_id": "6a6af42690eaf8727971f604",
+  "status": "active",
+  "type": "airport",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.3978,
+      23.8433
+    ]
+  },
+  "coverageRadiusKm": 10
+}
+{
+  "_id": "6a6af42790eaf8727971f60c",
+  "status": "active",
+  "type": "airport",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.3978,
+      23.8433
+    ]
+  },
+  "coverageRadiusKm": 10
+}
+{
+  "_id": "6a6af42790eaf8727971f61a",
+  "status": "active",
+  "type": "airport",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.3978,
+      23.8433
+    ]
+  },
+  "coverageRadiusKm": 10
+}
+{
+  "_id": "6a6af42790eaf8727971f61f",
+  "status": "active",
+  "type": "airport",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.3978,
+      23.8433
+    ]
+  },
+  "coverageRadiusKm": 10
+}
+{
+  "_id": "6a6af46e90eaf87279720d0a",
+  "status": "active",
+  "type": "airport",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.3978,
+      23.8433
+    ]
+  },
+  "coverageRadiusKm": 10
+}
+{
+  "_id": "6a6af46f90eaf87279720d21",
+  "status": "active",
+  "type": "airport",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.3978,
+      23.8433
+    ]
+  },
+  "coverageRadiusKm": 10
+}
+{
+  "_id": "6a76f0945664e37828d81495",
+  "status": "active",
+  "type": "city",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.4125,
+      23.8103
+    ]
+  },
+  "coverageRadiusKm": 25
+}
+{
+  "_id": "6a76f64afee7d01a21208300",
+  "status": "active",
+  "type": "zone",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      90.4125,
+      23.8103
+    ]
+  },
+  "coverageRadiusKm": 5
+}

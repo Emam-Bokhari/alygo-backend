@@ -10,6 +10,8 @@ export interface DriverSearchTiming {
   remainingSeconds: number;
   progressPercentage: number;
   isExpired: boolean;
+  visibilitySeconds: number;
+  radiusKm: number;
 }
 
 /**
@@ -57,6 +59,12 @@ export const calculateDriverSearchTiming = async (
     ride.status === RIDE_STATUS.EXPIRED ||
     elapsedSeconds >= rideRequestLifetimeSeconds;
 
+  const visibilitySeconds =
+    systemConfig.driverMatching.driverVisibilityDurationSeconds;
+  const radiusKm =
+    ride.driverMatching?.searchRadiusKm ??
+    systemConfig.driverMatching.initialSearchRadiusKm;
+
   return {
     driverFound,
     driverFoundInSeconds,
@@ -64,5 +72,7 @@ export const calculateDriverSearchTiming = async (
     remainingSeconds,
     progressPercentage: Math.round(progressPercentage),
     isExpired,
+    visibilitySeconds,
+    radiusKm,
   };
 };

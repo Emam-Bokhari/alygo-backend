@@ -119,7 +119,7 @@ const requestRideZodSchema = z.object({
 const verifyRideSecurityZodSchema = z.object({
   body: z
     .object({
-      otp: z.string().length(6, "OTP must be exactly 6 digits").optional(),
+      otp: z.string().length(4, "OTP must be exactly 4 digits").optional(),
       phoneLastFourDigits: z
         .string()
         .length(4, "Phone last 4 digits must be exactly 4 characters")

@@ -49,6 +49,8 @@ const updateCandidate = async (
     zipcode?: string;
     driver_license_number?: string;
     driver_license_state?: string;
+    middle_name?: string;
+    no_middle_name?: boolean;
   },
 ) => {
   try {
@@ -73,6 +75,7 @@ const updateCandidate = async (
 const createReport = async (
   candidateId: string,
   type: "mvr" | "background",
+  workLocations?: { country: string; state?: string; city?: string }[],
 ) => {
   try {
     const packageName =
@@ -80,10 +83,16 @@ const createReport = async (
         ? config.checkr.mvrPackage
         : config.checkr.backgroundCheckPackage;
 
-    const response = await checkrClient.post("/v1/reports", {
+    const payload: any = {
       candidate_id: candidateId,
       package: packageName,
-    });
+    };
+
+    if (workLocations && workLocations.length > 0) {
+      payload.work_locations = workLocations;
+    }
+
+    const response = await checkrClient.post("/v1/reports", payload);
     return response.data;
   } catch (error: any) {
     const errorDetails = error.response?.data || error.message;

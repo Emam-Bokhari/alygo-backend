@@ -232,6 +232,24 @@ export const findEligibleDriversInRadius = async ({
       continue;
     }
 
+    // Geofence check: Verify driver's current GPS location is inside their assigned Service Area coverage using straight-line distance
+    const straightLineDistanceToServiceArea = calculateDistance(
+      driverLat,
+      driverLng,
+      driverServiceArea.location.coordinates[1],
+      driverServiceArea.location.coordinates[0],
+    );
+
+    if (
+      straightLineDistanceToServiceArea >
+      (driverServiceArea.coverageRadiusKm || 25)
+    ) {
+      logger.info(
+        `Driver ${driverDoc.userId} excluded: GPS location is outside assigned service area coverage straight-line distance (${straightLineDistanceToServiceArea.toFixed(2)} km > ${driverServiceArea.coverageRadiusKm} km).`,
+      );
+      continue;
+    }
+
     // Distance checks will be performed in batch via Google Distance Matrix after the loop
 
     // 6. Verify driver is online, available, and eligible
@@ -468,20 +486,10 @@ export const findEligibleDriversInRadius = async ({
         lat: driver.location.coordinates[1],
         lng: driver.location.coordinates[0],
       }));
-      if (!rideServiceArea.location || !rideServiceArea.location.coordinates) {
-        logger.warn(
-          `Service area ${resolvedRideServiceAreaId} location coordinates missing.`,
-        );
-        return [];
-      }
       const destinations = [
         {
           lat: pickupLocation.coordinates[1],
           lng: pickupLocation.coordinates[0],
-        },
-        {
-          lat: rideServiceArea.location.coordinates[1],
-          lng: rideServiceArea.location.coordinates[0],
         },
       ];
 
@@ -493,27 +501,9 @@ export const findEligibleDriversInRadius = async ({
       for (let i = 0; i < candidates.length; i++) {
         const driverDoc = candidates[i];
         const pickupResult = matrix[i]?.[0];
-        const serviceAreaCenterResult = matrix[i]?.[1];
 
-        if (
-          pickupResult &&
-          pickupResult.status === "OK" &&
-          serviceAreaCenterResult &&
-          serviceAreaCenterResult.status === "OK"
-        ) {
+        if (pickupResult && pickupResult.status === "OK") {
           const distanceToPickup = pickupResult.distanceKm;
-          const distanceToServiceAreaCenter =
-            serviceAreaCenterResult.distanceKm;
-
-          if (
-            distanceToServiceAreaCenter >
-            (rideServiceArea.coverageRadiusKm || 25)
-          ) {
-            logger.info(
-              `Driver ${driverDoc.userId} excluded: GPS location is outside assigned service area coverage road distance (${distanceToServiceAreaCenter.toFixed(2)} km > ${rideServiceArea.coverageRadiusKm} km).`,
-            );
-            continue;
-          }
 
           if (distanceToPickup > radiusKm) {
             logger.info(
