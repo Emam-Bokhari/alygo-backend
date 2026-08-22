@@ -512,6 +512,12 @@ const systemConfigurationSchema = new Schema<
       type: aiSupportConfigSchema,
       required: false,
     },
+    driverSelfieVerificationIntervalHours: {
+      type: Number,
+      required: true,
+      min: 1,
+      default: 12,
+    },
   },
   {
     timestamps: true,

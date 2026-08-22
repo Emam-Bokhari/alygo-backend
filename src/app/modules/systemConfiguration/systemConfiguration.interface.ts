@@ -119,6 +119,7 @@ export interface ISystemConfiguration {
   referral?: IReferralConfig;
   driverRewards?: IDriverRewardsConfig;
   aiSupport?: IAiSupportConfig;
+  driverSelfieVerificationIntervalHours?: number;
   createdAt?: Date;
   updatedAt?: Date;
 }

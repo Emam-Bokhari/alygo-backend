@@ -14,6 +14,7 @@ import { GoogleRouteService } from "./googleRouteService";
 import { Tier } from "../app/modules/tier/tier.model";
 import { DestinationFilter } from "../app/modules/tier/destinationFilter.model";
 import { calculateDriverAcceptanceRate } from "../app/modules/tier/points.service";
+import { getSystemConfig } from "../helpers/systemConfigHelper";
 
 interface FindEligibleDriversParams {
   pickupLocation: { type: string; coordinates: [number, number] };
@@ -62,6 +63,11 @@ export const findEligibleDriversInRadius = async ({
   scheduledAt,
 }: FindEligibleDriversParams) => {
   const searchRadiusMeters = radiusKm * 1000;
+
+  // Load system config for selfie verification
+  const systemConfig = await getSystemConfig();
+  const selfieIntervalHours = systemConfig.driverSelfieVerificationIntervalHours ?? 12;
+  const selfieIntervalMs = selfieIntervalHours * 60 * 60 * 1000;
 
   const tierCache = new Map<string, any>();
   const getTier = async (tierId: string | Types.ObjectId | undefined) => {
@@ -179,6 +185,24 @@ export const findEligibleDriversInRadius = async ({
   for (const driverDoc of nearbyDrivers) {
     // Skip if driver is in exclusion list (already notified)
     if (excludeDriverIds.includes(driverDoc.userId.toString())) {
+      continue;
+    }
+
+    // Verify driver's selfie verification is not expired
+    const lastVerification = driverDoc.lastVerificationDate;
+    let selfieExpired = false;
+    if (!lastVerification) {
+      selfieExpired = true;
+    } else {
+      const timeSinceLastVerification = Date.now() - new Date(lastVerification).getTime();
+      if (timeSinceLastVerification > selfieIntervalMs) {
+        selfieExpired = true;
+      }
+    }
+    if (selfieExpired) {
+      logger.info(
+        `Driver ${driverDoc.userId} excluded because selfie verification has expired (last verified ${lastVerification}).`,
+      );
       continue;
     }
 

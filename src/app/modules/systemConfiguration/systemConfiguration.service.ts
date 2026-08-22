@@ -133,6 +133,7 @@ const getDefaultSystemConfig = (): ISystemConfiguration => ({
         "I couldn't find an approved answer for that. Please contact support.",
     },
   },
+  driverSelfieVerificationIntervalHours: 12,
 });
 
 let activeCreationPromise: Promise<ISystemConfiguration> | null = null;

@@ -6,5 +6,5 @@
 -->
 
 <!--
-1. google map a jai rouad dekhaitese shaita kothin rasta dekhaitse, tu aita solve korar try korte hobe jeno sohoj road dekhai. 
+1. google map a jai route dekhaitese shaita kothin rasta dekhaitse, tu aita solve korar try korte hobe jeno sohoj road dekhai. 
  -->

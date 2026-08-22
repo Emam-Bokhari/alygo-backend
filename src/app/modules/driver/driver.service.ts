@@ -234,6 +234,28 @@ const updateDriverFromDB = async (
     existingDriver.driverAvailabilityStatus !==
       DRIVER_AVAILABILITY_STATUS.ONLINE;
 
+  if (isGoingOnline) {
+    const systemConfig = await getSystemConfig();
+    const intervalHours = systemConfig.driverSelfieVerificationIntervalHours ?? 12;
+    const intervalMs = intervalHours * 60 * 60 * 1000;
+
+    const lastVerification = existingDriver.lastVerificationDate;
+    if (!lastVerification) {
+      throw new ApiError(
+        400,
+        "Selfie verification required. Please verify your identity first.",
+      );
+    }
+
+    const timeSinceLastVerification = Date.now() - new Date(lastVerification).getTime();
+    if (timeSinceLastVerification > intervalMs) {
+      throw new ApiError(
+        400,
+        "Selfie verification expired. Please complete selfie verification.",
+      );
+    }
+  }
+
   const isOnlineOrGoingOnline =
     updatePayload.driverAvailabilityStatus ===
       DRIVER_AVAILABILITY_STATUS.ONLINE ||
@@ -1518,6 +1540,13 @@ const verifySelfieFaceToDB = async (userId: string, selfieUrl: string) => {
   // Update lastVerificationDate
   driver.lastVerificationDate = new Date();
   await driver.save();
+
+  // Recalculate driver availability to clear the block immediately
+  try {
+    await DriverDutyPolicyServices.updateDriverAvailability(driver.userId.toString());
+  } catch (error) {
+    console.error("Failed to update driver availability after selfie verification:", error);
+  }
 
   return {
     match: result.match,

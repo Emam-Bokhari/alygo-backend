@@ -388,6 +388,63 @@ const driverAvailabilityWorker = new Worker(
     try {
       const now = new Date();
 
+      // Check for online drivers whose selfie verification has expired
+      try {
+        const systemConfig = await getSystemConfig();
+        const intervalHours = systemConfig.driverSelfieVerificationIntervalHours ?? 12;
+        const intervalMs = intervalHours * 60 * 60 * 1000;
+        const thresholdDate = new Date(Date.now() - intervalMs);
+
+        const onlineExpiredDrivers = await Driver.find({
+          driverAvailabilityStatus: "online",
+          "availability.canReceiveRide": { $ne: false },
+          $or: [
+            { lastVerificationDate: { $exists: false } },
+            { lastVerificationDate: null },
+            { lastVerificationDate: { $lt: thresholdDate } },
+          ],
+        });
+
+        for (const driver of onlineExpiredDrivers) {
+          try {
+            await Driver.findOneAndUpdate(
+              { _id: driver._id },
+              {
+                $set: {
+                  "availability.canReceiveRide": false,
+                  "availability.blockedReason": "selfie_verification_required",
+                  "availability.blockedUntil": null,
+                },
+              },
+            );
+
+            // Notify driver's app in real-time via Socket.IO
+            const { socketHelper } = require("../helpers/socketHelper");
+            socketHelper.sendToUser(
+              driver.userId.toString(),
+              "driver-duty-limit-reached",
+              {
+                canReceiveRide: false,
+                blockedReason: "selfie_verification_required",
+                blockedUntil: null,
+                remainingHours: 0,
+                remainingMinutes: 0,
+              },
+            );
+
+            logger.info(
+              `Driver ${driver.userId} blocked in background because selfie verification expired.`,
+            );
+          } catch (err: any) {
+            logger.error(
+              `Failed to block driver ${driver.userId} for expired selfie: ${err.message}`,
+            );
+          }
+        }
+      } catch (err: any) {
+        logger.error(`Error in background driver selfie expiration check: ${err.message}`);
+      }
+
       // Find all drivers who are currently unavailable (canReceiveRide: false)
       // and have a blockedUntil time that has passed
       const driversToUpdate = await Driver.find({

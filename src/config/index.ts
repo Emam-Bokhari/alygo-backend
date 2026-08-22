@@ -19,6 +19,9 @@ export default {
   redis_password: process.env.REDIS_PASSWORD,
   redis_db: process.env.REDIS_DB,
   start_cron: process.env.START_CRON,
+  driverSelfieVerificationIntervalHours: parseInt(
+    process.env.DRIVER_SELFIE_VERIFICATION_INTERVAL_HOURS || "12",
+  ),
   client_url: process.env.CLIENT_URL,
   // google login
   firebase: {

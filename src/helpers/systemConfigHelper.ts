@@ -283,6 +283,10 @@ export const getSystemConfig = async () => {
               "I couldn't find an approved answer for that. Please contact support.",
           },
         },
+        driverSelfieVerificationIntervalHours:
+          dbConfig.driverSelfieVerificationIntervalHours ??
+          config.driverSelfieVerificationIntervalHours ??
+          12,
       };
       cacheExpiry = now + CACHE_DURATION_MS;
       return cachedConfig;
@@ -362,6 +366,8 @@ export const getSystemConfig = async () => {
           "I couldn't find an approved answer for that. Please contact support.",
       },
     },
+    driverSelfieVerificationIntervalHours:
+      config.driverSelfieVerificationIntervalHours ?? 12,
   };
   cacheExpiry = now + CACHE_DURATION_MS;
   return cachedConfig;

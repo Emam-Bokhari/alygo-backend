@@ -15,6 +15,7 @@ import {
   utcToTimezone,
 } from "../../../shared/timezoneHelper";
 import { DateTime } from "luxon";
+import { getSystemConfig } from "../../../helpers/systemConfigHelper";
 
 const createDriverDutyPolicyToDB = async (
   payload: Partial<IDriverDutyPolicy>,
@@ -664,6 +665,33 @@ const getDriverAvailability = async (driverId: string) => {
   const driver = await Driver.findOne({ userId: driverId });
   if (!driver) {
     throw new Error("Driver not found");
+  }
+
+  // Check if selfie verification has expired
+  const systemConfig = await getSystemConfig();
+  const intervalHours = systemConfig.driverSelfieVerificationIntervalHours ?? 12;
+  const intervalMs = intervalHours * 60 * 60 * 1000;
+
+  const lastVerification = driver.lastVerificationDate;
+  let selfieExpired = false;
+  if (!lastVerification) {
+    selfieExpired = true;
+  } else {
+    const timeSinceLastVerification = Date.now() - new Date(lastVerification).getTime();
+    if (timeSinceLastVerification > intervalMs) {
+      selfieExpired = true;
+    }
+  }
+
+  if (selfieExpired) {
+    return {
+      canReceiveRide: false,
+      blockedReason: DRIVER_BLOCK_REASON.SELFIE_VERIFICATION_REQUIRED,
+      blockedUntil: null,
+      remainingHours: 0,
+      remainingMinutes: 0,
+      remainingSeconds: 0,
+    };
   }
 
   // Default response - driver is available

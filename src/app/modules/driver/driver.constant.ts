@@ -52,4 +52,5 @@ export enum DRIVER_BLOCK_REASON {
   CONTINUOUS_LIMIT = "continuous_limit",
   BREAK_REQUIRED = "break_required",
   MANUAL_BLOCK = "manual_block",
+  SELFIE_VERIFICATION_REQUIRED = "selfie_verification_required",
 }
