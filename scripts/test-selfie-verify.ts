@@ -46,12 +46,17 @@ async function run() {
   const token = jwtHelper.createToken(
     { id: user._id.toString(), role: "driver" },
     jwtSecret,
-    "1h"
+    "1h",
   );
   console.log("Generated JWT Token.");
 
   // Load a test image file and convert it to Base64
-  const testImagePath = path.join(process.cwd(), "uploads", "liveSelfie", "frame-2147226136-1786420037181.png");
+  const testImagePath = path.join(
+    process.cwd(),
+    "uploads",
+    "liveSelfie",
+    "frame-2147226136-1786420037181.png",
+  );
   if (!fs.existsSync(testImagePath)) {
     console.error("Test image not found at:", testImagePath);
     process.exit(1);
@@ -73,14 +78,14 @@ async function run() {
     const response = await axios.post(
       url,
       {
-        liveSelfie: base64Image
+        liveSelfie: base64Image,
       },
       {
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        }
-      }
+          Authorization: `Bearer ${token}`,
+        },
+      },
     );
 
     console.log("\nSuccess Response:");

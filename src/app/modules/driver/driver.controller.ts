@@ -206,9 +206,8 @@ const createBackgroundCheckPaymentSession = catchAsync(async (req, res) => {
   }
 
   const { id } = req.user as { id: string };
-  const result = await DriverVerificationService.createBackgroundCheckPaymentSession(
-    id,
-  );
+  const result =
+    await DriverVerificationService.createBackgroundCheckPaymentSession(id);
 
   sendResponse(res, {
     success: true,

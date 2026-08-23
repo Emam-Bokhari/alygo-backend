@@ -66,7 +66,8 @@ export const findEligibleDriversInRadius = async ({
 
   // Load system config for selfie verification
   const systemConfig = await getSystemConfig();
-  const selfieIntervalHours = systemConfig.driverSelfieVerificationIntervalHours ?? 12;
+  const selfieIntervalHours =
+    systemConfig.driverSelfieVerificationIntervalHours ?? 12;
   const selfieIntervalMs = selfieIntervalHours * 60 * 60 * 1000;
 
   const tierCache = new Map<string, any>();
@@ -194,7 +195,8 @@ export const findEligibleDriversInRadius = async ({
     if (!lastVerification) {
       selfieExpired = true;
     } else {
-      const timeSinceLastVerification = Date.now() - new Date(lastVerification).getTime();
+      const timeSinceLastVerification =
+        Date.now() - new Date(lastVerification).getTime();
       if (timeSinceLastVerification > selfieIntervalMs) {
         selfieExpired = true;
       }

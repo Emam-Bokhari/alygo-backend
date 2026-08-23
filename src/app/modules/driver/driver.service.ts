@@ -236,7 +236,8 @@ const updateDriverFromDB = async (
 
   if (isGoingOnline) {
     const systemConfig = await getSystemConfig();
-    const intervalHours = systemConfig.driverSelfieVerificationIntervalHours ?? 12;
+    const intervalHours =
+      systemConfig.driverSelfieVerificationIntervalHours ?? 12;
     const intervalMs = intervalHours * 60 * 60 * 1000;
 
     const lastVerification = existingDriver.lastVerificationDate;
@@ -247,7 +248,8 @@ const updateDriverFromDB = async (
       );
     }
 
-    const timeSinceLastVerification = Date.now() - new Date(lastVerification).getTime();
+    const timeSinceLastVerification =
+      Date.now() - new Date(lastVerification).getTime();
     if (timeSinceLastVerification > intervalMs) {
       throw new ApiError(
         400,
@@ -1543,9 +1545,14 @@ const verifySelfieFaceToDB = async (userId: string, selfieUrl: string) => {
 
   // Recalculate driver availability to clear the block immediately
   try {
-    await DriverDutyPolicyServices.updateDriverAvailability(driver.userId.toString());
+    await DriverDutyPolicyServices.updateDriverAvailability(
+      driver.userId.toString(),
+    );
   } catch (error) {
-    console.error("Failed to update driver availability after selfie verification:", error);
+    console.error(
+      "Failed to update driver availability after selfie verification:",
+      error,
+    );
   }
 
   return {

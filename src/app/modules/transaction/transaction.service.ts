@@ -97,7 +97,10 @@ const getTransactionsByUser = async (
       };
     } else if (normalizedFilter === "spend") {
       query.transactionType = {
-        $in: [TRANSACTION_TYPE.PAYOUT, TRANSACTION_TYPE.BACKGROUND_CHECK_PAYMENT],
+        $in: [
+          TRANSACTION_TYPE.PAYOUT,
+          TRANSACTION_TYPE.BACKGROUND_CHECK_PAYMENT,
+        ],
       };
     } else {
       // "all"

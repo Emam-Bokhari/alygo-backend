@@ -391,7 +391,8 @@ const driverAvailabilityWorker = new Worker(
       // Check for online drivers whose selfie verification has expired
       try {
         const systemConfig = await getSystemConfig();
-        const intervalHours = systemConfig.driverSelfieVerificationIntervalHours ?? 12;
+        const intervalHours =
+          systemConfig.driverSelfieVerificationIntervalHours ?? 12;
         const intervalMs = intervalHours * 60 * 60 * 1000;
         const thresholdDate = new Date(Date.now() - intervalMs);
 
@@ -442,7 +443,9 @@ const driverAvailabilityWorker = new Worker(
           }
         }
       } catch (err: any) {
-        logger.error(`Error in background driver selfie expiration check: ${err.message}`);
+        logger.error(
+          `Error in background driver selfie expiration check: ${err.message}`,
+        );
       }
 
       // Find all drivers who are currently unavailable (canReceiveRide: false)

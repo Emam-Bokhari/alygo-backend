@@ -669,7 +669,8 @@ const getDriverAvailability = async (driverId: string) => {
 
   // Check if selfie verification has expired
   const systemConfig = await getSystemConfig();
-  const intervalHours = systemConfig.driverSelfieVerificationIntervalHours ?? 12;
+  const intervalHours =
+    systemConfig.driverSelfieVerificationIntervalHours ?? 12;
   const intervalMs = intervalHours * 60 * 60 * 1000;
 
   const lastVerification = driver.lastVerificationDate;
@@ -677,7 +678,8 @@ const getDriverAvailability = async (driverId: string) => {
   if (!lastVerification) {
     selfieExpired = true;
   } else {
-    const timeSinceLastVerification = Date.now() - new Date(lastVerification).getTime();
+    const timeSinceLastVerification =
+      Date.now() - new Date(lastVerification).getTime();
     if (timeSinceLastVerification > intervalMs) {
       selfieExpired = true;
     }

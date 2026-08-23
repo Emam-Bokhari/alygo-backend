@@ -374,15 +374,22 @@ const initiateBackgroundCheck = async (
 };
 
 const getBackgroundCheckFee = async (driverUserId: string) => {
-  const driver = await Driver.findOne({ userId: new Types.ObjectId(driverUserId) });
+  const driver = await Driver.findOne({
+    userId: new Types.ObjectId(driverUserId),
+  });
   if (!driver) {
     throw new ApiError(404, "Driver profile not found");
   }
 
   // Find active background check fees
-  const activeFees = await BackgroundCheckFee.find({ status: FEE_STATUS.ACTIVE });
+  const activeFees = await BackgroundCheckFee.find({
+    status: FEE_STATUS.ACTIVE,
+  });
   if (activeFees.length === 0) {
-    throw new ApiError(404, "No active background check fee configuration found.");
+    throw new ApiError(
+      404,
+      "No active background check fee configuration found.",
+    );
   }
 
   let matchedFee = null;
@@ -390,7 +397,9 @@ const getBackgroundCheckFee = async (driverUserId: string) => {
   // 1. Try matching by serviceAreaId directly
   if (driver.serviceAreaId) {
     matchedFee = activeFees.find(
-      (fee) => fee.serviceAreaId && fee.serviceAreaId.toString() === driver.serviceAreaId!.toString()
+      (fee) =>
+        fee.serviceAreaId &&
+        fee.serviceAreaId.toString() === driver.serviceAreaId!.toString(),
     );
 
     // If not found, check if that service area has parent city/state and match their fees
@@ -398,12 +407,16 @@ const getBackgroundCheckFee = async (driverUserId: string) => {
       const serviceAreaDoc = await ServiceArea.findById(driver.serviceAreaId);
       if (serviceAreaDoc) {
         const parentIds: string[] = [];
-        if (serviceAreaDoc.cityId) parentIds.push(serviceAreaDoc.cityId.toString());
-        if (serviceAreaDoc.stateId) parentIds.push(serviceAreaDoc.stateId.toString());
+        if (serviceAreaDoc.cityId)
+          parentIds.push(serviceAreaDoc.cityId.toString());
+        if (serviceAreaDoc.stateId)
+          parentIds.push(serviceAreaDoc.stateId.toString());
 
         if (parentIds.length > 0) {
           matchedFee = activeFees.find(
-            (fee) => fee.serviceAreaId && parentIds.includes(fee.serviceAreaId.toString())
+            (fee) =>
+              fee.serviceAreaId &&
+              parentIds.includes(fee.serviceAreaId.toString()),
           );
         }
       }
@@ -411,24 +424,37 @@ const getBackgroundCheckFee = async (driverUserId: string) => {
   }
 
   // 2. Try matching by coordinates using ServiceAreaServices.findServiceAreaByCoordinates
-  if (!matchedFee && driver.location?.coordinates && driver.location.coordinates.length === 2 &&
-      (driver.location.coordinates[0] !== 0 || driver.location.coordinates[1] !== 0)) {
+  if (
+    !matchedFee &&
+    driver.location?.coordinates &&
+    driver.location.coordinates.length === 2 &&
+    (driver.location.coordinates[0] !== 0 ||
+      driver.location.coordinates[1] !== 0)
+  ) {
     const [lon, lat] = driver.location.coordinates;
-    const resolvedArea = await ServiceAreaServices.findServiceAreaByCoordinates(lon, lat);
+    const resolvedArea = await ServiceAreaServices.findServiceAreaByCoordinates(
+      lon,
+      lat,
+    );
     if (resolvedArea) {
       matchedFee = activeFees.find(
-        (fee) => fee.serviceAreaId && fee.serviceAreaId.toString() === resolvedArea._id.toString()
+        (fee) =>
+          fee.serviceAreaId &&
+          fee.serviceAreaId.toString() === resolvedArea._id.toString(),
       );
 
       // If not found, check parents of resolved area
       if (!matchedFee) {
         const parentIds: string[] = [];
         if (resolvedArea.cityId) parentIds.push(resolvedArea.cityId.toString());
-        if (resolvedArea.stateId) parentIds.push(resolvedArea.stateId.toString());
+        if (resolvedArea.stateId)
+          parentIds.push(resolvedArea.stateId.toString());
 
         if (parentIds.length > 0) {
           matchedFee = activeFees.find(
-            (fee) => fee.serviceAreaId && parentIds.includes(fee.serviceAreaId.toString())
+            (fee) =>
+              fee.serviceAreaId &&
+              parentIds.includes(fee.serviceAreaId.toString()),
           );
         }
       }
@@ -440,14 +466,18 @@ const getBackgroundCheckFee = async (driverUserId: string) => {
     const cityInput = (driver.taxCity || "").trim().toUpperCase();
     if (cityInput) {
       matchedFee = activeFees.find(
-        (fee) => fee.applicableState && fee.applicableState.trim().toUpperCase() === cityInput
+        (fee) =>
+          fee.applicableState &&
+          fee.applicableState.trim().toUpperCase() === cityInput,
       );
     }
   }
 
   // 4. Try matching default fee (no serviceAreaId and no applicableState)
   if (!matchedFee) {
-    matchedFee = activeFees.find((fee) => !fee.serviceAreaId && !fee.applicableState);
+    matchedFee = activeFees.find(
+      (fee) => !fee.serviceAreaId && !fee.applicableState,
+    );
   }
 
   // 5. Fallback to first active fee
@@ -456,11 +486,16 @@ const getBackgroundCheckFee = async (driverUserId: string) => {
   }
 
   if (!matchedFee) {
-    throw new ApiError(404, "No background check fee found for your location. Please contact support.");
+    throw new ApiError(
+      404,
+      "No background check fee found for your location. Please contact support.",
+    );
   }
 
   // Get platform settings currency
-  const { PlatformSettingsService } = require("../platformSettings/platformSettings.service");
+  const {
+    PlatformSettingsService,
+  } = require("../platformSettings/platformSettings.service");
   const platformCurrency = await PlatformSettingsService.getPlatformCurrency();
 
   return {
@@ -472,10 +507,10 @@ const getBackgroundCheckFee = async (driverUserId: string) => {
   };
 };
 
-const createBackgroundCheckPaymentSession = async (
-  driverUserId: string,
-) => {
-  const driver = await Driver.findOne({ userId: new Types.ObjectId(driverUserId) });
+const createBackgroundCheckPaymentSession = async (driverUserId: string) => {
+  const driver = await Driver.findOne({
+    userId: new Types.ObjectId(driverUserId),
+  });
   if (!driver) {
     throw new ApiError(404, "Driver not found");
   }
@@ -483,7 +518,10 @@ const createBackgroundCheckPaymentSession = async (
   // Prevent multiple payments:
   // 1. If already paid
   if (driver.backgroundCheckPaymentStatus === "paid") {
-    throw new ApiError(400, "You have already paid for the background check. You can proceed to initiate it.");
+    throw new ApiError(
+      400,
+      "You have already paid for the background check. You can proceed to initiate it.",
+    );
   }
 
   // 2. If a background check is currently in progress or verified
@@ -493,7 +531,10 @@ const createBackgroundCheckPaymentSession = async (
       driver.backgroundCheckStatus === VERIFICATION_STATUS.PROCESSING ||
       driver.backgroundCheckStatus === VERIFICATION_STATUS.VERIFIED)
   ) {
-    throw new ApiError(400, "Background check is already in progress or has been verified.");
+    throw new ApiError(
+      400,
+      "Background check is already in progress or has been verified.",
+    );
   }
 
   const user = await User.findById(driver.userId);
@@ -508,7 +549,7 @@ const createBackgroundCheckPaymentSession = async (
   const stripeCustomerId = await StripeService.getOrCreateCustomer(
     user._id.toString(),
     user.email,
-    user.name || "Driver"
+    user.name || "Driver",
   );
 
   // Create checkout session
@@ -529,7 +570,7 @@ const createBackgroundCheckPaymentSession = async (
     metadata,
     stripeCustomerId,
     successUrl,
-    cancelUrl
+    cancelUrl,
   );
 
   // Create a pending transaction

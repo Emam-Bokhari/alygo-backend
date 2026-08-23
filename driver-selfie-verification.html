@@ -154,10 +154,22 @@
         margin-bottom: 1rem;
       }
 
-      .status-idle { background-color: #475569; color: white; }
-      .status-loading { background-color: #d97706; color: white; }
-      .status-success { background-color: #059669; color: white; }
-      .status-error { background-color: #dc2626; color: white; }
+      .status-idle {
+        background-color: #475569;
+        color: white;
+      }
+      .status-loading {
+        background-color: #d97706;
+        color: white;
+      }
+      .status-success {
+        background-color: #059669;
+        color: white;
+      }
+      .status-error {
+        background-color: #dc2626;
+        color: white;
+      }
 
       .preview-box {
         margin-top: 1rem;
@@ -184,26 +196,38 @@
       <div class="card">
         <div class="form-group">
           <label for="baseUrl">Backend API Base URL</label>
-          <input type="text" id="baseUrl" value="http://10.10.7.10:5005/api/v1" placeholder="http://localhost:5005/api/v1" />
+          <input
+            type="text"
+            id="baseUrl"
+            value="http://10.10.7.10:5005/api/v1"
+            placeholder="http://localhost:5005/api/v1"
+          />
         </div>
 
         <div class="form-group">
           <label for="token">Driver Authentication (Bearer JWT Token)</label>
-          <input type="text" id="token" placeholder="Paste your authorization JWT token here..." />
+          <input
+            type="text"
+            id="token"
+            placeholder="Paste your authorization JWT token here..."
+          />
         </div>
 
         <div class="form-group">
           <label for="selfieFile">Selfie Image File</label>
           <input type="file" id="selfieFile" accept="image/*" />
           <div class="preview-box" id="previewBox">
-            <img class="preview-image" id="previewImage" src="" alt="Selfie Preview" />
+            <img
+              class="preview-image"
+              id="previewImage"
+              src=""
+              alt="Selfie Preview"
+            />
           </div>
         </div>
 
         <div class="btn-container">
-          <button class="btn" id="btnBase64">
-            Verify via Base64 JSON
-          </button>
+          <button class="btn" id="btnBase64">Verify via Base64 JSON</button>
           <button class="btn btn-secondary" id="btnFormData">
             Verify via Multipart Form-Data
           </button>
@@ -211,11 +235,19 @@
       </div>
 
       <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <h3 style="margin: 0; font-size: 1.2rem;">API Response Output</h3>
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          "
+        >
+          <h3 style="margin: 0; font-size: 1.2rem">API Response Output</h3>
           <span class="status-badge status-idle" id="statusBadge">Idle</span>
         </div>
-        <pre class="response-area" id="responseArea">Waiting for request to initiate...</pre>
+        <pre class="response-area" id="responseArea">
+Waiting for request to initiate...</pre
+        >
       </div>
     </div>
 
@@ -229,16 +261,20 @@
       const statusBadge = document.getElementById("statusBadge");
 
       // Auto update target IP based on window origin
-      if (window.location.hostname !== "127.0.0.1" && window.location.hostname !== "localhost" && window.location.hostname) {
+      if (
+        window.location.hostname !== "127.0.0.1" &&
+        window.location.hostname !== "localhost" &&
+        window.location.hostname
+      ) {
         baseUrlInput.value = `http://${window.location.hostname}:5005/api/v1`;
       }
 
       // Preview Image upload
-      fileInput.addEventListener("change", function(e) {
+      fileInput.addEventListener("change", function (e) {
         const file = e.target.files[0];
         if (file) {
           const reader = new FileReader();
-          reader.onload = function(event) {
+          reader.onload = function (event) {
             previewImage.src = event.target.result;
             previewBox.style.display = "block";
           };
@@ -259,109 +295,121 @@
           const reader = new FileReader();
           reader.readAsDataURL(file);
           reader.onload = () => resolve(reader.result);
-          reader.onerror = error => reject(error);
+          reader.onerror = (error) => reject(error);
         });
       }
 
       // 1. JSON Request (Base64)
-      document.getElementById("btnBase64").addEventListener("click", async () => {
-        const file = fileInput.files[0];
-        const token = tokenInput.value.trim();
-        const baseUrl = baseUrlInput.value.trim();
+      document
+        .getElementById("btnBase64")
+        .addEventListener("click", async () => {
+          const file = fileInput.files[0];
+          const token = tokenInput.value.trim();
+          const baseUrl = baseUrlInput.value.trim();
 
-        if (!file) {
-          alert("Please select a selfie file first!");
-          return;
-        }
+          if (!file) {
+            alert("Please select a selfie file first!");
+            return;
+          }
 
-        if (!token) {
-          alert("Please enter a Driver JWT token!");
-          return;
-        }
+          if (!token) {
+            alert("Please enter a Driver JWT token!");
+            return;
+          }
 
-        setStatus("loading", "Sending JSON...");
-        responseArea.textContent = "Processing image file and sending POST request...";
-        responseArea.style.color = "#fbbf24";
+          setStatus("loading", "Sending JSON...");
+          responseArea.textContent =
+            "Processing image file and sending POST request...";
+          responseArea.style.color = "#fbbf24";
 
-        try {
-          const base64Data = await fileToBase64(file);
-          
-          const response = await fetch(`${baseUrl}/drivers/me/verify-selfie`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${token}`
-            },
-            body: JSON.stringify({
-              liveSelfie: base64Data
-            })
-          });
+          try {
+            const base64Data = await fileToBase64(file);
 
-          const result = await response.json();
-          responseArea.textContent = JSON.stringify(result, null, 2);
-          
-          if (response.ok && result.success) {
-            setStatus("success", "Verified!");
-            responseArea.style.color = "#34d399";
-          } else {
-            setStatus("error", `Error ${response.status}`);
+            const response = await fetch(
+              `${baseUrl}/drivers/me/verify-selfie`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                  liveSelfie: base64Data,
+                }),
+              },
+            );
+
+            const result = await response.json();
+            responseArea.textContent = JSON.stringify(result, null, 2);
+
+            if (response.ok && result.success) {
+              setStatus("success", "Verified!");
+              responseArea.style.color = "#34d399";
+            } else {
+              setStatus("error", `Error ${response.status}`);
+              responseArea.style.color = "#f87171";
+            }
+          } catch (error) {
+            setStatus("error", "Failed");
+            responseArea.textContent = `Request Failed:\n${error.message}`;
             responseArea.style.color = "#f87171";
           }
-        } catch (error) {
-          setStatus("error", "Failed");
-          responseArea.textContent = `Request Failed:\n${error.message}`;
-          responseArea.style.color = "#f87171";
-        }
-      });
+        });
 
       // 2. Multipart Form-Data Request
-      document.getElementById("btnFormData").addEventListener("click", async () => {
-        const file = fileInput.files[0];
-        const token = tokenInput.value.trim();
-        const baseUrl = baseUrlInput.value.trim();
+      document
+        .getElementById("btnFormData")
+        .addEventListener("click", async () => {
+          const file = fileInput.files[0];
+          const token = tokenInput.value.trim();
+          const baseUrl = baseUrlInput.value.trim();
 
-        if (!file) {
-          alert("Please select a selfie file first!");
-          return;
-        }
+          if (!file) {
+            alert("Please select a selfie file first!");
+            return;
+          }
 
-        if (!token) {
-          alert("Please enter a Driver JWT token!");
-          return;
-        }
+          if (!token) {
+            alert("Please enter a Driver JWT token!");
+            return;
+          }
 
-        setStatus("loading", "Sending Form-Data...");
-        responseArea.textContent = "Preparing form data and sending POST request...";
-        responseArea.style.color = "#fbbf24";
+          setStatus("loading", "Sending Form-Data...");
+          responseArea.textContent =
+            "Preparing form data and sending POST request...";
+          responseArea.style.color = "#fbbf24";
 
-        try {
-          const formData = new FormData();
-          formData.append("liveSelfie", file);
+          try {
+            const formData = new FormData();
+            formData.append("liveSelfie", file);
 
-          const response = await fetch(`${baseUrl}/drivers/me/verify-selfie`, {
-            method: "POST",
-            headers: {
-              "Authorization": `Bearer ${token}`
-            },
-            body: formData
-          });
+            const response = await fetch(
+              `${baseUrl}/drivers/me/verify-selfie`,
+              {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+                body: formData,
+              },
+            );
 
-          const result = await response.json();
-          responseArea.textContent = JSON.stringify(result, null, 2);
+            const result = await response.json();
+            responseArea.textContent = JSON.stringify(result, null, 2);
 
-          if (response.ok && result.success) {
-            setStatus("success", "Verified!");
-            responseArea.style.color = "#34d399";
-          } else {
-            setStatus("error", `Error ${response.status}`);
+            if (response.ok && result.success) {
+              setStatus("success", "Verified!");
+              responseArea.style.color = "#34d399";
+            } else {
+              setStatus("error", `Error ${response.status}`);
+              responseArea.style.color = "#f87171";
+            }
+          } catch (error) {
+            setStatus("error", "Failed");
+            responseArea.textContent = `Request Failed:\n${error.message}`;
             responseArea.style.color = "#f87171";
           }
-        } catch (error) {
-          setStatus("error", "Failed");
-          responseArea.textContent = `Request Failed:\n${error.message}`;
-          responseArea.style.color = "#f87171";
-        }
-      });
+        });
     </script>
   </body>
 </html>

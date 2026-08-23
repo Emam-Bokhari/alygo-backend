@@ -1774,7 +1774,9 @@ const startRide = async (
   const passengerSummary = buildPassengerSummary(userDoc);
 
   // Sort stops if any are present
-  const sortedStops = [...(ride.stops || [])].sort((a: any, b: any) => a.order - b.order);
+  const sortedStops = [...(ride.stops || [])].sort(
+    (a: any, b: any) => a.order - b.order,
+  );
   const firstStop = sortedStops.length > 0 ? sortedStops[0] : null;
 
   // Fetch and update tracking information for current/initial polyline
