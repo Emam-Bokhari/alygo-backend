@@ -1,7 +1,5 @@
 import express from "express";
-import auth from "../../middlewares/auth";
 import validateRequest from "../../middlewares/validateRequest";
-import { USER_ROLES } from "../../../enums/user";
 import { CallController } from "./call.controller";
 import { callValidation } from "./call.validation";
 import { isAuthenticated } from "../../../helpers/authHelper";

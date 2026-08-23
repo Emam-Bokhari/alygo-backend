@@ -3,6 +3,7 @@ import { connectionOptions } from "../../../../config/bullmq";
 import { Call } from "../call.model";
 import { CALL_STATUS } from "../call.constant";
 import { callSocketHelper } from "../socket/call.socket";
+import { agoraProvider } from "../providers/agora.provider";
 import { notificationHelper } from "../../../builder/pushNotification";
 import { NOTIFICATION_TYPE } from "../../notification/notification.constant";
 import { logger } from "../../../../shared/logger";
@@ -61,7 +62,16 @@ const processCallCleanup = async (): Promise<void> => {
     );
 
     // Emit WebSockets events
-    const payload = {
+    const callerToken = agoraProvider.generateAgoraToken(
+      call.channelName,
+      call.agoraUidCaller,
+    );
+    const receiverToken = agoraProvider.generateAgoraToken(
+      call.channelName,
+      call.agoraUidReceiver,
+    );
+
+    const callerPayload = {
       callId: call._id.toString(),
       status: CALL_STATUS.TIMEOUT,
       reason: "ring_timeout",
@@ -71,12 +81,32 @@ const processCallCleanup = async (): Promise<void> => {
       callerProfileImage: callerUser?.profileImage || null,
       receiverName: receiverUser?.name || "",
       receiverProfileImage: receiverUser?.profileImage || null,
+      token: callerToken,
+      uid: call.agoraUidCaller,
+      channel: call.channelName,
+      channelName: call.channelName,
     };
 
-    callSocketHelper.emitCallTimeout(call.callerId.toString(), payload);
-    callSocketHelper.emitCallTimeout(call.receiverId.toString(), payload);
-    callSocketHelper.emitCallEnded(call.callerId.toString(), payload);
-    callSocketHelper.emitCallEnded(call.receiverId.toString(), payload);
+    const receiverPayload = {
+      callId: call._id.toString(),
+      status: CALL_STATUS.TIMEOUT,
+      reason: "ring_timeout",
+      callerId: call.callerId.toString(),
+      receiverId: call.receiverId.toString(),
+      callerName: callerUser?.name || "",
+      callerProfileImage: callerUser?.profileImage || null,
+      receiverName: receiverUser?.name || "",
+      receiverProfileImage: receiverUser?.profileImage || null,
+      token: receiverToken,
+      uid: call.agoraUidReceiver,
+      channel: call.channelName,
+      channelName: call.channelName,
+    };
+
+    callSocketHelper.emitCallTimeout(call.callerId.toString(), callerPayload);
+    callSocketHelper.emitCallTimeout(call.receiverId.toString(), receiverPayload);
+    callSocketHelper.emitCallEnded(call.callerId.toString(), callerPayload);
+    callSocketHelper.emitCallEnded(call.receiverId.toString(), receiverPayload);
 
     // Send FCM push notifications for missed call
     try {
@@ -142,7 +172,16 @@ const processCallCleanup = async (): Promise<void> => {
     );
 
     // Emit socket events
-    const payload = {
+    const callerToken = agoraProvider.generateAgoraToken(
+      call.channelName,
+      call.agoraUidCaller,
+    );
+    const receiverToken = agoraProvider.generateAgoraToken(
+      call.channelName,
+      call.agoraUidReceiver,
+    );
+
+    const callerPayload = {
       callId: call._id.toString(),
       status: CALL_STATUS.ENDED,
       reason: "max_duration_exceeded",
@@ -153,9 +192,31 @@ const processCallCleanup = async (): Promise<void> => {
       callerProfileImage: callerUser?.profileImage || null,
       receiverName: receiverUser?.name || "",
       receiverProfileImage: receiverUser?.profileImage || null,
+      token: callerToken,
+      uid: call.agoraUidCaller,
+      channel: call.channelName,
+      channelName: call.channelName,
     };
-    callSocketHelper.emitCallEnded(call.callerId.toString(), payload);
-    callSocketHelper.emitCallEnded(call.receiverId.toString(), payload);
+
+    const receiverPayload = {
+      callId: call._id.toString(),
+      status: CALL_STATUS.ENDED,
+      reason: "max_duration_exceeded",
+      durationSeconds: durationSec,
+      callerId: call.callerId.toString(),
+      receiverId: call.receiverId.toString(),
+      callerName: callerUser?.name || "",
+      callerProfileImage: callerUser?.profileImage || null,
+      receiverName: receiverUser?.name || "",
+      receiverProfileImage: receiverUser?.profileImage || null,
+      token: receiverToken,
+      uid: call.agoraUidReceiver,
+      channel: call.channelName,
+      channelName: call.channelName,
+    };
+
+    callSocketHelper.emitCallEnded(call.callerId.toString(), callerPayload);
+    callSocketHelper.emitCallEnded(call.receiverId.toString(), receiverPayload);
   }
 };
 

@@ -6,7 +6,6 @@ import { ICall } from "./call.interface";
 import { CALL_STATUS, CALL_TYPE, COMMUNICATION_TYPE } from "./call.constant";
 import { agoraProvider } from "./providers/agora.provider";
 import { callPermissionHelper } from "./helpers/callPermission.helper";
-import { callTokenHelper } from "./helpers/callToken.helper";
 import { callSocketHelper } from "./socket/call.socket";
 import { notificationHelper } from "../../../app/builder/pushNotification";
 import { NOTIFICATION_TYPE } from "../notification/notification.constant";
@@ -144,6 +143,10 @@ const initiateCallToDB = async (
     callerProfileImage: callerUser.profileImage || null,
     receiverName: receiverUser.name,
     receiverProfileImage: receiverUser.profileImage || null,
+    token: callerToken,
+    uid: agoraUidCaller,
+    channel: channelName,
+    channelName,
   });
 
   // 5. Send FCM Push Notification to the receiver
@@ -239,7 +242,16 @@ const answerCallInDB = async (
   );
 
   // Emit accepted/connected socket events
-  const payload = {
+  const callerToken = agoraProvider.generateAgoraToken(
+    call.channelName,
+    call.agoraUidCaller,
+  );
+  const receiverToken = agoraProvider.generateAgoraToken(
+    call.channelName,
+    call.agoraUidReceiver,
+  );
+
+  const callerPayload = {
     callId,
     status: CALL_STATUS.ACCEPTED,
     answeredAt: now,
@@ -249,10 +261,31 @@ const answerCallInDB = async (
     callerProfileImage: callerUser?.profileImage || null,
     receiverName: receiverUser?.name || "",
     receiverProfileImage: receiverUser?.profileImage || null,
+    token: callerToken,
+    uid: call.agoraUidCaller,
+    channel: call.channelName,
+    channelName: call.channelName,
   };
-  callSocketHelper.emitCallAccepted(call.callerId.toString(), payload);
-  callSocketHelper.emitCallConnected(call.callerId.toString(), payload);
-  callSocketHelper.emitCallConnected(call.receiverId.toString(), payload);
+
+  const receiverPayload = {
+    callId,
+    status: CALL_STATUS.ACCEPTED,
+    answeredAt: now,
+    callerId: call.callerId.toString(),
+    receiverId: call.receiverId.toString(),
+    callerName: callerUser?.name || "",
+    callerProfileImage: callerUser?.profileImage || null,
+    receiverName: receiverUser?.name || "",
+    receiverProfileImage: receiverUser?.profileImage || null,
+    token: receiverToken,
+    uid: call.agoraUidReceiver,
+    channel: call.channelName,
+    channelName: call.channelName,
+  };
+
+  callSocketHelper.emitCallAccepted(call.callerId.toString(), callerPayload);
+  callSocketHelper.emitCallConnected(call.callerId.toString(), callerPayload);
+  callSocketHelper.emitCallConnected(call.receiverId.toString(), receiverPayload);
 
   return call;
 };
@@ -294,6 +327,11 @@ const rejectCallInDB = async (
   );
 
   // Emit socket events
+  const callerToken = agoraProvider.generateAgoraToken(
+    call.channelName,
+    call.agoraUidCaller,
+  );
+
   const payload = {
     callId,
     status: CALL_STATUS.REJECTED,
@@ -304,6 +342,10 @@ const rejectCallInDB = async (
     callerProfileImage: callerUser?.profileImage || null,
     receiverName: receiverUser?.name || "",
     receiverProfileImage: receiverUser?.profileImage || null,
+    token: callerToken,
+    uid: call.agoraUidCaller,
+    channel: call.channelName,
+    channelName: call.channelName,
   };
   callSocketHelper.emitCallRejected(call.callerId.toString(), payload);
   callSocketHelper.emitCallEnded(call.callerId.toString(), payload);
@@ -373,6 +415,11 @@ const cancelCallInDB = async (
   );
 
   // Emit socket events
+  const receiverToken = agoraProvider.generateAgoraToken(
+    call.channelName,
+    call.agoraUidReceiver,
+  );
+
   const payload = {
     callId,
     status: CALL_STATUS.CANCELLED,
@@ -382,6 +429,10 @@ const cancelCallInDB = async (
     callerProfileImage: callerUser?.profileImage || null,
     receiverName: receiverUser?.name || "",
     receiverProfileImage: receiverUser?.profileImage || null,
+    token: receiverToken,
+    uid: call.agoraUidReceiver,
+    channel: call.channelName,
+    channelName: call.channelName,
   };
   callSocketHelper.emitCallCancelled(call.receiverId.toString(), payload);
   callSocketHelper.emitCallEnded(call.receiverId.toString(), payload);
@@ -467,7 +518,16 @@ const endCallInDB = async (
   );
 
   // Emit socket events
-  const payload = {
+  const callerToken = agoraProvider.generateAgoraToken(
+    call.channelName,
+    call.agoraUidCaller,
+  );
+  const receiverToken = agoraProvider.generateAgoraToken(
+    call.channelName,
+    call.agoraUidReceiver,
+  );
+
+  const callerPayload = {
     callId,
     status: CALL_STATUS.ENDED,
     durationSeconds: durationSec,
@@ -477,9 +537,30 @@ const endCallInDB = async (
     callerProfileImage: callerUser?.profileImage || null,
     receiverName: receiverUser?.name || "",
     receiverProfileImage: receiverUser?.profileImage || null,
+    token: callerToken,
+    uid: call.agoraUidCaller,
+    channel: call.channelName,
+    channelName: call.channelName,
   };
-  callSocketHelper.emitCallEnded(callerStr, payload);
-  callSocketHelper.emitCallEnded(receiverStr, payload);
+
+  const receiverPayload = {
+    callId,
+    status: CALL_STATUS.ENDED,
+    durationSeconds: durationSec,
+    callerId: callerStr,
+    receiverId: receiverStr,
+    callerName: callerUser?.name || "",
+    callerProfileImage: callerUser?.profileImage || null,
+    receiverName: receiverUser?.name || "",
+    receiverProfileImage: receiverUser?.profileImage || null,
+    token: receiverToken,
+    uid: call.agoraUidReceiver,
+    channel: call.channelName,
+    channelName: call.channelName,
+  };
+
+  callSocketHelper.emitCallEnded(callerStr, callerPayload);
+  callSocketHelper.emitCallEnded(receiverStr, receiverPayload);
 
   // Send FCM notifications if necessary
   try {
@@ -568,6 +649,8 @@ const getTokenFromDB = async (
     callerProfileImage: callerUser?.profileImage || null,
     receiverName: receiverUser?.name || "",
     receiverProfileImage: receiverUser?.profileImage || null,
+    channel: call.channelName,
+    channelName: call.channelName,
   });
 
   return {

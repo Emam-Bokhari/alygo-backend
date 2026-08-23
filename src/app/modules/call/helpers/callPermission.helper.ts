@@ -30,6 +30,7 @@ export const checkCallPermission = async (
   if (!caller) {
     return { allowed: false, reason: "Caller user account not found." };
   }
+
   if (!receiver) {
     return { allowed: false, reason: "Receiver user account not found." };
   }
@@ -97,6 +98,7 @@ export const checkCallPermission = async (
   }
 
   // 5. Cooldown after rejection (Wait 60 seconds after a rejected call)
+  /*
   const oneMinuteAgo = new Date(Date.now() - 60000);
   const recentRejection = await Call.findOne({
     status: CALL_STATUS.REJECTED,
@@ -111,6 +113,7 @@ export const checkCallPermission = async (
       reason: "Cooldown active. Please wait before calling again.",
     };
   }
+  */
 
   // 6. Rate Limit (Max 10 call attempts in 5 minutes)
   const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
