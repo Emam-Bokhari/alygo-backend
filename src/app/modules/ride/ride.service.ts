@@ -1922,6 +1922,114 @@ const requestEndVerification = async (
 };
 
 /**
+ * Passenger requests end verification - Generate and send OTP to passenger, and notify driver
+ */
+const passengerRequestEndVerification = async (
+  passengerUserId: string,
+  rideId: string,
+): Promise<{ ride: IRide; otpSent: boolean }> => {
+  const ride = await Ride.findOne({ _id: rideId, userId: passengerUserId });
+
+  if (!ride) {
+    throw new ApiError(
+      404,
+      "Ride not found or you are not the passenger assigned to this ride.",
+    );
+  }
+
+  if (ride.status !== RIDE_STATUS.STARTED) {
+    throw new ApiError(
+      400,
+      "End verification can only be requested for ongoing rides.",
+    );
+  }
+
+  // Check if OTP already exists and is not expired
+  if (ride.dropVerification.otp && ride.dropVerification.otp.expiresAt) {
+    const now = new Date();
+    if (
+      ride.dropVerification.otp.expiresAt > now &&
+      !ride.dropVerification.otp.verified
+    ) {
+      // OTP is still valid, resend it to passenger
+      rideUserSocketHelper.emitEndOtpGenerated(ride.userId.toString(), {
+        rideId: ride._id,
+        otp: ride.dropVerification.otp.code,
+      });
+
+      // Also notify driver via socket
+      if (ride.driverId) {
+        rideDriverSocketHelper.emitEndVerificationRequested(
+          ride.driverId.toString(),
+          {
+            rideId: ride._id,
+          },
+        );
+      }
+
+      return { ride, otpSent: true };
+    }
+  }
+
+  // Generate new 4-digit OTP (different from start OTP)
+  const otpCode = Math.floor(1000 + Math.random() * 9000).toString();
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + 5 * 60 * 1000); // 5 minutes expiration
+
+  ride.dropVerification = {
+    method: VERIFICATION_METHOD.OTP,
+    otp: {
+      code: otpCode,
+      createdAt: now,
+      expiresAt: expiresAt,
+      verified: false,
+      attempts: 0,
+    },
+    phoneLastFourDigits: ride.dropVerification.phoneLastFourDigits,
+    verificationAttempts: ride.dropVerification.verificationAttempts || [],
+  };
+
+  await ride.save();
+
+  // Send OTP ONLY to passenger via Socket.IO
+  rideUserSocketHelper.emitEndOtpGenerated(ride.userId.toString(), {
+    rideId: ride._id,
+    otp: otpCode,
+  });
+
+  await sendNotifications({
+    title: "Complete Ride Verification",
+    text: `Share OTP ${otpCode} with your driver to complete the ride.`,
+    receiver: ride.userId,
+    type: NOTIFICATION_TYPE.USER,
+    referenceId: ride._id,
+    referenceModel: "Ride" as any,
+  });
+
+  // Notify driver via Socket.IO
+  if (ride.driverId) {
+    rideDriverSocketHelper.emitEndVerificationRequested(
+      ride.driverId.toString(),
+      {
+        rideId: ride._id,
+      },
+    );
+
+    // Notify driver via Push notification
+    await sendNotifications({
+      title: "Passenger Requested Trip End",
+      text: "Passenger has requested to end the trip. Please enter the OTP they provide.",
+      receiver: ride.driverId,
+      type: NOTIFICATION_TYPE.DRIVER,
+      referenceId: ride._id,
+      referenceModel: "Ride" as any,
+    });
+  }
+
+  return { ride, otpSent: true };
+};
+
+/**
  * Verify OTP / Phone and end ride (transitions driver availability back to online)
  */
 const completeRide = async (
@@ -4931,6 +5039,7 @@ export const RideServices = {
   requestStartVerification,
   startRide,
   requestEndVerification,
+  passengerRequestEndVerification,
   completeRide,
   completeRidePayment,
   confirmCashPayment,

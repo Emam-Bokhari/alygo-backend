@@ -79,6 +79,10 @@ const emitRiderAccepted = (driverId: string, data: any): boolean => {
   return socketHelper.sendToUser(driverId, "rider-accepted", data);
 };
 
+const emitEndVerificationRequested = (driverId: string, data: any): boolean => {
+  return socketHelper.sendToUser(driverId, "end-verification-requested", data);
+};
+
 export const rideDriverSocketHelper = {
   emitRideRequest,
   emitRideRequestCancelled,
@@ -99,4 +103,5 @@ export const rideDriverSocketHelper = {
   emitDriverLocationUpdated,
   emitDriverOnTheWay,
   emitDriverArrived,
+  emitEndVerificationRequested,
 };

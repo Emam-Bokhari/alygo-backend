@@ -115,6 +115,13 @@ router.post(
   RideController.requestEndVerification,
 );
 
+// Passenger requests end verification (generates OTP for passenger)
+router.post(
+  "/:id/passenger/request-end-verification",
+  isUser,
+  RideController.passengerRequestEndVerification,
+);
+
 // Driver verifies and completes ride (using OTP or phone last 4 digits)
 router.post(
   "/:id/verify-end",

@@ -111,6 +111,24 @@ const requestEndVerification = catchAsync(
   },
 );
 
+const passengerRequestEndVerification = catchAsync(
+  async (req: Request, res: Response) => {
+    const passengerUserId = req.user.id;
+    const { id: rideId } = req.params;
+    const result = await RideServices.passengerRequestEndVerification(
+      passengerUserId,
+      rideId,
+    );
+
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "End verification OTP sent to passenger",
+      data: result,
+    });
+  },
+);
+
 const verifyEnd = catchAsync(async (req: Request, res: Response) => {
   const driverUserId = req.user.id;
   const { id: rideId } = req.params;
@@ -367,6 +385,7 @@ export const RideController = {
   requestStartVerification,
   verifyStart,
   requestEndVerification,
+  passengerRequestEndVerification,
   verifyEnd,
   confirmCashPayment,
   cancelRide,
