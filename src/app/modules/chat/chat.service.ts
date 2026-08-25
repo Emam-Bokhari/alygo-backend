@@ -48,11 +48,59 @@ const createChatIntoDB = async (
 };
 
 const markChatAsRead = async (userId: string, chatId: string) => {
-  return Chat.findByIdAndUpdate(
+  // 1. Mark all messages in this chat sent by other participants as read
+  await Message.updateMany(
+    {
+      chatId: new mongoose.Types.ObjectId(chatId),
+      sender: { $ne: new mongoose.Types.ObjectId(userId) },
+      read: false,
+    },
+    {
+      $set: { read: true, readAt: new Date() },
+    },
+  );
+
+  // 2. Add the user to the readBy list in the Chat document
+  const updatedChat = await Chat.findByIdAndUpdate(
     chatId,
     { $addToSet: { readBy: userId } },
     { new: true },
   );
+
+  // 3. Emit socket events to update unread count on the client
+  chatSocketHelper.emitUnreadCountUpdate(userId, {
+    chatId,
+    action: "reset",
+  });
+
+  // Also emit a chat list update to the current user to update the unread count in the UI list
+  try {
+    const populatedChat = await Chat.findById(chatId)
+      .populate("participants", "name role email profileImage")
+      .populate("lastMessage")
+      .lean();
+
+    if (populatedChat) {
+      const otherParticipants = populatedChat.participants.filter(
+        (p: any) => p && p._id && p._id.toString() !== userId,
+      );
+
+      chatSocketHelper.emitChatListUpdate(userId, {
+        chatId,
+        chat: {
+          ...populatedChat,
+          participants: otherParticipants,
+          isRead: true,
+          unreadCount: 0,
+        },
+        action: "update",
+      });
+    }
+  } catch (error) {
+    console.error("Error emitting chat list update on markChatAsRead:", error);
+  }
+
+  return updatedChat;
 };
 
 // 5. Updated getAllChatsFromDB with better unread count calculation
@@ -83,13 +131,13 @@ const getAllChatsFromDB = async (
     const allChatLists = await Promise.all(
       allChats.map(async (chat) => {
         const otherParticipantIds = chat.participants.filter(
-          (participantId) => participantId.toString() !== userId,
+          (participantId) => participantId && participantId.toString() !== userId,
         );
 
         const otherParticipants = await User.find({
           _id: { $in: otherParticipantIds },
         })
-          .select("_id firstName lastName profileImage email role")
+          .select("_id name profileImage email role")
           .lean();
 
         const unreadCount = await Message.countDocuments({
@@ -110,7 +158,7 @@ const getAllChatsFromDB = async (
 
     const filteredChats = allChatLists.filter((chat) => {
       return chat.participants.some((participant) =>
-        participant.name.toLowerCase().includes(searchTerm),
+        participant.name && participant.name.toLowerCase().includes(searchTerm),
       );
     });
 
@@ -128,8 +176,6 @@ const getAllChatsFromDB = async (
 
     chats = await Promise.all(
       rawChats.map(async (chat) => {
-        // const otherParticipantIds = chat.participants.filter((participantId) => participantId.toString() !== userId);
-
         const otherParticipantIds = chat.participants.filter(
           (participantId) =>
             participantId && participantId.toString() !== userId,
@@ -138,7 +184,7 @@ const getAllChatsFromDB = async (
         const otherParticipants = await User.find({
           _id: { $in: otherParticipantIds },
         })
-          .select("_id firstName lastName profileImage email role")
+          .select("_id name profileImage email role")
           .lean();
 
         // FIXED: Same unread count calculation
@@ -159,9 +205,30 @@ const getAllChatsFromDB = async (
     );
   }
 
-  const unreadChatsCount = chats.filter((chat) => chat.unreadCount > 0).length;
-  const totalUnreadMessages = chats.reduce(
-    (total, chat) => total + chat.unreadCount,
+  // Calculate total unread counts across all active chats for this user (not just the paginated page)
+  const allActiveChats = await Chat.find(chatQuery).select("_id").lean();
+  const activeChatIds = allActiveChats.map((c) => c._id);
+
+  const unreadStats = await Message.aggregate([
+    {
+      $match: {
+        chatId: { $in: activeChatIds },
+        sender: { $ne: new mongoose.Types.ObjectId(userId) },
+        read: false,
+        isDeleted: false,
+      },
+    },
+    {
+      $group: {
+        _id: "$chatId",
+        count: { $sum: 1 },
+      },
+    },
+  ]);
+
+  const unreadChatsCount = unreadStats.length;
+  const totalUnreadMessages = unreadStats.reduce(
+    (sum, item) => sum + item.count,
     0,
   );
 

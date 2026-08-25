@@ -4,7 +4,6 @@ import catchAsync from "../../../shared/catchAsync";
 import sendResponse from "../../../shared/sendResponse";
 import { RideServices } from "./ride.service";
 import { PendingPayment } from "../pendingPayment/pendingPayment.model";
-import config from "../../../config";
 import { PlatformSettingsService } from "../platformSettings/platformSettings.service";
 
 const estimateFareAndRoute = catchAsync(async (req: Request, res: Response) => {
@@ -115,6 +114,7 @@ const passengerRequestEndVerification = catchAsync(
   async (req: Request, res: Response) => {
     const passengerUserId = req.user.id;
     const { id: rideId } = req.params;
+
     const result = await RideServices.passengerRequestEndVerification(
       passengerUserId,
       rideId,
