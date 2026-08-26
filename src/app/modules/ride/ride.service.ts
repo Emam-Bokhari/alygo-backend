@@ -3624,6 +3624,7 @@ const addStopsDuringTrip = async (
   rideUserSocketHelper.emitStopsAdded(ride.userId.toString(), {
     rideId: ride._id,
     newStops: payload.stops,
+    stops: ride.stops,
     updatedRouteInfo: ride.routeInfo,
     updatedFare: ride.fare,
     remainingDistanceKm: tracking?.remainingDistanceKm,
@@ -3635,7 +3636,9 @@ const addStopsDuringTrip = async (
     rideDriverSocketHelper.emitStopsAdded(ride.driverId.toString(), {
       rideId: ride._id,
       newStops: payload.stops,
+      stops: ride.stops,
       updatedRouteInfo: ride.routeInfo,
+      updatedFare: ride.fare,
       remainingDistanceKm: tracking?.remainingDistanceKm,
       estimatedArrivalMinutes: tracking?.estimatedArrivalMinutes,
     });

@@ -52,6 +52,7 @@ const permissionSchema = new Schema<IPermission, PermissionModel>(
   },
   {
     timestamps: true,
+    versionKey: false,
     toJSON: {
       virtuals: true,
       transform: (_doc, ret) => {

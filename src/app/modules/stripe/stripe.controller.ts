@@ -145,14 +145,14 @@ const createCheckoutSession = catchAsync(
       throw new ApiError(StatusCodes.BAD_REQUEST, "This ride is already paid.");
     }
 
-    const totalFare = ride.fare.total;
+    const totalFare = Number(ride.fare.total.toFixed(2));
     let walletDeduction = 0;
     let chargeAmount = totalFare;
 
     if (useWallet) {
       const wallet = await WalletService.getOrCreateWallet(userId);
-      walletDeduction = Math.min(wallet.balance, totalFare);
-      chargeAmount = totalFare - walletDeduction;
+      walletDeduction = Number(Math.min(wallet.balance, totalFare).toFixed(2));
+      chargeAmount = Number((totalFare - walletDeduction).toFixed(2));
     }
 
     const user = await User.findById(userId);
@@ -223,10 +223,17 @@ const createCheckoutSession = catchAsync(
     }
     await ride.save();
 
+    let message = "Stripe Checkout Session created successfully";
+    if (useWallet && walletDeduction > 0) {
+      message = `Insufficient wallet balance. ${walletDeduction.toFixed(2)} ${platformCurrency} will be deducted from wallet, and the remaining ${chargeAmount.toFixed(2)} ${platformCurrency} will be charged via Stripe.`;
+    } else if (useWallet && walletDeduction === 0) {
+      message = `Wallet balance is 0. The full fare of ${chargeAmount.toFixed(2)} ${platformCurrency} will be charged via Stripe.`;
+    }
+
     sendResponse(res, {
       statusCode: StatusCodes.OK,
       success: true,
-      message: "Stripe Checkout Session created successfully",
+      message,
       data: {
         checkoutUrl: session.url,
         sessionId: session.id,
