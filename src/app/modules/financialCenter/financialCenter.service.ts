@@ -198,16 +198,8 @@ const getRevenueSummaryFromDB = async (
   let trendEnd: Date;
 
   if (queryParams.startDate && queryParams.endDate) {
-    trendStart = DateTime.fromISO(queryParams.startDate as string)
-      .setZone(tz)
-      .startOf("day")
-      .toUTC()
-      .toJSDate();
-    trendEnd = DateTime.fromISO(queryParams.endDate as string)
-      .setZone(tz)
-      .endOf("day")
-      .toUTC()
-      .toJSDate();
+    trendStart = getDayRangeInTimezone(queryParams.startDate as string, tz).start;
+    trendEnd = getDayRangeInTimezone(queryParams.endDate as string, tz).end;
   } else {
     // Default to last 7 days (including today)
     const nowInTzObj = DateTime.now().setZone(tz);

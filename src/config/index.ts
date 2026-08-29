@@ -19,8 +19,8 @@ export default {
   redis_password: process.env.REDIS_PASSWORD,
   redis_db: process.env.REDIS_DB,
   start_cron: process.env.START_CRON,
-  driverSelfieVerificationIntervalHours: parseInt(
-    process.env.DRIVER_SELFIE_VERIFICATION_INTERVAL_HOURS || "12",
+  driverSelfieVerificationIntervalMinutes: parseInt(
+    process.env.DRIVER_SELFIE_VERIFICATION_INTERVAL_MINUTES || "720",
   ),
   client_url: process.env.CLIENT_URL,
   // google login
@@ -76,8 +76,14 @@ export default {
     driverVisibilityDurationSeconds: parseInt(
       process.env.DRIVER_VISIBILITY_DURATION_SECONDS || "60",
     ),
+    reservationDriverVisibilityDurationSeconds: parseInt(
+      process.env.RESERVATION_DRIVER_VISIBILITY_DURATION_SECONDS || "300",
+    ),
     rideRequestLifetimeSeconds: parseInt(
       process.env.RIDE_REQUEST_LIFETIME_SECONDS || "300",
+    ),
+    reservationRideRequestLifetimeSeconds: parseInt(
+      process.env.RESERVATION_RIDE_REQUEST_LIFETIME_SECONDS || "1800",
     ),
     maxSearchRadiusKm: parseFloat(process.env.MAX_SEARCH_RADIUS_KM || "50"),
   },

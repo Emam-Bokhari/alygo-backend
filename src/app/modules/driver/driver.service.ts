@@ -236,9 +236,9 @@ const updateDriverFromDB = async (
 
   if (isGoingOnline) {
     const systemConfig = await getSystemConfig();
-    const intervalHours =
-      systemConfig.driverSelfieVerificationIntervalHours ?? 12;
-    const intervalMs = intervalHours * 60 * 60 * 1000;
+    const intervalMinutes =
+      systemConfig.driverSelfieVerificationIntervalMinutes ?? 720;
+    const intervalMs = intervalMinutes * 60 * 1000;
 
     const lastVerification = existingDriver.lastVerificationDate;
     if (!lastVerification) {

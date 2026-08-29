@@ -1,7 +1,7 @@
 import { Worker, Job } from "bullmq";
 import { DateTime } from "luxon";
 import { Ride } from "../app/modules/ride/ride.model";
-import { RIDE_STATUS, CANCELLED_BY } from "../app/modules/ride/ride.constant";
+import { RIDE_STATUS, CANCELLED_BY, RIDE_TYPE } from "../app/modules/ride/ride.constant";
 import { rideDriverSocketHelper } from "../app/modules/ride/socket/driver.socket";
 import { rideUserSocketHelper } from "../app/modules/ride/socket/user.socket";
 import {
@@ -315,15 +315,17 @@ const radiusExpansionWorker = new Worker(
       }
 
       const startTime = new Date();
-      const visibilityDurationSeconds =
-        systemConfig.driverMatching.driverVisibilityDurationSeconds;
+      const isReservation = ride.rideType === RIDE_TYPE.SCHEDULED;
+      const visibilityDurationSeconds = isReservation
+        ? systemConfig.driverMatching.reservationDriverVisibilityDurationSeconds
+        : systemConfig.driverMatching.driverVisibilityDurationSeconds;
       const endTime = new Date(
         startTime.getTime() + visibilityDurationSeconds * 1000,
       );
 
-      // Send ride requests to new drivers via socket
+      // Send requests to new drivers via socket
       newDrivers.forEach((driver: any) => {
-        rideDriverSocketHelper.emitRideRequest(driver.driverId.toString(), {
+        const payload = {
           rideId: ride._id,
           startTime: startTime.toISOString(),
           endTime: endTime.toISOString(),
@@ -336,7 +338,12 @@ const radiusExpansionWorker = new Worker(
           fare: ride.fare.total,
           driverSearch: driverSearchTiming,
           routeInfo: ride.routeInfo,
-        });
+        };
+        if (isReservation) {
+          rideDriverSocketHelper.emitReservationRequest(driver.driverId.toString(), payload);
+        } else {
+          rideDriverSocketHelper.emitRideRequest(driver.driverId.toString(), payload);
+        }
       });
 
       // Schedule visibility timeout for each new driver
@@ -349,9 +356,7 @@ const radiusExpansionWorker = new Worker(
             userId,
           },
           {
-            delay:
-              systemConfig.driverMatching.driverVisibilityDurationSeconds *
-              1000,
+            delay: visibilityDurationSeconds * 1000,
             jobId: `driver-visibility-${rideId}-${driver.driverId}`,
           },
         );
@@ -391,9 +396,9 @@ const driverAvailabilityWorker = new Worker(
       // Check for online drivers whose selfie verification has expired
       try {
         const systemConfig = await getSystemConfig();
-        const intervalHours =
-          systemConfig.driverSelfieVerificationIntervalHours ?? 12;
-        const intervalMs = intervalHours * 60 * 60 * 1000;
+        const intervalMinutes =
+          systemConfig.driverSelfieVerificationIntervalMinutes ?? 720;
+        const intervalMs = intervalMinutes * 60 * 1000;
         const thresholdDate = new Date(Date.now() - intervalMs);
 
         const onlineExpiredDrivers = await Driver.find({

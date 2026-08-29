@@ -5,7 +5,9 @@ export interface IDriverMatchingConfig {
   initialSearchRadiusKm: number;
   radiusExpansionDistanceKm: number;
   driverVisibilityDurationSeconds: number;
+  reservationDriverVisibilityDurationSeconds: number;
   rideRequestLifetimeSeconds: number;
+  reservationRideRequestLifetimeSeconds: number;
   maxSearchRadiusKm: number;
 }
 
@@ -119,7 +121,7 @@ export interface ISystemConfiguration {
   referral?: IReferralConfig;
   driverRewards?: IDriverRewardsConfig;
   aiSupport?: IAiSupportConfig;
-  driverSelfieVerificationIntervalHours?: number;
+  driverSelfieVerificationIntervalMinutes?: number;
   createdAt?: Date;
   updatedAt?: Date;
 }

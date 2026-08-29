@@ -16,7 +16,10 @@ export const utcToTimezone = (
   utcDate: Date | string,
   timezone: string,
 ): DateTime => {
-  return DateTime.fromJSDate(new Date(utcDate)).setZone(timezone);
+  if (typeof utcDate === "string") {
+    return DateTime.fromISO(utcDate).setZone(timezone);
+  }
+  return DateTime.fromJSDate(utcDate).setZone(timezone);
 };
 
 /**
@@ -36,6 +39,7 @@ export const getRideScheduleInfo = (ride: any) => {
     rideType: ride.rideType || "instant",
     scheduledAt: scheduledAtDisplay,
     scheduledAtUtc: ride.scheduledAt || null,
+    scheduledAtDisplay: scheduledAtDisplay,
     timezone: ride.timezone || null,
   };
 };
@@ -59,9 +63,17 @@ export const timezoneToUtc = (
   localDate: Date | string,
   timezone: string,
 ): DateTime => {
-  return DateTime.fromJSDate(new Date(localDate), { zone: timezone }).setZone(
-    "UTC",
-  );
+  if (typeof localDate === "string") {
+    // If the string contains an offset (e.g. +06:00 or Z), parse it as absolute time
+    const hasOffset = /([+-]\d{2}:?\d{2}|Z)$/.test(localDate);
+    if (hasOffset) {
+      return DateTime.fromISO(localDate).setZone("UTC");
+    }
+    // Interpret local datetime string in the target timezone
+    return DateTime.fromISO(localDate, { zone: timezone }).setZone("UTC");
+  }
+  
+  return DateTime.fromJSDate(localDate).setZone("UTC");
 };
 
 /**
@@ -190,9 +202,13 @@ export const getDayRangeInTimezone = (
   if (dateStr === "yesterday") {
     targetDateTime = targetDateTime.minus({ days: 1 });
   } else if (dateStr !== "today") {
-    // Avoid double instantiation if already a Date object
-    const jsDate = dateStr instanceof Date ? dateStr : new Date(dateStr);
-    const parsed = DateTime.fromJSDate(jsDate).setZone(timezone);
+    const parsed =
+      dateStr instanceof Date
+        ? DateTime.fromJSDate(dateStr).setZone(timezone)
+        : /([+-]\d{2}:?\d{2}|Z)$/.test(dateStr)
+          ? DateTime.fromISO(dateStr).setZone(timezone)
+          : DateTime.fromISO(dateStr, { zone: timezone });
+    
     if (parsed.isValid) {
       targetDateTime = parsed;
     }

@@ -1,6 +1,6 @@
 import config from "../config";
 import { IRide } from "../app/modules/ride/rider.interface";
-import { RIDE_STATUS } from "../app/modules/ride/ride.constant";
+import { RIDE_STATUS, RIDE_TYPE } from "../app/modules/ride/ride.constant";
 import { getSystemConfig } from "./systemConfigHelper";
 
 export interface DriverSearchTiming {
@@ -24,8 +24,11 @@ export const calculateDriverSearchTiming = async (
   const now = new Date();
   const requestedAt = new Date(ride.requestedAt);
   const systemConfig = await getSystemConfig();
-  const rideRequestLifetimeSeconds =
-    systemConfig.driverMatching.rideRequestLifetimeSeconds;
+  
+  const isReservation = ride.rideType === RIDE_TYPE.SCHEDULED;
+  const rideRequestLifetimeSeconds = isReservation
+    ? systemConfig.driverMatching.reservationRideRequestLifetimeSeconds
+    : systemConfig.driverMatching.rideRequestLifetimeSeconds;
 
   // Calculate elapsed time in seconds
   const elapsedMs = now.getTime() - requestedAt.getTime();
@@ -59,8 +62,9 @@ export const calculateDriverSearchTiming = async (
     ride.status === RIDE_STATUS.EXPIRED ||
     elapsedSeconds >= rideRequestLifetimeSeconds;
 
-  const visibilitySeconds =
-    systemConfig.driverMatching.driverVisibilityDurationSeconds;
+  const visibilitySeconds = isReservation
+    ? systemConfig.driverMatching.reservationDriverVisibilityDurationSeconds
+    : systemConfig.driverMatching.driverVisibilityDurationSeconds;
   const radiusKm =
     ride.driverMatching?.searchRadiusKm ??
     systemConfig.driverMatching.initialSearchRadiusKm;

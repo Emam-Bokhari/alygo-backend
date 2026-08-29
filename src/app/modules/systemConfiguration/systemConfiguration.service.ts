@@ -9,7 +9,9 @@ const getDefaultSystemConfig = (): ISystemConfiguration => ({
     initialSearchRadiusKm: 5,
     radiusExpansionDistanceKm: 3,
     driverVisibilityDurationSeconds: 60,
+    reservationDriverVisibilityDurationSeconds: 6000,
     rideRequestLifetimeSeconds: 300,
+    reservationRideRequestLifetimeSeconds: 18000,
     maxSearchRadiusKm: 50,
   },
   tracking: {
@@ -133,7 +135,7 @@ const getDefaultSystemConfig = (): ISystemConfiguration => ({
         "I couldn't find an approved answer for that. Please contact support.",
     },
   },
-  driverSelfieVerificationIntervalHours: 12,
+  driverSelfieVerificationIntervalMinutes: 12000,
 });
 
 let activeCreationPromise: Promise<ISystemConfiguration> | null = null;
@@ -176,11 +178,33 @@ const getSystemConfig = async (
   }
 
   const config = configs[0];
-  if (config.driverSelfieVerificationIntervalHours === undefined) {
-    config.driverSelfieVerificationIntervalHours = 12;
+  let needsUpdate = false;
+  if (config.driverMatching.reservationDriverVisibilityDurationSeconds === undefined) {
+    config.driverMatching.reservationDriverVisibilityDurationSeconds = 300;
+    needsUpdate = true;
+  }
+  if (config.driverMatching.reservationRideRequestLifetimeSeconds === undefined) {
+    config.driverMatching.reservationRideRequestLifetimeSeconds = 1800;
+    needsUpdate = true;
+  }
+  if (config.driverSelfieVerificationIntervalMinutes === undefined) {
+    config.driverSelfieVerificationIntervalMinutes = 720;
+    needsUpdate = true;
+  }
+
+  if (needsUpdate) {
     await SystemConfiguration.updateOne(
       { _id: config._id },
-      { $set: { driverSelfieVerificationIntervalHours: 12 } },
+      {
+        $set: {
+          "driverMatching.reservationDriverVisibilityDurationSeconds":
+            config.driverMatching.reservationDriverVisibilityDurationSeconds,
+          "driverMatching.reservationRideRequestLifetimeSeconds":
+            config.driverMatching.reservationRideRequestLifetimeSeconds,
+          driverSelfieVerificationIntervalMinutes:
+            config.driverSelfieVerificationIntervalMinutes,
+        },
+      },
       { session },
     );
   }

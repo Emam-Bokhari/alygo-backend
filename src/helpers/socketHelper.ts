@@ -9,6 +9,7 @@ import { RIDE_STATUS, RIDE_TYPE } from "../app/modules/ride/ride.constant";
 import { DRIVER_AVAILABILITY_STATUS } from "../app/modules/driver/driver.constant";
 import { Tracking } from "../app/modules/tracking/tracking.model";
 import { Secret } from "jsonwebtoken";
+import { getSystemConfig } from "./systemConfigHelper";
 
 // Map to store connected userId -> Socket object
 const socketMap = new Map<string, Socket>();
@@ -236,7 +237,9 @@ const socket = (io: Server) => {
 
           // Check if user has an active ride
           const now = new Date();
-          const imminentWindowEnd = new Date(now.getTime() + 30 * 60 * 1000);
+          const systemConfig = await getSystemConfig();
+          const reservationWindowMinutes = systemConfig.reservation?.driverVisibleBeforeMinutes || 30;
+          const imminentWindowEnd = new Date(now.getTime() + reservationWindowMinutes * 60 * 1000);
           const activeRide = await Ride.findOne({
             userId,
             $or: [

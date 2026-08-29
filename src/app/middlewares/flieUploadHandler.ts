@@ -29,17 +29,17 @@ export const FILE_CONFIG = {
   profileImage: {
     dir: "profileImage",
     maxCount: 1,
-    mimeTypes: new Set(["image/png", "image/jpeg", "image/webp"]),
+    mimeTypes: new Set(["image/png", "image/jpeg", "image/jpg", "image/webp"]),
   },
   originalImage: {
     dir: "originalImage",
     maxCount: 1,
-    mimeTypes: new Set(["image/png", "image/jpeg"]),
+    mimeTypes: new Set(["image/png", "image/jpeg", "image/jpg"]),
   },
   images: {
     dir: "images",
     maxCount: 10,
-    mimeTypes: new Set(["image/png", "image/jpeg", "image/webp"]),
+    mimeTypes: new Set(["image/png", "image/jpeg", "image/jpg", "image/webp"]),
   },
   drivingLicense: {
     dir: "drivingLicense",
@@ -47,6 +47,7 @@ export const FILE_CONFIG = {
     mimeTypes: new Set([
       "image/png",
       "image/jpeg",
+      "image/jpg",
       "image/webp",
       "application/pdf",
     ]),
@@ -54,7 +55,7 @@ export const FILE_CONFIG = {
   liveSelfie: {
     dir: "liveSelfie",
     maxCount: 1,
-    mimeTypes: new Set(["image/png", "image/jpeg", "image/webp"]),
+    mimeTypes: new Set(["image/png", "image/jpeg", "image/jpg", "image/webp"]),
   },
   vehicleLicense: {
     dir: "vehicleLicense",
@@ -62,6 +63,7 @@ export const FILE_CONFIG = {
     mimeTypes: new Set([
       "image/png",
       "image/jpeg",
+      "image/jpg",
       "image/webp",
       "application/pdf",
     ]),
@@ -72,6 +74,7 @@ export const FILE_CONFIG = {
     mimeTypes: new Set([
       "image/png",
       "image/jpeg",
+      "image/jpg",
       "image/webp",
       "application/pdf",
     ]),
@@ -82,6 +85,7 @@ export const FILE_CONFIG = {
     mimeTypes: new Set([
       "image/png",
       "image/jpeg",
+      "image/jpg",
       "image/webp",
       "application/pdf",
     ]),
@@ -89,7 +93,7 @@ export const FILE_CONFIG = {
   thumbnail: {
     dir: "thumbnail",
     maxCount: 5,
-    mimeTypes: new Set(["image/png", "image/jpeg", "image/webp"]),
+    mimeTypes: new Set(["image/png", "image/jpeg", "image/jpg", "image/webp"]),
   },
   logo: {
     dir: "logo",
@@ -97,6 +101,7 @@ export const FILE_CONFIG = {
     mimeTypes: new Set([
       "image/png",
       "image/jpeg",
+      "image/jpg",
       "image/webp",
       "image/svg+xml",
     ]),
@@ -104,12 +109,12 @@ export const FILE_CONFIG = {
   banner: {
     dir: "banner",
     maxCount: 5,
-    mimeTypes: new Set(["image/png", "image/jpeg", "image/webp"]),
+    mimeTypes: new Set(["image/png", "image/jpeg", "image/jpg", "image/webp"]),
   },
   coverImage: {
     dir: "coverImage",
     maxCount: 1,
-    mimeTypes: new Set(["image/png", "image/jpeg", "image/webp"]),
+    mimeTypes: new Set(["image/png", "image/jpeg", "image/jpg", "image/webp"]),
   },
   audio: {
     dir: "audio",
@@ -137,6 +142,7 @@ export const FILE_CONFIG = {
     mimeTypes: new Set([
       "image/png",
       "image/jpeg",
+      "image/jpg",
       "image/webp",
       "application/pdf",
     ]),
@@ -147,6 +153,7 @@ export const FILE_CONFIG = {
     mimeTypes: new Set([
       "image/png",
       "image/jpeg",
+      "image/jpg",
       "image/webp",
       "application/pdf",
     ]),
@@ -157,6 +164,7 @@ export const FILE_CONFIG = {
     mimeTypes: new Set([
       "image/png",
       "image/jpeg",
+      "image/jpg",
       "image/webp",
       "application/pdf",
     ]),
@@ -167,6 +175,7 @@ export const FILE_CONFIG = {
     mimeTypes: new Set([
       "image/png",
       "image/jpeg",
+      "image/jpg",
       "image/webp",
       "application/pdf",
     ]),
@@ -177,6 +186,7 @@ export const FILE_CONFIG = {
     mimeTypes: new Set([
       "image/png",
       "image/jpeg",
+      "image/jpg",
       "image/webp",
       "application/pdf",
     ]),
@@ -187,6 +197,7 @@ export const FILE_CONFIG = {
     mimeTypes: new Set([
       "image/png",
       "image/jpeg",
+      "image/jpg",
       "image/webp",
       "application/pdf",
     ]),
@@ -240,6 +251,29 @@ const storage = multer.diskStorage({
   },
 });
 
+// Helper to get allowed mime types by file extension
+const getMimeTypesByExtension = (ext: string): string[] => {
+  const normalizedExt = ext.toLowerCase();
+  if (normalizedExt === ".jpg" || normalizedExt === ".jpeg") {
+    return ["image/jpeg", "image/jpg"];
+  }
+  const map: Record<string, string> = {
+    ".png": "image/png",
+    ".webp": "image/webp",
+    ".svg": "image/svg+xml",
+    ".pdf": "application/pdf",
+    ".mp3": "audio/mpeg",
+    ".wav": "audio/wav",
+    ".ogg": "audio/ogg",
+    ".mp4": "video/mp4",
+    ".webm": "video/webm",
+    ".txt": "text/plain",
+    ".doc": "application/msword",
+    ".docx": "application/msword",
+  };
+  return map[normalizedExt] ? [map[normalizedExt]] : [];
+};
+
 // file filter
 const fileFilter = (
   req: Request,
@@ -252,11 +286,31 @@ const fileFilter = (
     return cb(new ApiError(400, "Unsupported file field"));
   }
 
-  if (!file.mimetype || !config.mimeTypes.has(file.mimetype)) {
-    return cb(new ApiError(400, `Invalid file type for ${file.fieldname}`));
+  // 1. Check if the mimetype provided by the client matches
+  if (file.mimetype && config.mimeTypes.has(file.mimetype)) {
+    return cb(null, true);
   }
 
-  cb(null, true);
+  // 2. Fallback: check file extension and map to mimetype
+  if (file.originalname) {
+    const ext = path.extname(file.originalname);
+    const potentialMimeTypes = getMimeTypesByExtension(ext);
+    const matchesExtension = potentialMimeTypes.some((mime) =>
+      config.mimeTypes.has(mime),
+    );
+    if (matchesExtension) {
+      // Normalize the mimetype for later processing
+      file.mimetype = potentialMimeTypes.find((mime) =>
+        config.mimeTypes.has(mime),
+      )!;
+      return cb(null, true);
+    }
+  }
+
+  console.error(
+    `[Upload Error] Invalid file type for field '${file.fieldname}'. Uploaded mimetype: '${file.mimetype}', originalname: '${file.originalname}'`,
+  );
+  return cb(new ApiError(400, `Invalid file type for ${file.fieldname}`));
 };
 
 // main upload

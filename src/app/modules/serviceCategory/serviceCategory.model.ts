@@ -36,12 +36,10 @@ const serviceCategorySchema = new Schema<
     },
     minimumAdvanceBookingMinutes: {
       type: Number,
-      default: 30,
       min: 0,
     },
     maximumAdvanceBookingDays: {
       type: Number,
-      default: 30,
       min: 1,
     },
   },

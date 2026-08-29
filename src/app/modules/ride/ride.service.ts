@@ -74,6 +74,11 @@ import { isPeakHour } from "../surgeRule/surgeCalculation.service";
 import { Tier } from "../tier/tier.model";
 import { PointRule } from "../tier/pointRule.model";
 
+const toLocalISO = (date: any, timezone?: string) => {
+  if (!date || !timezone) return date;
+  return utcToTimezone(date, timezone).toISO();
+};
+
 /**
  * Perform fare calculation based on distance, duration, and pricing configuration rules.
  */
@@ -845,43 +850,48 @@ const requestRide = async (
   const passengerSummary = buildPassengerSummary(user);
 
   const startTime = new Date();
-  const visibilityDurationSeconds =
-    systemConfig.driverMatching.driverVisibilityDurationSeconds;
+  const visibilityDurationSeconds = isReservation
+    ? systemConfig.driverMatching.reservationDriverVisibilityDurationSeconds
+    : systemConfig.driverMatching.driverVisibilityDurationSeconds;
   const endTime = new Date(
     startTime.getTime() + visibilityDurationSeconds * 1000,
   );
 
   logger.info(
-    `Attempting to send ride-request to ${selectedDrivers.length} drivers`,
+    `Attempting to send request to ${selectedDrivers.length} drivers (isReservation: ${isReservation})`,
   );
   selectedDrivers.forEach((driver) => {
     logger.info(
-      `Sending ride-request to driver: ${driver.driverId.toString()}`,
+      `Sending request to driver: ${driver.driverId.toString()}`,
     );
-    const sent = rideDriverSocketHelper.emitRideRequest(
-      driver.driverId.toString(),
-      {
-        rideId: ride._id,
-        startTime: startTime.toISOString(),
-        endTime: endTime.toISOString(),
-        timeoutSeconds: visibilityDurationSeconds,
-        user: passengerSummary,
-        ...getRideScheduleInfo(ride),
-        pickup: ride.pickup,
-        destination: ride.destination,
-        stops: ride.stops,
-        fare: ride.fare.total,
-        driverSearch: driverSearchTiming,
-        routeInfo: ride.routeInfo,
-      },
-    );
+    const payload = {
+      rideId: ride._id,
+      startTime: startTime.toISOString(),
+      endTime: endTime.toISOString(),
+      timeoutSeconds: visibilityDurationSeconds,
+      user: passengerSummary,
+      ...getRideScheduleInfo(ride),
+      pickup: ride.pickup,
+      destination: ride.destination,
+      stops: ride.stops,
+      fare: ride.fare.total,
+      driverSearch: driverSearchTiming,
+      routeInfo: ride.routeInfo,
+    };
+    const sent = isReservation
+      ? rideDriverSocketHelper.emitReservationRequest(driver.driverId.toString(), payload)
+      : rideDriverSocketHelper.emitRideRequest(driver.driverId.toString(), payload);
     logger.info(
-      `Ride-request to driver ${driver.driverId.toString()} - ${sent ? "SENT" : "FAILED"}`,
+      `Request to driver ${driver.driverId.toString()} - ${sent ? "SENT" : "FAILED"}`,
     );
   });
 
   // 6. Schedule BullMQ jobs for progressive matching
   // A. Schedule overall ride expiration (5-minute lifetime)
+  const rideRequestLifetimeSeconds = isReservation
+    ? systemConfig.driverMatching.reservationRideRequestLifetimeSeconds
+    : systemConfig.driverMatching.rideRequestLifetimeSeconds;
+
   await rideExpirationQueue.add(
     `ride-expiration-${ride._id}`,
     {
@@ -889,7 +899,7 @@ const requestRide = async (
       userId,
     },
     {
-      delay: systemConfig.driverMatching.rideRequestLifetimeSeconds * 1000,
+      delay: rideRequestLifetimeSeconds * 1000,
       jobId: `ride-expiration-${ride._id}`,
     },
   );
@@ -904,8 +914,7 @@ const requestRide = async (
         userId,
       },
       {
-        delay:
-          systemConfig.driverMatching.driverVisibilityDurationSeconds * 1000,
+        delay: visibilityDurationSeconds * 1000,
         jobId: `driver-visibility-${ride._id}-${driver.driverId}`,
       },
     );
@@ -3237,8 +3246,11 @@ const cancelRide = async (
       // Original timer calculation
       const systemConfig = await getSystemConfig();
       const elapsedMs = Date.now() - new Date(ride.requestedAt).getTime();
-      const lifetimeMs =
-        systemConfig.driverMatching.rideRequestLifetimeSeconds * 1000;
+      const isReservation = ride.rideType === RIDE_TYPE.SCHEDULED;
+      const rideRequestLifetimeSeconds = isReservation
+        ? systemConfig.driverMatching.reservationRideRequestLifetimeSeconds
+        : systemConfig.driverMatching.rideRequestLifetimeSeconds;
+      const lifetimeMs = rideRequestLifetimeSeconds * 1000;
       const remainingMs = lifetimeMs - elapsedMs;
 
       if (remainingMs <= 0) {
@@ -3317,14 +3329,16 @@ const cancelRide = async (
           const passengerSummary = buildPassengerSummary(userDoc);
 
           const startTime = new Date();
-          const visibilityDurationSeconds =
-            systemConfig.driverMatching.driverVisibilityDurationSeconds;
+          const isReservation = ride.rideType === RIDE_TYPE.SCHEDULED;
+          const visibilityDurationSeconds = isReservation
+            ? systemConfig.driverMatching.reservationDriverVisibilityDurationSeconds
+            : systemConfig.driverMatching.driverVisibilityDurationSeconds;
           const endTime = new Date(
             startTime.getTime() + visibilityDurationSeconds * 1000,
           );
 
           newDrivers.forEach((driver: any) => {
-            rideDriverSocketHelper.emitRideRequest(driver.driverId.toString(), {
+            const payload = {
               rideId: ride._id,
               startTime: startTime.toISOString(),
               endTime: endTime.toISOString(),
@@ -3337,7 +3351,12 @@ const cancelRide = async (
               fare: ride.fare.total,
               driverSearch: driverSearchTiming,
               routeInfo: ride.routeInfo,
-            });
+            };
+            if (isReservation) {
+              rideDriverSocketHelper.emitReservationRequest(driver.driverId.toString(), payload);
+            } else {
+              rideDriverSocketHelper.emitRideRequest(driver.driverId.toString(), payload);
+            }
 
             driverVisibilityQueue.add(
               `driver-visibility-${ride._id}-${driver.driverId}`,
@@ -3347,9 +3366,7 @@ const cancelRide = async (
                 userId: ride.userId.toString(),
               },
               {
-                delay:
-                  systemConfig.driverMatching.driverVisibilityDurationSeconds *
-                  1000,
+                delay: visibilityDurationSeconds * 1000,
                 jobId: `driver-visibility-${ride._id}-${driver.driverId}`,
               },
             );
@@ -3731,7 +3748,9 @@ const getActiveRide = async (
   ];
 
   const now = new Date();
-  const imminentWindowEnd = new Date(now.getTime() + 30 * 60 * 1000);
+  const systemConfig = await getSystemConfig();
+  const reservationWindowMinutes = systemConfig.reservation?.driverVisibleBeforeMinutes || 30;
+  const imminentWindowEnd = new Date(now.getTime() + reservationWindowMinutes * 60 * 1000);
 
   const roleFilter =
     role === "driver"
@@ -4042,12 +4061,15 @@ const getDriverRideHistory = async (
         status: ride.payment?.status,
         paidAt: ride.payment?.paidAt,
       },
-      scheduledAt: ride.scheduledAt,
-      acceptedAt: ride.acceptedAt,
-      startedAt: ride.startedAt,
-      completedAt: ride.completedAt,
-      cancelledAt: ride.cancellation?.cancelledAt,
-      createdAt: ride.createdAt,
+      scheduledAt: toLocalISO(ride.scheduledAt, ride.timezone),
+      scheduledAtUtc: ride.scheduledAt || null,
+      scheduledAtDisplay: toLocalISO(ride.scheduledAt, ride.timezone),
+      timezone: ride.timezone || null,
+      acceptedAt: toLocalISO(ride.acceptedAt, ride.timezone),
+      startedAt: toLocalISO(ride.startedAt, ride.timezone),
+      completedAt: toLocalISO(ride.completedAt, ride.timezone),
+      cancelledAt: toLocalISO(ride.cancellation?.cancelledAt, ride.timezone),
+      createdAt: toLocalISO(ride.createdAt, ride.timezone),
     };
   });
 
@@ -4127,14 +4149,20 @@ const getDriverRideHistoryDetails = async (
       status: ride.payment?.status,
       paidAt: ride.payment?.paidAt,
     },
-    scheduledAt: ride.scheduledAt,
-    acceptedAt: ride.acceptedAt,
-    startedAt: ride.startedAt,
-    completedAt: ride.completedAt,
-    cancelledAt: ride.cancellation?.cancelledAt,
-    cancellation: ride.cancellation,
-    createdAt: ride.createdAt,
-    updatedAt: ride.updatedAt,
+    scheduledAt: toLocalISO(ride.scheduledAt, ride.timezone),
+    scheduledAtUtc: ride.scheduledAt || null,
+    scheduledAtDisplay: toLocalISO(ride.scheduledAt, ride.timezone),
+    timezone: ride.timezone || null,
+    acceptedAt: toLocalISO(ride.acceptedAt, ride.timezone),
+    startedAt: toLocalISO(ride.startedAt, ride.timezone),
+    completedAt: toLocalISO(ride.completedAt, ride.timezone),
+    cancelledAt: toLocalISO(ride.cancellation?.cancelledAt, ride.timezone),
+    cancellation: ride.cancellation ? {
+      ...ride.cancellation,
+      cancelledAt: toLocalISO(ride.cancellation.cancelledAt, ride.timezone)
+    } : ride.cancellation,
+    createdAt: toLocalISO(ride.createdAt, ride.timezone),
+    updatedAt: toLocalISO(ride.updatedAt, ride.timezone),
   };
 };
 
@@ -4431,12 +4459,15 @@ const getUserRideHistory = async (
         status: ride.payment?.status,
         paidAt: ride.payment?.paidAt,
       },
-      scheduledAt: ride.scheduledAt,
-      acceptedAt: ride.acceptedAt,
-      startedAt: ride.startedAt,
-      completedAt: ride.completedAt,
-      cancelledAt: ride.cancellation?.cancelledAt,
-      createdAt: ride.createdAt,
+      scheduledAt: toLocalISO(ride.scheduledAt, ride.timezone),
+      scheduledAtUtc: ride.scheduledAt || null,
+      scheduledAtDisplay: toLocalISO(ride.scheduledAt, ride.timezone),
+      timezone: ride.timezone || null,
+      acceptedAt: toLocalISO(ride.acceptedAt, ride.timezone),
+      startedAt: toLocalISO(ride.startedAt, ride.timezone),
+      completedAt: toLocalISO(ride.completedAt, ride.timezone),
+      cancelledAt: toLocalISO(ride.cancellation?.cancelledAt, ride.timezone),
+      createdAt: toLocalISO(ride.createdAt, ride.timezone),
     };
   });
 
@@ -4530,14 +4561,20 @@ const getUserRideHistoryDetails = async (userId: string, rideId: string) => {
       status: ride.payment?.status,
       paidAt: ride.payment?.paidAt,
     },
-    scheduledAt: ride.scheduledAt,
-    acceptedAt: ride.acceptedAt,
-    startedAt: ride.startedAt,
-    completedAt: ride.completedAt,
-    cancelledAt: ride.cancellation?.cancelledAt,
-    cancellation: ride.cancellation,
-    createdAt: ride.createdAt,
-    updatedAt: ride.updatedAt,
+    scheduledAt: toLocalISO(ride.scheduledAt, ride.timezone),
+    scheduledAtUtc: ride.scheduledAt || null,
+    scheduledAtDisplay: toLocalISO(ride.scheduledAt, ride.timezone),
+    timezone: ride.timezone || null,
+    acceptedAt: toLocalISO(ride.acceptedAt, ride.timezone),
+    startedAt: toLocalISO(ride.startedAt, ride.timezone),
+    completedAt: toLocalISO(ride.completedAt, ride.timezone),
+    cancelledAt: toLocalISO(ride.cancellation?.cancelledAt, ride.timezone),
+    cancellation: ride.cancellation ? {
+      ...ride.cancellation,
+      cancelledAt: toLocalISO(ride.cancellation.cancelledAt, ride.timezone)
+    } : ride.cancellation,
+    createdAt: toLocalISO(ride.createdAt, ride.timezone),
+    updatedAt: toLocalISO(ride.updatedAt, ride.timezone),
   };
 };
 
@@ -4700,12 +4737,15 @@ const getMyReservations = async (
         status: ride.payment?.status,
         paidAt: ride.payment?.paidAt,
       },
-      scheduledAt: ride.scheduledAt,
-      acceptedAt: ride.acceptedAt,
-      startedAt: ride.startedAt,
-      completedAt: ride.completedAt,
-      cancelledAt: ride.cancellation?.cancelledAt,
-      createdAt: ride.createdAt,
+      scheduledAt: toLocalISO(ride.scheduledAt, ride.timezone),
+      scheduledAtUtc: ride.scheduledAt || null,
+      scheduledAtDisplay: toLocalISO(ride.scheduledAt, ride.timezone),
+      timezone: ride.timezone || null,
+      acceptedAt: toLocalISO(ride.acceptedAt, ride.timezone),
+      startedAt: toLocalISO(ride.startedAt, ride.timezone),
+      completedAt: toLocalISO(ride.completedAt, ride.timezone),
+      cancelledAt: toLocalISO(ride.cancellation?.cancelledAt, ride.timezone),
+      createdAt: toLocalISO(ride.createdAt, ride.timezone),
     };
   });
 
@@ -4802,14 +4842,20 @@ const getReservationDetails = async (userId: string, rideId: string) => {
       status: ride.payment?.status,
       paidAt: ride.payment?.paidAt,
     },
-    scheduledAt: ride.scheduledAt,
-    acceptedAt: ride.acceptedAt,
-    startedAt: ride.startedAt,
-    completedAt: ride.completedAt,
-    cancelledAt: ride.cancellation?.cancelledAt,
-    cancellation: ride.cancellation,
-    createdAt: ride.createdAt,
-    updatedAt: ride.updatedAt,
+    scheduledAt: toLocalISO(ride.scheduledAt, ride.timezone),
+    scheduledAtUtc: ride.scheduledAt || null,
+    scheduledAtDisplay: toLocalISO(ride.scheduledAt, ride.timezone),
+    timezone: ride.timezone || null,
+    acceptedAt: toLocalISO(ride.acceptedAt, ride.timezone),
+    startedAt: toLocalISO(ride.startedAt, ride.timezone),
+    completedAt: toLocalISO(ride.completedAt, ride.timezone),
+    cancelledAt: toLocalISO(ride.cancellation?.cancelledAt, ride.timezone),
+    cancellation: ride.cancellation ? {
+      ...ride.cancellation,
+      cancelledAt: toLocalISO(ride.cancellation.cancelledAt, ride.timezone)
+    } : ride.cancellation,
+    createdAt: toLocalISO(ride.createdAt, ride.timezone),
+    updatedAt: toLocalISO(ride.updatedAt, ride.timezone),
   };
 };
 
@@ -4921,12 +4967,15 @@ const getDriverReservations = async (
         status: ride.payment?.status,
         paidAt: ride.payment?.paidAt,
       },
-      scheduledAt: ride.scheduledAt,
-      acceptedAt: ride.acceptedAt,
-      startedAt: ride.startedAt,
-      completedAt: ride.completedAt,
-      cancelledAt: ride.cancellation?.cancelledAt,
-      createdAt: ride.createdAt,
+      scheduledAt: toLocalISO(ride.scheduledAt, ride.timezone),
+      scheduledAtUtc: ride.scheduledAt || null,
+      scheduledAtDisplay: toLocalISO(ride.scheduledAt, ride.timezone),
+      timezone: ride.timezone || null,
+      acceptedAt: toLocalISO(ride.acceptedAt, ride.timezone),
+      startedAt: toLocalISO(ride.startedAt, ride.timezone),
+      completedAt: toLocalISO(ride.completedAt, ride.timezone),
+      cancelledAt: toLocalISO(ride.cancellation?.cancelledAt, ride.timezone),
+      createdAt: toLocalISO(ride.createdAt, ride.timezone),
     };
   });
 
@@ -5021,14 +5070,20 @@ const getDriverReservationDetails = async (
       status: ride.payment?.status,
       paidAt: ride.payment?.paidAt,
     },
-    scheduledAt: ride.scheduledAt,
-    acceptedAt: ride.acceptedAt,
-    startedAt: ride.startedAt,
-    completedAt: ride.completedAt,
-    cancelledAt: ride.cancellation?.cancelledAt,
-    cancellation: ride.cancellation,
-    createdAt: ride.createdAt,
-    updatedAt: ride.updatedAt,
+    scheduledAt: toLocalISO(ride.scheduledAt, ride.timezone),
+    scheduledAtUtc: ride.scheduledAt || null,
+    scheduledAtDisplay: toLocalISO(ride.scheduledAt, ride.timezone),
+    timezone: ride.timezone || null,
+    acceptedAt: toLocalISO(ride.acceptedAt, ride.timezone),
+    startedAt: toLocalISO(ride.startedAt, ride.timezone),
+    completedAt: toLocalISO(ride.completedAt, ride.timezone),
+    cancelledAt: toLocalISO(ride.cancellation?.cancelledAt, ride.timezone),
+    cancellation: ride.cancellation ? {
+      ...ride.cancellation,
+      cancelledAt: toLocalISO(ride.cancellation.cancelledAt, ride.timezone)
+    } : ride.cancellation,
+    createdAt: toLocalISO(ride.createdAt, ride.timezone),
+    updatedAt: toLocalISO(ride.updatedAt, ride.timezone),
   };
 };
 

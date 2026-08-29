@@ -7,6 +7,10 @@ const emitReservationCreated = (userId: string, data: any): boolean => {
   return socketHelper.sendToUser(userId, "reservation-created", data);
 };
 
+const emitReservationRequest = (userId: string, data: any): boolean => {
+  return socketHelper.sendToUser(userId, "reservation-request", data);
+};
+
 const emitReservationSearchingDriver = (userId: string, data: any): boolean => {
   return socketHelper.sendToUser(userId, "reservation-searching-driver", data);
 };
@@ -104,6 +108,7 @@ const emitNearbyDriverLocationUpdated = (
 
 export const rideUserSocketHelper = {
   emitReservationCreated,
+  emitReservationRequest,
   emitReservationSearchingDriver,
   emitRideAccepted,
   emitReservationConfirmed,

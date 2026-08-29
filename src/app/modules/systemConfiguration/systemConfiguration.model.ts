@@ -25,11 +25,23 @@ const driverMatchingSchema = new Schema(
       min: 10,
       default: 60,
     },
+    reservationDriverVisibilityDurationSeconds: {
+      type: Number,
+      required: true,
+      min: 10,
+      default: 300,
+    },
     rideRequestLifetimeSeconds: {
       type: Number,
       required: true,
       min: 60,
       default: 300,
+    },
+    reservationRideRequestLifetimeSeconds: {
+      type: Number,
+      required: true,
+      min: 60,
+      default: 1800,
     },
     maxSearchRadiusKm: {
       type: Number,
@@ -512,11 +524,11 @@ const systemConfigurationSchema = new Schema<
       type: aiSupportConfigSchema,
       required: false,
     },
-    driverSelfieVerificationIntervalHours: {
+    driverSelfieVerificationIntervalMinutes: {
       type: Number,
       required: true,
       min: 1,
-      default: 12,
+      default: 720,
     },
   },
   {

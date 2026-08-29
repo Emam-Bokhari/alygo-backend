@@ -7,6 +7,10 @@ const emitRideRequest = (driverId: string, data: any): boolean => {
   return socketHelper.sendToUser(driverId, "ride-request", data);
 };
 
+const emitReservationRequest = (driverId: string, data: any): boolean => {
+  return socketHelper.sendToUser(driverId, "reservation-request", data);
+};
+
 const emitRideRequestCancelled = (driverIds: string[], data: any): void => {
   socketHelper.sendToUsers(driverIds, "ride-request-cancelled", data);
 };
@@ -85,6 +89,7 @@ const emitEndVerificationRequested = (driverId: string, data: any): boolean => {
 
 export const rideDriverSocketHelper = {
   emitRideRequest,
+  emitReservationRequest,
   emitRideRequestCancelled,
   emitRiderAccepted,
   emitRideStarted,

@@ -155,7 +155,7 @@ const createCheckoutSession = catchAsync(
       chargeAmount = Number((totalFare - walletDeduction).toFixed(2));
     }
 
-    const user = await User.findById(userId);
+    const user = await User.findById(userId); 
     if (!user) {
       throw new ApiError(
         StatusCodes.NOT_FOUND,

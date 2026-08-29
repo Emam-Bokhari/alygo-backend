@@ -66,9 +66,9 @@ export const findEligibleDriversInRadius = async ({
 
   // Load system config for selfie verification
   const systemConfig = await getSystemConfig();
-  const selfieIntervalHours =
-    systemConfig.driverSelfieVerificationIntervalHours ?? 12;
-  const selfieIntervalMs = selfieIntervalHours * 60 * 60 * 1000;
+  const selfieIntervalMinutes =
+    systemConfig.driverSelfieVerificationIntervalMinutes ?? 720;
+  const selfieIntervalMs = selfieIntervalMinutes * 60 * 1000;
 
   const tierCache = new Map<string, any>();
   const getTier = async (tierId: string | Types.ObjectId | undefined) => {
@@ -110,6 +110,7 @@ export const findEligibleDriversInRadius = async ({
     _id: resolvedRideServiceAreaId,
     status: "active",
   });
+  
   if (!rideServiceArea) {
     logger.warn(
       `Ride service area ${resolvedRideServiceAreaId} is not found or inactive`,
@@ -296,7 +297,8 @@ export const findEligibleDriversInRadius = async ({
 
     // Verify driver is not currently assigned to another active ride
     const now = new Date();
-    const imminentWindowEnd = new Date(now.getTime() + 30 * 60 * 1000);
+    const reservationWindowMinutes = systemConfig.reservation?.driverVisibleBeforeMinutes || 30;
+    const imminentWindowEnd = new Date(now.getTime() + reservationWindowMinutes * 60 * 1000);
 
     const activeRideForDriver = await Ride.findOne({
       driverId: driverDoc.userId,

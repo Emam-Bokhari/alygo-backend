@@ -35,9 +35,15 @@ export const getSystemConfig = async () => {
           driverVisibilityDurationSeconds:
             dbConfig.driverMatching?.driverVisibilityDurationSeconds ??
             config.driverMatching.driverVisibilityDurationSeconds,
+          reservationDriverVisibilityDurationSeconds:
+            dbConfig.driverMatching?.reservationDriverVisibilityDurationSeconds ??
+            config.driverMatching.reservationDriverVisibilityDurationSeconds,
           rideRequestLifetimeSeconds:
             dbConfig.driverMatching?.rideRequestLifetimeSeconds ??
             config.driverMatching.rideRequestLifetimeSeconds,
+          reservationRideRequestLifetimeSeconds:
+            dbConfig.driverMatching?.reservationRideRequestLifetimeSeconds ??
+            config.driverMatching.reservationRideRequestLifetimeSeconds,
           maxSearchRadiusKm:
             dbConfig.driverMatching?.maxSearchRadiusKm ??
             config.driverMatching.maxSearchRadiusKm,
@@ -283,10 +289,10 @@ export const getSystemConfig = async () => {
               "I couldn't find an approved answer for that. Please contact support.",
           },
         },
-        driverSelfieVerificationIntervalHours:
-          dbConfig.driverSelfieVerificationIntervalHours ??
-          config.driverSelfieVerificationIntervalHours ??
-          12,
+        driverSelfieVerificationIntervalMinutes:
+          dbConfig.driverSelfieVerificationIntervalMinutes ??
+          config.driverSelfieVerificationIntervalMinutes ??
+          720,
       };
       cacheExpiry = now + CACHE_DURATION_MS;
       return cachedConfig;
@@ -366,8 +372,8 @@ export const getSystemConfig = async () => {
           "I couldn't find an approved answer for that. Please contact support.",
       },
     },
-    driverSelfieVerificationIntervalHours:
-      config.driverSelfieVerificationIntervalHours ?? 12,
+    driverSelfieVerificationIntervalMinutes:
+      config.driverSelfieVerificationIntervalMinutes ?? 720,
   };
   cacheExpiry = now + CACHE_DURATION_MS;
   return cachedConfig;
