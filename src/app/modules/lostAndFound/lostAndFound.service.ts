@@ -71,6 +71,139 @@ const logAudit = async (
   );
 };
 
+// Helper to build the passenger recovery timeline
+const buildTimeline = (report: any, driverName: string) => {
+  const getTimestampForAction = (action: string): Date | null => {
+    if (!report.auditLogs) return null;
+    const log = [...report.auditLogs].reverse().find((l) => l.action === action);
+    return log ? log.timestamp : null;
+  };
+
+  // 1. Report Submitted
+  const reportSubmittedStatus = "completed";
+  const reportSubmittedTimestamp = getTimestampForAction("REPORT_CREATED") || report.createdAt;
+
+  // 2. Driver Reviewing
+  const driverReviewingStatus =
+    report.reportStatus === REPORT_STATUS.REPORTED
+      ? "pending"
+      : report.reportStatus === REPORT_STATUS.UNDER_REVIEW
+        ? "active"
+        : "completed";
+  const driverReviewingTimestamp =
+    driverReviewingStatus === "pending"
+      ? null
+      : (getTimestampForAction("ADMIN_ACTION") ||
+         getTimestampForAction("DRIVER_FOUND") ||
+         getTimestampForAction("DRIVER_NOT_FOUND") ||
+         null);
+
+  // 3. Item Found / Not Found
+  const itemFoundStatus =
+    report.foundStatus === FOUND_STATUS.PENDING ? "pending" : "completed";
+  const itemFoundTimestamp =
+    itemFoundStatus === "pending"
+      ? null
+      : (getTimestampForAction("DRIVER_FOUND") ||
+         getTimestampForAction("DRIVER_NOT_FOUND"));
+
+  // 4. Return Method Selected
+  const returnMethodStatus = report.recoveryMethod
+    ? "completed"
+    : report.foundStatus === FOUND_STATUS.FOUND
+      ? "active"
+      : "pending";
+  const returnMethodTimestamp =
+    returnMethodStatus === "pending"
+      ? null
+      : (getTimestampForAction("RECOVERY_SELECTED") ||
+         getTimestampForAction("PAYMENT_COMPLETED") ||
+         null);
+
+  // 5. Return Scheduled
+  const returnScheduledStatus = [
+    REPORT_STATUS.RETURN_SCHEDULED,
+    REPORT_STATUS.RETURN_IN_PROGRESS,
+    REPORT_STATUS.RETURN_COMPLETED,
+    REPORT_STATUS.RECEIVED,
+    REPORT_STATUS.CLOSED,
+  ].includes(report.reportStatus)
+    ? "completed"
+    : report.recoveryMethod
+      ? "active"
+      : "pending";
+  const returnScheduledTimestamp =
+    returnScheduledStatus === "pending"
+      ? null
+      : (report.scheduledAt || null);
+
+  // 6. Returned Successfully
+  const returnedSuccessfullyStatus = [REPORT_STATUS.RECEIVED, REPORT_STATUS.CLOSED].includes(
+    report.reportStatus,
+  )
+    ? "completed"
+    : report.reportStatus === REPORT_STATUS.RETURN_COMPLETED
+      ? "active"
+      : "pending";
+  const returnedSuccessfullyTimestamp =
+    returnedSuccessfullyStatus === "pending"
+      ? null
+      : (getTimestampForAction("PASSENGER_CONFIRMED") || null);
+
+  return [
+    {
+      title: "Report Submitted",
+      description: `Item: ${report.itemName} logged on system.`,
+      status: reportSubmittedStatus,
+      timestamp: reportSubmittedTimestamp,
+    },
+    {
+      title: "Driver Reviewing",
+      description: `${driverName || "Driver"} is checking their vehicle coordinates.`,
+      status: driverReviewingStatus,
+      timestamp: driverReviewingTimestamp,
+    },
+    {
+      title: "Item Found / Not Found",
+      description:
+        report.foundStatus === FOUND_STATUS.FOUND
+          ? "Item has been located by the driver."
+          : report.foundStatus === FOUND_STATUS.NOT_FOUND
+            ? "Driver was unable to find the item."
+            : "Waiting for confirmation from driver.",
+      status: itemFoundStatus,
+      timestamp: itemFoundTimestamp,
+    },
+    {
+      title: "Return Method Selected",
+      description: report.recoveryMethod
+        ? `Chosen Recovery: ${
+            report.recoveryMethod === RECOVERY_METHOD.PASSENGER_PICKUP
+              ? "Passenger Pickup"
+              : "Driver Delivery"
+          }`
+        : "Chosen Recovery: Pending selection",
+      status: returnMethodStatus,
+      timestamp: returnMethodTimestamp,
+    },
+    {
+      title: "Return Scheduled",
+      description: report.scheduledAt
+        ? `Scheduled for: ${new Date(report.scheduledAt).toLocaleString()}`
+        : "Delivery or Passenger Meet schedule set.",
+      status: returnScheduledStatus,
+      timestamp: returnScheduledTimestamp,
+    },
+    {
+      title: "Returned Successfully",
+      description: "Safety checklist finalized and confirmed.",
+      status: returnedSuccessfullyStatus,
+      timestamp: returnedSuccessfullyTimestamp,
+    },
+  ];
+};
+
+
 // ----------------------------------------------------
 // Passenger Flows
 // ----------------------------------------------------
@@ -304,9 +437,12 @@ const getReportDetails = async (
     vehicle: car ? `${car.brand} ${car.model}`.trim() : "N/A",
   };
 
+  const timeline = buildTimeline(report, driverInfo.name);
+
   return {
     ...report.toObject(),
     driverInfo,
+    timeline,
   };
 };
 
@@ -1137,94 +1273,7 @@ const trackReportStatus = async (
   }
 
   // Build the recovery timeline checkpoints
-  // Let's find timestamps from auditLogs if available
-  const getTimestampForAction = (action: string): Date | null => {
-    const log = report.auditLogs.find((l) => l.action === action);
-    return log ? log.timestamp : null;
-  };
-
-  const timeline = [
-    {
-      title: "Report Submitted",
-      description: `Item: ${report.itemName} logged on system.`,
-      status: "completed", // Always completed if the report exists
-      timestamp: getTimestampForAction("REPORT_CREATED") || report.createdAt,
-    },
-    {
-      title: "Driver Reviewing",
-      description: `${driverInfo.name} is checking their vehicle coordinates.`,
-      status:
-        report.reportStatus === REPORT_STATUS.REPORTED
-          ? "pending"
-          : report.reportStatus === REPORT_STATUS.UNDER_REVIEW
-            ? "active"
-            : "completed",
-      timestamp:
-        getTimestampForAction("ADMIN_ACTION") ||
-        getTimestampForAction("DRIVER_FOUND") ||
-        getTimestampForAction("DRIVER_NOT_FOUND") ||
-        null,
-    },
-    {
-      title: "Item Found / Not Found",
-      description:
-        report.foundStatus === FOUND_STATUS.FOUND
-          ? "Item has been located by the driver."
-          : report.foundStatus === FOUND_STATUS.NOT_FOUND
-            ? "Driver was unable to find the item."
-            : "Waiting for confirmation from driver.",
-      status:
-        report.foundStatus === FOUND_STATUS.PENDING ? "pending" : "completed",
-      timestamp:
-        getTimestampForAction("DRIVER_FOUND") ||
-        getTimestampForAction("DRIVER_NOT_FOUND"),
-    },
-    {
-      title: "Return Method Selected",
-      description: report.recoveryMethod
-        ? `Chosen Recovery: ${report.recoveryMethod === RECOVERY_METHOD.PASSENGER_PICKUP ? "Passenger Pickup" : "Driver Delivery"}`
-        : "Chosen Recovery: Pending selection",
-      status: report.recoveryMethod
-        ? "completed"
-        : report.foundStatus === FOUND_STATUS.FOUND
-          ? "active"
-          : "pending",
-      timestamp:
-        getTimestampForAction("RECOVERY_SELECTED") ||
-        getTimestampForAction("PAYMENT_COMPLETED") ||
-        null,
-    },
-    {
-      title: "Return Scheduled",
-      description: report.scheduledAt
-        ? `Scheduled for: ${report.scheduledAt.toLocaleString()}`
-        : "Delivery or Passenger Meet schedule set.",
-      status: [
-        REPORT_STATUS.RETURN_SCHEDULED,
-        REPORT_STATUS.RETURN_IN_PROGRESS,
-        REPORT_STATUS.RETURN_COMPLETED,
-        REPORT_STATUS.RECEIVED,
-        REPORT_STATUS.CLOSED,
-      ].includes(report.reportStatus)
-        ? "completed"
-        : report.recoveryMethod
-          ? "active"
-          : "pending",
-      timestamp: report.scheduledAt || null,
-    },
-    {
-      title: "Returned Successfully",
-      description: "Safety checklist finalized and confirmed.",
-      status: [REPORT_STATUS.RECEIVED, REPORT_STATUS.CLOSED].includes(
-        report.reportStatus,
-      )
-        ? "completed"
-        : report.reportStatus === REPORT_STATUS.RETURN_COMPLETED
-          ? "active"
-          : "pending",
-      timestamp: getTimestampForAction("PASSENGER_CONFIRMED") || null,
-    },
-  ];
+  const timeline = buildTimeline(report, driverInfo.name);
 
   return {
     reportId: report._id,
