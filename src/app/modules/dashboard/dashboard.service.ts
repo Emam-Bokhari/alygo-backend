@@ -575,49 +575,6 @@ const getDriverGrowthFromDB = async (
   const startDate = months[0].startOf("month").toUTC().toJSDate();
   const endDate = nowInTz.endOf("month").toUTC().toJSDate();
 
-  const initialDriversResult = await Driver.aggregate([
-    {
-      $match: {
-        approvalStatus: DRIVER_STATUS.APPROVED,
-        ...(serviceAreaId
-          ? { serviceAreaId: new Types.ObjectId(serviceAreaId) }
-          : {}),
-      },
-    },
-    {
-      $lookup: {
-        from: "users",
-        localField: "userId",
-        foreignField: "_id",
-        as: "user",
-      },
-    },
-    {
-      $unwind: "$user",
-    },
-    {
-      $match: {
-        "user.role": USER_ROLES.DRIVER,
-        "user.status": STATUS.ACTIVE,
-        "user.isDeleted": { $ne: true },
-      },
-    },
-    {
-      $project: {
-        verificationDate: "$createdAt",
-      },
-    },
-    {
-      $match: {
-        verificationDate: { $lt: startDate },
-      },
-    },
-    {
-      $count: "count",
-    },
-  ]);
-  const initialCount = initialDriversResult[0]?.count || 0;
-
   const monthlyDriversResult = await Driver.aggregate([
     {
       $match: {
@@ -679,17 +636,15 @@ const getDriverGrowthFromDB = async (
     monthlyCountMap[item._id] = item.count;
   }
 
-  let currentCumulative = initialCount;
   const result: Array<{ month: string; drivers: number }> = [];
 
   for (const monthDate of months) {
     const key = monthDate.toFormat("yyyy-MM");
     const label = monthDate.toFormat("LLL");
     const count = monthlyCountMap[key] || 0;
-    currentCumulative += count;
     result.push({
       month: label,
-      drivers: currentCumulative,
+      drivers: count,
     });
   }
 
@@ -713,21 +668,6 @@ const getPassengerGrowthFromDB = async (
 
   const startDate = months[0].startOf("month").toUTC().toJSDate();
   const endDate = nowInTz.endOf("month").toUTC().toJSDate();
-
-  const initialPassengersResult = await User.aggregate([
-    {
-      $match: {
-        role: USER_ROLES.USER,
-        status: STATUS.ACTIVE,
-        isDeleted: { $ne: true },
-        createdAt: { $lt: startDate },
-      },
-    },
-    {
-      $count: "count",
-    },
-  ]);
-  const initialCount = initialPassengersResult[0]?.count || 0;
 
   const monthlyPassengersResult = await User.aggregate([
     {
@@ -762,17 +702,15 @@ const getPassengerGrowthFromDB = async (
     monthlyCountMap[item._id] = item.count;
   }
 
-  let currentCumulative = initialCount;
   const result: Array<{ month: string; passengers: number }> = [];
 
   for (const monthDate of months) {
     const key = monthDate.toFormat("yyyy-MM");
     const label = monthDate.toFormat("LLL");
     const count = monthlyCountMap[key] || 0;
-    currentCumulative += count;
     result.push({
       month: label,
-      passengers: currentCumulative,
+      passengers: count,
     });
   }
 

@@ -56,11 +56,17 @@ const userSchema = new Schema<IUser, IUserModel>(
     },
     phone: {
       type: String,
-      required: true,
+      required: function (this: any) {
+        const role = this?.role || USER_ROLES.USER;
+        return role !== USER_ROLES.SUPER_ADMIN && role !== USER_ROLES.ADMIN;
+      },
     },
     countryCode: {
       type: String,
-      required: true,
+      required: function (this: any) {
+        const role = this?.role || USER_ROLES.USER;
+        return role !== USER_ROLES.SUPER_ADMIN && role !== USER_ROLES.ADMIN;
+      },
     },
     firebaseUid: {
       type: String,
