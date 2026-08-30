@@ -179,11 +179,16 @@ const getSystemConfig = async (
 
   const config = configs[0];
   let needsUpdate = false;
-  if (config.driverMatching.reservationDriverVisibilityDurationSeconds === undefined) {
+  if (
+    config.driverMatching.reservationDriverVisibilityDurationSeconds ===
+    undefined
+  ) {
     config.driverMatching.reservationDriverVisibilityDurationSeconds = 300;
     needsUpdate = true;
   }
-  if (config.driverMatching.reservationRideRequestLifetimeSeconds === undefined) {
+  if (
+    config.driverMatching.reservationRideRequestLifetimeSeconds === undefined
+  ) {
     config.driverMatching.reservationRideRequestLifetimeSeconds = 1800;
     needsUpdate = true;
   }

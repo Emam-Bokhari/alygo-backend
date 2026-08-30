@@ -75,13 +75,16 @@ const logAudit = async (
 const buildTimeline = (report: any, driverName: string) => {
   const getTimestampForAction = (action: string): Date | null => {
     if (!report.auditLogs) return null;
-    const log = [...report.auditLogs].reverse().find((l) => l.action === action);
+    const log = [...report.auditLogs]
+      .reverse()
+      .find((l) => l.action === action);
     return log ? log.timestamp : null;
   };
 
   // 1. Report Submitted
   const reportSubmittedStatus = "completed";
-  const reportSubmittedTimestamp = getTimestampForAction("REPORT_CREATED") || report.createdAt;
+  const reportSubmittedTimestamp =
+    getTimestampForAction("REPORT_CREATED") || report.createdAt;
 
   // 2. Driver Reviewing
   const driverReviewingStatus =
@@ -93,10 +96,10 @@ const buildTimeline = (report: any, driverName: string) => {
   const driverReviewingTimestamp =
     driverReviewingStatus === "pending"
       ? null
-      : (getTimestampForAction("ADMIN_ACTION") ||
-         getTimestampForAction("DRIVER_FOUND") ||
-         getTimestampForAction("DRIVER_NOT_FOUND") ||
-         null);
+      : getTimestampForAction("ADMIN_ACTION") ||
+        getTimestampForAction("DRIVER_FOUND") ||
+        getTimestampForAction("DRIVER_NOT_FOUND") ||
+        null;
 
   // 3. Item Found / Not Found
   const itemFoundStatus =
@@ -104,8 +107,8 @@ const buildTimeline = (report: any, driverName: string) => {
   const itemFoundTimestamp =
     itemFoundStatus === "pending"
       ? null
-      : (getTimestampForAction("DRIVER_FOUND") ||
-         getTimestampForAction("DRIVER_NOT_FOUND"));
+      : getTimestampForAction("DRIVER_FOUND") ||
+        getTimestampForAction("DRIVER_NOT_FOUND");
 
   // 4. Return Method Selected
   const returnMethodStatus = report.recoveryMethod
@@ -116,9 +119,9 @@ const buildTimeline = (report: any, driverName: string) => {
   const returnMethodTimestamp =
     returnMethodStatus === "pending"
       ? null
-      : (getTimestampForAction("RECOVERY_SELECTED") ||
-         getTimestampForAction("PAYMENT_COMPLETED") ||
-         null);
+      : getTimestampForAction("RECOVERY_SELECTED") ||
+        getTimestampForAction("PAYMENT_COMPLETED") ||
+        null;
 
   // 5. Return Scheduled
   const returnScheduledStatus = [
@@ -133,14 +136,13 @@ const buildTimeline = (report: any, driverName: string) => {
       ? "active"
       : "pending";
   const returnScheduledTimestamp =
-    returnScheduledStatus === "pending"
-      ? null
-      : (report.scheduledAt || null);
+    returnScheduledStatus === "pending" ? null : report.scheduledAt || null;
 
   // 6. Returned Successfully
-  const returnedSuccessfullyStatus = [REPORT_STATUS.RECEIVED, REPORT_STATUS.CLOSED].includes(
-    report.reportStatus,
-  )
+  const returnedSuccessfullyStatus = [
+    REPORT_STATUS.RECEIVED,
+    REPORT_STATUS.CLOSED,
+  ].includes(report.reportStatus)
     ? "completed"
     : report.reportStatus === REPORT_STATUS.RETURN_COMPLETED
       ? "active"
@@ -148,7 +150,7 @@ const buildTimeline = (report: any, driverName: string) => {
   const returnedSuccessfullyTimestamp =
     returnedSuccessfullyStatus === "pending"
       ? null
-      : (getTimestampForAction("PASSENGER_CONFIRMED") || null);
+      : getTimestampForAction("PASSENGER_CONFIRMED") || null;
 
   return [
     {
@@ -202,7 +204,6 @@ const buildTimeline = (report: any, driverName: string) => {
     },
   ];
 };
-
 
 // ----------------------------------------------------
 // Passenger Flows

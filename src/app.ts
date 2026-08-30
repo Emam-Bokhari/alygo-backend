@@ -23,13 +23,13 @@ app.use(Morgan.successHandler);
 app.use(Morgan.errorHandler);
 
 //body parser
-app.use( 
+app.use(
   cors({
     origin: [
       "http://10.10.26.175:5173",
       "http://10.10.26.174:5174",
       "http://localhost:5174",
-      "http://10.10.26.174:5174"
+      "http://10.10.26.174:5174",
     ],
     credentials: true,
   }),

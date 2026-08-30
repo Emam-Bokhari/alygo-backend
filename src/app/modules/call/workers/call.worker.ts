@@ -104,7 +104,10 @@ const processCallCleanup = async (): Promise<void> => {
     };
 
     callSocketHelper.emitCallTimeout(call.callerId.toString(), callerPayload);
-    callSocketHelper.emitCallTimeout(call.receiverId.toString(), receiverPayload);
+    callSocketHelper.emitCallTimeout(
+      call.receiverId.toString(),
+      receiverPayload,
+    );
     callSocketHelper.emitCallEnded(call.callerId.toString(), callerPayload);
     callSocketHelper.emitCallEnded(call.receiverId.toString(), receiverPayload);
 

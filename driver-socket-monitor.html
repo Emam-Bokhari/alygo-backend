@@ -419,7 +419,9 @@
       const sendLocationBtn = document.getElementById("sendLocationBtn");
       const goOnlineBtn = document.getElementById("goOnlineBtn");
       const goOfflineBtn = document.getElementById("goOfflineBtn");
-      const checkAvailabilityBtn = document.getElementById("checkAvailabilityBtn");
+      const checkAvailabilityBtn = document.getElementById(
+        "checkAvailabilityBtn",
+      );
       const eventsListDiv = document.getElementById("eventsList");
 
       // Complete static driver event list from Alygo backend codebase
@@ -644,18 +646,25 @@
         }
         log(`CALLING API: GET ${url}/api/v1/drivers/me/availability`, "info");
         try {
-          const response = await fetch(`${url}/api/v1/drivers/me/availability`, {
-            method: "GET",
-            headers: {
-              "Authorization": `Bearer ${token}`,
-              "Content-Type": "application/json"
-            }
-          });
+          const response = await fetch(
+            `${url}/api/v1/drivers/me/availability`,
+            {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            },
+          );
           const result = await response.json();
           if (response.ok) {
             log(`API RESPONSE (get-availability): Success`, "success", result);
           } else {
-            log(`API RESPONSE (get-availability): Failed (Status ${response.status})`, "danger", result);
+            log(
+              `API RESPONSE (get-availability): Failed (Status ${response.status})`,
+              "danger",
+              result,
+            );
           }
         } catch (error) {
           log(`API CALL ERROR: ${error.message || error}`, "danger");

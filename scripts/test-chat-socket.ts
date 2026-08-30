@@ -71,12 +71,12 @@ async function run() {
   const tokenA = jwtHelper.createToken(
     { id: userA._id.toString(), role: userA.role },
     jwtSecret,
-    "1h"
+    "1h",
   );
   const tokenB = jwtHelper.createToken(
     { id: userB._id.toString(), role: userB.role },
     jwtSecret,
-    "1h"
+    "1h",
   );
   console.log("Tokens generated.");
 
@@ -141,7 +141,7 @@ async function run() {
         headers: {
           Authorization: `Bearer ${tokenA}`,
         },
-      }
+      },
     );
     chatId = createChatRes.data.data._id;
     console.log("REST API Response (Create Chat):", createChatRes.data);
@@ -161,7 +161,7 @@ async function run() {
         headers: {
           Authorization: `Bearer ${tokenA}`,
         },
-      }
+      },
     );
     console.log("REST API Response (Send Message):", sendMessageRes.data);
 
@@ -179,14 +179,22 @@ async function run() {
 
     // 4. Query Messages
     console.log("\n--- Querying Messages via REST API ---");
-    const getMessagesRes = await axios.get(`${baseURL}/api/v1/messages/${chatId}`, {
-      headers: {
-        Authorization: `Bearer ${tokenB}`,
+    const getMessagesRes = await axios.get(
+      `${baseURL}/api/v1/messages/${chatId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${tokenB}`,
+        },
       },
-    });
-    console.log("User B Message List Count:", getMessagesRes.data.data.messages.length);
-    console.log("Last Message Text:", getMessagesRes.data.data.messages[0]?.text);
-
+    );
+    console.log(
+      "User B Message List Count:",
+      getMessagesRes.data.data.messages.length,
+    );
+    console.log(
+      "Last Message Text:",
+      getMessagesRes.data.data.messages[0]?.text,
+    );
   } catch (error: any) {
     console.error("API Call error:", error.response?.data || error.message);
   }
@@ -194,10 +202,12 @@ async function run() {
   // Socket assertions
   console.log("\n--- Verification Summary ---");
   console.log("Received socket events:", receivedEvents);
-  
+
   const testResults = {
     chatCreatedSuccessfully: !!chatId,
-    newChatSocketEventReceived: receivedEvents.includes("newChat") || receivedEvents.includes("chatListUpdate"), // depending on how socket room binds
+    newChatSocketEventReceived:
+      receivedEvents.includes("newChat") ||
+      receivedEvents.includes("chatListUpdate"), // depending on how socket room binds
     newMessageSocketEventReceived: receivedEvents.includes("newMessage"),
     unreadCountUpdateReceived: receivedEvents.includes("unreadCountUpdate"),
     chatListUpdateReceived: receivedEvents.includes("chatListUpdate"),

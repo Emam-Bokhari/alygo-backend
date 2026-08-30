@@ -712,8 +712,11 @@ const processDriverLocationUpdate = async (
   // Check if driver has an active on-trip ride
   const now = new Date();
   const systemConfig = await getSystemConfig();
-  const reservationWindowMinutes = systemConfig.reservation?.driverVisibleBeforeMinutes || 30;
-  const imminentWindowEnd = new Date(now.getTime() + reservationWindowMinutes * 60 * 1000);
+  const reservationWindowMinutes =
+    systemConfig.reservation?.driverVisibleBeforeMinutes || 30;
+  const imminentWindowEnd = new Date(
+    now.getTime() + reservationWindowMinutes * 60 * 1000,
+  );
 
   const activeRide = await Ride.findOne({
     driverId: driverDoc.userId,

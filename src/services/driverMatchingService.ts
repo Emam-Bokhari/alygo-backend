@@ -110,7 +110,7 @@ export const findEligibleDriversInRadius = async ({
     _id: resolvedRideServiceAreaId,
     status: "active",
   });
-  
+
   if (!rideServiceArea) {
     logger.warn(
       `Ride service area ${resolvedRideServiceAreaId} is not found or inactive`,
@@ -297,8 +297,11 @@ export const findEligibleDriversInRadius = async ({
 
     // Verify driver is not currently assigned to another active ride
     const now = new Date();
-    const reservationWindowMinutes = systemConfig.reservation?.driverVisibleBeforeMinutes || 30;
-    const imminentWindowEnd = new Date(now.getTime() + reservationWindowMinutes * 60 * 1000);
+    const reservationWindowMinutes =
+      systemConfig.reservation?.driverVisibleBeforeMinutes || 30;
+    const imminentWindowEnd = new Date(
+      now.getTime() + reservationWindowMinutes * 60 * 1000,
+    );
 
     const activeRideForDriver = await Ride.findOne({
       driverId: driverDoc.userId,

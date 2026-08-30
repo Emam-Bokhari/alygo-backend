@@ -131,7 +131,8 @@ const getAllChatsFromDB = async (
     const allChatLists = await Promise.all(
       allChats.map(async (chat) => {
         const otherParticipantIds = chat.participants.filter(
-          (participantId) => participantId && participantId.toString() !== userId,
+          (participantId) =>
+            participantId && participantId.toString() !== userId,
         );
 
         const otherParticipants = await User.find({
@@ -157,8 +158,10 @@ const getAllChatsFromDB = async (
     );
 
     const filteredChats = allChatLists.filter((chat) => {
-      return chat.participants.some((participant) =>
-        participant.name && participant.name.toLowerCase().includes(searchTerm),
+      return chat.participants.some(
+        (participant) =>
+          participant.name &&
+          participant.name.toLowerCase().includes(searchTerm),
       );
     });
 

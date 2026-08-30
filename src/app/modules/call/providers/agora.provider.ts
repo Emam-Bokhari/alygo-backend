@@ -18,12 +18,12 @@ const generateAgoraToken = (channelName: string, uid: number): string => {
   const privilegeExpiredTs = currentTimestamp + expireSeconds;
 
   // In voice calls, both participants publish their audio streams
-  const rtcRole = RtcRole.PUBLISHER;  
-  
+  const rtcRole = RtcRole.PUBLISHER;
+
   const token = RtcTokenBuilder.buildTokenWithUid(
     appId,
     appCertificate,
-    channelName, 
+    channelName,
     uid,
     rtcRole,
     privilegeExpiredTs,

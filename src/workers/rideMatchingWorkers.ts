@@ -1,7 +1,11 @@
 import { Worker, Job } from "bullmq";
 import { DateTime } from "luxon";
 import { Ride } from "../app/modules/ride/ride.model";
-import { RIDE_STATUS, CANCELLED_BY, RIDE_TYPE } from "../app/modules/ride/ride.constant";
+import {
+  RIDE_STATUS,
+  CANCELLED_BY,
+  RIDE_TYPE,
+} from "../app/modules/ride/ride.constant";
 import { rideDriverSocketHelper } from "../app/modules/ride/socket/driver.socket";
 import { rideUserSocketHelper } from "../app/modules/ride/socket/user.socket";
 import {
@@ -340,9 +344,15 @@ const radiusExpansionWorker = new Worker(
           routeInfo: ride.routeInfo,
         };
         if (isReservation) {
-          rideDriverSocketHelper.emitReservationRequest(driver.driverId.toString(), payload);
+          rideDriverSocketHelper.emitReservationRequest(
+            driver.driverId.toString(),
+            payload,
+          );
         } else {
-          rideDriverSocketHelper.emitRideRequest(driver.driverId.toString(), payload);
+          rideDriverSocketHelper.emitRideRequest(
+            driver.driverId.toString(),
+            payload,
+          );
         }
       });
 

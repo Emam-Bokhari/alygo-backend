@@ -15,9 +15,8 @@ import {
 const convertDateToTimezone = (date: any, timezone?: string) => {
   if (!date || !timezone) return date;
   try {
-    const dt = date instanceof Date
-      ? DateTime.fromJSDate(date)
-      : DateTime.fromISO(date);
+    const dt =
+      date instanceof Date ? DateTime.fromJSDate(date) : DateTime.fromISO(date);
     return dt.isValid ? dt.setZone(timezone).toISO() : date;
   } catch {
     return date;
@@ -583,23 +582,49 @@ const rideSchema = new Schema<IRide, RideModel>(
         if (ret.dropVerification?.otp?.code) {
           delete ret.dropVerification.otp.code;
         }
-        
+
         // Timezone conversion for all output date/time fields
         if (ret.timezone) {
           const tz = ret.timezone;
-          if (ret.scheduledAt) ret.scheduledAt = convertDateToTimezone(ret.scheduledAt, tz);
-          if (ret.requestedAt) ret.requestedAt = convertDateToTimezone(ret.requestedAt, tz);
-          if (ret.acceptedAt) ret.acceptedAt = convertDateToTimezone(ret.acceptedAt, tz);
-          if (ret.startedAt) ret.startedAt = convertDateToTimezone(ret.startedAt, tz);
-          if (ret.completedAt) ret.completedAt = convertDateToTimezone(ret.completedAt, tz);
-          if (ret.createdAt) ret.createdAt = convertDateToTimezone(ret.createdAt, tz);
-          if (ret.updatedAt) ret.updatedAt = convertDateToTimezone(ret.updatedAt, tz);
-          if (ret.reservationExpiresAt) ret.reservationExpiresAt = convertDateToTimezone(ret.reservationExpiresAt, tz);
-          if (ret.reservationConfirmedAt) ret.reservationConfirmedAt = convertDateToTimezone(ret.reservationConfirmedAt, tz);
-          if (ret.reservationAssignedAt) ret.reservationAssignedAt = convertDateToTimezone(ret.reservationAssignedAt, tz);
-          if (ret.reservationAcceptedAt) ret.reservationAcceptedAt = convertDateToTimezone(ret.reservationAcceptedAt, tz);
+          if (ret.scheduledAt)
+            ret.scheduledAt = convertDateToTimezone(ret.scheduledAt, tz);
+          if (ret.requestedAt)
+            ret.requestedAt = convertDateToTimezone(ret.requestedAt, tz);
+          if (ret.acceptedAt)
+            ret.acceptedAt = convertDateToTimezone(ret.acceptedAt, tz);
+          if (ret.startedAt)
+            ret.startedAt = convertDateToTimezone(ret.startedAt, tz);
+          if (ret.completedAt)
+            ret.completedAt = convertDateToTimezone(ret.completedAt, tz);
+          if (ret.createdAt)
+            ret.createdAt = convertDateToTimezone(ret.createdAt, tz);
+          if (ret.updatedAt)
+            ret.updatedAt = convertDateToTimezone(ret.updatedAt, tz);
+          if (ret.reservationExpiresAt)
+            ret.reservationExpiresAt = convertDateToTimezone(
+              ret.reservationExpiresAt,
+              tz,
+            );
+          if (ret.reservationConfirmedAt)
+            ret.reservationConfirmedAt = convertDateToTimezone(
+              ret.reservationConfirmedAt,
+              tz,
+            );
+          if (ret.reservationAssignedAt)
+            ret.reservationAssignedAt = convertDateToTimezone(
+              ret.reservationAssignedAt,
+              tz,
+            );
+          if (ret.reservationAcceptedAt)
+            ret.reservationAcceptedAt = convertDateToTimezone(
+              ret.reservationAcceptedAt,
+              tz,
+            );
           if (ret.cancellation?.cancelledAt) {
-            ret.cancellation.cancelledAt = convertDateToTimezone(ret.cancellation.cancelledAt, tz);
+            ret.cancellation.cancelledAt = convertDateToTimezone(
+              ret.cancellation.cancelledAt,
+              tz,
+            );
           }
         }
         return ret;
@@ -624,23 +649,49 @@ const rideSchema = new Schema<IRide, RideModel>(
         if (ret.dropVerification?.otp?.code) {
           delete ret.dropVerification.otp.code;
         }
-        
+
         // Timezone conversion for all output date/time fields
         if (ret.timezone) {
           const tz = ret.timezone;
-          if (ret.scheduledAt) ret.scheduledAt = convertDateToTimezone(ret.scheduledAt, tz);
-          if (ret.requestedAt) ret.requestedAt = convertDateToTimezone(ret.requestedAt, tz);
-          if (ret.acceptedAt) ret.acceptedAt = convertDateToTimezone(ret.acceptedAt, tz);
-          if (ret.startedAt) ret.startedAt = convertDateToTimezone(ret.startedAt, tz);
-          if (ret.completedAt) ret.completedAt = convertDateToTimezone(ret.completedAt, tz);
-          if (ret.createdAt) ret.createdAt = convertDateToTimezone(ret.createdAt, tz);
-          if (ret.updatedAt) ret.updatedAt = convertDateToTimezone(ret.updatedAt, tz);
-          if (ret.reservationExpiresAt) ret.reservationExpiresAt = convertDateToTimezone(ret.reservationExpiresAt, tz);
-          if (ret.reservationConfirmedAt) ret.reservationConfirmedAt = convertDateToTimezone(ret.reservationConfirmedAt, tz);
-          if (ret.reservationAssignedAt) ret.reservationAssignedAt = convertDateToTimezone(ret.reservationAssignedAt, tz);
-          if (ret.reservationAcceptedAt) ret.reservationAcceptedAt = convertDateToTimezone(ret.reservationAcceptedAt, tz);
+          if (ret.scheduledAt)
+            ret.scheduledAt = convertDateToTimezone(ret.scheduledAt, tz);
+          if (ret.requestedAt)
+            ret.requestedAt = convertDateToTimezone(ret.requestedAt, tz);
+          if (ret.acceptedAt)
+            ret.acceptedAt = convertDateToTimezone(ret.acceptedAt, tz);
+          if (ret.startedAt)
+            ret.startedAt = convertDateToTimezone(ret.startedAt, tz);
+          if (ret.completedAt)
+            ret.completedAt = convertDateToTimezone(ret.completedAt, tz);
+          if (ret.createdAt)
+            ret.createdAt = convertDateToTimezone(ret.createdAt, tz);
+          if (ret.updatedAt)
+            ret.updatedAt = convertDateToTimezone(ret.updatedAt, tz);
+          if (ret.reservationExpiresAt)
+            ret.reservationExpiresAt = convertDateToTimezone(
+              ret.reservationExpiresAt,
+              tz,
+            );
+          if (ret.reservationConfirmedAt)
+            ret.reservationConfirmedAt = convertDateToTimezone(
+              ret.reservationConfirmedAt,
+              tz,
+            );
+          if (ret.reservationAssignedAt)
+            ret.reservationAssignedAt = convertDateToTimezone(
+              ret.reservationAssignedAt,
+              tz,
+            );
+          if (ret.reservationAcceptedAt)
+            ret.reservationAcceptedAt = convertDateToTimezone(
+              ret.reservationAcceptedAt,
+              tz,
+            );
           if (ret.cancellation?.cancelledAt) {
-            ret.cancellation.cancelledAt = convertDateToTimezone(ret.cancellation.cancelledAt, tz);
+            ret.cancellation.cancelledAt = convertDateToTimezone(
+              ret.cancellation.cancelledAt,
+              tz,
+            );
           }
         }
         return ret;
@@ -682,9 +733,10 @@ rideSchema.virtual("scheduledAtDisplay").get(function (this: IRide) {
     return this.scheduledAt;
   }
   try {
-    const dt = this.scheduledAt instanceof Date
-      ? DateTime.fromJSDate(this.scheduledAt)
-      : DateTime.fromISO(this.scheduledAt);
+    const dt =
+      this.scheduledAt instanceof Date
+        ? DateTime.fromJSDate(this.scheduledAt)
+        : DateTime.fromISO(this.scheduledAt);
     return dt.setZone(this.timezone).toISO();
   } catch (err) {
     return this.scheduledAt;

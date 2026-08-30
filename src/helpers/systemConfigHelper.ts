@@ -36,7 +36,8 @@ export const getSystemConfig = async () => {
             dbConfig.driverMatching?.driverVisibilityDurationSeconds ??
             config.driverMatching.driverVisibilityDurationSeconds,
           reservationDriverVisibilityDurationSeconds:
-            dbConfig.driverMatching?.reservationDriverVisibilityDurationSeconds ??
+            dbConfig.driverMatching
+              ?.reservationDriverVisibilityDurationSeconds ??
             config.driverMatching.reservationDriverVisibilityDurationSeconds,
           rideRequestLifetimeSeconds:
             dbConfig.driverMatching?.rideRequestLifetimeSeconds ??

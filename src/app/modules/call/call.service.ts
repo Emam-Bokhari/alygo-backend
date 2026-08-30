@@ -285,7 +285,10 @@ const answerCallInDB = async (
 
   callSocketHelper.emitCallAccepted(call.callerId.toString(), callerPayload);
   callSocketHelper.emitCallConnected(call.callerId.toString(), callerPayload);
-  callSocketHelper.emitCallConnected(call.receiverId.toString(), receiverPayload);
+  callSocketHelper.emitCallConnected(
+    call.receiverId.toString(),
+    receiverPayload,
+  );
 
   return call;
 };

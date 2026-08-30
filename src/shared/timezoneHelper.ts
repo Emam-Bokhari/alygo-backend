@@ -72,7 +72,7 @@ export const timezoneToUtc = (
     // Interpret local datetime string in the target timezone
     return DateTime.fromISO(localDate, { zone: timezone }).setZone("UTC");
   }
-  
+
   return DateTime.fromJSDate(localDate).setZone("UTC");
 };
 
@@ -208,7 +208,7 @@ export const getDayRangeInTimezone = (
         : /([+-]\d{2}:?\d{2}|Z)$/.test(dateStr)
           ? DateTime.fromISO(dateStr).setZone(timezone)
           : DateTime.fromISO(dateStr, { zone: timezone });
-    
+
     if (parsed.isValid) {
       targetDateTime = parsed;
     }

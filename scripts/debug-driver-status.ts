@@ -18,19 +18,24 @@ async function run() {
   console.log("driverAvailabilityStatus:", driver.driverAvailabilityStatus);
   console.log("availability:", JSON.stringify(driver.availability, null, 2));
   console.log("lastVerificationDate:", driver.lastVerificationDate);
-  
+
   const systemConfig = await getSystemConfig();
   console.log("=== System Config ===");
-  console.log("driverSelfieVerificationIntervalMinutes:", systemConfig.driverSelfieVerificationIntervalMinutes);
+  console.log(
+    "driverSelfieVerificationIntervalMinutes:",
+    systemConfig.driverSelfieVerificationIntervalMinutes,
+  );
 
   const now = new Date();
-  const intervalMinutes = systemConfig.driverSelfieVerificationIntervalMinutes ?? 720;
+  const intervalMinutes =
+    systemConfig.driverSelfieVerificationIntervalMinutes ?? 720;
   const intervalMs = intervalMinutes * 60 * 1000;
   const thresholdDate = new Date(Date.now() - intervalMs);
   console.log("Current Time:", now);
   console.log("Threshold Date:", thresholdDate);
   if (driver.lastVerificationDate) {
-    const timeSinceLast = Date.now() - new Date(driver.lastVerificationDate).getTime();
+    const timeSinceLast =
+      Date.now() - new Date(driver.lastVerificationDate).getTime();
     console.log("Time since last verification (ms):", timeSinceLast);
     console.log("Interval (ms):", intervalMs);
     console.log("Is expired?", timeSinceLast > intervalMs);

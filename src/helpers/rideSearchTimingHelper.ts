@@ -24,7 +24,7 @@ export const calculateDriverSearchTiming = async (
   const now = new Date();
   const requestedAt = new Date(ride.requestedAt);
   const systemConfig = await getSystemConfig();
-  
+
   const isReservation = ride.rideType === RIDE_TYPE.SCHEDULED;
   const rideRequestLifetimeSeconds = isReservation
     ? systemConfig.driverMatching.reservationRideRequestLifetimeSeconds
