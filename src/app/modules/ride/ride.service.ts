@@ -8,6 +8,7 @@ import { IRide } from "./rider.interface";
 import { User } from "../user/user.model";
 import { Driver } from "../driver/driver.model";
 import { Car } from "../car/car.model";
+import { LostFound } from "../lostAndFound/lostAndFound.model";
 import { ServiceArea } from "../serviceArea/serviceArea.model";
 import { ServiceAreaServices } from "../serviceArea/serviceArea.service";
 import { ServiceCategory } from "../serviceCategory/serviceCategory.model";
@@ -4426,6 +4427,20 @@ const getUserRideHistory = async (
     });
   }
 
+  const rideIds = rides.map((ride: any) => ride._id);
+  const lostFoundReports = await LostFound.find({
+    rideId: { $in: rideIds },
+  })
+    .select("_id rideId")
+    .lean();
+
+  const reportMap = new Map<string, string>();
+  lostFoundReports.forEach((report: any) => {
+    if (report.rideId) {
+      reportMap.set(report.rideId.toString(), report._id.toString());
+    }
+  });
+
   const data = rides.map((ride: any) => {
     const driverUser = ride.driverId;
     const driverIdStr = driverUser?._id
@@ -4449,6 +4464,10 @@ const getUserRideHistory = async (
           totalTrips: driverIdStr ? driverTotalTripsMap[driverIdStr] || 0 : 0,
         }
       : null;
+
+    const rideIdStr = ride._id.toString();
+    const lostFoundReportId = reportMap.get(rideIdStr) || null;
+    const isLostFoundReported = !!lostFoundReportId;
 
     return {
       rideId: ride._id,
@@ -4484,6 +4503,8 @@ const getUserRideHistory = async (
       completedAt: toLocalISO(ride.completedAt, ride.timezone),
       cancelledAt: toLocalISO(ride.cancellation?.cancelledAt, ride.timezone),
       createdAt: toLocalISO(ride.createdAt, ride.timezone),
+      isLostFoundReported,
+      lostFoundReportId,
     };
   });
 
@@ -4560,6 +4581,15 @@ const getUserRideHistoryDetails = async (userId: string, rideId: string) => {
     };
   }
 
+  const lostFoundReport = await LostFound.findOne({
+    rideId: rideObjectId,
+  })
+    .select("_id")
+    .lean();
+
+  const lostFoundReportId = lostFoundReport?._id?.toString() || null;
+  const isLostFoundReported = !!lostFoundReportId;
+
   return {
     rideId: ride._id,
     rideType: ride.rideType,
@@ -4593,6 +4623,8 @@ const getUserRideHistoryDetails = async (userId: string, rideId: string) => {
       : ride.cancellation,
     createdAt: toLocalISO(ride.createdAt, ride.timezone),
     updatedAt: toLocalISO(ride.updatedAt, ride.timezone),
+    isLostFoundReported,
+    lostFoundReportId,
   };
 };
 
