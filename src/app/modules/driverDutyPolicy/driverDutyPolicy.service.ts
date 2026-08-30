@@ -926,6 +926,15 @@ const updateDriverAvailability = async (driverId: string) => {
         remainingMinutes: availabilityData.remainingMinutes,
       });
     }
+  } else if (!newCanReceiveRide) {
+    // Driver is still blocked, send updated limit info for countdown sync
+    socketHelper.sendToUser(driverId, "driver-duty-limit-reached", {
+      canReceiveRide: false,
+      blockedReason: availabilityData.blockedReason,
+      blockedUntil: availabilityData.blockedUntil,
+      remainingHours: availabilityData.remainingHours,
+      remainingMinutes: availabilityData.remainingMinutes,
+    });
   }
 
   // Return availability data and whether it changed

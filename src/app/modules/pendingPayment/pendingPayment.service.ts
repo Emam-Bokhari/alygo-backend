@@ -104,9 +104,9 @@ const payCancellationFeeNow = async (
     user.name,
   );
 
-  // Success and cancel URLs
-  const successUrl = `${config.client_url || "http://localhost:3000"}/payment/success?session_id={CHECKOUT_SESSION_ID}&type=${pendingPayment.type}&pendingPaymentId=${pendingPaymentId}`;
-  const cancelUrl = `${config.client_url || "http://localhost:3000"}/payment/cancel?session_id={CHECKOUT_SESSION_ID}&type=${pendingPayment.type}&pendingPaymentId=${pendingPaymentId}`;
+  // Success and cancel URLs pointing to backend pages
+  const successUrl = `${config.stripe.BASE_URL || "http://10.10.7.41:5005"}/api/v1/stripe/payment/success?session_id={CHECKOUT_SESSION_ID}&type=${pendingPayment.type}&pendingPaymentId=${pendingPaymentId}`;
+  const cancelUrl = `${config.stripe.BASE_URL || "http://10.10.7.41:5005"}/api/v1/stripe/payment/cancel?session_id={CHECKOUT_SESSION_ID}&type=${pendingPayment.type}&pendingPaymentId=${pendingPaymentId}`;
 
   // Fetch ride to get cancellation reason
   let cancellationReasonId = "";

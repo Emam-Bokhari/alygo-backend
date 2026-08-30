@@ -45,6 +45,16 @@ router.get(
   StripeControllers.getPaymentStatus,
 );
 
+router.get(
+  "/payment/success",
+  StripeControllers.paymentSuccessView,
+);
+
+router.get(
+  "/payment/cancel",
+  StripeControllers.paymentCancelView,
+);
+
 // Refund (Admins only)
 router.post(
   "/refund",

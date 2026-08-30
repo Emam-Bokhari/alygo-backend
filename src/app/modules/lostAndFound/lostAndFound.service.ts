@@ -797,8 +797,8 @@ const createPaymentSession = async (
     user.name,
   );
 
-  const successUrl = `${config.client_url || "http://localhost:3000"}/payment/success?session_id={CHECKOUT_SESSION_ID}&reportId=${reportId}`;
-  const cancelUrl = `${config.client_url || "http://localhost:3000"}/payment/cancel?session_id={CHECKOUT_SESSION_ID}&reportId=${reportId}`;
+  const successUrl = `${config.stripe.BASE_URL || "http://10.10.7.41:5005"}/api/v1/stripe/payment/success?session_id={CHECKOUT_SESSION_ID}&reportId=${reportId}`;
+  const cancelUrl = `${config.stripe.BASE_URL || "http://10.10.7.41:5005"}/api/v1/stripe/payment/cancel?session_id={CHECKOUT_SESSION_ID}&reportId=${reportId}`;
 
   const session = await stripeService.createCheckoutSession(
     report.deliveryFee,

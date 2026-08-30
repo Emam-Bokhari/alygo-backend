@@ -430,19 +430,7 @@ const getDriverAvailability = async (userId: string) => {
   }
 
   const availabilityData =
-    await DriverDutyPolicyServices.getDriverAvailability(userId);
-
-  // Update driver's availability in database
-  await Driver.findOneAndUpdate(
-    { userId: new Types.ObjectId(userId) },
-    {
-      $set: {
-        "availability.canReceiveRide": availabilityData.canReceiveRide,
-        "availability.blockedReason": availabilityData.blockedReason,
-        "availability.blockedUntil": availabilityData.blockedUntil,
-      },
-    },
-  );
+    await DriverDutyPolicyServices.updateDriverAvailability(userId);
 
   return availabilityData;
 };

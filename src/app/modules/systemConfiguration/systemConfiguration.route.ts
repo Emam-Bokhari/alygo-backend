@@ -7,6 +7,10 @@ import { requirePermission } from "../../middlewares/requirePermission";
 const router = express.Router();
 
 router
+  .route("/docs")
+  .get(SystemConfigurationController.getSystemConfigurationDocsHtml);
+
+router
   .route("/")
   .get(isAuthenticated, SystemConfigurationController.getSystemConfiguration)
   .patch(

@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Alygo - System Configuration Guide</title>
+ <link rel="preconnect" href="https://fonts.googleapis.com">
+ <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+ <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+ <style>
+ :root {
+ --bg-dark: #0A0A0F;
+ --bg-card: rgba(18, 18, 26, 0.7);
+ --bg-card-hover: rgba(30, 30, 45, 0.85);
+ --border-color: rgba(255, 255, 255, 0.08);
+ --border-glow: rgba(234, 88, 12, 0.2);
+ --text-main: #ffffff;
+ --text-muted: rgba(255, 255, 255, 0.6);
+ --accent-primary: #EA580C; /* Brand Primary (Orange) */
+ --accent-secondary: #ff782e; /* Light Orange */
+ --accent-teal: #00b389; /* Brand Emerald */
+ --accent-gradient: linear-gradient(135deg, #EA580C 0%, #ff782e 100%);
+ --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+ --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+ }
+
+ * {
+ box-sizing: border-box;
+ margin: 0;
+ padding: 0;
+ }
+
+ body {
+ font-family: 'Plus Jakarta Sans', 'Outfit', sans-serif;
+ background-color: var(--bg-dark);
+ color: var(--text-main);
+ line-height: 1.6;
+ overflow-x: hidden;
+ background-image: 
+ radial-gradient(circle at 10% 20%, rgba(234, 88, 12, 0.08) 0%, transparent 40%),
+ radial-gradient(circle at 90% 80%, rgba(0, 179, 137, 0.05) 0%, transparent 45%);
+ background-attachment: fixed;
+ }
+
+ /* Ambient background grid */
+ .grid-bg {
+ position: fixed; inset: 0;
+ background-image:
+ linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+ linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+ background-size: 60px 60px;
+ pointer-events: none;
+ z-index: 0;
+ }
+
+ /* Layout */
+ .app-container {
+ display: flex;
+ min-height: 100vh;
+ position: relative;
+ z-index: 10;
+ }
+
+ /* Sidebar */
+ .sidebar {
+ width: 320px;
+ background: rgba(10, 10, 15, 0.85);
+ backdrop-filter: blur(24px);
+ -webkit-backdrop-filter: blur(24px);
+ border-right: 1px solid var(--border-color);
+ padding: 2.5rem 1.5rem;
+ position: fixed;
+ top: 0;
+ bottom: 0;
+ left: 0;
+ z-index: 100;
+ display: flex;
+ flex-direction: column;
+ gap: 2rem;
+ }
+
+ .brand {
+ display: flex;
+ align-items: center;
+ gap: 0.75rem;
+ padding-left: 0.5rem;
+ }
+
+ .brand-logo {
+ width: 40px;
+ height: 40px;
+ background: var(--accent-gradient);
+ border-radius: 12px;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ font-weight: 800;
+ font-size: 1.25rem;
+ color: #ffffff;
+ box-shadow: 0 4px 20px rgba(234, 88, 12, 0.4);
+ }
+
+ .brand-title {
+ font-weight: 800;
+ font-size: 1.5rem;
+ background: linear-gradient(to right, #ffffff, #c9a84c);
+ -webkit-background-clip: text;
+ -webkit-text-fill-color: transparent;
+ letter-spacing: -0.5px;
+ }
+
+ .search-box {
+ position: relative;
+ }
+
+ .search-input {
+ width: 100%;
+ background: rgba(255, 255, 255, 0.05);
+ border: 1px solid var(--border-color);
+ border-radius: 10px;
+ padding: 0.75rem 1rem 0.75rem 2.5rem;
+ color: #ffffff;
+ font-family: inherit;
+ font-size: 0.9rem;
+ transition: var(--transition-smooth);
+ }
+
+ .search-input:focus {
+ outline: none;
+ border-color: var(--accent-primary);
+ box-shadow: 0 0 15px rgba(234, 88, 12, 0.2);
+ }
+
+ .search-icon {
+ position: absolute;
+ left: 0.75rem;
+ top: 50%;
+ transform: translateY(-50%);
+ color: var(--text-muted);
+ width: 16px;
+ height: 16px;
+ pointer-events: none;
+ }
+
+ .nav-list {
+ list-style: none;
+ display: flex;
+ flex-direction: column;
+ gap: 0.5rem;
+ overflow-y: auto;
+ flex: 1;
+ padding-right: 0.25rem;
+ }
+
+ /* Custom Scrollbar for Sidebar Nav */
+ .nav-list::-webkit-scrollbar {
+ width: 4px;
+ }
+ .nav-list::-webkit-scrollbar-thumb {
+ background: rgba(255, 255, 255, 0.1);
+ border-radius: 4px;
+ }
+
+ .nav-link {
+ display: flex;
+ align-items: center;
+ gap: 0.75rem;
+ color: var(--text-muted);
+ text-decoration: none;
+ padding: 0.75rem 1rem;
+ border-radius: 8px;
+ font-weight: 500;
+ font-size: 0.95rem;
+ transition: var(--transition-smooth);
+ }
+
+ .nav-link:hover, .nav-link.active {
+ color: #ffffff;
+ background: rgba(255, 255, 255, 0.03);
+ }
+
+ .nav-link.active {
+ border-left: 3px solid var(--accent-primary);
+ background: linear-gradient(90deg, rgba(234, 88, 12, 0.08) 0%, transparent 100%);
+ }
+
+ /* Main Content */
+ .main-content {
+ margin-left: 320px;
+ flex: 1;
+ padding: 3rem 4rem;
+ max-width: 1200px;
+ }
+
+ header {
+ margin-bottom: 4rem;
+ }
+
+ .header-tag {
+ display: inline-block;
+ padding: 0.35rem 0.75rem;
+ background: rgba(234, 88, 12, 0.15);
+ color: #ff9d66;
+ border-radius: 9999px;
+ font-size: 0.8rem;
+ font-weight: 600;
+ text-transform: uppercase;
+ letter-spacing: 1px;
+ margin-bottom: 1rem;
+ border: 1px solid rgba(234, 88, 12, 0.25);
+ }
+
+ h1 {
+ font-size: 2.75rem;
+ font-weight: 800;
+ letter-spacing: -1px;
+ margin-bottom: 1rem;
+ background: linear-gradient(135deg, #ffffff 40%, #ff833b 100%);
+ -webkit-background-clip: text;
+ -webkit-text-fill-color: transparent;
+ }
+
+ .header-description {
+ color: var(--text-muted);
+ font-size: 1.1rem;
+ max-width: 800px;
+ }
+
+ /* Sections */
+ .config-section {
+ margin-bottom: 6rem;
+ scroll-margin-top: 3rem;
+ }
+
+ .section-title {
+ font-size: 1.75rem;
+ font-weight: 700;
+ margin-bottom: 2rem;
+ display: flex;
+ align-items: center;
+ gap: 0.75rem;
+ border-bottom: 1px solid var(--border-color);
+ padding-bottom: 0.75rem;
+ }
+
+ .section-title svg {
+ color: var(--accent-primary);
+ width: 24px;
+ height: 24px;
+ }
+
+ .cards-grid {
+ display: flex;
+ flex-direction: column;
+ gap: 2.5rem;
+ }
+
+ /* Cards */
+ .config-card {
+ background: var(--bg-card);
+ backdrop-filter: blur(16px);
+ -webkit-backdrop-filter: blur(16px);
+ border: 1px solid var(--border-color);
+ border-radius: 20px;
+ padding: 2rem;
+ transition: var(--transition-smooth);
+ box-shadow: var(--glass-shadow);
+ position: relative;
+ overflow: hidden;
+ }
+
+ .config-card::before {
+ content: '';
+ position: absolute;
+ top: 0;
+ left: 0;
+ width: 100%;
+ height: 4px;
+ background: transparent;
+ transition: var(--transition-smooth);
+ }
+
+ .config-card:hover {
+ border-color: var(--border-glow);
+ box-shadow: 0 10px 40px -10px rgba(234, 88, 12, 0.15);
+ background: var(--bg-card-hover);
+ }
+
+ .config-card:hover::before {
+ background: var(--accent-gradient);
+ }
+
+ .card-header {
+ display: flex;
+ justify-content: space-between;
+ align-items: flex-start;
+ margin-bottom: 1.25rem;
+ flex-wrap: wrap;
+ gap: 1rem;
+ }
+
+ .field-name-container {
+ display: flex;
+ flex-direction: column;
+ gap: 0.25rem;
+ }
+
+ .field-label {
+ font-size: 0.8rem;
+ letter-spacing: 1px;
+ color: var(--accent-teal);
+ font-weight: 700;
+ }
+
+ .field-title {
+ font-size: 1.35rem;
+ font-weight: 700;
+ color: #ffffff;
+ font-family: 'Outfit', sans-serif;
+ }
+
+ .badges-container {
+ display: flex;
+ gap: 0.5rem;
+ flex-wrap: wrap;
+ }
+
+ .badge {
+ font-size: 0.75rem;
+ font-weight: 600;
+ padding: 0.25rem 0.65rem;
+ border-radius: 6px;
+ display: flex;
+ align-items: center;
+ gap: 0.25rem;
+ }
+
+ .badge-default {
+ background: rgba(255, 255, 255, 0.05);
+ color: #ffffff;
+ border: 1px solid rgba(255, 255, 255, 0.1);
+ }
+
+ .badge-validation {
+ background: rgba(234, 88, 12, 0.1);
+ color: #ff9d66;
+ border: 1px solid rgba(234, 88, 12, 0.2);
+ }
+
+ .badge-type {
+ background: rgba(0, 179, 137, 0.1);
+ color: #34d399;
+ border: 1px solid rgba(0, 179, 137, 0.2);
+ }
+
+ .card-body {
+ display: flex;
+ flex-direction: column;
+ gap: 1.5rem;
+ }
+
+ .explanation-block h4 {
+ font-size: 0.95rem;
+ color: var(--text-muted);
+ margin-bottom: 0.35rem;
+ text-transform: uppercase;
+ letter-spacing: 0.5px;
+ }
+
+ .explanation-block p {
+ color: var(--text-main);
+ font-size: 1rem;
+ font-weight: 400;
+ }
+
+ /* Tech Accordion */
+ .tech-accordion {
+ border-top: 1px solid rgba(255, 255, 255, 0.05);
+ padding-top: 1.25rem;
+ }
+
+ .tech-header {
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ cursor: pointer;
+ user-select: none;
+ color: var(--accent-primary);
+ font-weight: 600;
+ font-size: 0.9rem;
+ transition: var(--transition-smooth);
+ }
+
+ .tech-header:hover {
+ color: var(--accent-secondary);
+ }
+
+ .tech-header svg {
+ width: 16px;
+ height: 16px;
+ transition: transform 0.3s ease;
+ }
+
+ .tech-accordion.open .tech-header svg {
+ transform: rotate(180deg);
+ }
+
+ .tech-content {
+ max-height: 0;
+ overflow: hidden;
+ transition: max-height 0.3s ease-out, opacity 0.2s ease;
+ opacity: 0;
+ display: flex;
+ flex-direction: column;
+ gap: 0.75rem;
+ margin-top: 0;
+ }
+
+ .tech-accordion.open .tech-content {
+ max-height: 500px;
+ opacity: 1;
+ margin-top: 1rem;
+ }
+
+ .tech-note {
+ background: rgba(234, 88, 12, 0.05);
+ border-left: 3px solid var(--accent-primary);
+ padding: 0.75rem 1rem;
+ border-radius: 0 8px 8px 0;
+ font-size: 0.85rem;
+ color: var(--text-main);
+ }
+
+ .tech-note code {
+ font-family: monospace;
+ background: rgba(0, 0, 0, 0.3);
+ padding: 0.15rem 0.35rem;
+ border-radius: 4px;
+ color: #ff9d66;
+ font-size: 0.85rem;
+ }
+
+ .code-links {
+ display: flex;
+ gap: 0.5rem;
+ flex-wrap: wrap;
+ }
+
+ .code-link {
+ font-size: 0.75rem;
+ color: var(--text-muted);
+ background: rgba(255, 255, 255, 0.03);
+ border: 1px solid var(--border-color);
+ padding: 0.25rem 0.5rem;
+ border-radius: 4px;
+ text-decoration: none;
+ transition: var(--transition-smooth);
+ }
+
+ .code-link:hover {
+ border-color: var(--accent-primary);
+ color: #ffffff;
+ background: rgba(234, 88, 12, 0.1);
+ }
+
+ /* Responsive */
+ @media (max-width: 1024px) {
+ .sidebar {
+ display: none;
+ }
+ .main-content {
+ margin-left: 0;
+ padding: 2.5rem 1.5rem;
+ }
+ }
+
+ /* Search highlight styling */
+ .hidden-card {
+ display: none !important;
+ }
+
+ .hidden-section {
+ display: none !important;
+ }
+ </style>
+</head>
+<body>
+ <div class="grid-bg"></div>
+ <div class="app-container">
+ <!-- Sidebar Navigation -->
+ <aside class="sidebar">
+ <div class="brand">
+ <div class="brand-logo">A</div>
+ <div class="brand-title">Alygo</div>
+ </div>
+ <div class="search-box">
+ <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+ <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+ </svg>
+ <input type="text" id="docsSearch" class="search-input" placeholder="Search config fields..">
+ </div>
+ <nav style="flex: 1; display: flex; flex-direction: column;">
+ <ul class="nav-list" id="sidebarNav">
+ <li><a href="#driver-matching" class="nav-link active">Driver Matching</a></li>
+ <li><a href="#tracking" class="nav-link">Live Tracking</a></li>
+ <li><a href="#reservation" class="nav-link">Reservations</a></li>
+ <li><a href="#lost-found" class="nav-link">Lost & Found</a></li>
+ <li><a href="#referral" class="nav-link">Referral Rewards</a></li>
+ <li><a href="#driver-rewards" class="nav-link">Driver Tiers & Rewards</a></li>
+ <li><a href="#ai-support" class="nav-link">AI Help Assistant</a></li>
+ <li><a href="#selfie-verification" class="nav-link">Selfie Verification</a></li>
+ </ul>
+ </nav>
+ </aside>
+
+ <!-- Main Content Area -->
+ <main class="main-content">
+ <header>
+ <span class="header-tag">Official Documentation</span>
+ <h1>Alygo Backend Settings</h1>
+ <p class="header-description">
+ A highly detailed guide explaining each configuration parameter of the Alygo dispatch network. 
+ Use this blueprint to understand how these settings impact the dispatch workers, tracking servers, and payment flows.
+ </p>
+ </header>
+
+ <!-- Section: Driver Matching -->
+ <section id="driver-matching" class="config-section">
+ <h2 class="section-title">
+ <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+ <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+ <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+ </svg>
+ Driver Matching Config
+ </h2>
+ <div class="cards-grid">
+ <!-- Card: initialSearchRadiusKm -->
+ <div class="config-card" data-search="initialSearchRadiusKm search radius distance km">
+ <div class="card-header">
+ <div class="field-name-container">
+ <span class="field-label">Driver Matching -> Initial Search Radius Km</span>
+ <h3 class="field-title">Initial Search Radius</h3>
+ </div>
+ <div class="badges-container">
+ <span class="badge badge-default">Default: <%= config.driverMatching.initialSearchRadiusKm %> km</span>
+ <span class="badge badge-validation">Min: 0.1</span>
+ </div>
+ </div>
+ <div class="card-body">
+ <div class="explanation-block">
+ <p>The starting distance (in kilometers) from the passenger where the system begins looking for nearby drivers.</p>
+ </div>
+ <div class="tech-accordion">
+ <div class="tech-header">
+ <span>How it works under the hood</span>
+ <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+ </div>
+ <div class="tech-content">
+ <div class="tech-note">
+ Used by the dispatch algorithm . The engine runs a Mongo query using GeoJSON coordinates to identify active, free drivers within this initial radius.
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+
+ <!-- Card: radiusExpansionDistanceKm -->
+ <div class="config-card" data-search="radiusExpansionDistanceKm radius expansion km">
+ <div class="card-header">
+ <div class="field-name-container">
+ <span class="field-label">Driver Matching -> Radius Expansion Distance Km</span>
+ <h3 class="field-title">Radius Expansion Distance</h3>
+ </div>
+ <div class="badges-container">
+ <span class="badge badge-default">Default: <%= config.driverMatching.radiusExpansionDistanceKm %> km</span>
+ <span class="badge badge-validation">Min: 0.1</span>
+ </div>
+ </div>
+ <div class="card-body">
+ <div class="explanation-block">
+ <p>The amount of distance added to the search area in each subsequent attempt if no driver accepts the request within the initial radius.</p>
+ </div>
+ <div class="tech-accordion">
+ <div class="tech-header">
+ <span>How it works under the hood</span>
+ <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+ </div>
+ <div class="tech-content">
+ <div class="tech-note">
+ When a matching cycle finishes without a driver, the worker increments the current search radius by this expansion distance and checks again in the next tick.
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+
+ <!-- Card: maxSearchRadiusKm -->
+ <div class="config-card" data-search="maxSearchRadiusKm max search radius limit">
+ <div class="card-header">
+ <div class="field-name-container">
+ <span class="field-label">Driver Matching -> Max Search Radius Km</span>
+ <h3 class="field-title">Maximum Search Radius</h3>
+ </div>
+ <div class="badges-container">
+ <span class="badge badge-default">Default: <%= config.driverMatching.maxSearchRadiusKm %> km</span>
+ <span class="badge badge-validation">Min: 1</span>
+ </div>
+ </div>
+ <div class="card-body">
+ <div class="explanation-block">
+ <p>The absolute ceiling for the search area. The system will stop expanding the search radius once this value is reached.</p>
+ </div>
+ <div class="tech-accordion">
+ <div class="tech-header">
+ <span>How it works under the hood</span>
+ <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+ </div>
+ <div class="tech-content">
+ <div class="tech-note">
+ Prevents matching queries from consuming excessive resources. If the search radius hits this value and still no driver accepts, the matching engine stops and marks the ride as unfulfilled.
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+
+ <!-- Card: driverVisibilityDurationSeconds -->
+ <div class="config-card" data-search="driverVisibilityDurationSeconds driver visibility seconds timer screen">
+ <div class="card-header">
+ <div class="field-name-container">
+ <span class="field-label">Driver Matching -> Driver Visibility Duration Seconds</span>
+ <h3 class="field-title">Driver Visibility Duration</h3>
+ </div>
+ <div class="badges-container">
+ <span class="badge badge-default">Default: <%= config.driverMatching.driverVisibilityDurationSeconds %>s</span>
+ <span class="badge badge-validation">Min: 10</span>
+ </div>
+ </div>
+ <div class="card-body">
+ <div class="explanation-block">
+ <p>The amount of time (in seconds) a live ride request popup stays visible on a driver's screen for them to tap "Accept".</p>
+ </div>
+ <div class="tech-accordion">
+ <div class="tech-header">
+ <span>How it works under the hood</span>
+ <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+ </div>
+ <div class="tech-content">
+ <div class="tech-note">
+ a Redis timer is set for the driver assignment. If the driver does not respond within this visibility countdown, the socket server triggers a timeout and routes the request to the next driver.
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+
+ <!-- Card: reservationDriverVisibilityDurationSeconds -->
+ <div class="config-card" data-search="reservationDriverVisibilityDurationSeconds reservation driver visibility time">
+ <div class="card-header">
+ <div class="field-name-container">
+ <span class="field-label">Driver Matching -> Reservation Driver Visibility Duration Seconds</span>
+ <h3 class="field-title">Reservation Driver Visibility</h3>
+ </div>
+ <div class="badges-container">
+ <span class="badge badge-default">Default: <%= config.driverMatching.reservationDriverVisibilityDurationSeconds %>s</span>
+ <span class="badge badge-validation">Min: 10</span>
+ </div>
+ </div>
+ <div class="card-body">
+ <div class="explanation-block">
+ <p>The screen visibility timer (in seconds) for drivers responding to scheduled/advance reservation requests.</p>
+ </div>
+ <div class="tech-accordion">
+ <div class="tech-header">
+ <span>How it works under the hood</span>
+ <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+ </div>
+ <div class="tech-content">
+ <div class="tech-note">
+ Provides a longer window compared to live requests because drivers matching reservations typically review details carefully before committing.
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+
+ <!-- Card: rideRequestLifetimeSeconds -->
+ <div class="config-card" data-search="rideRequestLifetimeSeconds request lifetime cancel expiration">
+ <div class="card-header">
+ <div class="field-name-container">
+ <span class="field-label">Driver Matching -> Ride Request Lifetime Seconds</span>
+ <h3 class="field-title">Ride Request Lifetime</h3>
+ </div>
+ <div class="badges-container">
+ <span class="badge badge-default">Default: <%= config.driverMatching.rideRequestLifetimeSeconds %>s</span>
+ <span class="badge badge-validation">Min: 60</span>
+ </div>
+ </div>
+ <div class="card-body">
+ <div class="explanation-block">
+ <p>The total lifespan of a live ride request. If no driver is matched within this time, the search stops and cancels the request.</p>
+ </div>
+ <div class="tech-accordion">
+ <div class="tech-header">
+ <span>How it works under the hood</span>
+ <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+ </div>
+ <div class="tech-content">
+ <div class="tech-note">
+ Validated in . The time difference between ride request creation and the current matching tick is checked against this parameter to automatically expire stale rides.
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+ </section>
+
+ <!-- Section: Tracking -->
+ <section id="tracking" class="config-section">
+ <h2 class="section-title">
+ <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+ <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+ </svg>
+ Tracking & Telemetry Config
+ </h2>
+ <div class="cards-grid">
+ <!-- Card: minLocationUpdateIntervalSeconds -->
+ <div class="config-card" data-search="minLocationUpdateIntervalSeconds location update interval seconds">
+ <div class="card-header">
+ <div class="field-name-container">
+ <span class="field-label">Tracking -> Min Location Update Interval Seconds</span>
+ <h3 class="field-title">Minimum Location Update Interval</h3>
+ </div>
+ <div class="badges-container">
+ <span class="badge badge-default">Default: <%= config.tracking.minLocationUpdateIntervalSeconds %>s</span>
+ <span class="badge badge-validation">Min: 1</span>
+ </div>
+ </div>
+ <div class="card-body">
+ <div class="explanation-block">
+ <p>The speed limit (in seconds) for how often the driver app can send GPS updates to the server. Prevents battery drain on driver mobile devices.</p>
+ </div>
+ <div class="tech-accordion">
+ <div class="tech-header">
+ <span>How it works under the hood</span>
+ <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+ </div>
+ <div class="tech-content">
+ <div class="tech-note">
+ Used to throttle telemetry inputs. The client app fetches this setting dynamically and restricts location-push rates.
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+
+ <!-- Card: arrivalRadiusMeters -->
+ <div class="config-card" data-search="arrivalRadiusMeters arrival radius arrived notification">
+ <div class="card-header">
+ <div class="field-name-container">
+ <span class="field-label">Tracking -> Arrival Radius Meters</span>
+ <h3 class="field-title">Arrival Detection Radius</h3>
+ </div>
+ <div class="badges-container">
+ <span class="badge badge-default">Default: <%= config.tracking.arrivalRadiusMeters %> meters</span>
+ <span class="badge badge-validation">Min: 5</span>
+ </div>
+ </div>
+ <div class="card-body">
+ <div class="explanation-block">
+ <p>How close (in meters) the driver must get to the passenger's pickup location for the app to automatically trigger the "Arrived" state and notify the passenger.</p>
+ </div>
+ <div class="tech-accordion">
+ <div class="tech-header">
+ <span>How it works under the hood</span>
+ <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+ </div>
+ <div class="tech-content">
+ <div class="tech-note">
+ When the driver submits coordinate telemetry, the service computes the distance to the pickup coordinate. If it falls below this value, the backend changes the trip state and emits the arrival socket notification.
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+
+ <!-- Card: enableSocketOptimization -->
+ <div class="config-card" data-search="enableSocketOptimization socket optimization connection">
+ <div class="card-header">
+ <div class="field-name-container">
+ <span class="field-label">Tracking -> Enable Socket Optimization</span>
+ <h3 class="field-title">Enable Socket Optimization</h3>
+ </div>
+ <div class="badges-container">
+ <span class="badge badge-default">Default: <%= config.tracking.enableSocketOptimization ? 'True' : 'False' %></span>
+ </div>
+ </div>
+ <div class="card-body">
+ <div class="explanation-block">
+ <p>A master toggle that enables optimized real-time connection methods, preventing server lag during high traffic periods.</p>
+ </div>
+ <div class="tech-accordion">
+ <div class="tech-header">
+ <span>How it works under the hood</span>
+ <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+ </div>
+ <div class="tech-content">
+ <div class="tech-note">
+ If active, the system bundles multiple small telemetry coordinate packets together before sending them to clients, minimizing connection overhead.
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+ </section>
+
+ <!-- Section: Reservations -->
+ <section id="reservation" class="config-section">
+ <h2 class="section-title">
+ <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+ <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+ </svg>
+ Reservation / Advanced Booking Config
+ </h2>
+ <div class="cards-grid">
+ <!-- Card: minAdvanceMinutes -->
+ <div class="config-card" data-search="minAdvanceMinutes reservation minimum advance booking minutes">
+ <div class="card-header">
+ <div class="field-name-container">
+ <span class="field-label">Reservation -> Min Advance Minutes</span>
+ <h3 class="field-title">Minimum Advance Booking Time</h3>
+ </div>
+ <div class="badges-container">
+ <span class="badge badge-default">Default: <%= config.reservation?.minAdvanceMinutes %> mins</span>
+ <span class="badge badge-validation">Min: 0</span>
+ </div>
+ </div>
+ <div class="card-body">
+ <div class="explanation-block">
+ <p>The minimum notice time required to schedule a reserved ride. For example, a customer cannot reserve a ride starting in 10 minutes if this is set to 30.</p>
+ </div>
+ <div class="tech-accordion">
+ <div class="tech-header">
+ <span>How it works under the hood</span>
+ <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+ </div>
+ <div class="tech-content">
+ <div class="tech-note">
+ Checked at booking validation. The API throws an error if the requested pickup date is too close to the current timestamp.
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+
+ <!-- Card: driverVisibleBeforeMinutes -->
+ <div class="config-card" data-search="driverVisibleBeforeMinutes dispatch reservation driver visibility minutes">
+ <div class="card-header">
+ <div class="field-name-container">
+ <span class="field-label">Reservation -> Driver Visible Before Minutes</span>
+ <h3 class="field-title">Driver Dispatch Visibility Trigger</h3>
+ </div>
+ <div class="badges-container">
+ <span class="badge badge-default">Default: <%= config.reservation?.driverVisibleBeforeMinutes %> mins</span>
+ <span class="badge badge-validation">Min: 0</span>
+ </div>
+ </div>
+ <div class="card-body">
+ <div class="explanation-block">
+ <p>How long before the scheduled trip the dispatch system starts looking for nearby drivers and makes the ride offer visible to them.</p>
+ </div>
+ <div class="tech-accordion">
+ <div class="tech-header">
+ <span>How it works under the hood</span>
+ <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+ </div>
+ <div class="tech-content">
+ <div class="tech-note">
+ The cron service filters scheduled trips that start within this time frame and registers them on the active dispatch queue.
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+ </section>
+
+ <!-- Section: Lost & Found -->
+ <section id="lost-found" class="config-section">
+ <h2 class="section-title">
+ <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+ <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+ </svg>
+ Lost & Found Config
+ </h2>
+ <div class="cards-grid">
+ <!-- Card: reportWindowDays -->
+ <div class="config-card" data-search="reportWindowDays lost found report window limit days">
+ <div class="card-header">
+ <div class="field-name-container">
+ <span class="field-label">Lost & Found -> Report Window Days</span>
+ <h3 class="field-title">Reporting Window Limit</h3>
+ </div>
+ <div class="badges-container">
+ <span class="badge badge-default">Default: <%= config.lostFound?.reportWindowDays %> days</span>
+ <span class="badge badge-validation">Min: 1</span>
+ </div>
+ </div>
+ <div class="card-body">
+ <div class="explanation-block">
+ <p>The maximum time allowed after a trip is completed for a passenger to file a claim about a forgotten item.</p>
+ </div>
+ <div class="tech-accordion">
+ <div class="tech-header">
+ <span>How it works under the hood</span>
+ <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+ </div>
+ <div class="tech-content">
+ <div class="tech-note">
+ Validated when a lost & found case is submitted. It checks the trip completion timestamp and returns a validation error if the limit is exceeded.
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+ </section>
+
+ <!-- Section: Referral -->
+ <section id="referral" class="config-section">
+ <h2 class="section-title">
+ <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+ <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+ </svg>
+ Referral Rewards Config
+ </h2>
+ <div class="cards-grid">
+ <!-- Card: Passenger requiredCompletedTrips -->
+ <div class="config-card" data-search="referral passenger completed trips qualification">
+ <div class="card-header">
+ <div class="field-name-container">
+ <span class="field-label">Referral -> Passenger -> Required Completed Trips</span>
+ <h3 class="field-title">Passenger Referral Qualification Trips</h3>
+ </div>
+ <div class="badges-container">
+ <span class="badge badge-default">Default: <%= config.referral?.passenger.requiredCompletedTrips %> trips</span>
+ </div>
+ </div>
+ <div class="card-body">
+ <div class="explanation-block">
+ <p>The number of rides the newly referred passenger must complete within the platform to award the referring passenger their bonus.</p>
+ </div>
+ <div class="tech-accordion">
+ <div class="tech-header">
+ <span>How it works under the hood</span>
+ <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+ </div>
+ <div class="tech-content">
+ <div class="tech-note">
+ Monitored by the transactional ledger . When a ride completes, the service updates the referral record's completed count and credits wallets upon completion.
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+ </section>
+
+ <!-- Section: Driver Rewards -->
+ <section id="driver-rewards" class="config-section">
+ <h2 class="section-title">
+ <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+ <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
+ </svg>
+ Driver Rewards & Tier Config
+ </h2>
+ <div class="cards-grid">
+ <!-- Card: destinationFilterRadiusDefault -->
+ <div class="config-card" data-search="destinationFilterRadiusDefault filter destination default limit radius">
+ <div class="card-header">
+ <div class="field-name-container">
+ <span class="field-label">Driver Rewards -> Destination Filter Radius Default</span>
+ <h3 class="field-title">Destination Filter Radius Default</h3>
+ </div>
+ <div class="badges-container">
+ <span class="badge badge-default">Default: <%= config.driverRewards?.destinationFilterRadiusDefault %> km</span>
+ </div>
+ </div>
+ <div class="card-body">
+ <div class="explanation-block">
+ <p>The default target area radius (in kilometers). When drivers set a destination match, only passenger drops within this distance from their target are dispatched to them.</p>
+ </div>
+ <div class="tech-accordion">
+ <div class="tech-header">
+ <span>How it works under the hood</span>
+ <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+ </div>
+ <div class="tech-content">
+ <div class="tech-note">
+ Accessed during dispatch searches to calculate overlapping boundaries.
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+ </section>
+
+ <!-- Section: AI Support -->
+ <section id="ai-support" class="config-section">
+ <h2 class="section-title">
+ <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+ <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+ </svg>
+ AI Help Assistant Config
+ </h2>
+ <div class="cards-grid">
+ <!-- Card: temperature -->
+ <div class="config-card" data-search="aiSupport temperature model creativity response">
+ <div class="card-header">
+ <div class="field-name-container">
+ <span class="field-label">AI Support -> Temperature</span>
+ <h3 class="field-title">AI Creativity Temperature</h3>
+ </div>
+ <div class="badges-container">
+ <span class="badge badge-default">Default: <%= config.aiSupport?.temperature %></span>
+ <span class="badge badge-validation">Min: 0, Max: 1</span>
+ </div>
+ </div>
+ <div class="card-body">
+ <div class="explanation-block">
+ <p>Controls the chatbot's focus. Values near 0 ensure strict adherence to official policies, while values closer to 1 make responses more conversational but less predictable.</p>
+ </div>
+ <div class="tech-accordion">
+ <div class="tech-header">
+ <span>How it works under the hood</span>
+ <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+ </div>
+ <div class="tech-content">
+ <div class="tech-note">
+ Passed directly to the Generative SDK (OpenAI or Gemini API wrapper). Keeping this setting at 0.2 prevents hallucination when answering driver policy queries.
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+ </section>
+
+ <!-- Section: Selfie Verification -->
+ <section id="selfie-verification" class="config-section">
+ <h2 class="section-title">
+ <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+ <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+ </svg>
+ Driver Selfie Verification
+ </h2>
+ <div class="cards-grid">
+ <!-- Card: driverSelfieVerificationIntervalMinutes -->
+ <div class="config-card" data-search="driverSelfieVerificationIntervalMinutes selfie interval minutes verification">
+ <div class="card-header">
+ <div class="field-name-container">
+ <span class="field-label">Driver Selfie Verification -> Driver Selfie Verification Interval Minutes</span>
+ <h3 class="field-title">Selfie Check Recurrence Interval</h3>
+ </div>
+ <div class="badges-container">
+ <span class="badge badge-default">Default: <%= config.driverSelfieVerificationIntervalMinutes %> mins</span>
+ <span class="badge badge-validation">Min: 1</span>
+ </div>
+ </div>
+ <div class="card-body">
+ <div class="explanation-block">
+ <p>The time interval (in minutes) after which a driver must take a live selfie inside the app. Safeguards accounts against unauthorized sharing.</p>
+ </div>
+ <div class="tech-accordion">
+ <div class="tech-header">
+ <span>How it works under the hood</span>
+ <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+ </div>
+ <div class="tech-content">
+ <div class="tech-note">
+ Verified when a driver attempts to toggle their state online or request rides. The system compares the timestamp of the last approved Amazon Rekognition selfie verification and triggers a block if the interval has passed.
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+ </section>
+ </main>
+ </div>
+
+ <script>
+ // In-page search logic
+ const searchInput = document.getElementById('docsSearch');
+ const cards = document.querySelectorAll('.config-card');
+ const sections = document.querySelectorAll('.config-section');
+ const navLinks = document.querySelectorAll('.nav-link');
+
+ searchInput.addEventListener('input', function(e) {
+ const query = e.target.value.toLowerCase().trim();
+
+ sections.forEach(section => {
+ let matchingCardsInSection = 0;
+ const sectionCards = section.querySelectorAll('.config-card');
+ 
+ sectionCards.forEach(card => {
+ const searchKeys = card.getAttribute('data-search').toLowerCase();
+ const cardTitle = card.querySelector('.field-title').textContent.toLowerCase();
+ const cardLabel = card.querySelector('.field-label').textContent.toLowerCase();
+
+ if (searchKeys.includes(query) || cardTitle.includes(query) || cardLabel.includes(query)) {
+ card.classList.remove('hidden-card');
+ matchingCardsInSection++;
+ } else {
+ card.classList.add('hidden-card');
+ }
+ });
+
+ if (matchingCardsInSection > 0 || query === '') {
+ section.classList.remove('hidden-section');
+ } else {
+ section.classList.add('hidden-section');
+ }
+ });
+ });
+
+ // Accordion handler
+ const accordions = document.querySelectorAll('.tech-accordion');
+ accordions.forEach(accordion => {
+ const header = accordion.querySelector('.tech-header');
+ header.addEventListener('click', () => {
+ accordion.classList.toggle('open');
+ });
+ });
+
+ // Scroll spy for sidebar links
+ window.addEventListener('scroll', () => {
+ let currentSectionId = '';
+ sections.forEach(section => {
+ const sectionTop = section.offsetTop;
+ const sectionHeight = section.clientHeight;
+ if (window.scrollY >= (sectionTop - 150)) {
+ currentSectionId = section.getAttribute('id');
+ }
+ });
+
+ navLinks.forEach(link => {
+ link.classList.remove('active');
+ if (link.getAttribute('href') === '#' + currentSectionId) {
+ link.classList.add('active');
+ }
+ });
+ });
+ </script>
+</body>
+</html>

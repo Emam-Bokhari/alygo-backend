@@ -9,11 +9,11 @@
     :root {
       --red: #e53935;
       --red-dark: #b71c1c;
-      --bg: #f4f6f5;
-      --surface: rgba(255,255,255,0.85);
-      --border: rgba(0,0,0,0.07);
-      --text-primary: #1a1f1d;
-      --text-muted: rgba(30,40,35,0.45);
+      --bg: #0A0A0F;
+      --surface: rgba(18, 18, 26, 0.85);
+      --border: rgba(255, 255, 255, 0.08);
+      --text-primary: #ffffff;
+      --text-muted: rgba(255, 255, 255, 0.5);
       --emerald: #00b389;
     }
 
@@ -28,6 +28,36 @@
       font-family: 'DM Sans', sans-serif;
       overflow: hidden;
       position: relative;
+    }
+
+    /* ── Ambient background ── */
+    .bg-orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(90px);
+      pointer-events: none;
+    }
+    .orb-1 {
+      width: 520px; height: 520px;
+      background: radial-gradient(circle, rgba(229, 57, 53, 0.12), transparent 70%);
+      top: -120px; left: -100px;
+      animation: drift 14s ease-in-out infinite alternate;
+    }
+    .orb-2 {
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(234, 88, 12, 0.08), transparent 70%);
+      bottom: -80px; right: -80px;
+      animation: drift 18s ease-in-out infinite alternate-reverse;
+    }
+    .orb-3 {
+      width: 250px; height: 250px;
+      background: radial-gradient(circle, rgba(229, 57, 53, 0.06), transparent 70%);
+      top: 50%; left: 60%;
+      animation: drift 10s ease-in-out infinite alternate;
+    }
+    @keyframes drift {
+      from { transform: translate(0,0) scale(1); }
+      to   { transform: translate(30px,20px) scale(1.08); }
     }
 
     /* ── Card ── */
@@ -171,18 +201,18 @@
     /* ── Retry button ── */
     .btn {
       display: inline-block;
-      background: linear-gradient(135deg, #e53935, #b71c1c);
+      background: linear-gradient(135deg, #EA580C, #d44f0b);
       color: #fff;
       font-family: 'DM Sans', sans-serif;
       font-size: 0.88rem;
       font-weight: 500;
       text-decoration: none;
-      padding: 0.75rem 2rem;
+      padding: 0.75rem 2.5rem;
       border-radius: 12px;
       border: none;
       cursor: pointer;
       letter-spacing: 0.02em;
-      box-shadow: 0 4px 16px rgba(229,57,53,0.25);
+      box-shadow: 0 4px 16px rgba(234, 88, 12, 0.25);
       transition: transform 0.2s ease, box-shadow 0.2s ease;
       margin-bottom: 2rem;
       animation: fadeIn 0.6s ease 1.2s forwards;
@@ -190,7 +220,7 @@
     }
     .btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(229,57,53,0.35);
+      box-shadow: 0 8px 24px rgba(234, 88, 12, 0.35);
     }
 
     /* ── Divider ── */
@@ -231,6 +261,10 @@
 </head>
 <body>
 
+  <div class="bg-orb orb-1"></div>
+  <div class="bg-orb orb-2"></div>
+  <div class="bg-orb orb-3"></div>
+
   <div class="card">
     <div class="icon-wrap">
       <div class="icon-ring-2"></div>
@@ -250,8 +284,6 @@
 
     <h1>Payment<br>Failed</h1>
     <p>Your payment could not be processed. Please check your details and try again.</p>
-
-    <a href="#" class="btn">Try Again</a>
 
     <div class="divider"></div>
 

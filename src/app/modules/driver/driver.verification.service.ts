@@ -561,8 +561,8 @@ const createBackgroundCheckPaymentSession = async (driverUserId: string) => {
     amount: feeInfo.amount.toString(),
   };
 
-  const successUrl = `${config.client_url || "http://localhost:3000"}/payment/success?session_id={CHECKOUT_SESSION_ID}&type=background_check_payment`;
-  const cancelUrl = `${config.client_url || "http://localhost:3000"}/payment/cancel?session_id={CHECKOUT_SESSION_ID}&type=background_check_payment`;
+  const successUrl = `${config.stripe.BASE_URL || "http://10.10.7.41:5005"}/api/v1/stripe/payment/success?session_id={CHECKOUT_SESSION_ID}&type=background_check_payment`;
+  const cancelUrl = `${config.stripe.BASE_URL || "http://10.10.7.41:5005"}/api/v1/stripe/payment/cancel?session_id={CHECKOUT_SESSION_ID}&type=background_check_payment`;
 
   const session = await StripeService.createCheckoutSession(
     feeInfo.amount,

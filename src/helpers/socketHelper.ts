@@ -86,6 +86,18 @@ const socket = (io: Server) => {
           // Check if driver has an active trip and restore status if needed
           checkAndRestoreDriverOnTrip(userId, decoded.role);
 
+          // Check/update driver availability on connection
+          try {
+            const { Driver } = require("../app/modules/driver/driver.model");
+            const isDriver = decoded.role === "driver" || (await Driver.findOne({ userId }));
+            if (isDriver) {
+              const { DriverDutyPolicyServices } = require("../app/modules/driverDutyPolicy/driverDutyPolicy.service");
+              await DriverDutyPolicyServices.updateDriverAvailability(userId);
+            }
+          } catch (err: any) {
+            logger.error(`Error updating driver availability on socket connection: ${err.message}`);
+          }
+
           logger.info(
             colors.green(
               `Socket successfully authenticated for User: ${userId} (${decoded.role})`,
@@ -110,7 +122,7 @@ const socket = (io: Server) => {
     }
 
     // Explicit registration event fallback
-    socket.on("register", (data: { userId: string }) => {
+    socket.on("register", async (data: { userId: string }) => {
       if (data?.userId) {
         const userId = data.userId.toString();
         socketMap.set(userId, socket);
@@ -129,6 +141,18 @@ const socket = (io: Server) => {
 
         // Check if driver has an active trip and restore status if needed
         checkAndRestoreDriverOnTrip(userId, socket.data?.role);
+
+        // Check/update driver availability on manual registration
+        try {
+          const { Driver } = require("../app/modules/driver/driver.model");
+          const isDriver = socket.data?.role === "driver" || (await Driver.findOne({ userId }));
+          if (isDriver) {
+            const { DriverDutyPolicyServices } = require("../app/modules/driverDutyPolicy/driverDutyPolicy.service");
+            await DriverDutyPolicyServices.updateDriverAvailability(userId);
+          }
+        } catch (err: any) {
+          logger.error(`Error updating driver availability on manual register: ${err.message}`);
+        }
 
         logger.info(
           colors.green(`Socket manually registered User ID: ${userId}`),
@@ -339,6 +363,14 @@ const socket = (io: Server) => {
             driverAvailabilityStatus: "online",
           });
           logger.info(`Driver ${userId} went online via socket.`);
+
+          // Recalculate and update availability when driver goes online
+          try {
+            const { DriverDutyPolicyServices } = require("../app/modules/driverDutyPolicy/driverDutyPolicy.service");
+            await DriverDutyPolicyServices.updateDriverAvailability(userId);
+          } catch (err: any) {
+            logger.error(`Error updating driver availability on go-online: ${err.message}`);
+          }
 
           const responseData = result
             ? {

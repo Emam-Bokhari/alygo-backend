@@ -453,6 +453,31 @@ const driverAvailabilityWorker = new Worker(
         );
       }
 
+      // Find all drivers who are online and update/recalculate their availability
+      // This will automatically block any driver who reaches their limit and broadcast the event,
+      // as well as send updated countdowns to already blocked drivers.
+      try {
+        const onlineDrivers = await Driver.find({
+          driverAvailabilityStatus: "online",
+        });
+
+        for (const driver of onlineDrivers) {
+          try {
+            await DriverDutyPolicyServices.updateDriverAvailability(
+              driver.userId.toString(),
+            );
+          } catch (err: any) {
+            logger.error(
+              `Failed to update availability for online driver ${driver.userId}: ${err.message}`,
+            );
+          }
+        }
+      } catch (err: any) {
+        logger.error(
+          `Error in background online drivers availability check: ${err.message}`,
+        );
+      }
+
       // Find all drivers who are currently unavailable (canReceiveRide: false)
       // and have a blockedUntil time that has passed
       const driversToUpdate = await Driver.find({

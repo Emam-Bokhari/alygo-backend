@@ -35,7 +35,15 @@ const createOrUpdateSystemConfiguration = catchAsync(
   },
 );
 
+const getSystemConfigurationDocsHtml = catchAsync(
+  async (req: Request, res: Response) => {
+    const config = await SystemConfigurationService.getSystemConfig();
+    res.render("system_configuration_docs", { config });
+  }
+);
+
 export const SystemConfigurationController = {
   getSystemConfiguration,
   createOrUpdateSystemConfiguration,
+  getSystemConfigurationDocsHtml,
 };

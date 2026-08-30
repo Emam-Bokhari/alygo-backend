@@ -192,9 +192,9 @@ const createCheckoutSession = catchAsync(
       user.name,
     );
 
-    // Success and cancel URLs pointing to frontend pages
-    const successUrl = `${config.client_url || "http://localhost:3000"}/payment/success?session_id={CHECKOUT_SESSION_ID}&rideId=${rideId}`;
-    const cancelUrl = `${config.client_url || "http://localhost:3000"}/payment/cancel?session_id={CHECKOUT_SESSION_ID}&rideId=${rideId}`;
+    // Success and cancel URLs pointing to backend pages
+    const successUrl = `${config.stripe.BASE_URL || "http://10.10.7.41:5005"}/api/v1/stripe/payment/success?session_id={CHECKOUT_SESSION_ID}&rideId=${rideId}`;
+    const cancelUrl = `${config.stripe.BASE_URL || "http://10.10.7.41:5005"}/api/v1/stripe/payment/cancel?session_id={CHECKOUT_SESSION_ID}&rideId=${rideId}`;
 
     const platformCurrency =
       await PlatformSettingsService.getPlatformCurrency();
@@ -377,6 +377,35 @@ const handleWebhook = async (req: Request, res: Response) => {
   }
 };
 
+const getRedirectUrl = (query: any, isSuccess: boolean): string => {
+  const { session_id, type, rideId, reportId, pendingPaymentId } = query;
+  const clientUrl = config.client_url || "http://localhost:3000";
+  const statusPath = isSuccess ? "success" : "cancel";
+
+  if (type === "wallet_topup") {
+    return `${clientUrl}/wallet/${statusPath}?session_id=${session_id || ""}`;
+  }
+
+  const params = new URLSearchParams();
+  if (session_id) params.append("session_id", session_id as string);
+  if (type) params.append("type", type as string);
+  if (rideId) params.append("rideId", rideId as string);
+  if (reportId) params.append("reportId", reportId as string);
+  if (pendingPaymentId) params.append("pendingPaymentId", pendingPaymentId as string);
+
+  return `${clientUrl}/payment/${statusPath}?${params.toString()}`;
+};
+
+const paymentSuccessView = catchAsync(async (req: Request, res: Response) => {
+  const redirectUrl = getRedirectUrl(req.query, true);
+  res.render("success", { redirectUrl });
+});
+
+const paymentCancelView = catchAsync(async (req: Request, res: Response) => {
+  const redirectUrl = getRedirectUrl(req.query, false);
+  res.render("fail", { redirectUrl });
+});
+
 export const StripeControllers = {
   createStripeAccount,
   getStripeDashboardLink,
@@ -385,4 +414,6 @@ export const StripeControllers = {
   getPaymentStatus,
   refundTransaction,
   handleWebhook,
+  paymentSuccessView,
+  paymentCancelView,
 };

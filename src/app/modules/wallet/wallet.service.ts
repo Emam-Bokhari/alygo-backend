@@ -164,9 +164,9 @@ const topUpWallet = async (
     await user.save();
   }
 
-  // Success and cancel URLs pointing to frontend wallet pages
-  const successUrl = `${config.client_url || "http://localhost:3000"}/wallet/success?session_id={CHECKOUT_SESSION_ID}`;
-  const cancelUrl = `${config.client_url || "http://localhost:3000"}/wallet/cancel?session_id={CHECKOUT_SESSION_ID}`;
+  // Success and cancel URLs pointing to backend pages
+  const successUrl = `${config.stripe.BASE_URL || "http://10.10.7.41:5005"}/api/v1/stripe/payment/success?session_id={CHECKOUT_SESSION_ID}&type=wallet_topup`;
+  const cancelUrl = `${config.stripe.BASE_URL || "http://10.10.7.41:5005"}/api/v1/stripe/payment/cancel?session_id={CHECKOUT_SESSION_ID}&type=wallet_topup`;
 
   const platformCurrency = await PlatformSettingsService.getPlatformCurrency();
 

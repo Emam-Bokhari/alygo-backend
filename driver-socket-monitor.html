@@ -339,7 +339,7 @@
       <!-- Driver Availability Status (Emit) -->
       <div class="card">
         <h2 style="margin-top: 0; font-size: 1.2rem; margin-bottom: 0.5rem">
-          Driver Availability Status (Emit)
+          Driver Availability & Duty Limits (Emit & Fetch)
         </h2>
         <p
           style="
@@ -348,13 +348,15 @@
             margin-bottom: 1rem;
           "
         >
-          Send <code>go-online</code> or <code>go-offline</code> to backend to
-          update driver availability.
+          Manage availability and trigger/verify duty limit events.
         </p>
-        <div style="display: flex; gap: 1rem">
+        <div style="display: flex; flex-wrap: wrap; gap: 1rem">
           <button id="goOnlineBtn" class="btn">Emit go-online</button>
           <button id="goOfflineBtn" class="btn btn-danger">
             Emit go-offline
+          </button>
+          <button id="checkAvailabilityBtn" class="btn btn-secondary">
+            Fetch /me/availability API
           </button>
         </div>
       </div>
@@ -417,6 +419,7 @@
       const sendLocationBtn = document.getElementById("sendLocationBtn");
       const goOnlineBtn = document.getElementById("goOnlineBtn");
       const goOfflineBtn = document.getElementById("goOfflineBtn");
+      const checkAvailabilityBtn = document.getElementById("checkAvailabilityBtn");
       const eventsListDiv = document.getElementById("eventsList");
 
       // Complete static driver event list from Alygo backend codebase
@@ -630,6 +633,33 @@
             log(`CALLBACK RESPONSE (go-offline): Failed`, "danger", response);
           }
         });
+      });
+
+      checkAvailabilityBtn.addEventListener("click", async () => {
+        const url = serverUrlInput.value.trim();
+        const token = tokenInput.value.trim();
+        if (!token) {
+          log("Please enter a driver JWT token.", "danger");
+          return;
+        }
+        log(`CALLING API: GET ${url}/api/v1/drivers/me/availability`, "info");
+        try {
+          const response = await fetch(`${url}/api/v1/drivers/me/availability`, {
+            method: "GET",
+            headers: {
+              "Authorization": `Bearer ${token}`,
+              "Content-Type": "application/json"
+            }
+          });
+          const result = await response.json();
+          if (response.ok) {
+            log(`API RESPONSE (get-availability): Success`, "success", result);
+          } else {
+            log(`API RESPONSE (get-availability): Failed (Status ${response.status})`, "danger", result);
+          }
+        } catch (error) {
+          log(`API CALL ERROR: ${error.message || error}`, "danger");
+        }
       });
 
       disconnectBtn.addEventListener("click", () => {
