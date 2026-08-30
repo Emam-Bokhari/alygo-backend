@@ -407,7 +407,21 @@ const getRevenueChartFromDB = async (range: string = "week") => {
 
 const getDemandChartFromDB = async (range: string = "today") => {
   const tz = await resolveDashboardTimezone();
-  const { start, end } = getDayRangeInTimezone("today", tz);
+  let start: Date;
+  let end: Date;
+
+  const dateRange = getDateRangeForRange(range, tz);
+  if (dateRange) {
+    start = dateRange.start;
+    end = dateRange.end;
+  } else {
+    const dayRange = getDayRangeInTimezone(
+      range === "yesterday" ? "yesterday" : "today",
+      tz,
+    );
+    start = dayRange.start;
+    end = dayRange.end;
+  }
 
   const rides = await Ride.aggregate([
     {
@@ -565,6 +579,9 @@ const getDriverGrowthFromDB = async (
     {
       $match: {
         approvalStatus: DRIVER_STATUS.APPROVED,
+        ...(serviceAreaId
+          ? { serviceAreaId: new Types.ObjectId(serviceAreaId) }
+          : {}),
       },
     },
     {
@@ -605,6 +622,9 @@ const getDriverGrowthFromDB = async (
     {
       $match: {
         approvalStatus: DRIVER_STATUS.APPROVED,
+        ...(serviceAreaId
+          ? { serviceAreaId: new Types.ObjectId(serviceAreaId) }
+          : {}),
       },
     },
     {
@@ -672,24 +692,6 @@ const getDriverGrowthFromDB = async (
       drivers: currentCumulative,
     });
   }
-
-  const monthOrder: Record<string, number> = {
-    Jan: 1,
-    Feb: 2,
-    Mar: 3,
-    Apr: 4,
-    May: 5,
-    Jun: 6,
-    Jul: 7,
-    Aug: 8,
-    Sep: 9,
-    Oct: 10,
-    Nov: 11,
-    Dec: 12,
-  };
-  result.sort(
-    (a, b) => (monthOrder[a.month] || 0) - (monthOrder[b.month] || 0),
-  );
 
   return result;
 };
@@ -773,24 +775,6 @@ const getPassengerGrowthFromDB = async (
       passengers: currentCumulative,
     });
   }
-
-  const monthOrder: Record<string, number> = {
-    Jan: 1,
-    Feb: 2,
-    Mar: 3,
-    Apr: 4,
-    May: 5,
-    Jun: 6,
-    Jul: 7,
-    Aug: 8,
-    Sep: 9,
-    Oct: 10,
-    Nov: 11,
-    Dec: 12,
-  };
-  result.sort(
-    (a, b) => (monthOrder[a.month] || 0) - (monthOrder[b.month] || 0),
-  );
 
   return result;
 };

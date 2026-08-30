@@ -26,11 +26,16 @@ const ACTIVE_RIDE_STATUSES = [
   RIDE_STATUS.STARTED,
 ];
 
+const DEMAND_RIDE_STATUSES = [
+  RIDE_STATUS.SEARCHING_DRIVER,
+  RIDE_STATUS.WAITING_USER_APPROVAL,
+];
+
 const getSummaryFromDB = async (
   query: IDemandIntelligenceQuery,
 ): Promise<IDemandSummaryData> => {
   const rideMatch: any = {
-    status: { $in: ACTIVE_RIDE_STATUSES },
+    status: { $in: DEMAND_RIDE_STATUSES },
     isDeleted: false,
   };
   const driverMatch: any = {
@@ -79,6 +84,24 @@ const getSummaryFromDB = async (
         $match: {
           estimatedArrivalMinutes: { $exists: true, $ne: null, $gt: 0 },
           isDeleted: false,
+        },
+      },
+      {
+        $lookup: {
+          from: "rides",
+          localField: "rideId",
+          foreignField: "_id",
+          as: "ride",
+        },
+      },
+      { $unwind: "$ride" },
+      {
+        $match: {
+          "ride.status": { $in: ACTIVE_RIDE_STATUSES },
+          "ride.isDeleted": false,
+          ...(query.serviceAreaId
+            ? { "ride.serviceAreaId": new Types.ObjectId(query.serviceAreaId) }
+            : {}),
         },
       },
       {
@@ -157,7 +180,7 @@ const getZonesFromDB = async (
       {
         $match: {
           serviceAreaId: { $in: areaIds },
-          status: { $in: ACTIVE_RIDE_STATUSES },
+          status: { $in: DEMAND_RIDE_STATUSES },
           isDeleted: false,
         },
       },
@@ -230,40 +253,44 @@ const getZonesFromDB = async (
     if (item._id) etaMap.set(item._id.toString(), item.avgEta);
   });
 
-  return serviceAreas.map((sa) => {
-    const idStr = sa._id.toString();
-    const zoneName =
-      sa.zone || sa.airport || sa.city || sa.state || "Unnamed Zone";
-    const activeRequests = requestMap.get(idStr) || 0;
-    const availableDrivers = driverMap.get(idStr) || 0;
-    const rawAvgEta = etaMap.get(idStr) || 0;
-    const averageEtaMinutes = parseFloat(rawAvgEta.toFixed(1));
+  return serviceAreas
+    .map((sa) => {
+      const idStr = sa._id.toString();
+      const zoneName =
+        sa.zone || sa.airport || sa.city || sa.state || "Unnamed Zone";
+      const activeRequests = requestMap.get(idStr) || 0;
+      const availableDrivers = driverMap.get(idStr) || 0;
+      const rawAvgEta = etaMap.get(idStr) || 0;
+      const averageEtaMinutes = parseFloat(rawAvgEta.toFixed(1));
 
-    // Handle division-by-zero safely
-    let demandRatio: number | null = null;
-    if (availableDrivers > 0) {
-      demandRatio = parseFloat((activeRequests / availableDrivers).toFixed(2));
-    } else if (activeRequests > 0) {
-      demandRatio = activeRequests; // Safe numeric representation when supply is 0 but demand > 0
-    }
+      // Handle demand to supply ratio following industry standards
+      let demandRatio: number = 0;
+      if (availableDrivers > 0) {
+        demandRatio = parseFloat(
+          (activeRequests / availableDrivers).toFixed(2),
+        );
+      } else if (activeRequests > 0) {
+        demandRatio = 5.0; // Treating zero supply with active demand as maximum demand pressure (5.0)
+      }
 
-    let status: "high" | "medium" | "normal" = "normal";
-    if (demandRatio !== null && demandRatio >= 3.0) {
-      status = "high";
-    } else if (demandRatio !== null && demandRatio >= 1.5) {
-      status = "medium";
-    }
+      let status: "high" | "medium" | "normal" = "normal";
+      if (demandRatio >= 3.0) {
+        status = "high";
+      } else if (demandRatio >= 1.5) {
+        status = "medium";
+      }
 
-    return {
-      zoneId: idStr,
-      zone: zoneName,
-      activeRequests,
-      availableDrivers,
-      demandRatio,
-      averageEtaMinutes,
-      status,
-    };
-  });
+      return {
+        zoneId: idStr,
+        zone: zoneName,
+        activeRequests,
+        availableDrivers,
+        demandRatio,
+        averageEtaMinutes,
+        status,
+      };
+    })
+    .filter((z) => z.activeRequests > 0);
 };
 
 const getLiveMapFromDB = async (
@@ -382,8 +409,10 @@ const getLiveMapFromDB = async (
 const getUpcomingEventsFromDB = async (
   query: IDemandIntelligenceQuery,
 ): Promise<IUpcomingEventItem[]> => {
+  const now = new Date();
   const eventFilter: any = {
     status: STATUS.ACTIVE,
+    endDateTime: { $gte: now },
     isDeleted: false,
   };
 
@@ -406,8 +435,6 @@ const getUpcomingEventsFromDB = async (
   if (!events.length) {
     return [];
   }
-
-  const now = new Date();
 
   const eventsWithReservations = await Promise.all(
     events.map(async (event) => {
