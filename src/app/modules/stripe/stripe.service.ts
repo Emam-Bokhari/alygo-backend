@@ -70,10 +70,10 @@ class StripeService {
       },
       success_url:
         successUrl ||
-        `${config.stripe.BASE_URL || "http://10.10.7.10:5005"}/api/v1/stripe/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+        `${config.stripe.BASE_URL || "http://62.72.26.31:5005"}/api/v1/stripe/payment/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url:
         cancelUrl ||
-        `${config.stripe.BASE_URL || "http://10.10.7.10:5005"}/api/v1/stripe/payment/cancel?session_id={CHECKOUT_SESSION_ID}`,
+        `${config.stripe.BASE_URL || "http://62.72.26.31:5005"}/api/v1/stripe/payment/cancel?session_id={CHECKOUT_SESSION_ID}`,
     };
 
     if (stripeCustomerId) {

@@ -48,8 +48,8 @@ const createStripeAccount = catchAsync(async (req: Request, res: Response) => {
     stripeConnectedAccountId: stripeAccount.id,
   });
 
-  const returnUrl = `${config.stripe.BASE_URL || "http://10.10.7.10:5005"}/stripe/onboarding/success`;
-  const refreshUrl = `${config.stripe.BASE_URL || "http://10.10.7.10:5005"}/stripe/onboarding/refresh`;
+  const returnUrl = `${config.stripe.BASE_URL || "http://62.72.26.31:5005"}/stripe/onboarding/success`;
+  const refreshUrl = `${config.stripe.BASE_URL || "http://62.72.26.31:5005"}/stripe/onboarding/refresh`;
 
   const onboardingLink = await stripeService.createAccountLink(
     stripeAccount.id,
@@ -193,8 +193,8 @@ const createCheckoutSession = catchAsync(
     );
 
     // Success and cancel URLs pointing to backend pages
-    const successUrl = `${config.stripe.BASE_URL || "http://10.10.7.10:5005"}/api/v1/stripe/payment/success?session_id={CHECKOUT_SESSION_ID}&rideId=${rideId}`;
-    const cancelUrl = `${config.stripe.BASE_URL || "http://10.10.7.10:5005"}/api/v1/stripe/payment/cancel?session_id={CHECKOUT_SESSION_ID}&rideId=${rideId}`;
+    const successUrl = `${config.stripe.BASE_URL || "http://62.72.26.31:5005"}/api/v1/stripe/payment/success?session_id={CHECKOUT_SESSION_ID}&rideId=${rideId}`;
+    const cancelUrl = `${config.stripe.BASE_URL || "http://62.72.26.31:5005"}/api/v1/stripe/payment/cancel?session_id={CHECKOUT_SESSION_ID}&rideId=${rideId}`;
 
     const platformCurrency =
       await PlatformSettingsService.getPlatformCurrency();
