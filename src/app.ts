@@ -30,6 +30,7 @@ app.use(
       "http://10.10.26.174:5174",
       "http://localhost:5174",
       "http://10.10.26.174:5174",
+      "http://62.72.26.31:4175"
     ],
     credentials: true,
   }),
