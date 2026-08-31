@@ -237,10 +237,34 @@ const getOverviewFromDB = async (
         },
       },
       {
+        $addFields: {
+          resolvedRideId: { $ifNull: ["$rideId", "$bookingId"] }
+        }
+      },
+      {
+        $lookup: {
+          from: "rides",
+          localField: "resolvedRideId",
+          foreignField: "_id",
+          as: "ride",
+        },
+      },
+      {
+        $unwind: {
+          path: "$ride",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
         $project: {
           revenue: {
             $cond: [
-              { $eq: ["$transactionType", TRANSACTION_TYPE.BOOKING_PAYMENT] },
+              {
+                $and: [
+                  { $eq: ["$transactionType", TRANSACTION_TYPE.BOOKING_PAYMENT] },
+                  { $eq: ["$ride.status", RIDE_STATUS.COMPLETED] }
+                ]
+              },
               { $ifNull: ["$commission", 0] },
               {
                 $cond: [
@@ -825,6 +849,25 @@ const getRevenueTrendFromDB = async (
   const transactions = await Transaction.aggregate([
     { $match: matchStage },
     {
+      $addFields: {
+        resolvedRideId: { $ifNull: ["$rideId", "$bookingId"] }
+      }
+    },
+    {
+      $lookup: {
+        from: "rides",
+        localField: "resolvedRideId",
+        foreignField: "_id",
+        as: "ride",
+      },
+    },
+    {
+      $unwind: {
+        path: "$ride",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
       $project: {
         periodStr: {
           $dateToString: {
@@ -835,7 +878,12 @@ const getRevenueTrendFromDB = async (
         },
         revenue: {
           $cond: [
-            { $eq: ["$transactionType", TRANSACTION_TYPE.BOOKING_PAYMENT] },
+            {
+              $and: [
+                { $eq: ["$transactionType", TRANSACTION_TYPE.BOOKING_PAYMENT] },
+                { $eq: ["$ride.status", RIDE_STATUS.COMPLETED] }
+              ]
+            },
             { $ifNull: ["$commission", 0] },
             {
               $cond: [

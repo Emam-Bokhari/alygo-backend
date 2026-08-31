@@ -41,54 +41,68 @@ const getFinancialMetricsForRange = async (
   start: Date,
   end: Date,
 ): Promise<{ totalRevenue: number; platformEarnings: number }> => {
-  const [rideStats, txStats] = await Promise.all([
-    Ride.aggregate([
-      {
-        $match: {
-          status: RIDE_STATUS.COMPLETED,
-          "payment.status": PAYMENT_STATUS.PAID,
-          createdAt: { $gte: start, $lte: end },
+  const txStats = await Transaction.aggregate([
+    {
+      $match: {
+        paymentStatus: PAYMENT_STATUS.PAID,
+        createdAt: { $gte: start, $lte: end },
+        transactionType: {
+          $in: [
+            TRANSACTION_TYPE.BOOKING_PAYMENT,
+            TRANSACTION_TYPE.CANCELLATION_FEE,
+            TRANSACTION_TYPE.CANCELLATION_COMPENSATION,
+          ],
         },
       },
-      {
-        $group: {
-          _id: null,
-          totalFare: { $sum: "$fare.total" },
-          totalCommission: { $sum: "$fare.commission" },
+    },
+    {
+      $addFields: {
+        resolvedRideId: { $ifNull: ["$rideId", "$bookingId"] }
+      }
+    },
+    {
+      $lookup: {
+        from: "rides",
+        localField: "resolvedRideId",
+        foreignField: "_id",
+        as: "ride",
+      },
+    },
+    {
+      $unwind: {
+        path: "$ride",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $group: {
+        _id: "$transactionType",
+        totalAmount: { $sum: "$amount" },
+        totalCommission: {
+          $sum: {
+            $cond: [
+              {
+                $and: [
+                  { $eq: ["$transactionType", TRANSACTION_TYPE.BOOKING_PAYMENT] },
+                  { $eq: ["$ride.status", RIDE_STATUS.COMPLETED] }
+                ]
+              },
+              { $ifNull: ["$commission", 0] },
+              0
+            ]
+          }
         },
       },
-    ]),
-    Transaction.aggregate([
-      {
-        $match: {
-          paymentStatus: PAYMENT_STATUS.PAID,
-          transactionType: {
-            $in: [
-              TRANSACTION_TYPE.CANCELLATION_FEE,
-              TRANSACTION_TYPE.CANCELLATION_COMPENSATION,
-            ],
-          },
-          createdAt: { $gte: start, $lte: end },
-        },
-      },
-      {
-        $group: {
-          _id: "$transactionType",
-          totalAmount: { $sum: "$amount" },
-        },
-      },
-    ]),
+    },
   ]);
 
-  const totalFare = rideStats[0]?.totalFare || 0;
-  const totalCommission = rideStats[0]?.totalCommission || 0;
+  const bookingTx = txStats.find((t) => t._id === TRANSACTION_TYPE.BOOKING_PAYMENT);
+  const cancellationFeeTx = txStats.find((t) => t._id === TRANSACTION_TYPE.CANCELLATION_FEE);
+  const cancellationCompensationTx = txStats.find((t) => t._id === TRANSACTION_TYPE.CANCELLATION_COMPENSATION);
 
-  const cancellationFee =
-    txStats.find((t) => t._id === TRANSACTION_TYPE.CANCELLATION_FEE)
-      ?.totalAmount || 0;
-  const cancellationCompensation =
-    txStats.find((t) => t._id === TRANSACTION_TYPE.CANCELLATION_COMPENSATION)
-      ?.totalAmount || 0;
+  const totalCommission = bookingTx?.totalCommission || 0;
+  const cancellationFee = cancellationFeeTx?.totalAmount || 0;
+  const cancellationCompensation = cancellationCompensationTx?.totalAmount || 0;
 
   const platformEarnings =
     totalCommission + cancellationFee - cancellationCompensation;
@@ -108,28 +122,14 @@ const getRevenueSummaryFromDB = async (
   const tz = await resolveDashboardTimezone();
 
   // 1. Calculate All-time top summaries in parallel
-  const [allTimeRideStats, allTimeTxStats, payoutStats] = await Promise.all([
-    Ride.aggregate([
-      {
-        $match: {
-          status: RIDE_STATUS.COMPLETED,
-          "payment.status": PAYMENT_STATUS.PAID,
-        },
-      },
-      {
-        $group: {
-          _id: null,
-          totalFare: { $sum: "$fare.total" },
-          totalCommission: { $sum: "$fare.commission" },
-        },
-      },
-    ]),
+  const [allTimeTxStats, payoutStats] = await Promise.all([
     Transaction.aggregate([
       {
         $match: {
           paymentStatus: PAYMENT_STATUS.PAID,
           transactionType: {
             $in: [
+              TRANSACTION_TYPE.BOOKING_PAYMENT,
               TRANSACTION_TYPE.CANCELLATION_FEE,
               TRANSACTION_TYPE.CANCELLATION_COMPENSATION,
             ],
@@ -137,9 +137,42 @@ const getRevenueSummaryFromDB = async (
         },
       },
       {
+        $addFields: {
+          resolvedRideId: { $ifNull: ["$rideId", "$bookingId"] }
+        }
+      },
+      {
+        $lookup: {
+          from: "rides",
+          localField: "resolvedRideId",
+          foreignField: "_id",
+          as: "ride",
+        },
+      },
+      {
+        $unwind: {
+          path: "$ride",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
         $group: {
           _id: "$transactionType",
           totalAmount: { $sum: "$amount" },
+          totalCommission: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $eq: ["$transactionType", TRANSACTION_TYPE.BOOKING_PAYMENT] },
+                    { $eq: ["$ride.status", RIDE_STATUS.COMPLETED] }
+                  ]
+                },
+                { $ifNull: ["$commission", 0] },
+                0
+              ]
+            }
+          },
         },
       },
     ]),
@@ -158,8 +191,8 @@ const getRevenueSummaryFromDB = async (
     ]),
   ]);
 
-  const allTimeTotalRevenue = allTimeRideStats[0]?.totalFare || 0;
-  const allTimeCommission = allTimeRideStats[0]?.totalCommission || 0;
+  const bookingTx = allTimeTxStats.find((t) => t._id === TRANSACTION_TYPE.BOOKING_PAYMENT);
+  const allTimeCommission = bookingTx?.totalCommission || 0;
   const allTimeCancelFee =
     allTimeTxStats.find((t) => t._id === TRANSACTION_TYPE.CANCELLATION_FEE)
       ?.totalAmount || 0;
@@ -231,6 +264,25 @@ const getRevenueSummaryFromDB = async (
       },
     },
     {
+      $addFields: {
+        resolvedRideId: { $ifNull: ["$rideId", "$bookingId"] }
+      }
+    },
+    {
+      $lookup: {
+        from: "rides",
+        localField: "resolvedRideId",
+        foreignField: "_id",
+        as: "ride",
+      },
+    },
+    {
+      $unwind: {
+        path: "$ride",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
       $project: {
         dayStr: {
           $dateToString: {
@@ -241,7 +293,12 @@ const getRevenueSummaryFromDB = async (
         },
         revenue: {
           $cond: [
-            { $eq: ["$transactionType", TRANSACTION_TYPE.BOOKING_PAYMENT] },
+            {
+              $and: [
+                { $eq: ["$transactionType", TRANSACTION_TYPE.BOOKING_PAYMENT] },
+                { $eq: ["$ride.status", RIDE_STATUS.COMPLETED] }
+              ]
+            },
             { $ifNull: ["$commission", 0] },
             {
               $cond: [

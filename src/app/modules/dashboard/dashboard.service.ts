@@ -112,10 +112,34 @@ const getSummaryFromDB = async () => {
         },
       },
       {
+        $addFields: {
+          resolvedRideId: { $ifNull: ["$rideId", "$bookingId"] }
+        }
+      },
+      {
+        $lookup: {
+          from: "rides",
+          localField: "resolvedRideId",
+          foreignField: "_id",
+          as: "ride",
+        },
+      },
+      {
+        $unwind: {
+          path: "$ride",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
         $project: {
           revenue: {
             $cond: [
-              { $eq: ["$transactionType", TRANSACTION_TYPE.BOOKING_PAYMENT] },
+              {
+                $and: [
+                  { $eq: ["$transactionType", TRANSACTION_TYPE.BOOKING_PAYMENT] },
+                  { $eq: ["$ride.status", RIDE_STATUS.COMPLETED] }
+                ]
+              },
               { $ifNull: ["$commission", 0] },
               {
                 $cond: [
@@ -160,10 +184,34 @@ const getSummaryFromDB = async () => {
         },
       },
       {
+        $addFields: {
+          resolvedRideId: { $ifNull: ["$rideId", "$bookingId"] }
+        }
+      },
+      {
+        $lookup: {
+          from: "rides",
+          localField: "resolvedRideId",
+          foreignField: "_id",
+          as: "ride",
+        },
+      },
+      {
+        $unwind: {
+          path: "$ride",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
         $project: {
           revenue: {
             $cond: [
-              { $eq: ["$transactionType", TRANSACTION_TYPE.BOOKING_PAYMENT] },
+              {
+                $and: [
+                  { $eq: ["$transactionType", TRANSACTION_TYPE.BOOKING_PAYMENT] },
+                  { $eq: ["$ride.status", RIDE_STATUS.COMPLETED] }
+                ]
+              },
               { $ifNull: ["$commission", 0] },
               {
                 $cond: [
@@ -207,10 +255,34 @@ const getSummaryFromDB = async () => {
         },
       },
       {
+        $addFields: {
+          resolvedRideId: { $ifNull: ["$rideId", "$bookingId"] }
+        }
+      },
+      {
+        $lookup: {
+          from: "rides",
+          localField: "resolvedRideId",
+          foreignField: "_id",
+          as: "ride",
+        },
+      },
+      {
+        $unwind: {
+          path: "$ride",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
         $project: {
           revenue: {
             $cond: [
-              { $eq: ["$transactionType", TRANSACTION_TYPE.BOOKING_PAYMENT] },
+              {
+                $and: [
+                  { $eq: ["$transactionType", TRANSACTION_TYPE.BOOKING_PAYMENT] },
+                  { $eq: ["$ride.status", RIDE_STATUS.COMPLETED] }
+                ]
+              },
               { $ifNull: ["$commission", 0] },
               {
                 $cond: [
@@ -334,6 +406,25 @@ const getRevenueChartFromDB = async (range: string = "week") => {
       },
     },
     {
+      $addFields: {
+        resolvedRideId: { $ifNull: ["$rideId", "$bookingId"] }
+      }
+    },
+    {
+      $lookup: {
+        from: "rides",
+        localField: "resolvedRideId",
+        foreignField: "_id",
+        as: "ride",
+      },
+    },
+    {
+      $unwind: {
+        path: "$ride",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
       $project: {
         dayOfWeek: {
           $dateToString: {
@@ -344,7 +435,12 @@ const getRevenueChartFromDB = async (range: string = "week") => {
         },
         revenue: {
           $cond: [
-            { $eq: ["$transactionType", TRANSACTION_TYPE.BOOKING_PAYMENT] },
+            {
+              $and: [
+                { $eq: ["$transactionType", TRANSACTION_TYPE.BOOKING_PAYMENT] },
+                { $eq: ["$ride.status", RIDE_STATUS.COMPLETED] }
+              ]
+            },
             { $ifNull: ["$commission", 0] },
             {
               $cond: [
@@ -776,11 +872,32 @@ const getTopCitiesFromDB = async (
       $match: matchStage,
     },
     {
+      $addFields: {
+        resolvedRideId: { $ifNull: ["$rideId", "$bookingId"] }
+      }
+    },
+    {
+      $lookup: {
+        from: "rides",
+        localField: "resolvedRideId",
+        foreignField: "_id",
+        as: "ride",
+      },
+    },
+    {
+      $unwind: "$ride",
+    },
+    {
       $project: {
-        rideId: { $ifNull: ["$rideId", "$bookingId"] },
+        ride: 1,
         revenue: {
           $cond: [
-            { $eq: ["$transactionType", TRANSACTION_TYPE.BOOKING_PAYMENT] },
+            {
+              $and: [
+                { $eq: ["$transactionType", TRANSACTION_TYPE.BOOKING_PAYMENT] },
+                { $eq: ["$ride.status", RIDE_STATUS.COMPLETED] }
+              ]
+            },
             { $ifNull: ["$commission", 0] },
             {
               $cond: [
@@ -805,17 +922,6 @@ const getTopCitiesFromDB = async (
           ],
         },
       },
-    },
-    {
-      $lookup: {
-        from: "rides",
-        localField: "rideId",
-        foreignField: "_id",
-        as: "ride",
-      },
-    },
-    {
-      $unwind: "$ride",
     },
     {
       $lookup: {
