@@ -1611,17 +1611,13 @@ const requestStartVerification = async (
   const now = new Date();
   const expiresAt = new Date(now.getTime() + 5 * 60 * 1000); // 5 minutes expiration
 
-  ride.pickupVerification = {
-    method: VERIFICATION_METHOD.OTP,
-    otp: {
-      code: otpCode,
-      createdAt: now,
-      expiresAt: expiresAt,
-      verified: false,
-      attempts: 0,
-    },
-    phoneLastFourDigits: ride.pickupVerification.phoneLastFourDigits,
-    verificationAttempts: ride.pickupVerification.verificationAttempts || [],
+  ride.pickupVerification.method = VERIFICATION_METHOD.OTP;
+  ride.pickupVerification.otp = {
+    code: otpCode,
+    createdAt: now,
+    expiresAt: expiresAt,
+    verified: false,
+    attempts: 0,
   };
 
   await ride.save();
@@ -1766,9 +1762,13 @@ const startRide = async (
   ride.pickupVerification.method = methodUsed;
 
   // Clear drop verification OTP (will be generated when needed)
+  const phoneValue = ride.get("pickupVerification.phoneLastFourDigits.value");
   ride.dropVerification = {
     method: VERIFICATION_METHOD.OTP,
-    phoneLastFourDigits: ride.pickupVerification.phoneLastFourDigits,
+    phoneLastFourDigits: {
+      value: phoneValue,
+      verified: false,
+    },
     verificationAttempts: ride.dropVerification.verificationAttempts || [],
   };
 
@@ -1901,17 +1901,13 @@ const requestEndVerification = async (
   const now = new Date();
   const expiresAt = new Date(now.getTime() + 5 * 60 * 1000); // 5 minutes expiration
 
-  ride.dropVerification = {
-    method: VERIFICATION_METHOD.OTP,
-    otp: {
-      code: otpCode,
-      createdAt: now,
-      expiresAt: expiresAt,
-      verified: false,
-      attempts: 0,
-    },
-    phoneLastFourDigits: ride.dropVerification.phoneLastFourDigits,
-    verificationAttempts: ride.dropVerification.verificationAttempts || [],
+  ride.dropVerification.method = VERIFICATION_METHOD.OTP;
+  ride.dropVerification.otp = {
+    code: otpCode,
+    createdAt: now,
+    expiresAt: expiresAt,
+    verified: false,
+    attempts: 0,
   };
 
   await ride.save();
@@ -1990,17 +1986,13 @@ const passengerRequestEndVerification = async (
   const now = new Date();
   const expiresAt = new Date(now.getTime() + 5 * 60 * 1000); // 5 minutes expiration
 
-  ride.dropVerification = {
-    method: VERIFICATION_METHOD.OTP,
-    otp: {
-      code: otpCode,
-      createdAt: now,
-      expiresAt: expiresAt,
-      verified: false,
-      attempts: 0,
-    },
-    phoneLastFourDigits: ride.dropVerification.phoneLastFourDigits,
-    verificationAttempts: ride.dropVerification.verificationAttempts || [],
+  ride.dropVerification.method = VERIFICATION_METHOD.OTP;
+  ride.dropVerification.otp = {
+    code: otpCode,
+    createdAt: now,
+    expiresAt: expiresAt,
+    verified: false,
+    attempts: 0,
   };
 
   await ride.save();

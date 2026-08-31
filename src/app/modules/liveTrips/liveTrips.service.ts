@@ -160,6 +160,7 @@ const getLiveTripsFromDB = async (
           {
             $project: {
               city: 1,
+              cityId: 1,
             },
           },
         ],
@@ -171,6 +172,28 @@ const getLiveTripsFromDB = async (
         preserveNullAndEmptyArrays: true,
       },
     },
+    // Lookup parent city if serviceArea has cityId
+    {
+      $lookup: {
+        from: "serviceareas",
+        localField: "serviceArea.cityId",
+        foreignField: "_id",
+        as: "parentCity",
+        pipeline: [
+          {
+            $project: {
+              city: 1,
+            },
+          },
+        ],
+      },
+    },
+    {
+      $unwind: {
+        path: "$parentCity",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
     // Apply search filter after lookups
     ...(searchTerm ? [{ $match: searchStage }] : []),
     // Apply city filter after lookup
@@ -178,7 +201,10 @@ const getLiveTripsFromDB = async (
       ? [
           {
             $match: {
-              "serviceArea.city": { $regex: city, $options: "i" },
+              $or: [
+                { "serviceArea.city": { $regex: city, $options: "i" } },
+                { "parentCity.city": { $regex: city, $options: "i" } },
+              ],
             },
           },
         ]
@@ -199,7 +225,18 @@ const getLiveTripsFromDB = async (
         category: "$rideCategory.name",
         pickup: "$pickup.address",
         dropoff: "$destination.address",
-        city: { $ifNull: ["$serviceArea.city", ""] },
+        city: {
+          $cond: {
+            if: {
+              $and: [
+                { $ne: ["$serviceArea.city", null] },
+                { $ne: ["$serviceArea.city", ""] },
+              ],
+            },
+            then: "$serviceArea.city",
+            else: { $ifNull: ["$parentCity.city", ""] },
+          },
+        },
         status: 1,
         fare: "$fare.total",
         createdAt: 1,
@@ -283,12 +320,23 @@ const getLiveTripByIdFromDB = async (rideId: string): Promise<any> => {
   };
 
   // 1. Ride Information
+  let city = "";
+  if (ride.serviceAreaId) {
+    const serviceArea = ride.serviceAreaId as any;
+    if (serviceArea.city) {
+      city = serviceArea.city;
+    } else if (serviceArea.cityId) {
+      const parentCityArea = await ServiceArea.findById(serviceArea.cityId);
+      city = parentCityArea?.city || "";
+    }
+  }
+
   const rideInfo = {
     rideId: ride._id.toString(),
     bookingReference: `TR-${ride._id.toString().slice(-4).toUpperCase()}`,
     status: ride.status,
     rideCategory: ride.rideCategory.name,
-    city: (ride.serviceAreaId as any)?.city || "",
+    city,
     estimatedDistance: ride.routeInfo.totalDistanceKm,
     estimatedDuration: ride.routeInfo.totalDurationMinutes,
     createdAt: formatDate(ride.createdAt),
