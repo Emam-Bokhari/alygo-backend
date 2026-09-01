@@ -3,7 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title><%= data && data.passenger ? data.passenger.name + "'s Live Ride | Alygo Tracking" : "Live Ride Tracking | Alygo" %></title>
+  <title>Alygo</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="https://res.cloudinary.com/dphkhbunv/image/upload/v1783484451/Group_1707478169_toeljh.png" />
+  <link rel="apple-touch-icon" href="https://res.cloudinary.com/dphkhbunv/image/upload/v1783484451/Group_1707478169_toeljh.png" />
   
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -103,14 +107,9 @@
     .brand-logo {
       width: 26px;
       height: 26px;
-      background: var(--primary);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-      font-size: 13px;
-      font-weight: 800;
+      border-radius: 6px;
+      object-fit: contain;
+      display: block;
     }
 
     .brand-name {
@@ -617,7 +616,7 @@
       <!-- Top Header Navigation -->
       <div class="top-header">
         <div class="brand-badge">
-          <div class="brand-logo">A</div>
+          <img src="https://res.cloudinary.com/dphkhbunv/image/upload/v1783484451/Group_1707478169_toeljh.png" alt="Alygo" class="brand-logo" />
           <span class="brand-name">Alygo Live SOS</span>
         </div>
         <div class="live-indicator">
