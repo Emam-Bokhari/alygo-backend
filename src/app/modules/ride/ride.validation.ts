@@ -210,6 +210,12 @@ const getMyReservationsQuerySchema = z.object({
   }),
 });
 
+const toggleRideShareZodSchema = z.object({
+  body: z.object({
+    isSharingActive: z.boolean().optional(),
+  }),
+});
+
 export const RideValidations = {
   estimateRideZodSchema,
   requestRideZodSchema,
@@ -219,4 +225,5 @@ export const RideValidations = {
   driverRideHistoryQuerySchema,
   userRideHistoryQuerySchema,
   getMyReservationsQuerySchema,
+  toggleRideShareZodSchema,
 };

@@ -19,6 +19,28 @@ router.post(
 // Get current active ride
 router.get("/active", isAuthenticated, RideController.getActiveRide);
 
+// Get active ride share info with passenger, driver, car, tracking details & shareable link
+router.get(
+  "/share-info",
+  isAuthenticated,
+  RideController.getActiveRideShareInfo,
+);
+
+// Public endpoint: Get shared ride JSON details by shareToken or rideId (No authentication required)
+router.get("/share/:shareToken", RideController.getSharedRideByToken);
+
+// Public Web View: Render interactive Live Tracking page with Google Maps (No authentication required)
+router.get("/track/:shareToken", RideController.renderLiveTrackingPage);
+router.get("/track-trip/:shareToken", RideController.renderLiveTrackingPage);
+
+// Toggle or update ride sharing active status for current active ride (Passenger only)
+router.patch(
+  "/toggle-share",
+  isUser,
+  validateRequest(RideValidations.toggleRideShareZodSchema),
+  RideController.toggleRideShare,
+);
+
 // Get driver ride history (Driver only)
 router.get(
   "/driver/history",

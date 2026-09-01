@@ -77,7 +77,7 @@ class GoogleRouteServiceClass {
 
       const originStrEncoded = encodeURIComponent(originStr);
       const destStrEncoded = encodeURIComponent(destStr);
-      let url = `https://maps.googleapis.com/maps/api/directions/json?origin=${originStrEncoded}&destination=${destStrEncoded}&key=${this.apiKey}`;
+      let url = `https://maps.googleapis.com/maps/api/directions/json?origin=${originStrEncoded}&destination=${destStrEncoded}&departure_time=now&traffic_model=best_guess&key=${this.apiKey}`;
 
       if (stops.length > 0) {
         url += `&waypoints=${encodeURIComponent(stopsStr)}`;
@@ -123,7 +123,10 @@ class GoogleRouteServiceClass {
 
     for (const leg of route.legs) {
       totalDistanceMeters += leg.distance.value;
-      totalDurationSeconds += leg.duration.value;
+      const legDuration = leg.duration_in_traffic
+        ? leg.duration_in_traffic.value
+        : leg.duration.value;
+      totalDurationSeconds += legDuration;
     }
 
     return {
@@ -196,8 +199,11 @@ class GoogleRouteServiceClass {
       const driverToPickupDistKm = parseFloat(
         (googleLeg.distance.value / 1000).toFixed(2),
       );
+      const googleLegDuration = googleLeg.duration_in_traffic
+        ? googleLeg.duration_in_traffic.value
+        : googleLeg.duration.value;
       const driverToPickupDurMin =
-        Math.round(googleLeg.duration.value / 60) || 1;
+        Math.round(googleLegDuration / 60) || 1;
 
       // Leg 0: driver -> pickup (active)
       legs.push({
@@ -364,21 +370,27 @@ class GoogleRouteServiceClass {
           // Active leg (Google maps Leg 0: driver -> activeStops[0])
           isCurrent = true;
           const googleLeg = route.legs[0];
+          const legDur = googleLeg.duration_in_traffic
+            ? googleLeg.duration_in_traffic.value
+            : googleLeg.duration.value;
           distanceKm = parseFloat((googleLeg.distance.value / 1000).toFixed(2));
-          durationMinutes = Math.round(googleLeg.duration.value / 60) || 1;
+          durationMinutes = Math.round(legDur / 60) || 1;
           totalDistanceMeters += googleLeg.distance.value;
-          totalDurationSeconds += googleLeg.duration.value;
+          totalDurationSeconds += legDur;
         } else {
           // Future leg
           const googleLegIndex = idx - activeLegIndex;
           if (googleLegIndex < route.legs.length) {
             const googleLeg = route.legs[googleLegIndex];
+            const legDur = googleLeg.duration_in_traffic
+              ? googleLeg.duration_in_traffic.value
+              : googleLeg.duration.value;
             distanceKm = parseFloat(
               (googleLeg.distance.value / 1000).toFixed(2),
             );
-            durationMinutes = Math.round(googleLeg.duration.value / 60) || 1;
+            durationMinutes = Math.round(legDur / 60) || 1;
             totalDistanceMeters += googleLeg.distance.value;
-            totalDurationSeconds += googleLeg.duration.value;
+            totalDurationSeconds += legDur;
           } else {
             distanceKm = this.getHaversineDistanceKm(
               def.fromCoords,

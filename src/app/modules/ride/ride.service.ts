@@ -1,10 +1,18 @@
+import crypto from "crypto";
 import { FilterQuery, Types } from "mongoose";
 import mongoose from "mongoose";
 import { StatusCodes } from "http-status-codes";
 import ApiError from "../../../errors/ApiErrors";
+import config from "../../../config";
 import { Ride } from "./ride.model";
 import { PlatformSettingsService } from "../platformSettings/platformSettings.service";
-import { IRide } from "./rider.interface";
+import {
+  IRide,
+  ISharedRideResponse,
+  IPassengerShareInfo,
+  IDriverShareInfo,
+  ICarShareInfo,
+} from "./rider.interface";
 import { User } from "../user/user.model";
 import { Driver } from "../driver/driver.model";
 import { Car } from "../car/car.model";
@@ -78,6 +86,22 @@ import { PointRule } from "../tier/pointRule.model";
 const toLocalISO = (date: any, timezone?: string) => {
   if (!date || !timezone) return date;
   return utcToTimezone(date, timezone).toISO();
+};
+
+export const generateShareToken = (): string => {
+  return crypto.randomBytes(16).toString("hex");
+};
+
+export const generateShareUrl = (shareToken: string): string => {
+  const base = (
+    config.stripe?.BASE_URL ||
+    (config.ip_address
+      ? `http://${config.ip_address}:${config.port || 5005}`
+      : "") ||
+    config.client_url ||
+    "http://localhost:5005"
+  ).replace(/\/$/, "");
+  return `${base}/api/v1/rides/track/${shareToken}`;
 };
 
 /**
@@ -789,6 +813,8 @@ const requestRide = async (
         verified: false,
       },
     },
+    shareToken: generateShareToken(),
+    isSharingActive: true,
     fare: fareSnapshot,
     payment: {
       method: payload.paymentMethod,
@@ -1096,6 +1122,11 @@ const acceptRide = async (
         DRIVER_MATCHING_STATUS.ACCEPTED,
       "driverMatching.notifiedDrivers.$[elem].respondedAt": new Date(),
     };
+
+    if (!rideToAccept.shareToken) {
+      updateFields.shareToken = generateShareToken();
+      updateFields.isSharingActive = true;
+    }
 
     if (isReservationRide) {
       updateFields.reservationStatus = "confirmed";
@@ -1510,6 +1541,19 @@ const arriveAtPickup = async (
   ride.arrivedAt = new Date();
 
   await ride.save();
+
+  // Update tracking record with arrival
+  await Tracking.findOneAndUpdate(
+    { rideId: ride._id },
+    {
+      $set: {
+        remainingDistanceKm: 0,
+        estimatedArrivalMinutes: 0,
+        driverArrivedAt: new Date(),
+        lastUpdatedAt: new Date(),
+      },
+    },
+  );
 
   // Build enriched driver summary for passenger
   const driverDoc = await Driver.findOne({ userId: driverUserId }).populate(
@@ -3685,6 +3729,10 @@ const getRideDetails = async (
   userId: string,
   rideId: string,
 ): Promise<IRide> => {
+  if (!mongoose.Types.ObjectId.isValid(rideId)) {
+    throw new ApiError(404, "Ride booking not found");
+  }
+
   // Get the user to determine their role
   const user = await User.findById(userId);
   if (!user) {
@@ -3828,7 +3876,388 @@ const getActiveRide = async (
     (rideObj as any).driverSearch = await calculateDriverSearchTiming(ride);
   }
 
+  if (rideObj.shareToken) {
+    (rideObj as any).shareUrl = generateShareUrl(rideObj.shareToken);
+  }
+
   return rideObj as IRide;
+};
+
+/**
+ * Helper to build comprehensive share payload with Passenger, Driver, Car, Trip, and Live Tracking details
+ */
+const formatRideSharePayload = async (
+  ride: any,
+): Promise<ISharedRideResponse> => {
+  // Passenger Info
+  let passenger: IPassengerShareInfo = {
+    _id: "",
+    name: "",
+    phone: "",
+    email: "",
+    profileImage: "",
+  };
+
+  if (ride.userId) {
+    const p = ride.userId;
+    if (typeof p === "object" && p._id) {
+      passenger = {
+        _id: p._id.toString(),
+        name: p.name || "",
+        phone: p.phone || "",
+        email: p.email || "",
+        profileImage: p.profileImage || "",
+      };
+    } else {
+      const userDoc = await User.findById(p).select(
+        "name phone email profileImage",
+      );
+      if (userDoc) {
+        passenger = {
+          _id: userDoc._id.toString(),
+          name: userDoc.name || "",
+          phone: userDoc.phone || "",
+          email: userDoc.email || "",
+          profileImage: userDoc.profileImage || "",
+        };
+      }
+    }
+  }
+
+  // Driver Info
+  let driver: IDriverShareInfo | null = null;
+  if (ride.driverId) {
+    const dUser = ride.driverId;
+    let driverUserIdStr = "";
+    let driverUserName = "";
+    let driverUserPhone = "";
+    let driverUserProfileImage = "";
+    let driverAvgRating = 0;
+    let driverTotalRatings = 0;
+
+    if (typeof dUser === "object" && dUser._id) {
+      driverUserIdStr = dUser._id.toString();
+      driverUserName = dUser.name || "";
+      driverUserPhone = dUser.phone || "";
+      driverUserProfileImage = dUser.profileImage || "";
+      driverAvgRating = dUser.averageRating || 0;
+      driverTotalRatings = dUser.totalRatings || 0;
+    } else {
+      driverUserIdStr = dUser.toString();
+      const dUserDoc = await User.findById(dUser).select(
+        "name phone profileImage averageRating totalRatings",
+      );
+      if (dUserDoc) {
+        driverUserName = dUserDoc.name || "";
+        driverUserPhone = dUserDoc.phone || "";
+        driverUserProfileImage = dUserDoc.profileImage || "";
+        driverAvgRating = dUserDoc.averageRating || 0;
+        driverTotalRatings = dUserDoc.totalRatings || 0;
+      }
+    }
+
+    if (driverUserIdStr) {
+      const driverProfile = await Driver.findOne({
+        userId: new Types.ObjectId(driverUserIdStr),
+      });
+
+      driver = {
+        _id: driverUserIdStr,
+        name: driverUserName,
+        phone: driverUserPhone,
+        profileImage: driverUserProfileImage,
+        averageRating: driverProfile?.averageRating || driverAvgRating || 0,
+        totalRatings: driverProfile?.totalRatings || driverTotalRatings || 0,
+        totalTrips: (driverProfile as any)?.completedTrips || 0,
+      };
+    }
+  }
+
+  // Car Info
+  let car: ICarShareInfo | null = null;
+  let carDoc = ride.carId;
+  if (!carDoc && driver && driver._id) {
+    const driverProfile = await Driver.findOne({
+      userId: new Types.ObjectId(driver._id),
+    });
+    if (driverProfile) {
+      carDoc = await Car.findOne({ driverId: driverProfile._id });
+    }
+  } else if (
+    carDoc &&
+    (typeof carDoc === "string" || carDoc instanceof Types.ObjectId)
+  ) {
+    carDoc = await Car.findById(carDoc);
+  }
+
+  if (carDoc && typeof carDoc === "object" && carDoc._id) {
+    car = {
+      _id: carDoc._id.toString(),
+      brand: carDoc.brand || "",
+      model: carDoc.model || "",
+      year: carDoc.year || 0,
+      color: carDoc.color || "",
+      licensePlate: carDoc.licensePlate || "",
+      carType: carDoc.carType || "",
+      seatNumber: carDoc.seatNumber || 0,
+    };
+  }
+
+  // Live Tracking Info
+  const trackingDoc = await Tracking.findOne({ rideId: ride._id });
+  let tracking = null;
+  if (trackingDoc) {
+    const isArrived = ride.status === RIDE_STATUS.DRIVER_ARRIVED;
+    tracking = {
+      driverLocation: trackingDoc.driverLocation,
+      userLocation: trackingDoc.userLocation,
+      remainingDistanceKm: isArrived
+        ? 0
+        : trackingDoc.remainingDistanceKm || 0,
+      estimatedArrivalMinutes: isArrived
+        ? 0
+        : trackingDoc.estimatedArrivalMinutes || 0,
+      heading: trackingDoc.heading,
+      speed: trackingDoc.speed,
+      lastUpdatedAt: toLocalISO(trackingDoc.lastUpdatedAt, ride.timezone),
+    };
+  }
+
+  const shareToken = ride.shareToken || "";
+  const shareUrl = shareToken ? generateShareUrl(shareToken) : "";
+
+  return {
+    rideId: ride._id.toString(),
+    status: ride.status,
+    rideType: ride.rideType,
+    shareToken,
+    shareUrl,
+    isSharingActive: ride.isSharingActive !== false,
+    passenger,
+    driver,
+    car,
+    trip: {
+      pickup: ride.pickup,
+      destination: ride.destination,
+      stops: ride.stops || [],
+      routeInfo: {
+        totalDistanceKm: ride.routeInfo?.totalDistanceKm || 0,
+        totalDurationMinutes: ride.routeInfo?.totalDurationMinutes || 0,
+        polyline: ride.routeInfo?.polyline || "",
+      },
+      timeline: {
+        requestedAt: toLocalISO(ride.requestedAt, ride.timezone),
+        acceptedAt: toLocalISO(ride.acceptedAt, ride.timezone),
+        startedAt: toLocalISO(ride.startedAt, ride.timezone),
+        completedAt: toLocalISO(ride.completedAt, ride.timezone),
+        cancelledAt: toLocalISO(ride.cancellation?.cancelledAt, ride.timezone),
+        createdAt: toLocalISO(ride.createdAt, ride.timezone),
+        updatedAt: toLocalISO(ride.updatedAt, ride.timezone),
+      },
+    },
+    tracking,
+  };
+};
+
+/**
+ * Get active ride information for sharing (SOS / Family tracking)
+ */
+const getActiveRideShareInfo = async (
+  userId: string,
+): Promise<ISharedRideResponse | null> => {
+  const activeStates = [
+    RIDE_STATUS.SEARCHING_DRIVER,
+    RIDE_STATUS.DRIVER_ACCEPTED,
+    RIDE_STATUS.WAITING_USER_APPROVAL,
+    RIDE_STATUS.DRIVER_ON_THE_WAY,
+    RIDE_STATUS.DRIVER_ARRIVED,
+    RIDE_STATUS.STARTED,
+  ];
+
+  const now = new Date();
+  const systemConfig = await getSystemConfig();
+  const reservationWindowMinutes =
+    systemConfig.reservation?.driverVisibleBeforeMinutes || 30;
+  const imminentWindowEnd = new Date(
+    now.getTime() + reservationWindowMinutes * 60 * 1000,
+  );
+
+  const query: any = {
+    userId: new Types.ObjectId(userId),
+    $or: [
+      {
+        rideType: { $ne: RIDE_TYPE.SCHEDULED },
+        status: { $in: activeStates },
+      },
+      {
+        rideType: RIDE_TYPE.SCHEDULED,
+        status: {
+          $in: [
+            RIDE_STATUS.DRIVER_ON_THE_WAY,
+            RIDE_STATUS.DRIVER_ARRIVED,
+            RIDE_STATUS.STARTED,
+          ],
+        },
+      },
+      {
+        rideType: RIDE_TYPE.SCHEDULED,
+        status: RIDE_STATUS.SEARCHING_DRIVER,
+      },
+      {
+        rideType: RIDE_TYPE.SCHEDULED,
+        status: RIDE_STATUS.DRIVER_ACCEPTED,
+        scheduledAt: { $lte: imminentWindowEnd },
+      },
+    ],
+  };
+
+  const ride = await Ride.findOne(query)
+    .populate("userId", "name phone email profileImage")
+    .populate(
+      "driverId",
+      "name phone email profileImage averageRating totalRatings",
+    )
+    .populate("carId");
+
+  if (!ride) {
+    return null;
+  }
+
+  // Ensure shareToken exists and is active
+  if (!ride.shareToken) {
+    ride.shareToken = generateShareToken();
+    ride.isSharingActive = true;
+    await Ride.updateOne(
+      { _id: ride._id },
+      { $set: { shareToken: ride.shareToken, isSharingActive: true } },
+    );
+  }
+
+  return await formatRideSharePayload(ride);
+};
+
+/**
+ * Public lookup of shared ride by token or rideId (Accessible without authentication)
+ */
+const getSharedRideByToken = async (
+  shareTokenOrId: string,
+): Promise<ISharedRideResponse> => {
+  if (!shareTokenOrId || typeof shareTokenOrId !== "string") {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      "Share token or Ride ID is required",
+    );
+  }
+
+  const query: any = {
+    isSharingActive: true,
+    $or: [{ shareToken: shareTokenOrId }],
+  };
+
+  if (mongoose.Types.ObjectId.isValid(shareTokenOrId)) {
+    query.$or.push({ _id: new Types.ObjectId(shareTokenOrId) });
+  }
+
+  const ride = await Ride.findOne(query)
+    .populate("userId", "name phone email profileImage")
+    .populate(
+      "driverId",
+      "name phone email profileImage averageRating totalRatings",
+    )
+    .populate("carId");
+
+  if (!ride) {
+    throw new ApiError(
+      StatusCodes.NOT_FOUND,
+      "Shared trip not found or the share link has been disabled/expired",
+    );
+  }
+
+  return await formatRideSharePayload(ride);
+};
+
+/**
+ * Toggle or explicitly set ride sharing active state (true/false)
+ */
+const toggleRideShare = async (
+  userId: string,
+  rideId?: string,
+  explicitState?: boolean,
+) => {
+  let ride = null;
+
+  if (rideId && mongoose.Types.ObjectId.isValid(rideId)) {
+    ride = await Ride.findOne({
+      _id: new Types.ObjectId(rideId),
+      userId: new Types.ObjectId(userId),
+    });
+  } else {
+    // Find current active ride for user
+    const activeStates = [
+      RIDE_STATUS.SEARCHING_DRIVER,
+      RIDE_STATUS.DRIVER_ACCEPTED,
+      RIDE_STATUS.WAITING_USER_APPROVAL,
+      RIDE_STATUS.DRIVER_ON_THE_WAY,
+      RIDE_STATUS.DRIVER_ARRIVED,
+      RIDE_STATUS.STARTED,
+    ];
+
+    ride = await Ride.findOne({
+      userId: new Types.ObjectId(userId),
+      status: { $in: activeStates },
+    }).sort({ createdAt: -1 });
+  }
+
+  if (!ride) {
+    throw new ApiError(
+      StatusCodes.NOT_FOUND,
+      "No active ride found to update sharing status",
+    );
+  }
+
+  const newSharingState =
+    typeof explicitState === "boolean" ? explicitState : !ride.isSharingActive;
+
+  let shareToken = ride.shareToken;
+  if (newSharingState && !shareToken) {
+    shareToken = generateShareToken();
+  }
+
+  ride.isSharingActive = newSharingState;
+  if (shareToken) {
+    ride.shareToken = shareToken;
+  }
+  await ride.save();
+
+  return {
+    rideId: ride._id.toString(),
+    isSharingActive: ride.isSharingActive,
+    shareToken: ride.shareToken || null,
+    shareUrl:
+      ride.isSharingActive && ride.shareToken
+        ? generateShareUrl(ride.shareToken)
+        : null,
+  };
+};
+
+/**
+ * Retrieve ride tracking data along with Google Maps API Key for SSR page rendering
+ */
+const getRideTrackingPageData = async (shareToken: string) => {
+  const googleMapsApiKey = config.googleMapsApiKey || "";
+
+  try {
+    const data = await getSharedRideByToken(shareToken);
+    return {
+      data,
+      googleMapsApiKey,
+    };
+  } catch (err) {
+    return {
+      data: null,
+      googleMapsApiKey,
+    };
+  }
 };
 
 const getDriverRideHistory = async (
@@ -5150,6 +5579,12 @@ export const RideServices = {
   cancelRide,
   getRideDetails,
   getActiveRide,
+  getActiveRideShareInfo,
+  getSharedRideByToken,
+  getRideTrackingPageData,
+  toggleRideShare,
+  generateShareToken,
+  generateShareUrl,
   addStopsDuringTrip,
   getDriverRideHistory,
   getDriverRideHistoryDetails,

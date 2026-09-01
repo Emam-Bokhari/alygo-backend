@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title><%= data && data.passenger ? data.passenger.name + "'s Live Ride | Alygo Tracking" : "Live Ride Tracking | Alygo" %></title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --primary: #FF5A1F;
+      --primary-hover: #E04810;
+      --primary-glow: rgba(255, 90, 31, 0.25);
+      --bg: #0A0B10;
+      --surface: #12141E;
+      --surface-glass: rgba(18, 20, 30, 0.88);
+      --surface-card: #181B28;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-light: rgba(255, 255, 255, 0.14);
+      --text-main: #FFFFFF;
+      --text-muted: #8E92A8;
+      --text-sub: #ADB1C6;
+      --emerald: #10B981;
+      --emerald-glow: rgba(16, 185, 129, 0.2);
+      --amber: #F59E0B;
+      --blue: #3B82F6;
+      --red: #EF4444;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --radius-sm: 8px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Plus Jakarta Sans', 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text-main);
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── App Layout ── */
+    .app-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+    }
+
+    /* ── Fullscreen Map ── */
+    #map {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+    }
+
+    /* ── Top Header Navigation ── */
+    .top-header {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      right: 16px;
+      z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      pointer-events: none;
+    }
+
+    .brand-badge {
+      pointer-events: auto;
+      background: var(--surface-glass);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      padding: 10px 18px;
+      border-radius: 100px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .brand-logo {
+      width: 26px;
+      height: 26px;
+      background: var(--primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .brand-name {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: #fff;
+    }
+
+    .live-indicator {
+      pointer-events: auto;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #34D399;
+      padding: 8px 14px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(16px);
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      background: #10B981;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #10B981;
+      animation: pulse 1.8s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); opacity: 0.7; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { transform: scale(1.15); opacity: 1; box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+      100% { transform: scale(0.95); opacity: 0.7; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    /* ── Floating Tracking Card (Desktop: Sidebar, Mobile: Bottom Sheet) ── */
+    .tracking-card-container {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      width: 420px;
+      max-width: calc(100vw - 40px);
+      z-index: 10;
+      max-height: calc(100vh - 90px);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tracking-card {
+      background: var(--surface-glass);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+      animation: slideUp 0.4s ease-out;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* ── Card Header ── */
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 16px;
+    }
+
+    .card-title-group h2 {
+      font-size: 20px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .card-title-group p {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: capitalize;
+    }
+
+    .status-on-the-way { background: rgba(59, 130, 246, 0.15); color: #60A5FA; border: 1px solid rgba(59, 130, 246, 0.3); }
+    .status-arrived { background: rgba(245, 158, 11, 0.15); color: #FBBF24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .status-started { background: rgba(16, 185, 129, 0.15); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .status-completed { background: rgba(139, 92, 246, 0.15); color: #A78BFA; border: 1px solid rgba(139, 92, 246, 0.3); }
+    .status-searching { background: rgba(255, 90, 31, 0.15); color: #FF7A45; border: 1px solid rgba(255, 90, 31, 0.3); }
+
+    /* ── Live ETA Bar ── */
+    .eta-banner {
+      background: linear-gradient(135deg, rgba(255, 90, 31, 0.15), rgba(255, 90, 31, 0.05));
+      border: 1px solid rgba(255, 90, 31, 0.3);
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .eta-stat {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .eta-stat-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.6px;
+    }
+
+    .eta-stat-value {
+      font-size: 20px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .eta-stat-value.primary {
+      color: var(--primary);
+    }
+
+    /* ── Route Timeline ── */
+    .route-timeline {
+      position: relative;
+      margin-bottom: 20px;
+      padding-left: 28px;
+    }
+
+    .route-line {
+      position: absolute;
+      left: 9px;
+      top: 14px;
+      bottom: 14px;
+      width: 2px;
+      background: dashed 2px var(--border-light);
+    }
+
+    .route-point {
+      position: relative;
+      margin-bottom: 16px;
+    }
+
+    .route-point:last-child {
+      margin-bottom: 0;
+    }
+
+    .route-icon {
+      position: absolute;
+      left: -28px;
+      top: 2px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      color: #fff;
+    }
+
+    .route-icon.pickup {
+      background: var(--emerald);
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+    }
+
+    .route-icon.destination {
+      background: var(--primary);
+      box-shadow: 0 0 10px rgba(255, 90, 31, 0.5);
+    }
+
+    .route-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+      margin-bottom: 2px;
+    }
+
+    .route-address {
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      line-height: 1.4;
+    }
+
+    /* ── Info Sections (Passenger, Driver, Car) ── */
+    .info-section {
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+
+    .info-section-title {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      letter-spacing: 0.8px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .user-profile-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--border-light);
+      background: #252836;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .user-details {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .user-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .user-meta {
+      font-size: 13px;
+      color: var(--text-sub);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 3px;
+    }
+
+    .rating-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: #FBBF24;
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    .vehicle-specs-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .spec-item {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+    }
+
+    .spec-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .spec-value {
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      margin-top: 2px;
+    }
+
+    /* ── Action Buttons ── */
+    .action-buttons-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 13px 18px;
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      border: none;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 4px 15px var(--primary-glow);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      border: 1px solid var(--border-light);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.12);
+      transform: translateY(-1px);
+    }
+
+    .btn-full {
+      grid-column: span 2;
+    }
+
+    /* ── Expired / Error State ── */
+    .error-container {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 90%;
+      max-width: 440px;
+      background: var(--surface-glass);
+      backdrop-filter: blur(24px);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      padding: 36px 28px;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      z-index: 20;
+    }
+
+    .error-icon-box {
+      width: 70px;
+      height: 70px;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #EF4444;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin: 0 auto 20px;
+    }
+
+    .error-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 10px;
+    }
+
+    .error-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 24px;
+    }
+
+    /* ── Responsive Styling for Mobile ── */
+    @media (max-width: 768px) {
+      .tracking-card-container {
+        left: 12px;
+        right: 12px;
+        bottom: 12px;
+        width: calc(100% - 24px);
+        max-width: 100%;
+      }
+      .tracking-card {
+        padding: 18px;
+        max-height: 65vh;
+      }
+      .top-header {
+        top: 12px;
+        left: 12px;
+        right: 12px;
+      }
+    }
+
+    /* ── Inline Copy Toast & Button State ── */
+    .btn-copy-wrapper {
+      position: relative;
+      display: inline-block;
+      width: 100%;
+    }
+
+    .copy-toast-inline {
+      position: absolute;
+      top: -38px;
+      left: 50%;
+      transform: translateX(-50%) translateY(6px) scale(0.92);
+      background: #1E2235;
+      color: #fff;
+      padding: 6px 14px;
+      border-radius: 100px;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 12px rgba(16, 185, 129, 0.2);
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.25s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+      z-index: 20;
+    }
+
+    .copy-toast-inline::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 5px solid #1E2235;
+    }
+
+    .copy-toast-inline.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(-50%) translateY(0) scale(1);
+    }
+
+    .btn.copied {
+      border-color: rgba(16, 185, 129, 0.5);
+      background: rgba(16, 185, 129, 0.15);
+      color: #34D399;
+    }
+  </style>
+</head>
+<body>
+
+  <% if (!data || data.isSharingActive === false) { %>
+    <!-- Expired or Invalid Link Screen -->
+    <div class="error-container">
+      <div class="error-icon-box">
+        <i class="fa-solid fa-link-slash"></i>
+      </div>
+      <h2 class="error-title">Trip Sharing Unavailable</h2>
+      <p class="error-desc" style="margin-bottom: 0;">This live trip link has expired, been deactivated by the passenger, or the ride is no longer active.</p>
+    </div>
+  <% } else { %>
+    
+    <div class="app-container">
+      <!-- Fullscreen Map -->
+      <div id="map"></div>
+
+      <!-- Top Header Navigation -->
+      <div class="top-header">
+        <div class="brand-badge">
+          <div class="brand-logo">A</div>
+          <span class="brand-name">Alygo Live SOS</span>
+        </div>
+        <div class="live-indicator">
+          <div class="live-dot"></div>
+          <span>LIVE TRACKING</span>
+        </div>
+      </div>
+
+      <!-- Floating Information Card -->
+      <div class="tracking-card-container">
+        <div class="tracking-card">
+          
+          <!-- Card Header & Status -->
+          <div class="card-header">
+            <div class="card-title-group">
+              <h2>Current Ride</h2>
+              <p>Trip SOS & Live Tracking</p>
+            </div>
+            <% 
+              let statusClass = "status-on-the-way";
+              let statusText = (data.status || "").replace(/_/g, " ");
+              if (data.status === "driver_arrived") statusClass = "status-arrived";
+              else if (data.status === "started") statusClass = "status-started";
+              else if (data.status === "completed") statusClass = "status-completed";
+              else if (data.status === "searching_driver") statusClass = "status-searching";
+            %>
+            <div id="status-badge" class="status-badge <%= statusClass %>">
+              <i class="fa-solid fa-circle-dot" style="font-size: 9px;"></i>
+              <span id="status-text"><%= statusText %></span>
+            </div>
+          </div>
+
+          <!-- Live ETA & Remaining Distance Banner -->
+          <div class="eta-banner">
+            <div class="eta-stat">
+              <span class="eta-stat-label">Estimated Arrival</span>
+              <span id="eta-value" class="eta-stat-value primary">
+                <% if (data.status === 'driver_arrived') { %>
+                  Arrived at Pickup
+                <% } else if (data.status === 'completed') { %>
+                  Trip Completed
+                <% } else if (data.tracking && typeof data.tracking.estimatedArrivalMinutes === 'number') { %>
+                  <%= data.tracking.estimatedArrivalMinutes > 0 ? data.tracking.estimatedArrivalMinutes + ' mins' : 'Arriving now' %>
+                <% } else { %>
+                  Calculating...
+                <% } %>
+              </span>
+            </div>
+            <div class="eta-stat" style="text-align: right;">
+              <span class="eta-stat-label">Distance Remaining</span>
+              <span id="distance-value" class="eta-stat-value">
+                <%= data.status === 'driver_arrived' ? '0.0 km' : (data.tracking && typeof data.tracking.remainingDistanceKm === 'number' ? data.tracking.remainingDistanceKm.toFixed(1) + ' km' : (data.trip && data.trip.routeInfo ? data.trip.routeInfo.totalDistanceKm + ' km' : '--')) %>
+              </span>
+            </div>
+          </div>
+
+          <!-- Route Timeline -->
+          <div class="route-timeline">
+            <div class="route-line"></div>
+            
+            <div class="route-point">
+              <div class="route-icon pickup"><i class="fa-solid fa-location-dot"></i></div>
+              <div class="route-label">Pickup Location</div>
+              <div class="route-address"><%= data.trip && data.trip.pickup ? data.trip.pickup.address : 'Pickup location' %></div>
+            </div>
+
+            <% if (data.trip && data.trip.stops && data.trip.stops.length > 0) { %>
+              <% data.trip.stops.forEach(function(stop, index) { %>
+                <div class="route-point">
+                  <div class="route-icon" style="background: #3B82F6;"><i class="fa-solid fa-stop"></i></div>
+                  <div class="route-label">Stop <%= index + 1 %></div>
+                  <div class="route-address"><%= stop.address %></div>
+                </div>
+              <% }); %>
+            <% } %>
+
+            <div class="route-point">
+              <div class="route-icon destination"><i class="fa-solid fa-flag-checkered"></i></div>
+              <div class="route-label">Destination</div>
+              <div class="route-address"><%= data.trip && data.trip.destination ? data.trip.destination.address : 'Destination location' %></div>
+            </div>
+          </div>
+
+          <!-- Passenger Information Section -->
+          <% if (data.passenger) { %>
+            <div class="info-section">
+              <div class="info-section-title"><i class="fa-solid fa-user-shield" style="color: var(--primary);"></i> Passenger Details</div>
+              <div class="user-profile-row">
+                <% if (data.passenger.profileImage) { %>
+                  <img src="<%= data.passenger.profileImage %>" alt="Passenger" class="avatar" />
+                <% } else { %>
+                  <div class="avatar"><i class="fa-solid fa-user"></i></div>
+                <% } %>
+                <div class="user-details">
+                  <div class="user-name"><%= data.passenger.name || "Passenger" %></div>
+                  <div class="user-meta">
+                    <% if (data.passenger.phone) { %>
+                      <span><i class="fa-solid fa-phone" style="font-size: 11px;"></i> <%= data.passenger.phone %></span>
+                    <% } %>
+                  </div>
+                </div>
+                <% if (data.passenger.phone) { %>
+                  <a href="tel:<%= data.passenger.phone %>" class="btn btn-secondary" style="padding: 9px 14px; font-size: 13px;" title="Call Passenger">
+                    <i class="fa-solid fa-phone" style="color: #10B981;"></i>
+                  </a>
+                <% } %>
+              </div>
+            </div>
+          <% } %>
+
+          <!-- Driver & Vehicle Details Section -->
+          <% if (data.driver || data.car) { %>
+            <div class="info-section">
+              <div class="info-section-title"><i class="fa-solid fa-car" style="color: #60A5FA;"></i> Driver & Vehicle</div>
+              
+              <% if (data.driver) { %>
+                <div class="user-profile-row" style="margin-bottom: 12px;">
+                  <% if (data.driver.profileImage) { %>
+                    <img src="<%= data.driver.profileImage %>" alt="Driver" class="avatar" />
+                  <% } else { %>
+                    <div class="avatar"><i class="fa-solid fa-id-card"></i></div>
+                  <% } %>
+                  <div class="user-details">
+                    <div class="user-name"><%= data.driver.name || "Assigned Driver" %></div>
+                    <div class="user-meta">
+                      <span class="rating-badge"><i class="fa-solid fa-star"></i> <%= data.driver.averageRating ? data.driver.averageRating.toFixed(1) : "5.0" %></span>
+                      <span>• <%= data.driver.totalTrips || 0 %> trips</span>
+                    </div>
+                  </div>
+                  <% if (data.driver.phone) { %>
+                    <a href="tel:<%= data.driver.phone %>" class="btn btn-secondary" style="padding: 9px 14px; font-size: 13px;" title="Call Driver">
+                      <i class="fa-solid fa-phone" style="color: #3B82F6;"></i>
+                    </a>
+                  <% } %>
+                </div>
+              <% } %>
+
+              <% if (data.car) { %>
+                <div class="vehicle-specs-grid">
+                  <div class="spec-item">
+                    <div class="spec-label">Vehicle</div>
+                    <div class="spec-value"><%= data.car.brand %> <%= data.car.model %></div>
+                  </div>
+                  <div class="spec-item">
+                    <div class="spec-label">License Plate</div>
+                    <div class="spec-value" style="color: #FBBF24;"><%= data.car.licensePlate || "N/A" %></div>
+                  </div>
+                  <% if (data.car.color) { %>
+                    <div class="spec-item">
+                      <div class="spec-label">Color</div>
+                      <div class="spec-value"><%= data.car.color %></div>
+                    </div>
+                  <% } %>
+                  <% if (data.car.carType) { %>
+                    <div class="spec-item">
+                      <div class="spec-label">Type</div>
+                      <div class="spec-value" style="text-transform: capitalize;"><%= data.car.carType %></div>
+                    </div>
+                  <% } %>
+                </div>
+              <% } %>
+
+            </div>
+          <% } %>
+
+          <!-- Action Buttons -->
+          <div class="action-buttons-group">
+            <div class="btn-copy-wrapper">
+              <button id="copy-btn" onclick="copyLink()" class="btn btn-secondary" style="width: 100%;">
+                <i id="copy-btn-icon" class="fa-solid fa-copy"></i>
+                <span id="copy-btn-text">Copy Link</span>
+              </button>
+              <div id="copy-toast-inline" class="copy-toast-inline">
+                <i class="fa-solid fa-circle-check" style="color: #10B981;"></i> Copied!
+              </div>
+            </div>
+            <button onclick="recenterMap()" class="btn btn-primary"><i class="fa-solid fa-location-crosshairs"></i> Recenter</button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Google Maps JS SDK -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=<%= googleMapsApiKey %>&libraries=geometry"></script>
+
+    <script>
+      const initialRideData = <%- JSON.stringify(data) %>;
+      const shareToken = "<%= data.shareToken %>";
+      let map, driverMarker, pickupMarker, destinationMarker, routePolyline;
+      let lastDriverCoords = null;
+
+      // Custom Dark Map Style
+      const darkMapStyle = [
+        { elementType: "geometry", stylers: [{ color: "#171923" }] },
+        { elementType: "labels.text.stroke", stylers: [{ color: "#171923" }] },
+        { elementType: "labels.text.fill", stylers: [{ color: "#8E92A8" }] },
+        { featureType: "administrative.locality", elementType: "labels.text.fill", stylers: [{ color: "#D4D7E5" }] },
+        { featureType: "poi", elementType: "labels.text.fill", stylers: [{ color: "#6C7293" }] },
+        { featureType: "poi.park", elementType: "geometry", stylers: [{ color: "#121F1E" }] },
+        { featureType: "road", elementType: "geometry", stylers: [{ color: "#252836" }] },
+        { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#1B1D28" }] },
+        { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#2E344A" }] },
+        { featureType: "road.highway", elementType: "geometry.stroke", stylers: [{ color: "#1F2333" }] },
+        { featureType: "road.highway", elementType: "labels.text.fill", stylers: [{ color: "#FFA726" }] },
+        { featureType: "transit", elementType: "geometry", stylers: [{ color: "#202436" }] },
+        { featureType: "water", elementType: "geometry", stylers: [{ color: "#0B0F1A" }] },
+        { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#4E5774" }] }
+      ];
+
+      function initMap() {
+        const pickupCoords = initialRideData.trip && initialRideData.trip.pickup && initialRideData.trip.pickup.location
+          ? { lat: initialRideData.trip.pickup.location.coordinates[1], lng: initialRideData.trip.pickup.location.coordinates[0] }
+          : { lat: 37.7749, lng: -122.4194 };
+
+        map = new google.maps.Map(document.getElementById("map"), {
+          center: pickupCoords,
+          zoom: 14,
+          styles: darkMapStyle,
+          disableDefaultUI: true,
+          zoomControl: true,
+          zoomControlOptions: { position: google.maps.ControlPosition.RIGHT_TOP }
+        });
+
+        // 1. Pickup Marker (Green Pin)
+        pickupMarker = new google.maps.Marker({
+          position: pickupCoords,
+          map: map,
+          title: "Pickup Location",
+          icon: {
+            path: google.maps.SymbolPath.CIRCLE,
+            scale: 8,
+            fillColor: "#10B981",
+            fillOpacity: 1,
+            strokeWeight: 4,
+            strokeColor: "#FFFFFF"
+          }
+        });
+
+        // 2. Destination Marker (Orange Pin)
+        if (initialRideData.trip && initialRideData.trip.destination && initialRideData.trip.destination.location) {
+          const destCoords = {
+            lat: initialRideData.trip.destination.location.coordinates[1],
+            lng: initialRideData.trip.destination.location.coordinates[0]
+          };
+
+          destinationMarker = new google.maps.Marker({
+            position: destCoords,
+            map: map,
+            title: "Destination",
+            icon: {
+              path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
+              scale: 6,
+              fillColor: "#FF5A1F",
+              fillOpacity: 1,
+              strokeWeight: 2,
+              strokeColor: "#FFFFFF"
+            }
+          });
+        }
+
+        // 3. Polyline Route
+        if (initialRideData.trip && initialRideData.trip.routeInfo && initialRideData.trip.routeInfo.polyline) {
+          try {
+            const decodedPath = google.maps.geometry.encoding.decodePath(initialRideData.trip.routeInfo.polyline);
+            routePolyline = new google.maps.Polyline({
+              path: decodedPath,
+              geodesic: true,
+              strokeColor: "#FF5A1F",
+              strokeOpacity: 0.85,
+              strokeWeight: 5,
+              map: map
+            });
+          } catch(e) {
+            console.warn("Could not decode polyline, falling back to direct line:", e);
+          }
+        }
+
+        // 4. Initial Driver Marker
+        if (initialRideData.tracking && initialRideData.tracking.driverLocation && initialRideData.tracking.driverLocation.coordinates) {
+          const driverCoords = {
+            lat: initialRideData.tracking.driverLocation.coordinates[1],
+            lng: initialRideData.tracking.driverLocation.coordinates[0]
+          };
+          lastDriverCoords = driverCoords;
+          createOrUpdateDriverMarker(driverCoords, initialRideData.tracking.heading || 0);
+        }
+
+        recenterMap();
+      }
+
+      function createOrUpdateDriverMarker(coords, heading) {
+        if (!driverMarker) {
+          driverMarker = new google.maps.Marker({
+            position: coords,
+            map: map,
+            title: "Driver Location",
+            icon: {
+              path: "M17.402,0H5.643C2.526,0,0,2.526,0,5.643v15.764c0,3.117,2.526,5.643,5.643,5.643h11.759c3.117,0,5.643-2.526,5.643-5.643V5.643C23.045,2.526,20.519,0,17.402,0z M7.054,23.513c-0.974,0-1.763-0.789-1.763-1.763c0-0.974,0.789-1.763,1.763-1.763s1.763,0.789,1.763,1.763C8.817,22.724,8.028,23.513,7.054,23.513z M7.054,5.29c-0.974,0-1.763-0.789-1.763-1.763c0-0.974,0.789-1.763,1.763-1.763s1.763,0.789,1.763,1.763C8.817,4.501,8.028,5.29,7.054,5.29z M15.991,23.513c-0.974,0-1.763-0.789-1.763-1.763c0-0.974,0.789-1.763,1.763-1.763s1.763,0.789,1.763,1.763C17.754,22.724,16.965,23.513,15.991,23.513z M15.991,5.29c-0.974,0-1.763-0.789-1.763-1.763c0-0.974,0.789-1.763,1.763-1.763s1.763,0.789,1.763,1.763C17.754,4.501,16.965,5.29,15.991,5.29z M19.518,17.635H3.527V7.936h15.991V17.635z",
+              scale: 1.3,
+              fillColor: "#FF5A1F",
+              fillOpacity: 1,
+              strokeWeight: 1.5,
+              strokeColor: "#FFFFFF",
+              anchor: new google.maps.Point(11.5, 13.5),
+              rotation: heading || 0
+            }
+          });
+        } else {
+          driverMarker.setPosition(coords);
+          const icon = driverMarker.getIcon();
+          if (icon && typeof heading === "number") {
+            icon.rotation = heading;
+            driverMarker.setIcon(icon);
+          }
+        }
+      }
+
+      function recenterMap() {
+        const bounds = new google.maps.LatLngBounds();
+        if (pickupMarker) bounds.extend(pickupMarker.getPosition());
+        if (destinationMarker) bounds.extend(destinationMarker.getPosition());
+        if (driverMarker) bounds.extend(driverMarker.getPosition());
+        map.fitBounds(bounds, { top: 70, right: 50, bottom: 320, left: 50 });
+      }
+
+      // Real-time Polling for live driver updates
+      async function pollRideUpdates() {
+        try {
+          const res = await fetch(`/api/v1/rides/share/${shareToken}`);
+          if (!res.ok) {
+            console.warn("Ride share update returned non-OK status");
+            return;
+          }
+          const result = await res.json();
+          if (result && result.data) {
+            updateUI(result.data);
+          }
+        } catch(err) {
+          console.error("Error polling ride updates:", err);
+        }
+      }
+
+      function updateUI(ride) {
+        // 1. Update Status
+        const statusTextEl = document.getElementById("status-text");
+        const statusBadgeEl = document.getElementById("status-badge");
+        if (statusTextEl && ride.status) {
+          statusTextEl.textContent = ride.status.replace(/_/g, " ");
+        }
+
+        // 2. Update ETA & Distance
+        const etaEl = document.getElementById("eta-value");
+        const distEl = document.getElementById("distance-value");
+        if (ride.status === "driver_arrived") {
+          if (etaEl) etaEl.textContent = "Arrived at Pickup";
+          if (distEl) distEl.textContent = "0.0 km";
+        } else if (ride.status === "completed") {
+          if (etaEl) etaEl.textContent = "Trip Completed";
+          if (distEl) distEl.textContent = "0.0 km";
+        } else if (ride.tracking) {
+          if (etaEl) {
+            const mins = ride.tracking.estimatedArrivalMinutes;
+            etaEl.textContent = typeof mins === "number" ? (mins > 0 ? mins + " mins" : "Arriving now") : "Calculating...";
+          }
+          if (distEl && typeof ride.tracking.remainingDistanceKm === "number") {
+            distEl.textContent = ride.tracking.remainingDistanceKm.toFixed(1) + " km";
+          }
+
+          // 3. Move driver marker
+          if (ride.tracking.driverLocation && ride.tracking.driverLocation.coordinates) {
+            const newCoords = {
+              lat: ride.tracking.driverLocation.coordinates[1],
+              lng: ride.tracking.driverLocation.coordinates[0]
+            };
+            createOrUpdateDriverMarker(newCoords, ride.tracking.heading || 0);
+          }
+        }
+      }
+
+      function copyLink() {
+        const url = window.location.href;
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(url).then(() => {
+            showCopyFeedback();
+          }).catch(() => {
+            fallbackCopyText(url);
+          });
+        } else {
+          fallbackCopyText(url);
+        }
+      }
+
+      function fallbackCopyText(text) {
+        try {
+          const textArea = document.createElement("textarea");
+          textArea.value = text;
+          textArea.style.position = "fixed";
+          textArea.style.left = "-999999px";
+          textArea.style.top = "-999999px";
+          document.body.appendChild(textArea);
+          textArea.focus();
+          textArea.select();
+          document.execCommand("copy");
+          textArea.remove();
+          showCopyFeedback();
+        } catch (err) {
+          console.error("Failed to copy link:", err);
+        }
+      }
+
+      function copyShareLink() {
+        copyLink();
+      }
+
+      let copyFeedbackTimer = null;
+      function showCopyFeedback() {
+        const btn = document.getElementById("copy-btn");
+        const btnText = document.getElementById("copy-btn-text");
+        const btnIcon = document.getElementById("copy-btn-icon");
+        const toast = document.getElementById("copy-toast-inline");
+
+        if (toast) {
+          toast.classList.add("show");
+        }
+        if (btn) {
+          btn.classList.add("copied");
+        }
+        if (btnText) {
+          btnText.textContent = "Copied!";
+        }
+        if (btnIcon) {
+          btnIcon.className = "fa-solid fa-circle-check";
+          btnIcon.style.color = "#10B981";
+        }
+
+        if (copyFeedbackTimer) clearTimeout(copyFeedbackTimer);
+        copyFeedbackTimer = setTimeout(() => {
+          if (toast) toast.classList.remove("show");
+          if (btn) btn.classList.remove("copied");
+          if (btnText) btnText.textContent = "Copy Link";
+          if (btnIcon) {
+            btnIcon.className = "fa-solid fa-copy";
+            btnIcon.style.color = "";
+          }
+        }, 2200);
+      }
+
+      // Initialize map on load and poll every 3.5 seconds
+      window.onload = () => {
+        initMap();
+        setInterval(pollRideUpdates, 3500);
+      };
+    </script>
+  <% } %>
+
+</body>
+</html>

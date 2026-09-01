@@ -345,3 +345,98 @@ export interface IRide {
 }
 
 export type RideModel = ISoftDeleteModel<IRide>;
+
+export interface IPassengerShareInfo {
+  _id: string;
+  name: string;
+  phone?: string;
+  email?: string;
+  profileImage?: string;
+}
+
+export interface IDriverShareInfo {
+  _id: string;
+  name: string;
+  phone?: string;
+  profileImage?: string;
+  averageRating: number;
+  totalRatings: number;
+  totalTrips: number;
+}
+
+export interface ICarShareInfo {
+  _id: string;
+  brand: string;
+  model: string;
+  year: number;
+  color?: string;
+  licensePlate: string;
+  carType?: string;
+  seatNumber?: number;
+}
+
+export interface ISharedRideResponse {
+  rideId: string;
+  status: string;
+  rideType: string;
+  shareToken: string;
+  shareUrl: string;
+  isSharingActive: boolean;
+  passenger: IPassengerShareInfo;
+  driver?: IDriverShareInfo | null;
+  car?: ICarShareInfo | null;
+  trip: {
+    pickup: {
+      address: string;
+      location: {
+        type: "Point";
+        coordinates: [number, number];
+      };
+    };
+    destination: {
+      address: string;
+      location: {
+        type: "Point";
+        coordinates: [number, number];
+      };
+    };
+    stops?: Array<{
+      order: number;
+      address: string;
+      location: {
+        type: "Point";
+        coordinates: [number, number];
+      };
+      isCompleted?: boolean;
+    }>;
+    routeInfo?: {
+      totalDistanceKm: number;
+      totalDurationMinutes: number;
+      polyline?: string;
+    };
+    timeline?: {
+      requestedAt?: string | Date | null;
+      acceptedAt?: string | Date | null;
+      startedAt?: string | Date | null;
+      completedAt?: string | Date | null;
+      cancelledAt?: string | Date | null;
+      createdAt?: string | Date | null;
+      updatedAt?: string | Date | null;
+    };
+  };
+  tracking?: {
+    driverLocation?: {
+      type: "Point";
+      coordinates: [number, number];
+    };
+    userLocation?: {
+      type: "Point";
+      coordinates: [number, number];
+    };
+    remainingDistanceKm?: number;
+    estimatedArrivalMinutes?: number;
+    heading?: number;
+    speed?: number;
+    lastUpdatedAt?: string | Date | null;
+  } | null;
+}

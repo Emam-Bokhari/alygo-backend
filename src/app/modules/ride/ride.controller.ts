@@ -234,6 +234,69 @@ const getActiveRide = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getActiveRideShareInfo = catchAsync(
+  async (req: Request, res: Response) => {
+    const userId = req.user.id;
+    const result = await RideServices.getActiveRideShareInfo(userId);
+
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: result
+        ? "Active ride share information retrieved successfully"
+        : "No active ride found for sharing",
+      data: result,
+    });
+  },
+);
+
+const getSharedRideByToken = catchAsync(
+  async (req: Request, res: Response) => {
+    const { shareToken } = req.params;
+    const result = await RideServices.getSharedRideByToken(shareToken);
+
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "Shared ride details retrieved successfully",
+      data: result,
+    });
+  },
+);
+
+const toggleRideShare = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user.id;
+  const { id: rideId } = req.params;
+  const { isSharingActive } = req.body;
+
+  const result = await RideServices.toggleRideShare(
+    userId,
+    rideId,
+    isSharingActive,
+  );
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: `Ride sharing has been ${
+      result.isSharingActive ? "activated" : "deactivated"
+    } successfully`,
+    data: result,
+  });
+});
+
+const renderLiveTrackingPage = catchAsync(
+  async (req: Request, res: Response) => {
+    const { shareToken } = req.params;
+    const pageData = await RideServices.getRideTrackingPageData(shareToken);
+
+    res.render("track", {
+      data: pageData.data,
+      googleMapsApiKey: pageData.googleMapsApiKey,
+    });
+  },
+);
+
 const addStops = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user.id;
   const { id: rideId } = req.params;
@@ -391,6 +454,10 @@ export const RideController = {
   cancelRide,
   getRideDetails,
   getActiveRide,
+  getActiveRideShareInfo,
+  getSharedRideByToken,
+  renderLiveTrackingPage,
+  toggleRideShare,
   addStops,
   getDriverRideHistory,
   getDriverRideHistoryDetails,
