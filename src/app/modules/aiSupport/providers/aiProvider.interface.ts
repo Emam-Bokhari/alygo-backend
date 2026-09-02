@@ -7,6 +7,7 @@ export interface IProviderResponse {
   answer: string;
   tokensUsed: number;
   confidenceScore: number;
+  toolsExecuted?: string[];
 }
 
 export interface IAiProvider {
@@ -18,6 +19,9 @@ export interface IAiProvider {
       model: string;
       temperature: number;
       maxTokens: number;
+    },
+    toolsContext?: {
+      driverId: string;
     },
   ): Promise<IProviderResponse>;
 }

@@ -61,8 +61,8 @@ const aiSupportSchema = new Schema<IAiSupport, AiSupportModel>(
     responseSource: {
       type: String,
       required: true,
-      enum: ["knowledge_base", "fallback"],
-      default: "knowledge_base",
+      enum: ["database_live", "knowledge_base", "fallback"],
+      default: "database_live",
     },
     responseTimeMs: {
       type: Number,

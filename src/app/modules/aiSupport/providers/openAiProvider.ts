@@ -17,6 +17,9 @@ export class OpenAiProvider implements IAiProvider {
       temperature: number;
       maxTokens: number;
     },
+    toolsContext?: {
+      driverId: string;
+    },
   ): Promise<IProviderResponse> {
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {

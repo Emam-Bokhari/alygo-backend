@@ -18,7 +18,7 @@ export interface IAiSupport {
     | "disabled_module"
     | "blocked"
     | "error";
-  responseSource: "knowledge_base" | "fallback";
+  responseSource: "database_live" | "knowledge_base" | "fallback";
   responseTimeMs: number;
   tokensUsed: number;
   language: string;

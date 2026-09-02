@@ -244,28 +244,15 @@ const askAiQuestion = async (
 
   // 3. Prompt Injection & AI Safety Guard
   const safetyBlocklist = [
-    "api",
-    "password",
-    "database",
-    "source code",
-    "internal system",
-    "security",
-    "revenue",
-    "payment secrets",
-    "environment variables",
-    "hidden features",
-    "sql",
-    "token",
-    "inject",
     "ignore previous instructions",
-    "jailbreak",
-    "system schema",
-    "admin panel",
-    "fraud detection",
-    "payment internals",
+    "ignore all previous instructions",
+    "system prompt leak",
+    "dump all databases",
+    "drop collection",
+    "drop table",
+    "reveal internal secret",
+    "jailbreak prompt",
   ];
-
-  // per year 180
 
   const containsViolation = safetyBlocklist.some((term) =>
     normalizedQuestion.includes(term),
@@ -304,173 +291,7 @@ const askAiQuestion = async (
     return chatMsg;
   }
 
-  // 4. Fetch Active, Published Knowledge
-  const enabledModules = aiSupportConfig.enabledModules || [];
-  const knowledgeItems = await AiKnowledge.find({
-    isActive: true,
-    status: "published",
-    isLatest: true,
-    visibility: "driver",
-    allowedRoles: "driver",
-    module: { $in: enabledModules },
-  });
-
-  // 5. Semantic Scoring & Ranking
-  const scoredItems = knowledgeItems.map((item) => {
-    let score = 0;
-    const itemTitle = item.title.toLowerCase();
-    const itemContent = item.content.toLowerCase();
-    const itemCategory = item.category.toLowerCase();
-    const itemSearchable = item.searchableContent.toLowerCase();
-
-    // Word tokens overlap
-    const queryWords = normalizedQuestion.split(/\s+/).filter(Boolean);
-
-    // Exact keyword check
-    const keywords = (item.keywords || []).map((k) => k.toLowerCase());
-    const exactKeywordMatch = keywords.some(
-      (k) => normalizedQuestion === k || normalizedQuestion.includes(k),
-    );
-    if (exactKeywordMatch) score += 1000;
-
-    // Fuzzy keyword match for typos
-    const fuzzyKeywordMatch = keywords.some((k) =>
-      isFuzzyMatch(normalizedQuestion, k, 0.7),
-    );
-    if (fuzzyKeywordMatch) score += 850;
-
-    // Word-level keyword matching - any word in query matches any keyword
-    const wordLevelKeywordMatch = hasWordLevelFuzzyMatch(
-      normalizedQuestion,
-      keywords.join(" "),
-      0.65,
-    );
-    if (wordLevelKeywordMatch) score += 650;
-
-    // Best match score for keywords
-    const keywordBestScore = getBestMatchScore(
-      normalizedQuestion,
-      keywords.join(" "),
-    );
-    if (keywordBestScore > 0.6) score += Math.floor(keywordBestScore * 500);
-
-    // Title checks
-    if (itemTitle === normalizedQuestion) score += 800;
-    else if (itemTitle.includes(normalizedQuestion)) score += 400;
-
-    // Fuzzy title match
-    if (isFuzzyMatch(normalizedQuestion, itemTitle, 0.7)) score += 350;
-
-    // Word-level title matching
-    if (hasWordLevelFuzzyMatch(normalizedQuestion, itemTitle, 0.65))
-      score += 280;
-
-    // Best match score for title
-    const titleBestScore = getBestMatchScore(normalizedQuestion, itemTitle);
-    if (titleBestScore > 0.6) score += Math.floor(titleBestScore * 300);
-
-    queryWords.forEach((word) => {
-      if (itemTitle.includes(word)) score += 50;
-    });
-
-    // Tags check
-    const tags = (item.tags || []).map((t) => t.toLowerCase());
-    tags.forEach((tag) => {
-      if (normalizedQuestion.includes(tag)) score += 200;
-    });
-
-    // Fuzzy tag match
-    tags.forEach((tag) => {
-      if (isFuzzyMatch(normalizedQuestion, tag, 0.7)) score += 160;
-    });
-
-    // Word-level tag matching
-    if (hasWordLevelFuzzyMatch(normalizedQuestion, tags.join(" "), 0.65))
-      score += 130;
-
-    // Best match score for tags
-    const tagBestScore = getBestMatchScore(normalizedQuestion, tags.join(" "));
-    if (tagBestScore > 0.6) score += Math.floor(tagBestScore * 200);
-
-    // Content containment
-    if (
-      itemContent.includes(normalizedQuestion) ||
-      itemSearchable.includes(normalizedQuestion)
-    ) {
-      score += 100;
-    }
-
-    // Partial fuzzy match in content
-    if (hasPartialFuzzyMatch(normalizedQuestion, itemSearchable, 3))
-      score += 90;
-
-    // Substring match in content
-    if (hasSubstringMatch(normalizedQuestion, itemSearchable)) score += 70;
-
-    queryWords.forEach((word) => {
-      if (itemContent.includes(word) || itemSearchable.includes(word)) {
-        score += 10;
-      }
-    });
-
-    // Category match
-    if (normalizedQuestion.includes(itemCategory)) {
-      score += 50;
-    }
-
-    // Fuzzy category match
-    if (isFuzzyMatch(normalizedQuestion, itemCategory, 0.65)) score += 35;
-
-    // Priority score
-    score += (item.priority || 0) * 10;
-
-    // Normalize confidence score to be between 0.0 and 1.0
-    const confidenceScore = Math.min(score / 1000, 1.0);
-
-    return { item, score, confidenceScore };
-  });
-
-  // Sort matched items descending
-  scoredItems.sort((a, b) => b.score - a.score);
-
-  const bestMatch = scoredItems[0];
-  const threshold = aiSupportConfig.minimumConfidence ?? 0.5;
-
-  // 6. Handle Fallback if Confidence is below threshold
-  if (!bestMatch || bestMatch.confidenceScore < threshold) {
-    const responseTimeMs = Date.now() - startTime;
-    const answer =
-      aiSupportConfig.prompts.noMatchPrompt ||
-      "I couldn't find an approved answer for that. Please contact support.";
-    const chatMsg = await AiSupport.create({
-      driverId,
-      conversationId: payload.conversationId,
-      knowledgeIds: [],
-      question: rawQuestion,
-      normalizedQuestion,
-      answer,
-      aiModel: "system-fallback",
-      promptVersion: "1.0",
-      confidenceScore: bestMatch ? bestMatch.confidenceScore : 0.0,
-      responseStatus: "no_match",
-      responseSource: "fallback",
-      responseTimeMs,
-      tokensUsed: 0,
-      language,
-      helpful: false,
-      adminReviewed: false,
-    });
-
-    await logAudit("driver_asked_question", "driver", driverId, {
-      question: rawQuestion,
-      status: "no_match",
-      chatId: chatMsg._id,
-    });
-
-    return chatMsg;
-  }
-
-  // 7. Load Conversation History (Configurable Length)
+  // 4. Load Conversation History (Configurable Length)
   const historyLimit = aiSupportConfig.historyLength || 5;
   const historyMessages: IChatMessage[] = [];
 
@@ -489,28 +310,22 @@ const askAiQuestion = async (
     });
   }
 
-  // 8. Call AI Provider
+  // 5. Call AI Provider with Live Database Tools
   const provider = ProviderFactory.getProvider(aiSupportConfig.provider);
-  const contextText = ` approved platform documentation knowledge:
-Title: ${bestMatch.item.title}
-Category: ${bestMatch.item.category}
-Module: ${bestMatch.item.module}
-Content: ${bestMatch.item.content}`;
-
-  const promptText = `Analyze the context above and answer the user question strictly using it. Do not invent details.
-User Question: "${rawQuestion}"`;
-
-  const finalSystemPrompt = `${aiSupportConfig.prompts.systemPrompt}\n${aiSupportConfig.prompts.safetyPrompt}\nContext documentation for reference:\n${contextText}`;
+  const finalSystemPrompt = `${aiSupportConfig.prompts.systemPrompt || "You are an AI Support Assistant for the Alygo driver platform."}\n${aiSupportConfig.prompts.safetyPrompt || ""}`;
 
   try {
     const aiResponse = await provider.generateAnswer(
-      promptText,
+      rawQuestion,
       historyMessages,
       finalSystemPrompt,
       {
         model: aiSupportConfig.model,
         temperature: aiSupportConfig.temperature,
         maxTokens: aiSupportConfig.maxTokens,
+      },
+      {
+        driverId,
       },
     );
 
@@ -519,15 +334,15 @@ User Question: "${rawQuestion}"`;
     const chatMsg = await AiSupport.create({
       driverId,
       conversationId: payload.conversationId,
-      knowledgeIds: [bestMatch.item._id!],
+      knowledgeIds: [],
       question: rawQuestion,
       normalizedQuestion,
       answer: aiResponse.answer,
       aiModel: aiSupportConfig.model,
       promptVersion: "1.0",
-      confidenceScore: bestMatch.confidenceScore,
+      confidenceScore: aiResponse.confidenceScore || 1.0,
       responseStatus: "success",
-      responseSource: "knowledge_base",
+      responseSource: "database_live",
       responseTimeMs,
       tokensUsed: aiResponse.tokensUsed,
       language,
@@ -544,32 +359,30 @@ User Question: "${rawQuestion}"`;
       question: rawQuestion,
       status: "success",
       chatId: chatMsg._id,
-      knowledgeId: bestMatch.item._id,
+      toolsExecuted: aiResponse.toolsExecuted,
     });
 
     return chatMsg;
   } catch (error: any) {
-    console.error("==== ASK AI GEMINI ERROR ====");
+    console.error("==== ASK AI PROVIDER ERROR ====");
     console.error(error);
-    if (error.response) {
-      console.error("Response data:", error.response.data);
-    }
-    console.error("=============================");
+    console.error("===============================");
 
     const responseTimeMs = Date.now() - startTime;
     const fallbackAnswer =
       aiSupportConfig.prompts.fallbackPrompt ||
-      "I couldn't find an approved answer for that. Please contact support.";
+      "I couldn't complete your request at this moment. Please try again or contact Alygo support.";
+
     const chatMsg = await AiSupport.create({
       driverId,
       conversationId: payload.conversationId,
-      knowledgeIds: [bestMatch.item._id!],
+      knowledgeIds: [],
       question: rawQuestion,
       normalizedQuestion,
       answer: fallbackAnswer,
       aiModel: "error-fallback",
       promptVersion: "1.0",
-      confidenceScore: bestMatch.confidenceScore,
+      confidenceScore: 0.0,
       responseStatus: "error",
       responseSource: "fallback",
       responseTimeMs,
@@ -610,168 +423,6 @@ const regenerateAnswer = async (
     throw new ApiError(StatusCodes.NOT_FOUND, "Chat log not found.");
   }
 
-  // Re-run Ask AI logic
-  const enabledModules = aiSupportConfig.enabledModules || [];
-  const knowledgeItems = await AiKnowledge.find({
-    isActive: true,
-    status: "published",
-    isLatest: true,
-    visibility: "driver",
-    allowedRoles: "driver",
-    module: { $in: enabledModules },
-  });
-
-  const scoredItems = knowledgeItems.map((item) => {
-    let score = 0;
-    const itemTitle = item.title.toLowerCase();
-    const itemContent = item.content.toLowerCase();
-    const itemCategory = item.category.toLowerCase();
-    const itemSearchable = item.searchableContent.toLowerCase();
-
-    const queryWords = existingChat.normalizedQuestion
-      .split(/\s+/)
-      .filter(Boolean);
-
-    const keywords = (item.keywords || []).map((k) => k.toLowerCase());
-    const exactKeywordMatch = keywords.some(
-      (k) =>
-        existingChat.normalizedQuestion === k ||
-        existingChat.normalizedQuestion.includes(k),
-    );
-    if (exactKeywordMatch) score += 1000;
-
-    // Fuzzy keyword match for typos
-    const fuzzyKeywordMatch = keywords.some((k) =>
-      isFuzzyMatch(existingChat.normalizedQuestion, k, 0.7),
-    );
-    if (fuzzyKeywordMatch) score += 850;
-
-    // Word-level keyword matching
-    const wordLevelKeywordMatch = hasWordLevelFuzzyMatch(
-      existingChat.normalizedQuestion,
-      keywords.join(" "),
-      0.65,
-    );
-    if (wordLevelKeywordMatch) score += 650;
-
-    // Best match score for keywords
-    const keywordBestScore = getBestMatchScore(
-      existingChat.normalizedQuestion,
-      keywords.join(" "),
-    );
-    if (keywordBestScore > 0.6) score += Math.floor(keywordBestScore * 500);
-
-    if (itemTitle === existingChat.normalizedQuestion) score += 800;
-    else if (itemTitle.includes(existingChat.normalizedQuestion)) score += 400;
-
-    // Fuzzy title match
-    if (isFuzzyMatch(existingChat.normalizedQuestion, itemTitle, 0.7))
-      score += 350;
-
-    // Word-level title matching
-    if (
-      hasWordLevelFuzzyMatch(existingChat.normalizedQuestion, itemTitle, 0.65)
-    )
-      score += 280;
-
-    // Best match score for title
-    const titleBestScore = getBestMatchScore(
-      existingChat.normalizedQuestion,
-      itemTitle,
-    );
-    if (titleBestScore > 0.6) score += Math.floor(titleBestScore * 300);
-
-    queryWords.forEach((word) => {
-      if (itemTitle.includes(word)) score += 50;
-    });
-
-    const tags = (item.tags || []).map((t) => t.toLowerCase());
-    tags.forEach((tag) => {
-      if (existingChat.normalizedQuestion.includes(tag)) score += 200;
-    });
-
-    // Fuzzy tag match
-    tags.forEach((tag) => {
-      if (isFuzzyMatch(existingChat.normalizedQuestion, tag, 0.7)) score += 160;
-    });
-
-    // Word-level tag matching
-    if (
-      hasWordLevelFuzzyMatch(
-        existingChat.normalizedQuestion,
-        tags.join(" "),
-        0.65,
-      )
-    )
-      score += 130;
-
-    // Best match score for tags
-    const tagBestScore = getBestMatchScore(
-      existingChat.normalizedQuestion,
-      tags.join(" "),
-    );
-    if (tagBestScore > 0.6) score += Math.floor(tagBestScore * 200);
-
-    if (
-      itemContent.includes(existingChat.normalizedQuestion) ||
-      itemSearchable.includes(existingChat.normalizedQuestion)
-    ) {
-      score += 100;
-    }
-
-    // Partial fuzzy match in content
-    if (
-      hasPartialFuzzyMatch(existingChat.normalizedQuestion, itemSearchable, 3)
-    )
-      score += 90;
-
-    // Substring match in content
-    if (hasSubstringMatch(existingChat.normalizedQuestion, itemSearchable))
-      score += 70;
-
-    queryWords.forEach((word) => {
-      if (itemContent.includes(word) || itemSearchable.includes(word)) {
-        score += 10;
-      }
-    });
-
-    if (existingChat.normalizedQuestion.includes(itemCategory)) {
-      score += 50;
-    }
-
-    // Fuzzy category match
-    if (isFuzzyMatch(existingChat.normalizedQuestion, itemCategory, 0.65))
-      score += 35;
-
-    score += (item.priority || 0) * 10;
-    const confidenceScore = Math.min(score / 1000, 1.0);
-
-    return { item, score, confidenceScore };
-  });
-
-  scoredItems.sort((a, b) => b.score - a.score);
-
-  const bestMatch = scoredItems[0];
-  const threshold = aiSupportConfig.minimumConfidence ?? 0.5;
-
-  if (!bestMatch || bestMatch.confidenceScore < threshold) {
-    const responseTimeMs = Date.now() - startTime;
-    existingChat.answer =
-      aiSupportConfig.prompts.noMatchPrompt ||
-      "I couldn't find an approved answer for that. Please contact support.";
-    existingChat.responseStatus = "no_match";
-    existingChat.responseSource = "fallback";
-    existingChat.confidenceScore = bestMatch ? bestMatch.confidenceScore : 0.0;
-    existingChat.responseTimeMs = responseTimeMs;
-    await existingChat.save();
-
-    await logAudit("response_regenerated", "driver", driverId, {
-      chatId,
-      status: "no_match",
-    });
-    return existingChat;
-  }
-
   const historyLimit = aiSupportConfig.historyLength || 5;
   const historyMessages: IChatMessage[] = [];
 
@@ -791,20 +442,11 @@ const regenerateAnswer = async (
   }
 
   const provider = ProviderFactory.getProvider(aiSupportConfig.provider);
-  const contextText = ` approved platform documentation knowledge:
-Title: ${bestMatch.item.title}
-Category: ${bestMatch.item.category}
-Module: ${bestMatch.item.module}
-Content: ${bestMatch.item.content}`;
-
-  const promptText = `Analyze the context above and answer the user question strictly using it. Do not invent details.
-User Question: "${existingChat.question}"`;
-
-  const finalSystemPrompt = `${aiSupportConfig.prompts.systemPrompt}\n${aiSupportConfig.prompts.safetyPrompt}\nContext documentation for reference:\n${contextText}`;
+  const finalSystemPrompt = `${aiSupportConfig.prompts.systemPrompt || "You are an AI Support Assistant for the Alygo driver platform."}\n${aiSupportConfig.prompts.safetyPrompt || ""}`;
 
   try {
     const aiResponse = await provider.generateAnswer(
-      promptText,
+      existingChat.question,
       historyMessages,
       finalSystemPrompt,
       {
@@ -812,23 +454,25 @@ User Question: "${existingChat.question}"`;
         temperature: aiSupportConfig.temperature,
         maxTokens: aiSupportConfig.maxTokens,
       },
+      {
+        driverId,
+      },
     );
 
     const responseTimeMs = Date.now() - startTime;
     existingChat.answer = aiResponse.answer;
     existingChat.aiModel = aiSupportConfig.model;
-    existingChat.confidenceScore = bestMatch.confidenceScore;
+    existingChat.confidenceScore = aiResponse.confidenceScore || 1.0;
     existingChat.responseStatus = "success";
-    existingChat.responseSource = "knowledge_base";
+    existingChat.responseSource = "database_live";
     existingChat.responseTimeMs = responseTimeMs;
     existingChat.tokensUsed = aiResponse.tokensUsed;
-    existingChat.knowledgeIds = [bestMatch.item._id!];
     await existingChat.save();
 
     await logAudit("response_regenerated", "driver", driverId, {
       chatId,
       status: "success",
-      knowledgeId: bestMatch.item._id,
+      toolsExecuted: aiResponse.toolsExecuted,
     });
 
     return existingChat;
@@ -836,7 +480,7 @@ User Question: "${existingChat.question}"`;
     const responseTimeMs = Date.now() - startTime;
     existingChat.answer =
       aiSupportConfig.prompts.fallbackPrompt ||
-      "I couldn't find an approved answer for that. Please contact support.";
+      "I couldn't complete your request at this moment. Please try again or contact Alygo support.";
     existingChat.responseStatus = "error";
     existingChat.responseSource = "fallback";
     existingChat.responseTimeMs = responseTimeMs;
