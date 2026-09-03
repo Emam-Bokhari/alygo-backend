@@ -23,19 +23,34 @@ app.use(Morgan.successHandler);
 app.use(Morgan.errorHandler);
 
 //body parser
+// app.use(
+//   cors({
+//     origin: [
+//       "http://10.10.26.175:5173",
+//       "http://10.10.26.174:5174",
+//       "http://localhost:5174",
+//       "http://10.10.26.174:5174",
+//       "http://62.72.26.31:4175",
+//       "http://195.35.6.13:3006"
+//     ],
+//     credentials: true,
+//   }),
+// );
+
 app.use(
   cors({
-    origin: [
-      "http://10.10.26.175:5173",
-      "http://10.10.26.174:5174",
-      "http://localhost:5174",
-      "http://10.10.26.174:5174",
-      "http://62.72.26.31:4175",
-      "http://195.35.6.13:3006"
-    ],
+    origin: true,
     credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
+
+// Private Network Access (PNA)
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Private-Network", "true");
+  next();
+});
 
 // Stripe Webhook Endpoint (Needs raw body parser BEFORE express.json())
 app.post(
