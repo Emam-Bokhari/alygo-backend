@@ -159,6 +159,15 @@ const logAudit = async (
   }
 };
 
+const ensureHtml = (text: string): string => {
+  if (!text) return "";
+  const trimmed = text.trim();
+  if (trimmed.startsWith("<") && trimmed.endsWith(">")) {
+    return trimmed;
+  }
+  return `<p>${trimmed}</p>`;
+};
+
 // ==========================================
 // RATE LIMITING HELPER
 // ==========================================
@@ -237,10 +246,10 @@ const askAiQuestion = async (
   const rawQuestion = payload.question.trim();
   const normalizedQuestion = rawQuestion
     .toLowerCase()
-    .replace(/[^\w\s\u0980-\u09ff]/g, "") // support English and Bengali chars
+    .replace(/[^\p{L}\p{N}\s]/gu, "") // support all international languages (English, Bengali, Arabic, Spanish, etc.)
     .trim();
 
-  const language = payload.language || aiSupportConfig.defaultLanguage || "en";
+  const language = "en";
 
   // 3. Prompt Injection & AI Safety Guard
   const safetyBlocklist = [
@@ -260,9 +269,10 @@ const askAiQuestion = async (
 
   if (containsViolation) {
     const responseTimeMs = Date.now() - startTime;
-    const answer =
+    const rawAnswer =
       aiSupportConfig.prompts.safetyPrompt ||
       "I am not authorized to answer this question. Please contact support.";
+    const answer = ensureHtml(rawAnswer);
     const chatMsg = await AiSupport.create({
       driverId,
       conversationId: payload.conversationId,
@@ -369,9 +379,10 @@ const askAiQuestion = async (
     console.error("===============================");
 
     const responseTimeMs = Date.now() - startTime;
-    const fallbackAnswer =
+    const rawFallback =
       aiSupportConfig.prompts.fallbackPrompt ||
       "I couldn't complete your request at this moment. Please try again or contact Alygo support.";
+    const fallbackAnswer = ensureHtml(rawFallback);
 
     const chatMsg = await AiSupport.create({
       driverId,
@@ -478,9 +489,10 @@ const regenerateAnswer = async (
     return existingChat;
   } catch (error: any) {
     const responseTimeMs = Date.now() - startTime;
-    existingChat.answer =
+    const rawFallback =
       aiSupportConfig.prompts.fallbackPrompt ||
       "I couldn't complete your request at this moment. Please try again or contact Alygo support.";
+    existingChat.answer = ensureHtml(rawFallback);
     existingChat.responseStatus = "error";
     existingChat.responseSource = "fallback";
     existingChat.responseTimeMs = responseTimeMs;
@@ -660,6 +672,49 @@ const getConversationsFromDB = async (
   return await AiConversation.find({ driverId, isArchived: false }).sort({
     updatedAt: -1,
   });
+};
+
+const getConversationDetailsFromDB = async (
+  driverId: string,
+  id: string,
+  query: any = {},
+): Promise<{ conversation: IAiConversation; messages: IAiSupport[]; meta: any }> => {
+  const conversation = await AiConversation.findOne({
+    _id: id,
+    driverId,
+  });
+
+  if (!conversation) {
+    throw new ApiError(
+      StatusCodes.NOT_FOUND,
+      "Conversation not found or does not belong to this driver.",
+    );
+  }
+
+  const page = query.page ? Number(query.page) : 1;
+  const limit = query.limit ? Number(query.limit) : 50;
+  const skip = (page - 1) * limit;
+  const sortOrder = query.sortOrder === "asc" ? 1 : -1; // Default descending (latest message first at index 0)
+
+  const messageFilter: any = {
+    conversationId: new Types.ObjectId(id),
+    driverId: new Types.ObjectId(driverId),
+  };
+
+  const messages = await AiSupport.find(messageFilter)
+    .sort({ createdAt: sortOrder })
+    .skip(skip)
+    .limit(limit)
+    .populate("knowledgeIds");
+
+  const total = await AiSupport.countDocuments(messageFilter);
+  const totalPage = Math.ceil(total / limit);
+
+  return {
+    conversation,
+    messages,
+    meta: { page, limit, total, totalPage },
+  };
 };
 
 // ==========================================
@@ -1198,6 +1253,7 @@ export const AiSupportService = {
   archiveConversationInDB,
   deleteConversationFromDB,
   getConversationsFromDB,
+  getConversationDetailsFromDB,
   getKnowledgeListFromDB,
   createKnowledgeInDB,
   updateKnowledgeInDB,

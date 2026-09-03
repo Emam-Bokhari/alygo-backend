@@ -44,10 +44,12 @@ export class GeminiProvider implements IAiProvider {
 You are the official AI Support Assistant for the Alygo platform, specifically helping drivers.
 
 CRITICAL INSTRUCTIONS:
-1. UNDERSTANDING QUERIES: You must flexibly understand driver questions even if they contain typos, spelling errors, informal language, Banglish (e.g., 'ajke amr income koto?', 'last trip er fare koto?', 'cancel fee koto?'), Bengali, or broken English. Identify the driver's intent accurately.
-2. LIVE DATABASE TOOLS: Whenever a driver asks about their earnings, wallet, recent rides, ride status, cancellation rules, fare structure, tier points, duty hours, platform FAQs, emergency helplines, or lost items, ALWAYS call the appropriate tool to retrieve real-time data from the database. Do not hallucinate or guess numbers.
-3. LANGUAGE OF RESPONSE: Provide your final answer in clear, polite, and professional English (unless the driver explicitly asked to answer in another language).
-4. ACCURACY & CONCISENESS: Formulate direct, clear, and helpful answers based on the database tool results. If a currency amount is mentioned, format it nicely (e.g. $50.00).`;
+1. MULTILINGUAL INPUT UNDERSTANDING: Drivers from all over the world may ask questions in ANY language or dialect (e.g., English, Bengali, Banglish, Spanish, Arabic, Hindi, Urdu, French, broken English, colloquial slang, or text with spelling errors/typos). You MUST flexibly understand the driver's intent from ANY language.
+2. STRICT ENGLISH OUTPUT (MANDATORY): Regardless of what language the driver uses to ask the question (even if asked in Bengali, Spanish, Arabic, Hindi, French, etc.), you MUST ALWAYS formulate your answer strictly and completely in English.
+3. HTML FORMATTING (MANDATORY): Output your final response strictly as valid, clean HTML without wrapping it in markdown codeblocks (do NOT use \`\`\`html or \`\`\`). Use semantic HTML elements like <p>, <h3>, <h4>, <ul>, <li>, <strong>, <span>, etc., so mobile and web applications can render the response directly using HTML renderers. Never use raw markdown asterisks (**) or raw markdown list bullets (*).
+4. LIVE DATABASE TOOLS: Whenever a driver asks about their earnings, wallet, recent rides, ride status, cancellation rules, fare structure, tier points, duty hours, platform FAQs, emergency helplines, or lost items, ALWAYS call the appropriate tool to retrieve real-time data from the database. Do not hallucinate or guess numbers.
+5. FARES & EARNINGS ACCURACY: When presenting ride or trip details, clearly provide the Total Ride Fare (total amount) and the Driver's Net Earning from the database fields \`totalFare\` and \`driverEarning\` (and include fare breakdown if helpful). Never display $0.00 if real fare values exist.
+6. CLARITY & POLITE TONE: Formulate direct, clear, and helpful answers based on the database tool results. If a currency amount is mentioned, format it nicely (e.g. $15.50).`;
 
     // Map declarations for Gemini tools schema
     const toolsPayload = [
@@ -165,9 +167,17 @@ CRITICAL INSTRUCTIONS:
 
         // Extract text answer
         const textParts = parts.filter((p) => p.text).map((p) => p.text);
-        const answer = textParts.join("\n").trim();
+        let answer = textParts.join("\n").trim();
 
         if (answer) {
+          // Strip code fence wrappers if present
+          if (answer.startsWith("```html") || answer.startsWith("```")) {
+            answer = answer
+              .replace(/^```(?:html)?\s*/i, "")
+              .replace(/\s*```$/i, "")
+              .trim();
+          }
+
           return {
             answer,
             tokensUsed: totalTokens,
@@ -197,7 +207,7 @@ CRITICAL INSTRUCTIONS:
     // Fallback if loop ended without final text
     return {
       answer:
-        "I was able to retrieve your information, but could not format the final response. Please check your dashboard or contact support.",
+        "<p>I was able to retrieve your information, but could not format the final response. Please check your dashboard or contact support.</p>",
       tokensUsed: totalTokens,
       confidenceScore: 0.8,
       toolsExecuted: executedTools,

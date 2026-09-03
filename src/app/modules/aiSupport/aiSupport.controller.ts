@@ -240,6 +240,25 @@ const getConversations = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getConversationById = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const result = await AiSupportService.getConversationDetailsFromDB(
+    req.user.id,
+    id,
+    req.query,
+  );
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: "Conversation details retrieved successfully",
+    data: {
+      conversation: result.conversation,
+      messages: result.messages,
+    },
+    pagination: result.meta,
+  });
+});
+
 export const AiSupportController = {
   getKnowledgeList,
   createKnowledge,
@@ -259,4 +278,5 @@ export const AiSupportController = {
   archiveConversation,
   deleteConversation,
   getConversations,
+  getConversationById,
 };

@@ -3,7 +3,6 @@ import config from "../../../config";
 import { Permission } from "./permission.model";
 import { discoverPermissions } from "./permission.discovery";
 import { logger } from "../../../shared/logger";
-
 import { Role } from "../role/role.model";
 
 export const seedPermissions = async (): Promise<void> => {

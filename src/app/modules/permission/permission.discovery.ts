@@ -172,7 +172,7 @@ export async function discoverPermissions(options?: DiscoveryOptions): Promise<{
   const routeFiles = findRouteFiles(modulesDir);
 
   // Track scanned module directories to count them
-  const scannedModules = new Set<string>();
+  const scannedModules = new Set<string>();2
   const discoveredPermissions: Omit<IPermission, "createdAt" | "updatedAt">[] =
     [];
   const permissionNames = new Set<string>();

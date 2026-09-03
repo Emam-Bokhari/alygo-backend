@@ -17,8 +17,6 @@ import { LostFound } from "../lostAndFound/lostAndFound.model";
 import { PeakHour } from "../peakHour/peakHour.model";
 import { SurgeRule } from "../surgeRule/surgeRule.model";
 import { RideCategory } from "../rideCategory/rideCategory.model";
-import { ServiceArea } from "../serviceArea/serviceArea.model";
-import { ServiceCategory } from "../serviceCategory/serviceCategory.model";
 import { Transaction } from "../transaction/transaction.model";
 import { TRANSACTION_TYPE } from "../transaction/transaction.constant";
 import { PAYMENT_STATUS } from "../ride/ride.constant";
@@ -36,7 +34,7 @@ export const AI_SUPPORT_TOOL_DECLARATIONS: IFunctionDeclaration[] = [
   {
     name: "get_driver_profile",
     description:
-      "Get profile information of the authenticated driver, including approval status, account status, vehicle details, rating, and verified documents.",
+      "Get profile information of the authenticated driver, including approval status, account status, vehicle details (brand, model, plate, color, seats), rating, review count, reward points, and verified documents.",
     parameters: {
       type: "OBJECT",
       properties: {},
@@ -45,7 +43,7 @@ export const AI_SUPPORT_TOOL_DECLARATIONS: IFunctionDeclaration[] = [
   {
     name: "get_driver_earnings_and_wallet",
     description:
-      "Get the driver's available wallet balance, all-time total earnings, today's earnings, this week's earnings, this month's earnings, pending balance, and completed trips count.",
+      "Get the driver's available wallet balance, all-time total earnings, today's earnings, this week's earnings, this month's earnings, pending balance, completed trips count, currency, and payout requests.",
     parameters: {
       type: "OBJECT",
       properties: {
@@ -61,7 +59,7 @@ export const AI_SUPPORT_TOOL_DECLARATIONS: IFunctionDeclaration[] = [
   {
     name: "get_driver_recent_rides",
     description:
-      "Get the driver's recent ride history with pickup/destination addresses, ride status (completed, cancelled), total fare, date/time, and cancellation reason if cancelled.",
+      "Get the driver's recent ride history with pickup/destination addresses, ride status (completed, cancelled, etc.), total fare charged to passenger, driver's net earning, breakdown of base fare, distance fare, time fare, commission, payment method, payment status, cancellation details, and date/time.",
     parameters: {
       type: "OBJECT",
       properties: {
@@ -82,7 +80,7 @@ export const AI_SUPPORT_TOOL_DECLARATIONS: IFunctionDeclaration[] = [
   {
     name: "get_cancellation_policies",
     description:
-      "Get platform cancellation policy details including driver cancellation fees, passenger cancellation compensation, cancellation time limits, and fee waivers.",
+      "Get platform cancellation policy rules for both passengers and drivers, including cancellation fees, platform share, driver compensation, after-acceptance fees, and excessive cancellation thresholds.",
     parameters: {
       type: "OBJECT",
       properties: {},
@@ -91,7 +89,7 @@ export const AI_SUPPORT_TOOL_DECLARATIONS: IFunctionDeclaration[] = [
   {
     name: "get_fare_and_surge_rates",
     description:
-      "Get current fare configuration (base fare, per km rate, per minute rate, waiting fee, minimum fare) and active peak hours or surge pricing rules.",
+      "Get current fare configuration (base fare, per km rate, per minute rate, waiting fee, minimum fare) and active peak hours or surge pricing rules with multipliers.",
     parameters: {
       type: "OBJECT",
       properties: {},
@@ -100,7 +98,7 @@ export const AI_SUPPORT_TOOL_DECLARATIONS: IFunctionDeclaration[] = [
   {
     name: "get_driver_tier_and_points",
     description:
-      "Get the driver's current reward tier status, total accumulated points, points required for next tier, and active tier benefits (e.g. priority dispatch, destination filters, bonus multipliers).",
+      "Get the driver's current reward tier status, current points, lifetime points, progress percentage, next tier requirements, and active tier benefits (e.g. priority dispatch, destination filters, bonus multipliers).",
     parameters: {
       type: "OBJECT",
       properties: {},
@@ -109,7 +107,7 @@ export const AI_SUPPORT_TOOL_DECLARATIONS: IFunctionDeclaration[] = [
   {
     name: "get_driver_duty_policy",
     description:
-      "Get platform driver duty and fatigue management policies, including maximum daily driving hours, continuous driving limits, and mandatory rest break requirements.",
+      "Get platform driver duty and fatigue management policies (maximum driving hours per day, continuous driving limit, break duration in minutes, break after hours, minimum rest hours).",
     parameters: {
       type: "OBJECT",
       properties: {},
@@ -142,7 +140,7 @@ export const AI_SUPPORT_TOOL_DECLARATIONS: IFunctionDeclaration[] = [
   {
     name: "get_lost_and_found_info",
     description:
-      "Get active lost and found reports related to the driver's trips, and platform guidelines on handling items left behind by passengers.",
+      "Get lost and found item reports related to the driver's trips, report numbers, item descriptions, return status, delivery fee, and return guidelines.",
     parameters: {
       type: "OBJECT",
       properties: {},
@@ -155,7 +153,8 @@ export const AI_SUPPORT_TOOL_DECLARATIONS: IFunctionDeclaration[] = [
 // =========================================================================
 
 const getDriverProfile = async (driverId: string) => {
-  const user = await User.findById(driverId).select(
+  const userObjectId = new Types.ObjectId(driverId);
+  const user = await User.findById(userObjectId).select(
     "name email phone profileImage status role createdAt",
   );
 
@@ -163,8 +162,10 @@ const getDriverProfile = async (driverId: string) => {
     return { error: "Driver user account not found in database." };
   }
 
-  const driver = await Driver.findOne({ userId: driverId }).select(
-    "driverAvailabilityStatus approvalStatus verificationStatus rating totalRidesCompleted isStripeOnboarded drivingLicenseNumber",
+  const driver = await Driver.findOne({
+    $or: [{ userId: userObjectId }, { _id: userObjectId }],
+  }).select(
+    "driverAvailabilityStatus approvalStatus verificationStatus averageRating totalRatings totalReviews currentPoints lifetimePoints isStripeOnboarded drivingLicenseNumber documentsStatus",
   );
 
   let car = null;
@@ -174,6 +175,14 @@ const getDriverProfile = async (driverId: string) => {
     }).select("brand model year carType licensePlate color seatNumber");
   }
 
+  const completedTripsCount = await Ride.countDocuments({
+    $or: [
+      { driverId: userObjectId },
+      ...(driver ? [{ driverId: driver._id }] : []),
+    ],
+    status: "completed",
+  });
+
   return {
     driverName: user.name,
     email: user.email,
@@ -181,7 +190,14 @@ const getDriverProfile = async (driverId: string) => {
     accountStatus: user.status,
     availabilityStatus: driver?.driverAvailabilityStatus || "offline",
     approvalStatus: driver?.approvalStatus || "pending",
+    rating: driver?.averageRating ?? 5.0,
+    totalRatings: driver?.totalRatings ?? 0,
+    totalReviews: driver?.totalReviews ?? 0,
+    currentPoints: driver?.currentPoints ?? 0,
+    lifetimePoints: driver?.lifetimePoints ?? 0,
+    completedTripsCount,
     stripeOnboarded: driver?.isStripeOnboarded ?? false,
+    licenseNumber: driver?.drivingLicenseNumber || "Not provided",
     vehicle: car
       ? {
           brand: car.brand,
@@ -189,7 +205,7 @@ const getDriverProfile = async (driverId: string) => {
           year: car.year,
           carType: car.carType,
           licensePlate: car.licensePlate,
-          color: (car as any).color,
+          color: (car as any).color || "N/A",
           seats: car.seatNumber,
         }
       : "No vehicle registered",
@@ -201,7 +217,9 @@ const getDriverEarningsAndWallet = async (
   args?: { timeframe?: "today" | "week" | "month" | "all" },
 ) => {
   const userObjectId = new Types.ObjectId(driverId);
-  const driver = await Driver.findOne({ userId: userObjectId });
+  const driver = await Driver.findOne({
+    $or: [{ userId: userObjectId }, { _id: userObjectId }],
+  });
 
   // 1. Available Wallet Balance
   const wallet = await Wallet.findOne({ userId: userObjectId });
@@ -300,7 +318,10 @@ const getDriverEarningsAndWallet = async (
 
   // 5. Total Completed Trips Count
   const completedTripsCount = await Ride.countDocuments({
-    driverId: userObjectId,
+    $or: [
+      { driverId: userObjectId },
+      ...(driver ? [{ driverId: driver._id }] : []),
+    ],
     status: "completed",
   });
 
@@ -319,6 +340,8 @@ const getDriverEarningsAndWallet = async (
     pendingBalance,
     currency,
     completedTripsCount,
+    stripeConnected: driver ? !!(driver.isStripeOnboarded) : false,
+    canWithdraw: availableBalance > 0 && !!(driver?.isStripeOnboarded),
     pendingPayoutRequests: pendingPayouts.map((p) => ({
       payoutId: p.payoutId,
       amount: p.amount,
@@ -334,17 +357,30 @@ const getDriverRecentRides = async (
 ) => {
   const limit = Math.min(Math.max(args?.limit || 5, 1), 10);
   const userObjectId = new Types.ObjectId(driverId);
+  const driver = await Driver.findOne({
+    $or: [{ userId: userObjectId }, { _id: userObjectId }],
+  });
 
-  const query: any = { driverId: userObjectId };
+  const query: any = {
+    $or: [
+      { driverId: userObjectId },
+      ...(driver ? [{ driverId: driver._id }] : []),
+    ],
+  };
+
   if (args?.status && args.status !== "all") {
-    query.status = args.status;
+    if (args.status === "in_progress") {
+      query.status = { $in: ["accepted", "driver_arrived", "in_progress"] };
+    } else {
+      query.status = args.status;
+    }
   }
 
   const rides = await Ride.find(query)
     .sort({ createdAt: -1 })
     .limit(limit)
     .select(
-      "status pickup destination fare rideCategory cancelledBy cancellationReason paymentStatus createdAt",
+      "status pickup stops destination routeInfo fare rideCategory cancellation payment requestedAt acceptedAt arrivedAt startedAt completedAt createdAt rideType",
     );
 
   if (rides.length === 0) {
@@ -355,22 +391,72 @@ const getDriverRecentRides = async (
     };
   }
 
-  const formattedRides = rides.map((r: any) => ({
-    rideId: r._id,
-    status: r.status,
-    pickupLocation: r.pickup?.address || "Pickup address",
-    destinationLocation: r.destination?.address || "Destination address",
-    category: r.rideCategory?.name || "Standard",
-    fare:
-      r.fare?.driverEarnings ??
-      r.fare?.totalFare ??
-      r.driverEarnings ??
-      0,
-    paymentStatus: r.paymentStatus,
-    cancelledBy: r.cancelledBy || null,
-    cancellationReason: r.cancellationReason || null,
-    date: r.createdAt ? new Date(r.createdAt).toLocaleString() : null,
-  }));
+  const formattedRides = rides.map((r: any) => {
+    const totalFare = parseFloat(
+      (r.fare?.total ?? r.fare?.subtotal ?? 0).toFixed(2),
+    );
+    const driverEarning = parseFloat(
+      (r.fare?.driverEarning ?? 0).toFixed(2),
+    );
+    const baseFare = parseFloat((r.fare?.baseFare ?? 0).toFixed(2));
+    const distanceFare = parseFloat((r.fare?.distanceFare ?? 0).toFixed(2));
+    const timeFare = parseFloat((r.fare?.timeFare ?? 0).toFixed(2));
+    const commission = parseFloat((r.fare?.commission ?? 0).toFixed(2));
+    const discount = parseFloat((r.fare?.discount ?? 0).toFixed(2));
+    const cancellationFee = parseFloat(
+      (
+        r.cancellation?.cancellationFee ??
+        r.fare?.cancellationFee ??
+        0
+      ).toFixed(2),
+    );
+    const driverCompensation = parseFloat(
+      (r.cancellation?.driverCompensation ?? 0).toFixed(2),
+    );
+
+    return {
+      rideId: r._id,
+      status: r.status,
+      rideType: r.rideType || "on_demand",
+      category: r.rideCategory?.name || "Standard",
+      pickupLocation: r.pickup?.address || "Pickup address",
+      destinationLocation: r.destination?.address || "Destination address",
+      stops: r.stops?.map((s: any) => s.address) || [],
+      distanceKm: r.routeInfo?.totalDistanceKm ?? 0,
+      durationMinutes: r.routeInfo?.totalDurationMinutes ?? 0,
+      totalFare,
+      driverEarning,
+      fareBreakdown: {
+        totalFare,
+        driverEarning,
+        baseFare,
+        distanceFare,
+        timeFare,
+        commission,
+        discount,
+        cancellationFee,
+        driverCompensation,
+      },
+      payment: {
+        method: r.payment?.method || "cash",
+        status: r.payment?.status || "pending",
+        paidAt: r.payment?.paidAt || null,
+      },
+      cancellation: r.cancellation
+        ? {
+            cancelledBy: r.cancellation.cancelledBy || null,
+            cancellationReason: r.cancellation.cancellationReasonName || null,
+            cancellationFee,
+            driverCompensation,
+            cancelledAt: r.cancellation.cancelledAt || null,
+          }
+        : null,
+      date: r.createdAt ? new Date(r.createdAt).toLocaleString() : null,
+      completedAt: r.completedAt
+        ? new Date(r.completedAt).toLocaleString()
+        : null,
+    };
+  });
 
   return {
     totalFound: rides.length,
@@ -388,7 +474,8 @@ const getCancellationPolicies = async () => {
         passengerGracePeriodMinutes: 2,
         passengerCancellationFeeAfterDriverAcceptance: "$5.00",
         driverCancellationFeeWithoutPenalty: "Allowed before reaching pickup if emergency",
-        driverRepeatedCancellationWarning: "Excessive cancellations may impact tier points and rating.",
+        driverRepeatedCancellationWarning:
+          "Excessive cancellations may impact tier points and rating.",
       },
     };
   }
@@ -401,8 +488,9 @@ const getCancellationPolicies = async () => {
         afterDriverArrived: p.passenger?.afterDriverArrived,
       },
       driverRules: {
-        beforePickup: p.driver?.beforePickup,
-        afterArrival: p.driver?.afterArrival,
+        afterAccept: p.driver?.afterAccept,
+        excessiveCancellation: p.driver?.excessiveCancellation,
+        excessiveCancellationThreshold: p.driver?.excessiveCancellationThreshold,
       },
     })),
   };
@@ -414,10 +502,10 @@ const getFareAndSurgeRates = async () => {
   }
   const fareConfigs = await FareConfiguration.find()
     .populate({ path: "rideCategoryId", model: RideCategory })
-    .limit(5);
+    .limit(10);
 
-  const peakHours = await PeakHour.find().limit(5);
-  const surgeRules = await SurgeRule.find().limit(5);
+  const peakHours = await PeakHour.find().limit(10);
+  const surgeRules = await SurgeRule.find().limit(10);
 
   return {
     fareConfigurations: fareConfigs.map((fc: any) => ({
@@ -427,65 +515,82 @@ const getFareAndSurgeRates = async () => {
       perMinuteFare: fc.perMinuteFare,
       waitingFeePerMinute: fc.waitingFeePerMinute,
       minimumFare: fc.minimumFare,
+      status: fc.status,
     })),
     peakHours: peakHours.map((ph: any) => ({
       name: ph.name,
       startTime: ph.startTime,
       endTime: ph.endTime,
-      multiplier: ph.multiplier,
-      days: ph.days,
+      timezone: ph.timezone,
+      applicableDays: ph.applicableDays,
+      status: ph.status,
     })),
     surgeRules: surgeRules.map((sr: any) => ({
-      name: sr.name,
-      surgeMultiplier: sr.surgeMultiplier,
-      isActive: sr.isActive,
+      ruleName: sr.ruleName,
+      ruleType: sr.ruleType,
+      minMultiplier: sr.minMultiplier,
+      maxMultiplier: sr.maxMultiplier,
+      demandThreshold: sr.demandThreshold,
+      supplyThreshold: sr.supplyThreshold,
+      status: sr.status,
     })),
   };
 };
 
 const getDriverTierAndPoints = async (driverId: string) => {
   const userObjectId = new Types.ObjectId(driverId);
+  const driver = await Driver.findOne({
+    $or: [{ userId: userObjectId }, { _id: userObjectId }],
+  })
+    .populate("currentTier")
+    .populate("nextTier");
 
   // Latest point history
   const latestPointDoc = await DriverPointHistory.findOne({
-    driverId: userObjectId,
+    $or: [
+      { driverId: userObjectId },
+      ...(driver ? [{ driverId: driver._id }] : []),
+    ],
   }).sort({ createdAt: -1 });
 
-  const currentPoints = latestPointDoc?.balanceAfter ?? latestPointDoc?.newBalance ?? 0;
-
-  // Latest tier
-  const tierHistory = await TierHistory.findOne({ driverId: userObjectId })
-    .sort({ createdAt: -1 })
-    .populate({ path: "newTierId", model: Tier });
+  const currentPoints =
+    driver?.currentPoints ??
+    latestPointDoc?.balanceAfter ??
+    latestPointDoc?.newBalance ??
+    0;
+  const lifetimePoints = driver?.lifetimePoints ?? currentPoints;
 
   const allTiers = await Tier.find().sort({ level: 1 });
+  let currentTierObj = (driver?.currentTier as any) || allTiers[0];
+  let nextTierObj = driver?.nextTier as any;
 
-  const currentTierObj = (tierHistory?.newTierId as any) || allTiers[0];
-
-  // Next tier calculation
-  let nextTier = null;
-  if (allTiers.length > 0 && currentTierObj) {
+  if (!nextTierObj && allTiers.length > 0 && currentTierObj) {
     const currentIndex = allTiers.findIndex(
       (t: any) => t._id.toString() === currentTierObj._id?.toString(),
     );
     if (currentIndex !== -1 && currentIndex < allTiers.length - 1) {
-      nextTier = allTiers[currentIndex + 1];
+      nextTierObj = allTiers[currentIndex + 1];
     }
   }
 
-  const nextTierPointsRequired = nextTier?.requirements?.pointsRequired || 0;
+  const nextTierPointsRequired =
+    nextTierObj?.requirements?.pointsRequired || 0;
 
   return {
     currentTierName: currentTierObj?.name || "Standard Driver",
     currentLevel: currentTierObj?.level || 1,
     currentPoints,
+    lifetimePoints,
+    progressPercentage: driver?.progressPercentage || 0,
     tierBenefits: currentTierObj?.benefits,
-    nextTier: nextTier
+    tierRequirements: currentTierObj?.requirements,
+    nextTier: nextTierObj
       ? {
-          name: nextTier.name,
-          level: nextTier.level,
+          name: nextTierObj.name,
+          level: nextTierObj.level,
           pointsRequired: nextTierPointsRequired,
           pointsNeeded: Math.max(0, nextTierPointsRequired - currentPoints),
+          benefits: nextTierObj.benefits,
         }
       : "You have reached the highest tier!",
   };
@@ -498,9 +603,12 @@ const getDriverDutyPolicy = async () => {
     return {
       dutyPolicy: {
         maxDrivingHoursPerDay: 12,
-        continuousDrivingLimitHours: 6,
-        mandatoryRestBreakMinutes: 30,
-        notes: "Drivers are required to take mandatory rest periods to prevent fatigue.",
+        maxContinuousDrivingHours: 6,
+        breakAfterHours: 4,
+        breakDurationMinutes: 30,
+        minimumRestHours: 8,
+        notes:
+          "Drivers are required to take mandatory rest periods to prevent fatigue.",
       },
     };
   }
@@ -508,10 +616,14 @@ const getDriverDutyPolicy = async () => {
   return {
     policies: policies.map((p: any) => ({
       name: p.name,
-      scope: p.scopeType,
+      scopeType: p.scopeType,
       maxDrivingHoursPerDay: p.maxDrivingHoursPerDay,
       maxContinuousDrivingHours: p.maxContinuousDrivingHours,
-      mandatoryRestBreakMinutes: p.mandatoryRestBreakMinutes,
+      breakAfterHours: p.breakAfterHours,
+      breakDurationMinutes: p.breakDurationMinutes,
+      maxTripsPerDay: p.maxTripsPerDay,
+      minimumRestHours: p.minimumRestHours,
+      status: p.status,
     })),
   };
 };
@@ -557,29 +669,52 @@ const getEmergencyHelplineAndSupport = async () => {
 
 const getLostAndFoundInfo = async (driverId: string) => {
   const userObjectId = new Types.ObjectId(driverId);
+  const driver = await Driver.findOne({
+    $or: [{ userId: userObjectId }, { _id: userObjectId }],
+  });
 
   // Find recent rides by this driver
-  const driverRides = await Ride.find({ driverId: userObjectId })
+  const driverRides = await Ride.find({
+    $or: [
+      { driverId: userObjectId },
+      ...(driver ? [{ driverId: driver._id }] : []),
+    ],
+  })
     .sort({ createdAt: -1 })
-    .limit(30)
+    .limit(50)
     .select("_id");
 
   const rideIds = driverRides.map((r) => r._id);
 
   const lostReports = await LostFound.find({
-    rideId: { $in: rideIds },
+    $or: [
+      { driverId: userObjectId },
+      ...(driver ? [{ driverId: driver._id }] : []),
+      { rideId: { $in: rideIds } },
+    ],
   })
     .sort({ createdAt: -1 })
-    .limit(5)
-    .populate({ path: "rideId", model: Ride, select: "pickup destination createdAt" });
+    .limit(10)
+    .populate({
+      path: "rideId",
+      model: Ride,
+      select: "pickup destination createdAt fare",
+    });
 
   return {
     activeReportsCount: lostReports.length,
     reports: lostReports.map((lr: any) => ({
       reportId: lr._id,
-      itemDescription: lr.itemDescription || lr.title,
-      reportStatus: lr.status || lr.reportStatus,
+      reportNumber: lr.reportNumber,
+      itemName: lr.itemName,
+      itemDescription: lr.itemDescription,
+      reportStatus: lr.reportStatus,
+      foundStatus: lr.foundStatus,
+      recoveryMethod: lr.recoveryMethod,
+      deliveryFee: lr.deliveryFee,
       rideDate: lr.rideId?.createdAt,
+      pickupLocation: lr.rideId?.pickup?.address,
+      destinationLocation: lr.rideId?.destination?.address,
     })),
     guidelines:
       "If a passenger left an item in your vehicle, safely store the item and notify support or respond through the Lost & Found section of your app to arrange a safe return.",
