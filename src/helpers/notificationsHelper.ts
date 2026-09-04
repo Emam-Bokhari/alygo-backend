@@ -4,6 +4,7 @@ import { notificationHelper } from "../app/builder/pushNotification";
 import { NOTIFICATION_TYPE } from "../app/modules/notification/notification.constant";
 import { User } from "../app/modules/user/user.model";
 import { USER_ROLES } from "../enums/user";
+import { notificationUiLogger } from "./notificationUiLogger";
 
 export const sendNotifications = async (
   data: Partial<INotification>,
@@ -58,7 +59,27 @@ export const sendNotifications = async (
 
     if (socketIo) {
       socketIo.emit(`send-notification::${data?.receiver}`, result);
+      notificationUiLogger.logSocketEvent({
+        status: "DELIVERED",
+        event: `send-notification::${data?.receiver}`,
+        recipient: data?.receiver?.toString(),
+        data: {
+          title: result.title,
+          text: result.text,
+          type: result.type,
+        },
+      });
+
       socketIo.emit("send-notification::admin", result);
+      notificationUiLogger.logSocketEvent({
+        status: "BROADCAST",
+        event: "send-notification::admin",
+        recipient: "Admin Channel",
+        data: {
+          title: result.title,
+          text: result.text,
+        },
+      });
     }
 
     return result;

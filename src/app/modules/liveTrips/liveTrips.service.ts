@@ -399,16 +399,19 @@ const getLiveTripByIdFromDB = async (rideId: string): Promise<any> => {
       }))
     : [];
 
-  // Route progress calculation
+  // Route progress & ETA calculation
   let routeProgressPercentage = 0;
-  if (
-    trackingDoc &&
-    trackingDoc.totalDistanceKm &&
-    trackingDoc.remainingDistanceKm
-  ) {
-    const total = trackingDoc.totalDistanceKm;
-    const remaining = trackingDoc.remainingDistanceKm;
-    if (total > 0) {
+  if (ride.status === RIDE_STATUS.COMPLETED) {
+    routeProgressPercentage = 100;
+  } else if (ride.status === RIDE_STATUS.STARTED) {
+    const total =
+      trackingDoc?.totalDistanceKm || ride.routeInfo?.totalDistanceKm || 0;
+    const remaining =
+      trackingDoc && typeof trackingDoc.remainingDistanceKm === "number"
+        ? trackingDoc.remainingDistanceKm
+        : null;
+
+    if (total > 0 && remaining !== null) {
       routeProgressPercentage = Math.round(((total - remaining) / total) * 100);
       routeProgressPercentage = Math.max(
         0,
@@ -416,6 +419,19 @@ const getLiveTripByIdFromDB = async (rideId: string): Promise<any> => {
       );
     }
   }
+
+  const isCompleted = ride.status === RIDE_STATUS.COMPLETED;
+  const isCancelled = [
+    RIDE_STATUS.CANCELLED,
+    RIDE_STATUS.CANCELLED_BY_USER,
+    RIDE_STATUS.CANCELLED_BY_DRIVER,
+    RIDE_STATUS.EXPIRED,
+  ].includes(ride.status as any);
+
+  const eta =
+    isCompleted || isCancelled
+      ? 0
+      : (trackingDoc?.estimatedArrivalMinutes || 0);
 
   // 7. Live Tracking
   const liveTracking = trackingDoc
@@ -434,7 +450,7 @@ const getLiveTripByIdFromDB = async (rideId: string): Promise<any> => {
             (trackingDoc as any).updatedAt,
         ),
         routePolyline: trackingDoc.polyline || ride.routeInfo.polyline || "",
-        ETA: trackingDoc.estimatedArrivalMinutes || 0,
+        ETA: eta,
         routeProgressPercentage,
       }
     : {
@@ -443,8 +459,8 @@ const getLiveTripByIdFromDB = async (rideId: string): Promise<any> => {
         speed: 0,
         lastUpdated: null,
         routePolyline: ride.routeInfo.polyline || "",
-        ETA: 0,
-        routeProgressPercentage: 0,
+        ETA: isCompleted || isCancelled ? 0 : (ride.routeInfo?.totalDurationMinutes || 0),
+        routeProgressPercentage,
       };
 
   // 8. Fare Summary

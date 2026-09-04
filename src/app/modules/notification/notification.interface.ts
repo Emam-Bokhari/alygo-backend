@@ -16,7 +16,9 @@ export type INotification = {
     | "Wallet"
     | "Payout"
     | "LostFound"
-    | "Broadcast";
+    | "Broadcast"
+    | "Driver"
+    | "Referral";
   type?: string;
 };
 

@@ -2144,6 +2144,11 @@ const getLostItemDetailsFromDB = async (reportId: string): Promise<any> => {
     throw new ApiError(StatusCodes.NOT_ACCEPTABLE, "Invalid report ID.");
   }
 
+  const rawReport = await LostFound.findById(reportId).select("rideId").lean();
+  if (!rawReport) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "Report not found.");
+  }
+
   const report = await LostFound.findById(reportId)
     .populate({ path: "rideId" })
     .populate({ path: "passengerId", select: "name email phone profileImage" })
@@ -2166,6 +2171,12 @@ const getLostItemDetailsFromDB = async (reportId: string): Promise<any> => {
   const formatTime = (date: Date) =>
     utcToTimezone(date, timezone).toFormat("M/d/yyyy, h:mm:ss a");
 
+  const rawRideId =
+    (report.rideId as any)?._id?.toString() ||
+    rawReport.rideId?.toString() ||
+    "";
+  const rideObj = (report.rideId as any) || null;
+
   return {
     report: {
       reportId: report._id.toString(),
@@ -2183,20 +2194,32 @@ const getLostItemDetailsFromDB = async (reportId: string): Promise<any> => {
     driver: {
       id: report.driverId?._id?.toString() || "",
       fullName: (report.driverId as any)?.name || "",
-      driverId: driverDoc ? `d-${driverDoc._id.toString().slice(-3)}` : "",
+      driverId: driverDoc
+        ? driverDoc._id.toString()
+        : report.driverId?._id?.toString() || "",
       rating: driverDoc?.averageRating || 0,
       avatar: (report.driverId as any)?.profileImage || "",
     },
     trip: {
-      rideId: (report.rideId as any)?._id?.toString() || "",
+      tripId: rawRideId,
+      rideId: rawRideId,
       bookingReference:
-        (report.rideId as any)?.bookingReference ||
-        `TRP-${(report.rideId as any)?._id?.toString().slice(-5).toUpperCase()}`,
-      pickupAddress: (report.rideId as any)?.pickup?.address || "",
-      destinationAddress: (report.rideId as any)?.destination?.address || "",
-      tripDate: (report.rideId as any)?.createdAt
-        ? formatTime((report.rideId as any)?.createdAt)
-        : "",
+        rideObj?.bookingReference ||
+        (rawRideId ? `TRP-${rawRideId.slice(-5).toUpperCase()}` : ""),
+      pickupAddress:
+        rideObj?.pickup?.address ||
+        (typeof rideObj?.pickup === "string" ? rideObj.pickup : ""),
+      destinationAddress:
+        rideObj?.destination?.address ||
+        (typeof rideObj?.destination === "string" ? rideObj.destination : ""),
+      stops:
+        rideObj?.stops?.map((stop: any) => ({
+          order: stop.order,
+          address: stop.address,
+          latitude: stop.location?.coordinates?.[1] ?? null,
+          longitude: stop.location?.coordinates?.[0] ?? null,
+        })) || [],
+      tripDate: rideObj?.createdAt ? formatTime(rideObj.createdAt) : "",
     },
     lostItem: {
       category: (report.itemCategory as any)?.name || "",
@@ -2219,6 +2242,11 @@ const getLostItemReturnDetailsFromDB = async (
     throw new ApiError(StatusCodes.NOT_ACCEPTABLE, "Invalid report ID.");
   }
 
+  const rawReport = await LostFound.findById(reportId).select("rideId").lean();
+  if (!rawReport) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "Report not found.");
+  }
+
   const report = await LostFound.findById(reportId)
     .populate({ path: "rideId" })
     .populate({ path: "passengerId", select: "name email phone profileImage" })
@@ -2240,6 +2268,12 @@ const getLostItemReturnDetailsFromDB = async (
     "Asia/Dhaka";
   const formatTime = (date: Date) =>
     utcToTimezone(date, timezone).toFormat("M/d/yyyy, h:mm:ss a");
+
+  const rawRideId =
+    (report.rideId as any)?._id?.toString() ||
+    rawReport.rideId?.toString() ||
+    "";
+  const rideObj = (report.rideId as any) || null;
 
   // Find completedAt from auditLogs
   const completedAtLog = report.auditLogs?.find(
@@ -2294,20 +2328,32 @@ const getLostItemReturnDetailsFromDB = async (
     driver: {
       id: report.driverId?._id?.toString() || "",
       fullName: (report.driverId as any)?.name || "",
-      driverId: driverDoc ? `d-${driverDoc._id.toString().slice(-3)}` : "",
+      driverId: driverDoc
+        ? driverDoc._id.toString()
+        : report.driverId?._id?.toString() || "",
       rating: driverDoc?.averageRating || 0,
       avatar: (report.driverId as any)?.profileImage || "",
     },
     trip: {
-      rideId: (report.rideId as any)?._id?.toString() || "",
+      tripId: rawRideId,
+      rideId: rawRideId,
       bookingReference:
-        (report.rideId as any)?.bookingReference ||
-        `TRP-${(report.rideId as any)?._id?.toString().slice(-5).toUpperCase()}`,
-      pickupAddress: (report.rideId as any)?.pickup?.address || "",
-      destinationAddress: (report.rideId as any)?.destination?.address || "",
-      tripDate: (report.rideId as any)?.createdAt
-        ? formatTime((report.rideId as any)?.createdAt)
-        : "",
+        rideObj?.bookingReference ||
+        (rawRideId ? `TRP-${rawRideId.slice(-5).toUpperCase()}` : ""),
+      pickupAddress:
+        rideObj?.pickup?.address ||
+        (typeof rideObj?.pickup === "string" ? rideObj.pickup : ""),
+      destinationAddress:
+        rideObj?.destination?.address ||
+        (typeof rideObj?.destination === "string" ? rideObj.destination : ""),
+      stops:
+        rideObj?.stops?.map((stop: any) => ({
+          order: stop.order,
+          address: stop.address,
+          latitude: stop.location?.coordinates?.[1] ?? null,
+          longitude: stop.location?.coordinates?.[0] ?? null,
+        })) || [],
+      tripDate: rideObj?.createdAt ? formatTime(rideObj.createdAt) : "",
     },
     lostItem: {
       category: (report.itemCategory as any)?.name || "",

@@ -1843,6 +1843,8 @@ const startRide = async (
     {
       $set: {
         polyline: ride.routeInfo?.polyline || "",
+        totalDistanceKm: ride.routeInfo?.totalDistanceKm || 0,
+        totalDurationMinutes: ride.routeInfo?.totalDurationMinutes || 0,
         remainingDistanceKm: ride.routeInfo?.totalDistanceKm || 0,
         estimatedArrivalMinutes: ride.routeInfo?.totalDurationMinutes || 0,
         etaCalculatedAt: new Date(),
@@ -2222,6 +2224,19 @@ const completeRide = async (
     await Driver.findOneAndUpdate(
       { userId: driverUserId },
       { $set: { driverAvailabilityStatus: "online" } },
+      { session },
+    );
+
+    // Update tracking doc upon ride completion
+    await Tracking.findOneAndUpdate(
+      { rideId: ride._id },
+      {
+        $set: {
+          remainingDistanceKm: 0,
+          estimatedArrivalMinutes: 0,
+          lastUpdatedAt: new Date(),
+        },
+      },
       { session },
     );
 

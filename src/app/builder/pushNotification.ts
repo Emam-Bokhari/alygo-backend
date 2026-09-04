@@ -6,6 +6,7 @@ import colors from "colors";
 import { DeviceToken } from "../modules/fcmToken/fcmToken.model";
 import { firebaseAdmin } from "../../config/firebase";
 import { NOTIFICATION_TYPE } from "../modules/notification/notification.constant";
+import { notificationUiLogger } from "../../helpers/notificationUiLogger";
 
 // 1. Define the Payload Interface (Type Safety)
 export interface INotificationPayload {
@@ -49,7 +50,18 @@ class NotificationHelper {
 
       const validUserIds = validUsers.map((u) => u._id);
 
-      if (validUserIds.length === 0) return;
+      if (validUserIds.length === 0) {
+        notificationUiLogger.logPushNotification({
+          status: "SKIPPED",
+          recipients: userIds.map((id) => id.toString()),
+          title: payload.title,
+          body: payload.body,
+          type: payload.type,
+          data: payload.data,
+          reason: "User(s) not found or notifications disabled in database",
+        });
+        return;
+      }
 
       // 2. Fetch FCM Tokens for these users
       const tokensData = await DeviceToken.find({
@@ -66,7 +78,17 @@ class NotificationHelper {
 
       // TASK A: Send Push Notifications (only if tokens exist)
       if (fcmTokens.length > 0) {
-        tasks.push(this.sendToFCM(fcmTokens, payload));
+        tasks.push(this.sendToFCM(fcmTokens, payload, validUserIds));
+      } else {
+        notificationUiLogger.logPushNotification({
+          status: "SKIPPED",
+          recipients: validUserIds.map((id) => id.toString()),
+          title: payload.title,
+          body: payload.body,
+          type: payload.type,
+          data: payload.data,
+          reason: "User has NO registered FCM device token in database",
+        });
       }
 
       // TASK B: Save to Database (Always, even if they don't have a token)
@@ -135,7 +157,12 @@ class NotificationHelper {
    * 🔒 PRIVATE: Handle Firebase Logic & Token Cleanup
    * Chunks tokens into batches of 500 (Firebase limit)
    */
-  private async sendToFCM(tokens: string[], payload: INotificationPayload) {
+  private async sendToFCM(
+    tokens: string[],
+    payload: INotificationPayload,
+    targetUserIds?: any[],
+  ) {
+    const recipientIds = targetUserIds?.map((id) => id.toString()) || ["User"];
     try {
       // ✅ Fixed: Chunk tokens into batches of 500 (Firebase multicast limit)
       const BATCH_SIZE = 500;
@@ -158,14 +185,21 @@ class NotificationHelper {
           .messaging()
           .sendEachForMulticast(message);
 
-        // Cleanup Invalid Tokens
+        // Collect failure details & cleanup invalid tokens
+        const failureDetails: string[] = [];
+        const failedTokens: string[] = [];
+
         if (response.failureCount > 0) {
-          const failedTokens: string[] = [];
           response.responses.forEach((resp: any, idx: number) => {
             if (!resp.success) {
-              const errCode = resp.error?.code;
+              const errCode = resp.error?.code || "unknown-error";
+              const errMsg = resp.error?.message || "Failed to deliver";
+              failureDetails.push(`${errCode}: ${errMsg}`);
+
               if (
                 errCode === "messaging/registration-token-not-registered" ||
+                errCode === "messaging/invalid-registration-token" ||
+                errCode === "messaging/invalid-argument" ||
                 errCode === "messaging/mismatched-credential"
               ) {
                 failedTokens.push(chunk[idx]);
@@ -179,14 +213,42 @@ class NotificationHelper {
             });
             logger.info(
               colors.yellow(
-                `🗑️ Cleaned up ${failedTokens.length} invalid tokens.`,
+                `🗑️ Cleaned up ${failedTokens.length} invalid/expired FCM tokens from database.`,
               ),
             );
           }
         }
+
+        const primaryFailureReason =
+          failureDetails.length > 0 ? failureDetails[0] : undefined;
+
+        notificationUiLogger.logPushNotification({
+          status: response.successCount > 0 ? "SUCCESS" : "FAILED",
+          recipients: recipientIds,
+          title: payload.title,
+          body: payload.body,
+          type: payload.type,
+          tokensCount: response.successCount,
+          data: payload.data,
+          reason:
+            primaryFailureReason ||
+            (response.failureCount > 0
+              ? `${response.failureCount} device token(s) failed out of ${chunk.length}`
+              : undefined),
+          error: primaryFailureReason,
+        });
       }
     } catch (error) {
       logger.error(colors.red("FCM Send Error:"), error);
+      notificationUiLogger.logPushNotification({
+        status: "FAILED",
+        recipients: recipientIds,
+        title: payload.title,
+        body: payload.body,
+        type: payload.type,
+        data: payload.data,
+        error,
+      });
     }
   }
 
@@ -224,9 +286,31 @@ class NotificationHelper {
             result.receiver?.toString();
           if (receiverId) {
             socketIo.emit(`send-notification::${receiverId}`, result);
+            notificationUiLogger.logSocketEvent({
+              status: "DELIVERED",
+              event: `send-notification::${receiverId}`,
+              recipient: receiverId,
+              data: {
+                title: result.title,
+                text: result.text,
+                type: result.type,
+                referenceId:
+                  (result.referenceId as any)?._id?.toString() ||
+                  result.referenceId?.toString(),
+              },
+            });
           }
           if (result.type === NOTIFICATION_TYPE.ADMIN) {
             socketIo.emit("send-notification::admin", result);
+            notificationUiLogger.logSocketEvent({
+              status: "BROADCAST",
+              event: "send-notification::admin",
+              recipient: "Admin Channel",
+              data: {
+                title: result.title,
+                text: result.text,
+              },
+            });
           }
         });
       }

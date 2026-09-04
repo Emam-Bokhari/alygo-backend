@@ -2,6 +2,7 @@ import nodemailer from "nodemailer";
 import config from "../config";
 import { errorLogger, logger } from "../shared/logger";
 import { ISendEmail } from "../types/email";
+import { notificationUiLogger } from "./notificationUiLogger";
 
 const transporter = nodemailer.createTransport({
   host: config.email.host,
@@ -23,8 +24,22 @@ const sendEmail = async (values: ISendEmail) => {
     });
 
     logger.info("Mail send successfully", info.accepted);
-  } catch (error) {
+    notificationUiLogger.logEmail({
+      status: "SUCCESS",
+      to: values.to,
+      subject: values.subject,
+      from: `"Alygo" ${config.email.from}`,
+      messageId: info.messageId,
+    });
+  } catch (error: any) {
     errorLogger.error("Email", error);
+    notificationUiLogger.logEmail({
+      status: "FAILED",
+      to: values.to,
+      subject: values.subject,
+      from: `"Alygo" ${config.email.from}`,
+      error: error?.message || error,
+    });
   }
 };
 

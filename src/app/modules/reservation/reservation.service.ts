@@ -597,24 +597,37 @@ const getReservationDetailsFromDB = async (reservationId: string) => {
     : null;
 
   const trackingDoc = await Tracking.findOne({ rideId: ride._id }).lean();
+  let reservationRouteProgress: number | null = null;
+  if (ride.status === RIDE_STATUS.COMPLETED) {
+    reservationRouteProgress = 100;
+  } else if (ride.status === RIDE_STATUS.STARTED) {
+    const totalDist =
+      trackingDoc?.totalDistanceKm || ride.routeInfo?.totalDistanceKm || 0;
+    const remDist =
+      trackingDoc && typeof trackingDoc.remainingDistanceKm === "number"
+        ? trackingDoc.remainingDistanceKm
+        : null;
+    if (totalDist > 0 && remDist !== null) {
+      reservationRouteProgress = Number(
+        Math.max(0, Math.min(100, ((totalDist - remDist) / totalDist) * 100)).toFixed(1),
+      );
+    }
+  }
+
   const trackingInfo = trackingDoc
     ? {
         driverLocation: trackingDoc.driverLocation || null,
         pickupLocation: ride.pickup?.location || null,
         destinationLocation: ride.destination?.location || null,
-        currentEta: trackingDoc.estimatedArrivalMinutes || null,
-        remainingDistance: trackingDoc.remainingDistanceKm || null,
-        routeProgress:
-          trackingDoc.totalDistanceKm && trackingDoc.remainingDistanceKm
-            ? Number(
-                (
-                  (1 -
-                    trackingDoc.remainingDistanceKm /
-                      trackingDoc.totalDistanceKm) *
-                  100
-                ).toFixed(1),
-              )
-            : null,
+        currentEta:
+          ride.status === RIDE_STATUS.COMPLETED
+            ? 0
+            : trackingDoc.estimatedArrivalMinutes || null,
+        remainingDistance:
+          ride.status === RIDE_STATUS.COMPLETED
+            ? 0
+            : trackingDoc.remainingDistanceKm || null,
+        routeProgress: reservationRouteProgress,
       }
     : null;
 

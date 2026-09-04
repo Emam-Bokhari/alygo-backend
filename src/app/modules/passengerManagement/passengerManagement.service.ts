@@ -563,14 +563,17 @@ const getLivePassengerDetails = async (passengerId: string) => {
   }
 
   let routeProgressPercentage = 0;
-  if (
-    trackingDoc &&
-    trackingDoc.totalDistanceKm &&
-    trackingDoc.remainingDistanceKm
-  ) {
-    const total = trackingDoc.totalDistanceKm;
-    const remaining = trackingDoc.remainingDistanceKm;
-    if (total > 0) {
+  if (ride.status === RIDE_STATUS.COMPLETED) {
+    routeProgressPercentage = 100;
+  } else if (ride.status === RIDE_STATUS.STARTED) {
+    const total =
+      trackingDoc?.totalDistanceKm || ride.routeInfo?.totalDistanceKm || 0;
+    const remaining =
+      trackingDoc && typeof trackingDoc.remainingDistanceKm === "number"
+        ? trackingDoc.remainingDistanceKm
+        : null;
+
+    if (total > 0 && remaining !== null) {
       routeProgressPercentage = Math.round(((total - remaining) / total) * 100);
       routeProgressPercentage = Math.max(
         0,
@@ -600,8 +603,14 @@ const getLivePassengerDetails = async (passengerId: string) => {
           address: ride.destination.address,
         }
       : null,
-    ETA: trackingDoc?.estimatedArrivalMinutes || 0,
-    remainingDistance: trackingDoc?.remainingDistanceKm || 0,
+    ETA:
+      ride.status === RIDE_STATUS.COMPLETED
+        ? 0
+        : trackingDoc?.estimatedArrivalMinutes || 0,
+    remainingDistance:
+      ride.status === RIDE_STATUS.COMPLETED
+        ? 0
+        : trackingDoc?.remainingDistanceKm || 0,
     progressPercentage: routeProgressPercentage,
   };
 

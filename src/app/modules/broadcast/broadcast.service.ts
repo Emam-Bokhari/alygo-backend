@@ -78,7 +78,7 @@ const resolveAudienceUserIds = async (
         .select("userId")
         .lean();
 
-      return drivers.map((d) => d.userId.toString());
+      return [...new Set(drivers.map((d) => d.userId.toString()))];
     }
 
     case BROADCAST_TARGET.ALL_PASSENGERS: {
@@ -91,7 +91,7 @@ const resolveAudienceUserIds = async (
         .select("_id")
         .lean();
 
-      return users.map((u) => u._id.toString());
+      return [...new Set(users.map((u) => u._id.toString()))];
     }
 
     case BROADCAST_TARGET.BY_CITY: {
@@ -119,7 +119,7 @@ const resolveAudienceUserIds = async (
         .select("userId")
         .lean();
 
-      return drivers.map((d) => d.userId.toString());
+      return [...new Set(drivers.map((d) => d.userId.toString()))];
     }
 
     case BROADCAST_TARGET.BY_STATE: {
@@ -147,7 +147,7 @@ const resolveAudienceUserIds = async (
         .select("userId")
         .lean();
 
-      return drivers.map((d) => d.userId.toString());
+      return [...new Set(drivers.map((d) => d.userId.toString()))];
     }
 
     case BROADCAST_TARGET.BY_TIER: {
@@ -163,7 +163,7 @@ const resolveAudienceUserIds = async (
         .select("userId")
         .lean();
 
-      return drivers.map((d) => d.userId.toString());
+      return [...new Set(drivers.map((d) => d.userId.toString()))];
     }
 
     default:

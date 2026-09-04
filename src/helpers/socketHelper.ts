@@ -10,6 +10,7 @@ import { DRIVER_AVAILABILITY_STATUS } from "../app/modules/driver/driver.constan
 import { Tracking } from "../app/modules/tracking/tracking.model";
 import { Secret } from "jsonwebtoken";
 import { getSystemConfig } from "./systemConfigHelper";
+import { notificationUiLogger } from "./notificationUiLogger";
 
 // Map to store connected userId -> Socket object
 const socketMap = new Map<string, Socket>();
@@ -561,12 +562,21 @@ const sendToUser = (
   const clientSocket = socketMap.get(key);
   if (clientSocket) {
     clientSocket.emit(event, data);
-    logger.info(colors.green(`Socket event '${event}' sent to user: ${key}`));
+    notificationUiLogger.logSocketEvent({
+      status: "DELIVERED",
+      event,
+      recipient: key,
+      data,
+    });
     return true;
   }
-  logger.warn(
-    colors.yellow(`Socket event '${event}' FAILED - user ${key} not connected`),
-  );
+  notificationUiLogger.logSocketEvent({
+    status: "OFFLINE",
+    event,
+    recipient: key,
+    data,
+    note: "User is not currently connected to Socket.IO",
+  });
   return false;
 };
 
