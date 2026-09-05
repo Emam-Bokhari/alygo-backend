@@ -250,19 +250,17 @@ const getActiveRideShareInfo = catchAsync(
   },
 );
 
-const getSharedRideByToken = catchAsync(
-  async (req: Request, res: Response) => {
-    const { shareToken } = req.params;
-    const result = await RideServices.getSharedRideByToken(shareToken);
+const getSharedRideByToken = catchAsync(async (req: Request, res: Response) => {
+  const { shareToken } = req.params;
+  const result = await RideServices.getSharedRideByToken(shareToken);
 
-    sendResponse(res, {
-      statusCode: StatusCodes.OK,
-      success: true,
-      message: "Shared ride details retrieved successfully",
-      data: result,
-    });
-  },
-);
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Shared ride details retrieved successfully",
+    data: result,
+  });
+});
 
 const toggleRideShare = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user.id;

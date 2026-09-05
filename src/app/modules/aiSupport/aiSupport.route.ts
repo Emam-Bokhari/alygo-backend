@@ -79,7 +79,7 @@ driverRouter
   .get(isDriver, AiSupportController.getConversations)
   .post(isDriver, AiSupportController.startConversation);
 
-driverRouter 
+driverRouter
   .route("/conversations/:id")
   .get(isDriver, AiSupportController.getConversationById)
   .patch(

@@ -4026,9 +4026,7 @@ const formatRideSharePayload = async (
     tracking = {
       driverLocation: trackingDoc.driverLocation,
       userLocation: trackingDoc.userLocation,
-      remainingDistanceKm: isArrived
-        ? 0
-        : trackingDoc.remainingDistanceKm || 0,
+      remainingDistanceKm: isArrived ? 0 : trackingDoc.remainingDistanceKm || 0,
       estimatedArrivalMinutes: isArrived
         ? 0
         : trackingDoc.estimatedArrivalMinutes || 0,

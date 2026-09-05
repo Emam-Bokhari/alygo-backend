@@ -429,9 +429,7 @@ const getLiveTripByIdFromDB = async (rideId: string): Promise<any> => {
   ].includes(ride.status as any);
 
   const eta =
-    isCompleted || isCancelled
-      ? 0
-      : (trackingDoc?.estimatedArrivalMinutes || 0);
+    isCompleted || isCancelled ? 0 : trackingDoc?.estimatedArrivalMinutes || 0;
 
   // 7. Live Tracking
   const liveTracking = trackingDoc
@@ -459,7 +457,10 @@ const getLiveTripByIdFromDB = async (rideId: string): Promise<any> => {
         speed: 0,
         lastUpdated: null,
         routePolyline: ride.routeInfo.polyline || "",
-        ETA: isCompleted || isCancelled ? 0 : (ride.routeInfo?.totalDurationMinutes || 0),
+        ETA:
+          isCompleted || isCancelled
+            ? 0
+            : ride.routeInfo?.totalDurationMinutes || 0,
         routeProgressPercentage,
       };
 

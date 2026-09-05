@@ -95,7 +95,10 @@ const renderCardBox = (options: RenderBoxOptions): void => {
 
   let rawTitle = ` ${options.icon}  ${options.channel.toUpperCase()} : ${options.title}`;
   if (getVisibleWidth(rawTitle) > maxTitleWidth) {
-    while (getVisibleWidth(rawTitle) > maxTitleWidth - 3 && rawTitle.length > 0) {
+    while (
+      getVisibleWidth(rawTitle) > maxTitleWidth - 3 &&
+      rawTitle.length > 0
+    ) {
       rawTitle = rawTitle.slice(0, -1);
     }
     rawTitle += "...";
@@ -417,7 +420,8 @@ const logEmail = (opts: EmailLogOptions): void => {
   if (opts.status === "FAILED") {
     badgeColor = colors.red.bold;
     badgeText = "FAILED";
-    statusText = opts.error?.message || String(opts.error || "Email dispatch failed");
+    statusText =
+      opts.error?.message || String(opts.error || "Email dispatch failed");
   } else if (opts.messageId) {
     statusText = `Accepted (ID: ${opts.messageId})`;
   }

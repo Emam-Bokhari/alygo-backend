@@ -116,7 +116,11 @@ CRITICAL INSTRUCTIONS:
         }
 
         // If tool calls were made
-        if (message.tool_calls && message.tool_calls.length > 0 && toolsContext) {
+        if (
+          message.tool_calls &&
+          message.tool_calls.length > 0 &&
+          toolsContext
+        ) {
           messages.push(message);
 
           for (const toolCall of message.tool_calls) {
@@ -141,7 +145,9 @@ CRITICAL INSTRUCTIONS:
             messages.push({
               role: "tool",
               tool_call_id: toolCall.id,
-              content: JSON.stringify(toolResult.data || { error: toolResult.error }),
+              content: JSON.stringify(
+                toolResult.data || { error: toolResult.error },
+              ),
             });
           }
 

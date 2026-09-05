@@ -202,8 +202,7 @@ class GoogleRouteServiceClass {
       const googleLegDuration = googleLeg.duration_in_traffic
         ? googleLeg.duration_in_traffic.value
         : googleLeg.duration.value;
-      const driverToPickupDurMin =
-        Math.round(googleLegDuration / 60) || 1;
+      const driverToPickupDurMin = Math.round(googleLegDuration / 60) || 1;
 
       // Leg 0: driver -> pickup (active)
       legs.push({

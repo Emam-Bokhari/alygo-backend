@@ -238,8 +238,8 @@ const getOverviewFromDB = async (
       },
       {
         $addFields: {
-          resolvedRideId: { $ifNull: ["$rideId", "$bookingId"] }
-        }
+          resolvedRideId: { $ifNull: ["$rideId", "$bookingId"] },
+        },
       },
       {
         $lookup: {
@@ -261,9 +261,11 @@ const getOverviewFromDB = async (
             $cond: [
               {
                 $and: [
-                  { $eq: ["$transactionType", TRANSACTION_TYPE.BOOKING_PAYMENT] },
-                  { $eq: ["$ride.status", RIDE_STATUS.COMPLETED] }
-                ]
+                  {
+                    $eq: ["$transactionType", TRANSACTION_TYPE.BOOKING_PAYMENT],
+                  },
+                  { $eq: ["$ride.status", RIDE_STATUS.COMPLETED] },
+                ],
               },
               { $ifNull: ["$commission", 0] },
               {
@@ -850,8 +852,8 @@ const getRevenueTrendFromDB = async (
     { $match: matchStage },
     {
       $addFields: {
-        resolvedRideId: { $ifNull: ["$rideId", "$bookingId"] }
-      }
+        resolvedRideId: { $ifNull: ["$rideId", "$bookingId"] },
+      },
     },
     {
       $lookup: {
@@ -881,8 +883,8 @@ const getRevenueTrendFromDB = async (
             {
               $and: [
                 { $eq: ["$transactionType", TRANSACTION_TYPE.BOOKING_PAYMENT] },
-                { $eq: ["$ride.status", RIDE_STATUS.COMPLETED] }
-              ]
+                { $eq: ["$ride.status", RIDE_STATUS.COMPLETED] },
+              ],
             },
             { $ifNull: ["$commission", 0] },
             {

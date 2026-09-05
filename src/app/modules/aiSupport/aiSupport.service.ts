@@ -678,7 +678,11 @@ const getConversationDetailsFromDB = async (
   driverId: string,
   id: string,
   query: any = {},
-): Promise<{ conversation: IAiConversation; messages: IAiSupport[]; meta: any }> => {
+): Promise<{
+  conversation: IAiConversation;
+  messages: IAiSupport[];
+  meta: any;
+}> => {
   const conversation = await AiConversation.findOne({
     _id: id,
     driverId,

@@ -122,8 +122,7 @@ export const AI_SUPPORT_TOOL_DECLARATIONS: IFunctionDeclaration[] = [
       properties: {
         keyword: {
           type: "STRING",
-          description:
-            "Optional search keyword to match specific FAQ topics.",
+          description: "Optional search keyword to match specific FAQ topics.",
         },
       },
     },
@@ -266,9 +265,7 @@ const getDriverEarningsAndWallet = async (
     { $group: { _id: null, total: { $sum: "$amount" } } },
   ]);
   const todayEarnings =
-    todayResult.length > 0
-      ? parseFloat(todayResult[0].total.toFixed(2))
-      : 0;
+    todayResult.length > 0 ? parseFloat(todayResult[0].total.toFixed(2)) : 0;
 
   // This Week Earnings
   const weekResult = await Transaction.aggregate([
@@ -276,9 +273,7 @@ const getDriverEarningsAndWallet = async (
     { $group: { _id: null, total: { $sum: "$amount" } } },
   ]);
   const thisWeekEarnings =
-    weekResult.length > 0
-      ? parseFloat(weekResult[0].total.toFixed(2))
-      : 0;
+    weekResult.length > 0 ? parseFloat(weekResult[0].total.toFixed(2)) : 0;
 
   // This Month Earnings
   const monthResult = await Transaction.aggregate([
@@ -286,9 +281,7 @@ const getDriverEarningsAndWallet = async (
     { $group: { _id: null, total: { $sum: "$amount" } } },
   ]);
   const thisMonthEarnings =
-    monthResult.length > 0
-      ? parseFloat(monthResult[0].total.toFixed(2))
-      : 0;
+    monthResult.length > 0 ? parseFloat(monthResult[0].total.toFixed(2)) : 0;
 
   // 4. Pending Balance (Sum of pending credit transactions)
   const pendingQuery: any = {
@@ -340,8 +333,8 @@ const getDriverEarningsAndWallet = async (
     pendingBalance,
     currency,
     completedTripsCount,
-    stripeConnected: driver ? !!(driver.isStripeOnboarded) : false,
-    canWithdraw: availableBalance > 0 && !!(driver?.isStripeOnboarded),
+    stripeConnected: driver ? !!driver.isStripeOnboarded : false,
+    canWithdraw: availableBalance > 0 && !!driver?.isStripeOnboarded,
     pendingPayoutRequests: pendingPayouts.map((p) => ({
       payoutId: p.payoutId,
       amount: p.amount,
@@ -395,20 +388,16 @@ const getDriverRecentRides = async (
     const totalFare = parseFloat(
       (r.fare?.total ?? r.fare?.subtotal ?? 0).toFixed(2),
     );
-    const driverEarning = parseFloat(
-      (r.fare?.driverEarning ?? 0).toFixed(2),
-    );
+    const driverEarning = parseFloat((r.fare?.driverEarning ?? 0).toFixed(2));
     const baseFare = parseFloat((r.fare?.baseFare ?? 0).toFixed(2));
     const distanceFare = parseFloat((r.fare?.distanceFare ?? 0).toFixed(2));
     const timeFare = parseFloat((r.fare?.timeFare ?? 0).toFixed(2));
     const commission = parseFloat((r.fare?.commission ?? 0).toFixed(2));
     const discount = parseFloat((r.fare?.discount ?? 0).toFixed(2));
     const cancellationFee = parseFloat(
-      (
-        r.cancellation?.cancellationFee ??
-        r.fare?.cancellationFee ??
-        0
-      ).toFixed(2),
+      (r.cancellation?.cancellationFee ?? r.fare?.cancellationFee ?? 0).toFixed(
+        2,
+      ),
     );
     const driverCompensation = parseFloat(
       (r.cancellation?.driverCompensation ?? 0).toFixed(2),
@@ -473,7 +462,8 @@ const getCancellationPolicies = async () => {
       defaultPolicy: {
         passengerGracePeriodMinutes: 2,
         passengerCancellationFeeAfterDriverAcceptance: "$5.00",
-        driverCancellationFeeWithoutPenalty: "Allowed before reaching pickup if emergency",
+        driverCancellationFeeWithoutPenalty:
+          "Allowed before reaching pickup if emergency",
         driverRepeatedCancellationWarning:
           "Excessive cancellations may impact tier points and rating.",
       },
@@ -490,7 +480,8 @@ const getCancellationPolicies = async () => {
       driverRules: {
         afterAccept: p.driver?.afterAccept,
         excessiveCancellation: p.driver?.excessiveCancellation,
-        excessiveCancellationThreshold: p.driver?.excessiveCancellationThreshold,
+        excessiveCancellationThreshold:
+          p.driver?.excessiveCancellationThreshold,
       },
     })),
   };
@@ -573,8 +564,7 @@ const getDriverTierAndPoints = async (driverId: string) => {
     }
   }
 
-  const nextTierPointsRequired =
-    nextTierObj?.requirements?.pointsRequired || 0;
+  const nextTierPointsRequired = nextTierObj?.requirements?.pointsRequired || 0;
 
   return {
     currentTierName: currentTierObj?.name || "Standard Driver",

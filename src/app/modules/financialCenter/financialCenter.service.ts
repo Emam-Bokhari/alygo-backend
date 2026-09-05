@@ -57,8 +57,8 @@ const getFinancialMetricsForRange = async (
     },
     {
       $addFields: {
-        resolvedRideId: { $ifNull: ["$rideId", "$bookingId"] }
-      }
+        resolvedRideId: { $ifNull: ["$rideId", "$bookingId"] },
+      },
     },
     {
       $lookup: {
@@ -83,22 +83,30 @@ const getFinancialMetricsForRange = async (
             $cond: [
               {
                 $and: [
-                  { $eq: ["$transactionType", TRANSACTION_TYPE.BOOKING_PAYMENT] },
-                  { $eq: ["$ride.status", RIDE_STATUS.COMPLETED] }
-                ]
+                  {
+                    $eq: ["$transactionType", TRANSACTION_TYPE.BOOKING_PAYMENT],
+                  },
+                  { $eq: ["$ride.status", RIDE_STATUS.COMPLETED] },
+                ],
               },
               { $ifNull: ["$commission", 0] },
-              0
-            ]
-          }
+              0,
+            ],
+          },
         },
       },
     },
   ]);
 
-  const bookingTx = txStats.find((t) => t._id === TRANSACTION_TYPE.BOOKING_PAYMENT);
-  const cancellationFeeTx = txStats.find((t) => t._id === TRANSACTION_TYPE.CANCELLATION_FEE);
-  const cancellationCompensationTx = txStats.find((t) => t._id === TRANSACTION_TYPE.CANCELLATION_COMPENSATION);
+  const bookingTx = txStats.find(
+    (t) => t._id === TRANSACTION_TYPE.BOOKING_PAYMENT,
+  );
+  const cancellationFeeTx = txStats.find(
+    (t) => t._id === TRANSACTION_TYPE.CANCELLATION_FEE,
+  );
+  const cancellationCompensationTx = txStats.find(
+    (t) => t._id === TRANSACTION_TYPE.CANCELLATION_COMPENSATION,
+  );
 
   const totalCommission = bookingTx?.totalCommission || 0;
   const cancellationFee = cancellationFeeTx?.totalAmount || 0;
@@ -138,8 +146,8 @@ const getRevenueSummaryFromDB = async (
       },
       {
         $addFields: {
-          resolvedRideId: { $ifNull: ["$rideId", "$bookingId"] }
-        }
+          resolvedRideId: { $ifNull: ["$rideId", "$bookingId"] },
+        },
       },
       {
         $lookup: {
@@ -164,14 +172,19 @@ const getRevenueSummaryFromDB = async (
               $cond: [
                 {
                   $and: [
-                    { $eq: ["$transactionType", TRANSACTION_TYPE.BOOKING_PAYMENT] },
-                    { $eq: ["$ride.status", RIDE_STATUS.COMPLETED] }
-                  ]
+                    {
+                      $eq: [
+                        "$transactionType",
+                        TRANSACTION_TYPE.BOOKING_PAYMENT,
+                      ],
+                    },
+                    { $eq: ["$ride.status", RIDE_STATUS.COMPLETED] },
+                  ],
                 },
                 { $ifNull: ["$commission", 0] },
-                0
-              ]
-            }
+                0,
+              ],
+            },
           },
         },
       },
@@ -191,7 +204,9 @@ const getRevenueSummaryFromDB = async (
     ]),
   ]);
 
-  const bookingTx = allTimeTxStats.find((t) => t._id === TRANSACTION_TYPE.BOOKING_PAYMENT);
+  const bookingTx = allTimeTxStats.find(
+    (t) => t._id === TRANSACTION_TYPE.BOOKING_PAYMENT,
+  );
   const allTimeCommission = bookingTx?.totalCommission || 0;
   const allTimeCancelFee =
     allTimeTxStats.find((t) => t._id === TRANSACTION_TYPE.CANCELLATION_FEE)
@@ -265,8 +280,8 @@ const getRevenueSummaryFromDB = async (
     },
     {
       $addFields: {
-        resolvedRideId: { $ifNull: ["$rideId", "$bookingId"] }
-      }
+        resolvedRideId: { $ifNull: ["$rideId", "$bookingId"] },
+      },
     },
     {
       $lookup: {
@@ -296,8 +311,8 @@ const getRevenueSummaryFromDB = async (
             {
               $and: [
                 { $eq: ["$transactionType", TRANSACTION_TYPE.BOOKING_PAYMENT] },
-                { $eq: ["$ride.status", RIDE_STATUS.COMPLETED] }
-              ]
+                { $eq: ["$ride.status", RIDE_STATUS.COMPLETED] },
+              ],
             },
             { $ifNull: ["$commission", 0] },
             {

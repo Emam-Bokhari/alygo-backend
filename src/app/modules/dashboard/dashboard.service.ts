@@ -113,8 +113,8 @@ const getSummaryFromDB = async () => {
       },
       {
         $addFields: {
-          resolvedRideId: { $ifNull: ["$rideId", "$bookingId"] }
-        }
+          resolvedRideId: { $ifNull: ["$rideId", "$bookingId"] },
+        },
       },
       {
         $lookup: {
@@ -136,9 +136,11 @@ const getSummaryFromDB = async () => {
             $cond: [
               {
                 $and: [
-                  { $eq: ["$transactionType", TRANSACTION_TYPE.BOOKING_PAYMENT] },
-                  { $eq: ["$ride.status", RIDE_STATUS.COMPLETED] }
-                ]
+                  {
+                    $eq: ["$transactionType", TRANSACTION_TYPE.BOOKING_PAYMENT],
+                  },
+                  { $eq: ["$ride.status", RIDE_STATUS.COMPLETED] },
+                ],
               },
               { $ifNull: ["$commission", 0] },
               {
@@ -185,8 +187,8 @@ const getSummaryFromDB = async () => {
       },
       {
         $addFields: {
-          resolvedRideId: { $ifNull: ["$rideId", "$bookingId"] }
-        }
+          resolvedRideId: { $ifNull: ["$rideId", "$bookingId"] },
+        },
       },
       {
         $lookup: {
@@ -208,9 +210,11 @@ const getSummaryFromDB = async () => {
             $cond: [
               {
                 $and: [
-                  { $eq: ["$transactionType", TRANSACTION_TYPE.BOOKING_PAYMENT] },
-                  { $eq: ["$ride.status", RIDE_STATUS.COMPLETED] }
-                ]
+                  {
+                    $eq: ["$transactionType", TRANSACTION_TYPE.BOOKING_PAYMENT],
+                  },
+                  { $eq: ["$ride.status", RIDE_STATUS.COMPLETED] },
+                ],
               },
               { $ifNull: ["$commission", 0] },
               {
@@ -256,8 +260,8 @@ const getSummaryFromDB = async () => {
       },
       {
         $addFields: {
-          resolvedRideId: { $ifNull: ["$rideId", "$bookingId"] }
-        }
+          resolvedRideId: { $ifNull: ["$rideId", "$bookingId"] },
+        },
       },
       {
         $lookup: {
@@ -279,9 +283,11 @@ const getSummaryFromDB = async () => {
             $cond: [
               {
                 $and: [
-                  { $eq: ["$transactionType", TRANSACTION_TYPE.BOOKING_PAYMENT] },
-                  { $eq: ["$ride.status", RIDE_STATUS.COMPLETED] }
-                ]
+                  {
+                    $eq: ["$transactionType", TRANSACTION_TYPE.BOOKING_PAYMENT],
+                  },
+                  { $eq: ["$ride.status", RIDE_STATUS.COMPLETED] },
+                ],
               },
               { $ifNull: ["$commission", 0] },
               {
@@ -407,8 +413,8 @@ const getRevenueChartFromDB = async (range: string = "week") => {
     },
     {
       $addFields: {
-        resolvedRideId: { $ifNull: ["$rideId", "$bookingId"] }
-      }
+        resolvedRideId: { $ifNull: ["$rideId", "$bookingId"] },
+      },
     },
     {
       $lookup: {
@@ -438,8 +444,8 @@ const getRevenueChartFromDB = async (range: string = "week") => {
             {
               $and: [
                 { $eq: ["$transactionType", TRANSACTION_TYPE.BOOKING_PAYMENT] },
-                { $eq: ["$ride.status", RIDE_STATUS.COMPLETED] }
-              ]
+                { $eq: ["$ride.status", RIDE_STATUS.COMPLETED] },
+              ],
             },
             { $ifNull: ["$commission", 0] },
             {
@@ -873,8 +879,8 @@ const getTopCitiesFromDB = async (
     },
     {
       $addFields: {
-        resolvedRideId: { $ifNull: ["$rideId", "$bookingId"] }
-      }
+        resolvedRideId: { $ifNull: ["$rideId", "$bookingId"] },
+      },
     },
     {
       $lookup: {
@@ -895,8 +901,8 @@ const getTopCitiesFromDB = async (
             {
               $and: [
                 { $eq: ["$transactionType", TRANSACTION_TYPE.BOOKING_PAYMENT] },
-                { $eq: ["$ride.status", RIDE_STATUS.COMPLETED] }
-              ]
+                { $eq: ["$ride.status", RIDE_STATUS.COMPLETED] },
+              ],
             },
             { $ifNull: ["$commission", 0] },
             {

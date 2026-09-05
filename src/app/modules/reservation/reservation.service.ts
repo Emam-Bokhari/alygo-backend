@@ -609,7 +609,10 @@ const getReservationDetailsFromDB = async (reservationId: string) => {
         : null;
     if (totalDist > 0 && remDist !== null) {
       reservationRouteProgress = Number(
-        Math.max(0, Math.min(100, ((totalDist - remDist) / totalDist) * 100)).toFixed(1),
+        Math.max(
+          0,
+          Math.min(100, ((totalDist - remDist) / totalDist) * 100),
+        ).toFixed(1),
       );
     }
   }

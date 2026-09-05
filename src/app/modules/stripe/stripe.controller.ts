@@ -345,12 +345,26 @@ const handleWebhook = async (req: Request, res: Response) => {
 
   console.log("[Webhook Debug] Headers:", JSON.stringify(req.headers));
   console.log("[Webhook Debug] typeof rawBody:", typeof (req as any).rawBody);
-  console.log("[Webhook Debug] Is rawBody Buffer:", Buffer.isBuffer((req as any).rawBody));
+  console.log(
+    "[Webhook Debug] Is rawBody Buffer:",
+    Buffer.isBuffer((req as any).rawBody),
+  );
   if ((req as any).rawBody) {
-    console.log("[Webhook Debug] rawBody content preview:", (req as any).rawBody.toString().substring(0, 100));
+    console.log(
+      "[Webhook Debug] rawBody content preview:",
+      (req as any).rawBody.toString().substring(0, 100),
+    );
   }
-  console.log("[Webhook Debug] webhookSecret length:", config.stripe.webhookSecret ? config.stripe.webhookSecret.length : 0);
-  console.log("[Webhook Debug] webhookSecret prefix:", config.stripe.webhookSecret ? config.stripe.webhookSecret.substring(0, 8) : "none");
+  console.log(
+    "[Webhook Debug] webhookSecret length:",
+    config.stripe.webhookSecret ? config.stripe.webhookSecret.length : 0,
+  );
+  console.log(
+    "[Webhook Debug] webhookSecret prefix:",
+    config.stripe.webhookSecret
+      ? config.stripe.webhookSecret.substring(0, 8)
+      : "none",
+  );
 
   if (!signature) {
     return res
