@@ -798,13 +798,21 @@ const getComplaintDetailsFromDB = async (complaintId: string) => {
   const passenger: any = report.reporterId;
   let driver: any = null;
 
-  if (ride && ride.driverId) {
-    driver = await User.findById(ride.driverId).select(
+  const driverId = ride?.driverId || report.rideSnapshot?.driverId;
+  if (driverId) {
+    driver = await User.findById(driverId).select(
       "name email phone profileImage",
     );
   }
 
-  const tracking = await Tracking.findOne({ rideId: report.rideId });
+  const rideIdForTracking =
+    ride?._id ||
+    (report.rideId && Types.ObjectId.isValid(report.rideId.toString())
+      ? report.rideId
+      : null);
+  const tracking = rideIdForTracking
+    ? await Tracking.findOne({ rideId: rideIdForTracking })
+    : null;
 
   const estimatedDistance = (ride?.routeInfo?.totalDistanceKm || 0) * 1000;
   const actualDistance =
@@ -920,7 +928,21 @@ const getComplaintDetailsFromDB = async (complaintId: string) => {
     message: "Complaint details retrieved successfully",
     data: {
       complaint: formattedComplaint,
-      ride: ride || null,
+      ride:
+        ride ||
+        (report.rideSnapshot
+          ? {
+              _id: report.rideId,
+              rideCategory: { name: report.rideSnapshot.rideCategory },
+              pickup: { address: report.rideSnapshot.pickupAddress },
+              destination: { address: report.rideSnapshot.destinationAddress },
+              driverId: report.rideSnapshot.driverId,
+              vehicleName: report.rideSnapshot.vehicleName,
+              vehicleNumber: report.rideSnapshot.vehicleNumber,
+              completedAt: report.rideSnapshot.completedAt,
+              status: "completed",
+            }
+          : null),
       passenger: passenger
         ? {
             id: passenger._id,
