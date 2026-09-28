@@ -334,7 +334,7 @@ export const findEligibleDriversInRadius = async ({
         },
       ],
     });
-     
+
     if (activeRideForDriver) {
       logger.info(
         `Driver ${driverDoc.userId} excluded because they are already on another active ride ${activeRideForDriver._id}.`,

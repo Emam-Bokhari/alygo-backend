@@ -31,6 +31,7 @@ import { googleMapsHelper } from "../../../helpers/googleMapsHelper";
 import { GoogleRouteService } from "../../../services/googleRouteService";
 import { rideDriverSocketHelper } from "./socket/driver.socket";
 import { rideUserSocketHelper } from "./socket/user.socket";
+import { socketHelper } from "../../../helpers/socketHelper";
 import { sendNotifications } from "../../../helpers/notificationsHelper";
 import { NOTIFICATION_TYPE } from "../notification/notification.constant";
 import { TRANSACTION_TYPE } from "../transaction/transaction.constant";
@@ -3904,7 +3905,206 @@ const getRideDetails = async (
 };
 
 /**
+ * Helper to determine active screen identifier for mobile apps based on ride status
+ */
+const getActiveRideScreen = (status: string): string => {
+  switch (status) {
+    case RIDE_STATUS.SEARCHING_DRIVER:
+      return "RIDE_SEARCHING";
+    case RIDE_STATUS.DRIVER_ACCEPTED:
+      return "DRIVER_ACCEPTED";
+    case RIDE_STATUS.DRIVER_ON_THE_WAY:
+      return "DRIVER_ON_THE_WAY";
+    case RIDE_STATUS.DRIVER_ARRIVED:
+      return "DRIVER_ARRIVED";
+    case RIDE_STATUS.STARTED:
+      return "RIDE_STARTED";
+    default:
+      return "HOME";
+  }
+};
+
+/**
+ * Re-emit active ride socket event so mobile app resumes correctly from background/kill
+ */
+const emitActiveRideResumeEvent = async ({
+  ride,
+  role,
+  userId,
+  tracking,
+  driverSummary,
+  passengerSummary,
+  cancellationFeePreview,
+  driverSearchTiming,
+  activeScreen,
+}: {
+  ride: any;
+  role: string;
+  userId: string;
+  tracking: any;
+  driverSummary: any;
+  passengerSummary: any;
+  cancellationFeePreview: number;
+  driverSearchTiming: any;
+  activeScreen: string;
+}): Promise<void> => {
+  try {
+    const isDriver = role === "driver";
+    const driverLocation = tracking?.driverLocation?.coordinates
+      ? {
+          latitude: tracking.driverLocation.coordinates[1],
+          longitude: tracking.driverLocation.coordinates[0],
+        }
+      : undefined;
+
+    const baseEventData = {
+      rideId: ride._id,
+      ...getRideScheduleInfo(ride),
+      pickupLocation: ride.pickup,
+      destination: ride.destination,
+      rideCategory: ride.rideCategory,
+      rideType: ride.rideType,
+      price: ride.fare?.total || 0,
+      status: ride.status,
+      activeScreen,
+      cancellationFeePreview,
+      estimatedArrivalMinutes: tracking?.estimatedArrivalMinutes || 0,
+      remainingDistanceKm: tracking?.remainingDistanceKm || 0,
+      polyline: tracking?.polyline || ride.routeInfo?.polyline || "",
+      driverLocation,
+      driverSearch: driverSearchTiming,
+      timestamp: new Date(),
+    };
+
+    if (isDriver) {
+      // Driver-side re-emission
+      switch (ride.status) {
+        case RIDE_STATUS.DRIVER_ACCEPTED:
+          rideDriverSocketHelper.emitRiderAccepted(userId, {
+            ...baseEventData,
+            ride,
+            driver: driverSummary,
+            user: passengerSummary,
+          });
+          break;
+        case RIDE_STATUS.DRIVER_ON_THE_WAY:
+          rideDriverSocketHelper.emitDriverOnTheWay(userId, {
+            ...baseEventData,
+            automaticDetection: true,
+            user: passengerSummary,
+          });
+          break;
+        case RIDE_STATUS.DRIVER_ARRIVED:
+          rideDriverSocketHelper.emitDriverArrived(userId, {
+            ...baseEventData,
+            user: passengerSummary,
+            estimatedArrivalMinutes: 0,
+            remainingDistanceKm: 0,
+          });
+          break;
+        case RIDE_STATUS.STARTED:
+          rideDriverSocketHelper.emitRideStarted(userId, {
+            ...baseEventData,
+            user: passengerSummary,
+          });
+          break;
+      }
+    } else {
+      // Passenger (User) side re-emission
+      switch (ride.status) {
+        case RIDE_STATUS.SEARCHING_DRIVER:
+          if (ride.rideType === RIDE_TYPE.SCHEDULED) {
+            rideUserSocketHelper.emitReservationSearchingDriver(userId, {
+              rideId: ride._id,
+              ...getRideScheduleInfo(ride),
+              driverSearch: driverSearchTiming,
+              activeScreen,
+            });
+          } else if (
+            ride.driversContacted &&
+            ride.driversContacted.length > 0
+          ) {
+            try {
+              const nearbyDriversDetails = await getNearbyDriversDetails(
+                ride.driversContacted,
+              );
+              rideUserSocketHelper.emitNearbyDriversFound(userId, {
+                rideId: ride._id.toString(),
+                drivers: nearbyDriversDetails,
+                driverSearch: driverSearchTiming,
+                activeScreen,
+              });
+            } catch (err: any) {
+              logger.warn(
+                `[getActiveRide] Could not emit nearby drivers: ${err.message}`,
+              );
+            }
+          }
+          break;
+
+        case RIDE_STATUS.DRIVER_ACCEPTED:
+          rideUserSocketHelper.emitRideAccepted(userId, {
+            ...baseEventData,
+            ride,
+            driver: driverSummary,
+          });
+          if (ride.rideType === RIDE_TYPE.SCHEDULED) {
+            rideUserSocketHelper.emitReservationConfirmed(userId, {
+              ride,
+              driver: driverSummary,
+              cancellationFeePreview,
+              activeScreen,
+            });
+          }
+          break;
+
+        case RIDE_STATUS.DRIVER_ON_THE_WAY:
+          rideUserSocketHelper.emitDriverOnTheWay(userId, {
+            ...baseEventData,
+            driver: driverSummary,
+          });
+          break;
+
+        case RIDE_STATUS.DRIVER_ARRIVED:
+          rideUserSocketHelper.emitDriverArrived(userId, {
+            ...baseEventData,
+            driver: driverSummary,
+            estimatedArrivalMinutes: 0,
+            remainingDistanceKm: 0,
+          });
+          break;
+
+        case RIDE_STATUS.STARTED:
+          rideUserSocketHelper.emitRideStarted(userId, {
+            ...baseEventData,
+            verificationMethod: ride.pickupVerification?.method,
+            driver: driverSummary,
+          });
+          break;
+      }
+    }
+
+    // Additionally emit unified active-ride-synced event for direct app state recovery
+    socketHelper.sendToUser(userId, "active-ride-synced", {
+      ...baseEventData,
+      ride,
+      driver: driverSummary,
+      user: passengerSummary,
+    });
+
+    logger.info(
+      `[getActiveRide] Successfully re-emitted active ride socket event (${ride.status}) for ${role} ${userId}`,
+    );
+  } catch (error: any) {
+    logger.error(
+      `[getActiveRide] Error re-emitting active ride socket event: ${error.message}`,
+    );
+  }
+};
+
+/**
  * Find current ongoing/active ride for a passenger or a driver
+ * and re-emit status socket event to resume app state
  */
 const getActiveRide = async (
   userId: string,
@@ -3928,7 +4128,12 @@ const getActiveRide = async (
 
   const roleFilter =
     role === "driver"
-      ? { driverId: new Types.ObjectId(userId) }
+      ? {
+          $or: [
+            { driverId: new Types.ObjectId(userId) },
+            { assignedDriverId: new Types.ObjectId(userId) },
+          ],
+        }
       : { userId: new Types.ObjectId(userId) };
 
   const query: any = {
@@ -3976,28 +4181,135 @@ const getActiveRide = async (
   // Build populate fields based on user role
   // Drivers should never see passenger phone numbers
   const userFields =
-    user.role === "driver" ? "name profileImage" : "name phone profileImage";
+    user.role === "driver"
+      ? "name profileImage averageRating totalRatings"
+      : "name phone profileImage averageRating totalRatings";
   const driverFields =
-    user.role === "driver" ? "name phone profileImage" : "name profileImage";
+    user.role === "driver"
+      ? "name phone profileImage averageRating totalRatings"
+      : "name profileImage averageRating totalRatings";
 
   const ride = await Ride.findOne(query)
     .populate("userId", userFields)
     .populate("driverId", driverFields)
+    .populate("assignedDriverId", driverFields)
     .populate("carId");
 
   if (!ride) {
     return null;
   }
 
+  // Determine active screen identifier for frontend
+  const activeScreen = getActiveRideScreen(ride.status);
+
+  // Fetch driver summary and passenger summary
+  let driverSummary: any = undefined;
+  const driverUserId =
+    (ride.driverId as any)?._id?.toString() ||
+    (ride.assignedDriverId as any)?._id?.toString() ||
+    ride.driverId?.toString() ||
+    ride.assignedDriverId?.toString();
+
+  if (driverUserId) {
+    try {
+      const driverDoc = await Driver.findOne({ userId: driverUserId }).populate(
+        "userId",
+        "name profileImage averageRating totalRatings",
+      );
+      let carDoc = null;
+      if (ride.carId) {
+        carDoc =
+          typeof ride.carId === "object"
+            ? ride.carId
+            : await Car.findById(ride.carId);
+      } else if (driverDoc?._id) {
+        carDoc = await Car.findOne({ driverId: driverDoc._id });
+      }
+      if (driverDoc) {
+        driverSummary = await buildDriverSummary(driverDoc, carDoc);
+      }
+    } catch (err: any) {
+      logger.warn(
+        `[getActiveRide] Could not build driver summary: ${err.message}`,
+      );
+    }
+  }
+
+  let passengerSummary: any = undefined;
+  if (ride.userId) {
+    try {
+      passengerSummary = buildPassengerSummary(ride.userId);
+    } catch (err: any) {
+      logger.warn(
+        `[getActiveRide] Could not build passenger summary: ${err.message}`,
+      );
+    }
+  }
+
+  const tracking = await Tracking.findOne({ rideId: ride._id });
+
+  let cancellationFeePreview = 0;
+  try {
+    cancellationFeePreview =
+      await CancellationPolicyService.calculateCancellationFeeForRide(ride);
+  } catch (err: any) {
+    logger.warn(
+      `[getActiveRide] Error calculating cancellation fee preview: ${err.message}`,
+    );
+  }
+
   // Add driver search timing if ride is in searching state
   const rideObj = ride.toObject();
+  let driverSearchTiming: any = undefined;
   if (ride.status === RIDE_STATUS.SEARCHING_DRIVER) {
-    (rideObj as any).driverSearch = await calculateDriverSearchTiming(ride);
+    driverSearchTiming = await calculateDriverSearchTiming(ride);
+    (rideObj as any).driverSearch = driverSearchTiming;
   }
 
   if (rideObj.shareToken) {
     (rideObj as any).shareUrl = generateShareUrl(rideObj.shareToken);
   }
+
+  // Enrich rideObj with activeScreen, tracking, and participant summaries
+  (rideObj as any).activeScreen = activeScreen;
+  (rideObj as any).cancellationFeePreview = cancellationFeePreview;
+  if (driverSummary) {
+    (rideObj as any).driverSummary = driverSummary;
+  }
+  if (passengerSummary) {
+    (rideObj as any).passengerSummary = passengerSummary;
+  }
+  if (tracking) {
+    (rideObj as any).tracking = {
+      remainingDistanceKm: tracking.remainingDistanceKm || 0,
+      estimatedArrivalMinutes: tracking.estimatedArrivalMinutes || 0,
+      polyline: tracking.polyline || ride.routeInfo?.polyline || "",
+      driverLocation: tracking.driverLocation?.coordinates
+        ? {
+            latitude: tracking.driverLocation.coordinates[1],
+            longitude: tracking.driverLocation.coordinates[0],
+          }
+        : undefined,
+      lastUpdatedAt: tracking.lastUpdatedAt,
+    };
+  }
+
+  // Re-emit socket event asynchronously for app state recovery
+  emitActiveRideResumeEvent({
+    ride: rideObj,
+    role: user.role || role,
+    userId,
+    tracking,
+    driverSummary,
+    passengerSummary,
+    cancellationFeePreview,
+    driverSearchTiming,
+    activeScreen,
+  }).catch((err) => {
+    logger.error(
+      `[getActiveRide] Background socket emit error: ${err.message}`,
+    );
+  });
 
   return rideObj as IRide;
 };

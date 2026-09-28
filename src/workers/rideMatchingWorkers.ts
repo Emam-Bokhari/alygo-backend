@@ -574,7 +574,6 @@ const driverAvailabilityWorker = new Worker(
   },
 );
 
-
 const reservationReminderWorker = new Worker(
   QUEUE_NAMES.RESERVATION_REMINDER,
   async (job: Job) => {

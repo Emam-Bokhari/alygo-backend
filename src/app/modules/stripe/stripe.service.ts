@@ -76,7 +76,7 @@ class StripeService {
         `${config.stripe.BASE_URL || "http://62.72.26.31:5005"}/api/v1/stripe/payment/cancel?session_id={CHECKOUT_SESSION_ID}`,
     };
 
-    if (stripeCustomerId) { 
+    if (stripeCustomerId) {
       sessionParams.customer = stripeCustomerId;
     }
 

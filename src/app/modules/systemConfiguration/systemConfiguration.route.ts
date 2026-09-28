@@ -20,4 +20,3 @@ router
   );
 
 export const SystemConfigurationRoutes = router;
- 

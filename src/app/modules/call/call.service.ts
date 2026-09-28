@@ -12,7 +12,6 @@ import { NOTIFICATION_TYPE } from "../notification/notification.constant";
 import { User } from "../user/user.model";
 import config from "../../../config";
 
-
 /**
  * initiates a voice call under a generic communication context
  */
@@ -391,7 +390,7 @@ const cancelCallInDB = async (
       StatusCodes.FORBIDDEN,
       "You are not authorized to cancel this call.",
     );
-  }        
+  }
 
   if (
     call.status === CALL_STATUS.ACCEPTED ||
