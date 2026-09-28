@@ -335,7 +335,22 @@ stateDiagram-v2
       "coordinates": [-73.996728, 40.718826]
     }
   },
-  "fare": 24.5,
+  "fare": {
+    "baseFare": 35,
+    "distanceFare": 105.31,
+    "timeFare": 122.5,
+    "stopWaitingCharge": 0,
+    "cancellationFee": 0,
+    "discount": 0,
+    "subtotal": 262.81,
+    "commission": 52.56,
+    "driverEarning": 210.25,
+    "total": 262.81,
+    "surgeMultiplier": 3.5,
+    "surgeApplied": 187.72,
+    "rideFare": 262.81,
+    "pendingCancellationFee": 0
+  },
   "driverSearch": {
     "radiusKm": 5,
     "visibilitySeconds": 60

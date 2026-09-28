@@ -154,9 +154,9 @@ class GoogleRouteServiceClass {
     const a =
       Math.sin(dLat / 2) * Math.sin(dLat / 2) +
       Math.cos((lat1 * Math.PI) / 180) *
-        Math.cos((lat2 * Math.PI) / 180) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     const d = R * c; // Distance in km
     return parseFloat(d.toFixed(2));
@@ -525,15 +525,7 @@ class GoogleRouteServiceClass {
     });
   }
 
-  async reverseGeocode(
-    lat: number,
-    lng: number,
-  ): Promise<{
-    address: string;
-    city: string;
-    state: string;
-    country: string;
-  }> {
+  async reverseGeocode(lat: number, lng: number) {
     if (!this.apiKey) {
       throw new Error(
         "Google Maps API Key is missing. Cannot reverse geocode.",
@@ -719,7 +711,7 @@ class GoogleRouteServiceClass {
           ride.arrivedAt = new Date();
           tracking.driverArrivedAt = new Date();
           remainingDistanceKm = 0;
-          estimatedArrivalMinutes = 0;
+          estimatedArrivalMinutes = 0;  
           transitions.push({
             type: "driver-arrived",
             payload: {},

@@ -11,7 +11,7 @@ import router from "./app/routes";
 import { StripeControllers } from "./app/modules/stripe/stripe.controller";
 import { requestContextMiddleware } from "./app/middlewares/requestContextMiddleware";
 
-const app: Application = express();
+const app: Application = express(); 
 
 app.use(requestContextMiddleware);
 

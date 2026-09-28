@@ -12,8 +12,9 @@ import { NOTIFICATION_TYPE } from "../notification/notification.constant";
 import { User } from "../user/user.model";
 import config from "../../../config";
 
+
 /**
- * Initiates a voice call under a generic communication context
+ * initiates a voice call under a generic communication context
  */
 const initiateCallToDB = async (
   callerId: string | Types.ObjectId,
@@ -35,7 +36,7 @@ const initiateCallToDB = async (
     throw new ApiError(StatusCodes.BAD_REQUEST, "You cannot call yourself.");
   }
 
-  // 1. Centralized permission check
+  // centralized permission check
   const permission = await callPermissionHelper.checkCallPermission(
     callerId,
     receiverId,
@@ -54,7 +55,7 @@ const initiateCallToDB = async (
     throw new ApiError(StatusCodes.NOT_FOUND, "User or participant not found.");
   }
 
-  // 2. Generate Agora configs
+  // generate Agora configs
   const channelName = agoraProvider.generateChannelName();
   const agoraUidCaller = agoraProvider.generateAgoraUid();
   const agoraUidReceiver = agoraProvider.generateAgoraUid();
@@ -72,7 +73,7 @@ const initiateCallToDB = async (
     Date.now() + (config.agora.tokenExpireSeconds || 3600) * 1000,
   );
 
-  // 3. Create Call record in DB
+  // create Call record in DB
   const callData: Partial<ICall> = {
     referenceId: new Types.ObjectId(referenceId),
     communicationType,
@@ -89,7 +90,7 @@ const initiateCallToDB = async (
     tokenVersion: "v1",
   };
 
-  // If the context has a rideId (e.g. REGULAR_RIDE, SCHEDULED_RIDE, RESERVATION), populate it
+  // if the context has a rideId (e.g. REGULAR_RIDE, SCHEDULED_RIDE, RESERVATION), populate it
   if (
     communicationType === COMMUNICATION_TYPE.REGULAR_RIDE ||
     communicationType === COMMUNICATION_TYPE.SCHEDULED_RIDE ||
@@ -100,7 +101,7 @@ const initiateCallToDB = async (
 
   const callRecord = await Call.create(callData);
 
-  // 4. Emit WebSockets events
+  // emit WebSockets events
   const socketDataCaller = {
     callId: callRecord._id,
     channelName,
@@ -149,7 +150,7 @@ const initiateCallToDB = async (
     channelName,
   });
 
-  // 5. Send FCM Push Notification to the receiver
+  // send FCM Push Notification to the receiver
   try {
     const isReceiverDriver = receiverUser.role === "driver";
     const notificationTitle = "Incoming Call";
@@ -179,7 +180,7 @@ const initiateCallToDB = async (
       },
     });
   } catch (error: any) {
-    // Audit log error but do not block call flow
+    // audit log error but do not block call flow
     console.error("FCM failed during call initiation:", error.message);
   }
 
@@ -199,7 +200,7 @@ const initiateCallToDB = async (
 };
 
 /**
- * Accept / Answer an incoming call
+ * accept / answer an incoming call
  */
 const answerCallInDB = async (
   userId: string | Types.ObjectId,
@@ -294,7 +295,7 @@ const answerCallInDB = async (
 };
 
 /**
- * Reject an incoming call
+ * reject an incoming call
  */
 const rejectCallInDB = async (
   userId: string | Types.ObjectId,
@@ -329,7 +330,7 @@ const rejectCallInDB = async (
     "name profileImage",
   );
 
-  // Emit socket events
+  // emit socket events
   const callerToken = agoraProvider.generateAgoraToken(
     call.channelName,
     call.agoraUidCaller,
@@ -353,7 +354,7 @@ const rejectCallInDB = async (
   callSocketHelper.emitCallRejected(call.callerId.toString(), payload);
   callSocketHelper.emitCallEnded(call.callerId.toString(), payload);
 
-  // Send FCM push notifications for rejected call
+  // send FCM push notifications for rejected call
   try {
     const isCallerDriver = call.callerRole === "driver";
     await notificationHelper.sendToUser(call.callerId.toString(), {
@@ -373,7 +374,7 @@ const rejectCallInDB = async (
 };
 
 /**
- * Cancel call before it gets answered
+ * cancel call before it gets answered
  */
 const cancelCallInDB = async (
   userId: string | Types.ObjectId,
@@ -390,7 +391,7 @@ const cancelCallInDB = async (
       StatusCodes.FORBIDDEN,
       "You are not authorized to cancel this call.",
     );
-  }
+  }        
 
   if (
     call.status === CALL_STATUS.ACCEPTED ||
@@ -417,7 +418,7 @@ const cancelCallInDB = async (
     "name profileImage",
   );
 
-  // Emit socket events
+  // emit socket events
   const receiverToken = agoraProvider.generateAgoraToken(
     call.channelName,
     call.agoraUidReceiver,
@@ -440,7 +441,7 @@ const cancelCallInDB = async (
   callSocketHelper.emitCallCancelled(call.receiverId.toString(), payload);
   callSocketHelper.emitCallEnded(call.receiverId.toString(), payload);
 
-  // Send FCM push notifications for cancelled call
+  // send FCM push notifications for cancelled call
   try {
     const isReceiverDriver = call.receiverRole === "driver";
     await notificationHelper.sendToUser(call.receiverId.toString(), {
@@ -462,7 +463,7 @@ const cancelCallInDB = async (
 };
 
 /**
- * End an active call
+ * end an active call
  */
 const endCallInDB = async (
   userId: string | Types.ObjectId,
@@ -485,7 +486,7 @@ const endCallInDB = async (
     );
   }
 
-  // If already ended, just return
+  // if already ended, just return
   const finalStatuses = [
     CALL_STATUS.ENDED,
     CALL_STATUS.REJECTED,
@@ -520,7 +521,7 @@ const endCallInDB = async (
     "name profileImage",
   );
 
-  // Emit socket events
+  // emit socket events
   const callerToken = agoraProvider.generateAgoraToken(
     call.channelName,
     call.agoraUidCaller,
@@ -565,7 +566,7 @@ const endCallInDB = async (
   callSocketHelper.emitCallEnded(callerStr, callerPayload);
   callSocketHelper.emitCallEnded(receiverStr, receiverPayload);
 
-  // Send FCM notifications if necessary
+  // send FCM notifications if necessary
   try {
     const peerId = callerStr === userIdStr ? receiverStr : callerStr;
     const peerRole =
@@ -590,7 +591,7 @@ const endCallInDB = async (
 };
 
 /**
- * Regenerate expired token for active call
+ * regenerate expired token for active call
  */
 const getTokenFromDB = async (
   userId: string | Types.ObjectId,
@@ -625,7 +626,6 @@ const getTokenFromDB = async (
       "Cannot refresh token for inactive calls.",
     );
   }
-
   const userUid =
     callerStr === userIdStr ? call.agoraUidCaller : call.agoraUidReceiver;
   const token = agoraProvider.generateAgoraToken(call.channelName, userUid);
@@ -640,7 +640,7 @@ const getTokenFromDB = async (
     "name profileImage",
   );
 
-  // Emit refreshed socket
+  // emit refreshed socket
   callSocketHelper.emitCallTokenRefreshed(userIdStr, {
     callId,
     token,
@@ -665,7 +665,7 @@ const getTokenFromDB = async (
 };
 
 /**
- * Get call history of a user with filters and pagination
+ * get call history of a user with filters and pagination
  */
 const getHistoryFromDB = async (
   userId: string | Types.ObjectId,
@@ -682,7 +682,7 @@ const getHistoryFromDB = async (
 
   const skip = (Number(page) - 1) * Number(limit);
 
-  // Query constraints: user is either caller or receiver
+  // query constraints: user is either caller or receiver
   const filter: Record<string, any> = {
     $or: [
       { callerId: new Types.ObjectId(userId.toString()) },
@@ -729,7 +729,7 @@ const getHistoryFromDB = async (
 };
 
 /**
- * Retrieve details of a single call
+ * retrieve details of a single call
  */
 const getCallFromDB = async (
   userId: string | Types.ObjectId,
@@ -747,11 +747,11 @@ const getCallFromDB = async (
   const receiverStr = call.receiverId._id.toString();
   const userIdStr = userId.toString();
 
-  // Participant or Admin check
+  // participant or Admin check
   const isAdmin =
     ["admin", "superAdmin"].includes(call.callerRole) ||
     ["admin", "superAdmin"].includes(call.receiverRole);
-  // Wait, let's fetch the actual requesting user role
+  // wait, let's fetch the actual requesting user role
   const user = await User.findById(userIdStr);
   const isRequestingUserAdmin =
     user && ["admin", "superAdmin"].includes(user.role);

@@ -34,17 +34,20 @@ export const calculateDriverSearchTiming = async (
   const elapsedMs = now.getTime() - requestedAt.getTime();
   const elapsedSeconds = Math.floor(elapsedMs / 1000);
 
+  // Check if ride is expired
+  const isExpired =
+    ride.status === RIDE_STATUS.EXPIRED ||
+    elapsedSeconds >= rideRequestLifetimeSeconds;
+
   // Calculate remaining time
-  const remainingSeconds = Math.max(
-    0,
-    rideRequestLifetimeSeconds - elapsedSeconds,
-  );
+  const remainingSeconds = isExpired
+    ? 0
+    : Math.max(0, rideRequestLifetimeSeconds - elapsedSeconds);
 
   // Calculate progress percentage
-  const progressPercentage = Math.min(
-    100,
-    (elapsedSeconds / rideRequestLifetimeSeconds) * 100,
-  );
+  const progressPercentage = isExpired
+    ? 100
+    : Math.min(100, (elapsedSeconds / rideRequestLifetimeSeconds) * 100);
 
   // Check if driver was found
   const driverFound = !!ride.driverId;
@@ -56,11 +59,6 @@ export const calculateDriverSearchTiming = async (
     const driverFoundMs = acceptedAt.getTime() - requestedAt.getTime();
     driverFoundInSeconds = Math.floor(driverFoundMs / 1000);
   }
-
-  // Check if ride is expired
-  const isExpired =
-    ride.status === RIDE_STATUS.EXPIRED ||
-    elapsedSeconds >= rideRequestLifetimeSeconds;
 
   const visibilitySeconds = isReservation
     ? systemConfig.driverMatching.reservationDriverVisibilityDurationSeconds

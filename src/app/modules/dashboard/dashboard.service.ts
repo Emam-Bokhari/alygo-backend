@@ -5,16 +5,14 @@ import { Driver } from "../driver/driver.model";
 import { Ride } from "../ride/ride.model";
 import { Transaction } from "../transaction/transaction.model";
 import { ServiceArea } from "../serviceArea/serviceArea.model";
-import { VERIFICATION_STATUS } from "../driver/driver.constant";
 import { DRIVER_STATUS, STATUS, USER_ROLES } from "../../../enums/user";
 import { PAYMENT_STATUS, RIDE_STATUS, RIDE_TYPE } from "../ride/ride.constant";
 import { TRANSACTION_TYPE } from "../transaction/transaction.constant";
 import {
   getDayRangeInTimezone,
-  utcToTimezone,
 } from "../../../shared/timezoneHelper";
 import { getSystemConfig } from "../../../helpers/systemConfigHelper";
-import config from "../../../config";
+import config from "../../../config"; 
 import { SERVICE_AREA_TYPE } from "../serviceArea/serviceArea.constant";
 
 const resolveDashboardTimezone = async (

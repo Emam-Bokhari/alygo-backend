@@ -16,10 +16,8 @@ import { logger } from "../shared/logger";
 import { calculateDriverSearchTiming } from "../helpers/rideSearchTimingHelper";
 import { getRideScheduleInfo } from "../shared/timezoneHelper";
 import {
-  rideExpirationQueue,
   driverVisibilityQueue,
   radiusExpansionQueue,
-  driverAvailabilityCheckQueue,
   QUEUE_NAMES,
   connectionOptions,
   RideExpirationJobData,
@@ -28,18 +26,18 @@ import {
   DriverAvailabilityCheckJobData,
 } from "../config/bullmq";
 import { getSystemConfig } from "../helpers/systemConfigHelper";
-import config from "../config";
+import { processReservationReminders } from "../services/reservationReminderService";
 import { Driver } from "../app/modules/driver/driver.model";
 import { DriverDutyPolicyServices } from "../app/modules/driverDutyPolicy/driverDutyPolicy.service";
 import { DestinationFilterService } from "../app/modules/tier/destinationFilter.service";
 import { PointsService } from "../app/modules/tier/points.service";
-import { driverRewardsQueue } from "../config/bullmq";
 import { sendNotifications } from "../helpers/notificationsHelper";
 import { NOTIFICATION_TYPE } from "../app/modules/notification/notification.constant";
 
-// Import the triggerImmediateRadiusExpansion function from ride service
+// Import the triggerImmediateRadiusExpansion and expireRideRequest functions from ride service
 // We need to dynamically import it to avoid circular dependency
 let triggerImmediateRadiusExpansion: any = null;
+let expireRideRequest: any = null;
 
 const getTriggerFunction = async () => {
   if (!triggerImmediateRadiusExpansion) {
@@ -48,6 +46,14 @@ const getTriggerFunction = async () => {
       rideService.RideServices.triggerImmediateRadiusExpansion;
   }
   return triggerImmediateRadiusExpansion;
+};
+
+const getExpireRideFunction = async () => {
+  if (!expireRideRequest) {
+    const rideService = await import("../app/modules/ride/ride.service");
+    expireRideRequest = rideService.RideServices.expireRideRequest;
+  }
+  return expireRideRequest;
 };
 
 /**
@@ -59,42 +65,12 @@ const rideExpirationWorker = new Worker(
     const { rideId, userId } = job.data;
 
     try {
-      const ride = await Ride.findOne({
-        _id: rideId,
-        status: RIDE_STATUS.SEARCHING_DRIVER,
-      });
-
-      if (!ride) {
-        logger.info(
-          `Ride ${rideId} already accepted or cancelled, skipping expiration`,
-        );
-        return;
-      }
-
-      // Update ride status to EXPIRED
-      ride.status = RIDE_STATUS.EXPIRED;
-      ride.cancellation = {
-        cancelledBy: CANCELLED_BY.ADMIN,
-        cancellationReasonName:
-          "Ride request expired. No driver accepted within the maximum time limit.",
-        cancellationFee: 0,
-        driverCompensation: 0,
-        platformShare: 0,
-        cancelledAt: new Date(),
-      };
-      await ride.save();
-
-      // Calculate driver search timing for notification
-      const driverSearchTiming = await calculateDriverSearchTiming(ride);
-
-      // Notify user
-      rideUserSocketHelper.emitRideExpired(userId, {
-        rideId: ride._id,
-        message: "Request expired. No driver found within the time limit.",
-        driverSearch: driverSearchTiming,
-      });
-
-      logger.info(`Ride ${rideId} expired after 5 minutes`);
+      const expireFunc = await getExpireRideFunction();
+      await expireFunc(
+        rideId,
+        "Ride request expired. No driver accepted within the maximum time limit.",
+      );
+      logger.info(`Ride ${rideId} expired worker job executed`);
     } catch (error: any) {
       logger.error(
         `Error processing ride expiration for ride ${rideId}:`,
@@ -215,6 +191,19 @@ const radiusExpansionWorker = new Worker(
         logger.info(
           `Ride ${rideId} reached maximum search radius, stopping expansion`,
         );
+        const hasPendingDrivers = ride.driverMatching?.notifiedDrivers?.some(
+          (d) => d.status === "sent",
+        );
+        if (!hasPendingDrivers) {
+          logger.info(
+            `Ride ${rideId} reached max search radius and has no pending drivers. Expiring ride immediately.`,
+          );
+          const expireFunc = await getExpireRideFunction();
+          await expireFunc(
+            ride._id.toString(),
+            "No drivers available in your area.",
+          );
+        }
         return;
       }
 
@@ -245,8 +234,19 @@ const radiusExpansionWorker = new Worker(
           `No new drivers found in expanded radius ${newRadius}km for ride ${rideId}`,
         );
 
-        // If no drivers found and we haven't reached max radius, schedule next expansion with delay
+        ride.driverMatching.searchRadiusKm = newRadius;
+        await ride.save();
+
+        const hasPendingDrivers = ride.driverMatching.notifiedDrivers.some(
+          (d) => d.status === "sent",
+        );
+
+        // If no drivers found and we haven't reached max radius, schedule next expansion
         if (newRadius < maxRadius) {
+          const delayMs = hasPendingDrivers
+            ? systemConfig.driverMatching.driverVisibilityDurationSeconds * 1000
+            : 0;
+
           const nextRadius =
             newRadius + systemConfig.driverMatching.radiusExpansionDistanceKm;
           await radiusExpansionQueue.add(
@@ -262,14 +262,28 @@ const radiusExpansionWorker = new Worker(
             },
             {
               jobId: `radius-expansion-${rideId}-${expansionCount + 1}`,
-              delay:
-                systemConfig.driverMatching.driverVisibilityDurationSeconds *
-                1000,
+              delay: delayMs,
             },
           );
           logger.info(
-            `Scheduled next radius expansion to ${nextRadius}km for ride ${rideId}`,
+            `Scheduled next radius expansion to ${nextRadius}km for ride ${rideId} with delay ${delayMs}ms`,
           );
+        } else {
+          // newRadius >= maxRadius and NO new drivers found!
+          if (!hasPendingDrivers) {
+            logger.info(
+              `Ride ${rideId} reached max radius ${maxRadius}km with no new drivers and no pending drivers. Expiring ride immediately.`,
+            );
+            const expireFunc = await getExpireRideFunction();
+            await expireFunc(
+              ride._id.toString(),
+              "No drivers available in your area.",
+            );
+          } else {
+            logger.info(
+              `Ride ${rideId} reached max radius ${maxRadius}km with no new drivers, waiting for pending drivers to finish.`,
+            );
+          }
         }
         return;
       }
@@ -339,7 +353,7 @@ const radiusExpansionWorker = new Worker(
           pickup: ride.pickup,
           destination: ride.destination,
           stops: ride.stops,
-          fare: ride.fare.total,
+          fare: ride.fare,
           driverSearch: driverSearchTiming,
           routeInfo: ride.routeInfo,
         };
@@ -560,7 +574,6 @@ const driverAvailabilityWorker = new Worker(
   },
 );
 
-import { processReservationReminders } from "../services/reservationReminderService";
 
 const reservationReminderWorker = new Worker(
   QUEUE_NAMES.RESERVATION_REMINDER,

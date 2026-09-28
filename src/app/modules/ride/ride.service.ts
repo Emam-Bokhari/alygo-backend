@@ -899,7 +899,7 @@ const requestRide = async (
       pickup: ride.pickup,
       destination: ride.destination,
       stops: ride.stops,
-      fare: ride.fare.total,
+      fare: ride.fare,
       driverSearch: driverSearchTiming,
       routeInfo: ride.routeInfo,
     };
@@ -1458,16 +1458,134 @@ const rejectRide = async (
 };
 
 /**
+ * Expire a ride request, cancel all pending matching queue jobs, and notify passenger & drivers
+ */
+const expireRideRequest = async (
+  rideId: string,
+  reason?: string,
+): Promise<IRide | null> => {
+  const ride = await Ride.findOne({
+    _id: rideId,
+    status: RIDE_STATUS.SEARCHING_DRIVER,
+  });
+
+  if (!ride) {
+    logger.info(
+      `Ride ${rideId} is not in SEARCHING_DRIVER status, skipping expiration`,
+    );
+    return null;
+  }
+
+  const defaultReason =
+    "Ride request expired. No driver accepted within the maximum time limit.";
+  const cancellationReasonName = reason || defaultReason;
+
+  // 1. Update ride status to EXPIRED
+  ride.status = RIDE_STATUS.EXPIRED;
+  ride.cancellation = {
+    cancelledBy: CANCELLED_BY.ADMIN,
+    cancellationReasonName,
+    cancellationFee: 0,
+    driverCompensation: 0,
+    platformShare: 0,
+    cancelledAt: new Date(),
+  };
+
+  // Mark any still 'sent' driver notifications as expired
+  const pendingDriverIds: string[] = [];
+  if (ride.driverMatching?.notifiedDrivers) {
+    ride.driverMatching.notifiedDrivers.forEach((d) => {
+      if (d.status === DRIVER_MATCHING_STATUS.SENT) {
+        d.status = "expired" as any;
+        d.respondedAt = new Date();
+        pendingDriverIds.push(d.driverId.toString());
+      }
+    });
+  }
+
+  await ride.save();
+
+  // 2. Clear matching queue jobs
+  try {
+    const expirationJob = await rideExpirationQueue.getJob(
+      `ride-expiration-${ride._id}`,
+    );
+    if (expirationJob) await expirationJob.remove();
+
+    const visibilityJobs = await driverVisibilityQueue.getJobs(
+      ["waiting", "delayed", "active"],
+      0,
+      100,
+    );
+    for (const job of visibilityJobs) {
+      if (job.name.startsWith(`driver-visibility-${ride._id}`)) {
+        await job.remove();
+      }
+    }
+
+    const expansionJobs = await radiusExpansionQueue.getJobs(
+      ["waiting", "delayed", "active"],
+      0,
+      100,
+    );
+    for (const job of expansionJobs) {
+      if (job.name.startsWith(`radius-expansion-${ride._id}`)) {
+        await job.remove();
+      }
+    }
+  } catch (err) {
+    logger.error("Error clearing match queues on ride expiration:", err);
+  }
+
+  // 3. Calculate driver search timing
+  const driverSearchTiming = await calculateDriverSearchTiming(ride);
+
+  // 4. Notify passenger via socket
+  rideUserSocketHelper.emitRideExpired(ride.userId.toString(), {
+    rideId: ride._id,
+    message: cancellationReasonName,
+    driverSearch: driverSearchTiming,
+  });
+
+  // 5. Notify any pending drivers so their request screen is dismissed
+  if (pendingDriverIds.length > 0) {
+    pendingDriverIds.forEach((driverId) => {
+      rideDriverSocketHelper.emitRideRequestExpired(driverId, {
+        rideId: ride._id,
+        driverSearch: driverSearchTiming,
+      });
+    });
+  }
+
+  logger.info(
+    `[RideMatching] Ride ${ride._id} expired immediately. Reason: ${cancellationReasonName}`,
+  );
+
+  return ride;
+};
+
+/**
  * Trigger immediate radius expansion when all drivers have responded
  */
-const triggerImmediateRadiusExpansion = async (ride: any) => {
+const triggerImmediateRadiusExpansion = async (rideOrId: any) => {
+  const rideId =
+    typeof rideOrId === "string" ? rideOrId : rideOrId._id?.toString();
+  const ride = await Ride.findById(rideId);
+  if (!ride || ride.status !== RIDE_STATUS.SEARCHING_DRIVER) {
+    return;
+  }
+
   const currentRadius = ride.driverMatching.searchRadiusKm;
   const systemConfig = await getSystemConfig();
   const maxRadius = systemConfig.driverMatching.maxSearchRadiusKm;
 
   if (currentRadius >= maxRadius) {
     logger.info(
-      `Ride ${ride._id} reached maximum search radius, no further expansion`,
+      `Ride ${ride._id} reached maximum search radius (${maxRadius}km) and all drivers responded. Expiring ride immediately.`,
+    );
+    await expireRideRequest(
+      ride._id.toString(),
+      "No drivers accepted your ride request within the maximum search area.",
     );
     return;
   }
@@ -1501,10 +1619,10 @@ const triggerImmediateRadiusExpansion = async (ride: any) => {
       currentRadiusKm: newRadius,
       rideCategoryId: ride.rideCategory.categoryId.toString(),
       serviceCategoryId: ride.serviceCategoryId,
-      expansionCount: (ride.driverMatching.expansionCount || 0) + 1,
+      expansionCount: ((ride.driverMatching as any)?.expansionCount || 0) + 1,
     },
     {
-      jobId: `radius-expansion-${ride._id}-immediate`,
+      jobId: `radius-expansion-${ride._id}-immediate-${Date.now()}`,
     },
   );
 
@@ -3310,24 +3428,10 @@ const cancelRide = async (
       const remainingMs = lifetimeMs - elapsedMs;
 
       if (remainingMs <= 0) {
-        // Expire ride request immediately
-        ride.status = RIDE_STATUS.EXPIRED;
-        ride.cancellation = {
-          cancelledBy: CANCELLED_BY.ADMIN,
-          cancellationReasonName:
-            "Ride request expired. No driver accepted within the maximum time limit.",
-          cancellationFee: 0,
-          driverCompensation: 0,
-          platformShare: 0,
-          cancelledAt: new Date(),
-        };
-        await ride.save();
-
-        rideUserSocketHelper.emitRideExpired(ride.userId.toString(), {
-          rideId: ride._id,
-          message: "Request expired. No driver found within the time limit.",
-          driverSearch: await calculateDriverSearchTiming(ride),
-        });
+        await expireRideRequest(
+          ride._id.toString(),
+          "Ride request expired. No driver accepted within the maximum time limit.",
+        );
       } else {
         // Schedule overall expiration with remaining timer
         try {
@@ -3405,7 +3509,7 @@ const cancelRide = async (
               pickup: ride.pickup,
               destination: ride.destination,
               stops: ride.stops,
-              fare: ride.fare.total,
+              fare: ride.fare,
               driverSearch: driverSearchTiming,
               routeInfo: ride.routeInfo,
             };
@@ -5581,6 +5685,7 @@ export const RideServices = {
   acceptRide,
   rejectRide,
   triggerImmediateRadiusExpansion,
+  expireRideRequest,
   arriveAtPickup,
   requestStartVerification,
   startRide,
