@@ -8,6 +8,7 @@ import validateRequest from "../../middlewares/validateRequest";
 
 import { parseFileData } from "../../middlewares/parseFileData";
 import { ReviewController } from "../review/review.controller";
+import { ReviewValidations } from "../review/review.validation";
 import {
   isAdmin,
   isAuthenticated,
@@ -68,6 +69,7 @@ router.patch("/status/:id", isAdmin, UserController.updateUserStatusById);
 router.get(
   "/:userId/reviews",
   isAuthenticated,
+  validateRequest(ReviewValidations.userReviewsQueryValidationSchema),
   ReviewController.getUserReviews,
 );
 

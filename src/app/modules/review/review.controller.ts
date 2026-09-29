@@ -142,6 +142,7 @@ const getUserReviews = catchAsync(async (req: Request, res: Response) => {
   const { userId } = req.params;
   const result = await ReviewServices.getUserReviewsFromDB(
     userId,
+    req.query,
     req.user as any,
   );
 
@@ -149,7 +150,8 @@ const getUserReviews = catchAsync(async (req: Request, res: Response) => {
     statusCode: StatusCodes.OK,
     success: true,
     message: "User reviews retrieved successfully",
-    data: result,
+    data: result.reviews,
+    meta: result.meta,
   });
 });
 

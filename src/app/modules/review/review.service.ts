@@ -362,35 +362,82 @@ const getDriverReviewsFromDB = async (
 };
 
 /**
- * Get reviews received by a passenger.
+ * Get reviews received by a passenger with pagination and filters.
  */
 const getUserReviewsFromDB = async (
   userId: string,
+  query: Record<string, unknown> = {},
   currentUser?: { role?: string },
 ) => {
-  const user = await User.findById(userId);
+  let user = null;
+  if (Types.ObjectId.isValid(userId)) {
+    user = await User.findById(userId);
+  }
   if (!user) {
     throw new ApiError(StatusCodes.NOT_FOUND, "User profile not found");
   }
-
-  const reviews = await Review.find({
-    receiverId: user._id,
-    receiverRole: "user",
-  })
-    .populate("reviewerId", "name email profileImage")
-    .sort({ createdAt: -1 })
-    .lean();
 
   const isAdmin =
     currentUser?.role === USER_ROLES.ADMIN ||
     currentUser?.role === USER_ROLES.SUPER_ADMIN;
 
-  if (isAdmin) {
-    return reviews;
+  const filterObj: Record<string, any> = {
+    receiverId: user._id,
+    receiverRole: "user",
+  };
+
+  // Rating Filter
+  if (query.rating) {
+    filterObj.rating = Number(query.rating);
   }
 
-  return reviews.map((review: any) => {
-    if (review.rating <= 3) {
+  // Date Filter
+  if (query.fromDate || query.toDate) {
+    filterObj.createdAt = {};
+    if (query.fromDate) {
+      filterObj.createdAt.$gte = new Date(query.fromDate as string);
+    }
+    if (query.toDate) {
+      filterObj.createdAt.$lte = new Date(query.toDate as string);
+    }
+  }
+
+  // Search by Driver Name (reviewer)
+  if (query.searchTerm) {
+    const matchingUsers = await User.find({
+      name: { $regex: query.searchTerm as string, $options: "i" },
+    }).select("_id");
+
+    const matchingUserIds = matchingUsers.map((u) => u._id);
+    filterObj.reviewerId = { $in: matchingUserIds };
+    // Anonymous reviews (rating <= 3) should not be revealed by searching driver real name unless admin
+    if (!isAdmin && !query.rating) {
+      filterObj.rating = { $gt: 3 };
+    }
+  }
+
+  const cleanQuery = { ...query };
+  delete cleanQuery.rating;
+  delete cleanQuery.fromDate;
+  delete cleanQuery.toDate;
+  delete cleanQuery.searchTerm;
+
+  const baseQuery = Review.find(filterObj).populate(
+    "reviewerId",
+    "name email profileImage",
+  );
+
+  const queryBuilder = new QueryBuilder(baseQuery, cleanQuery)
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
+
+  const reviews = await queryBuilder.modelQuery.lean();
+  const meta = await queryBuilder.countTotal();
+
+  const formattedReviews = reviews.map((review: any) => {
+    if (!isAdmin && review.rating <= 3) {
       return {
         ...review,
         reviewerId: review.reviewerId
@@ -412,6 +459,13 @@ const getUserReviewsFromDB = async (
     }
     return review;
   });
+
+  return {
+    reviews: formattedReviews,
+    data: formattedReviews,
+    meta,
+    pagination: meta,
+  };
 };
 
 /**
