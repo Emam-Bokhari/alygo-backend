@@ -607,9 +607,7 @@ const getMyReviewsFromDB = async (
         name: isAnonymous
           ? "Anonymous"
           : review.reviewerId?.name || "Unknown Passenger",
-        profileImage: isAnonymous
-          ? ""
-          : review.reviewerId?.profileImage || "",
+        profileImage: isAnonymous ? "" : review.reviewerId?.profileImage || "",
       },
       rating: review.rating,
       comment: review.reviewText || "",
