@@ -82,8 +82,13 @@ const createDriverToDB = async (userId: string, payload: Partial<IDriver>) => {
       approvalStatus: DRIVER_STATUS.PENDING,
     });
   } else {
-    // Reset approval status to pending when updating verification details
-    payloadRest.approvalStatus = DRIVER_STATUS.PENDING;
+    // If the driver was previously rejected, resubmitting verification details sets status to pending for re-review.
+    // If already approved, maintain the approved status and do NOT reset to pending.
+    if (existingDriver.approvalStatus === DRIVER_STATUS.REJECTED) {
+      payloadRest.approvalStatus = DRIVER_STATUS.PENDING;
+    } else {
+      delete payloadRest.approvalStatus;
+    }
 
     // Prevent updating liveSelfie if it already exists
     if (
@@ -352,7 +357,8 @@ const updateDriverFromDB = async (
     }
   }
 
-  // Set approval status to pending if rider updates registration details (prevent self-approval bypass)
+  // If driver was previously rejected and updates registration/verification details, set back to pending for re-review.
+  // If already approved, do NOT automatically revert to pending on profile, service area, tax, or photo updates.
   const hasUpdatedDetails =
     Object.keys(updatePayload).some(
       (key) =>
@@ -364,8 +370,14 @@ const updateDriverFromDB = async (
         ].includes(key),
     ) || profileImage;
 
-  if (hasUpdatedDetails) {
+  if (
+    hasUpdatedDetails &&
+    existingDriver.approvalStatus === DRIVER_STATUS.REJECTED
+  ) {
     updatePayload.approvalStatus = DRIVER_STATUS.PENDING;
+  } else {
+    // Prevent client from self-assigning or altering approvalStatus
+    delete updatePayload.approvalStatus;
   }
 
   // Reset verification status if license info changes to trigger a new MVR check
@@ -397,8 +409,8 @@ const updateDriverFromDB = async (
     );
   }
 
-  // Trigger Checkr MVR Verification automatically behind the scenes
-  if (hasUpdatedDetails && config.checkr.apiKey) {
+  // Trigger Checkr MVR Verification automatically behind the scenes only when license info actually changes
+  if (isLicenseUpdated && config.checkr.apiKey) {
     DriverVerificationService.triggerMVRVerification(
       existingDriver._id.toString(),
     ).catch((err) => {
