@@ -580,10 +580,11 @@ const getDriverPerformanceMetrics = async (driverUserId: string) => {
   // 2. Fetch recent passenger reviews (up to 5)
   const passengerReviews = reviews.slice(0, 5).map((r) => {
     const reviewer = r.reviewerId as any;
+    const isAnonymous = r.rating <= 3;
     return {
       _id: r._id,
-      reviewerName: reviewer?.name || "Anonymous",
-      reviewerImage: reviewer?.profileImage || "",
+      reviewerName: isAnonymous ? "Anonymous" : reviewer?.name || "Anonymous",
+      reviewerImage: isAnonymous ? "" : reviewer?.profileImage || "",
       rating: r.rating,
       reviewText: r.reviewText || "",
       createdAt: r.createdAt,

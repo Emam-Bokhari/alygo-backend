@@ -122,7 +122,10 @@ const createReview = catchAsync(async (req: Request, res: Response) => {
  */
 const getDriverReviews = catchAsync(async (req: Request, res: Response) => {
   const { driverId } = req.params;
-  const result = await ReviewServices.getDriverReviewsFromDB(driverId);
+  const result = await ReviewServices.getDriverReviewsFromDB(
+    driverId,
+    req.user as any,
+  );
 
   sendResponse(res, {
     statusCode: StatusCodes.OK,
@@ -137,7 +140,10 @@ const getDriverReviews = catchAsync(async (req: Request, res: Response) => {
  */
 const getUserReviews = catchAsync(async (req: Request, res: Response) => {
   const { userId } = req.params;
-  const result = await ReviewServices.getUserReviewsFromDB(userId);
+  const result = await ReviewServices.getUserReviewsFromDB(
+    userId,
+    req.user as any,
+  );
 
   sendResponse(res, {
     statusCode: StatusCodes.OK,

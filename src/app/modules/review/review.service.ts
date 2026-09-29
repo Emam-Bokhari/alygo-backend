@@ -14,6 +14,7 @@ import { RIDE_STATUS } from "../ride/ride.constant";
 import { PointsService } from "../tier/points.service";
 import { POINT_EVENT_TYPE } from "../tier/tier.constant";
 import QueryBuilder from "../../builder/queryBuilder";
+import { USER_ROLES } from "../../../enums/user";
 
 /**
  * Submit a rating & review for a completed ride.
@@ -313,7 +314,10 @@ const createReviewInDB = async (
 /**
  * Get reviews received by a driver.
  */
-const getDriverReviewsFromDB = async (driverId: string) => {
+const getDriverReviewsFromDB = async (
+  driverId: string,
+  currentUser?: { role?: string },
+) => {
   let driver = await Driver.findById(driverId);
   if (!driver) {
     driver = await Driver.findOne({ userId: new Types.ObjectId(driverId) });
@@ -322,29 +326,92 @@ const getDriverReviewsFromDB = async (driverId: string) => {
     throw new ApiError(StatusCodes.NOT_FOUND, "Driver profile not found");
   }
 
-  return await Review.find({
+  const reviews = await Review.find({
     receiverId: driver.userId,
     receiverRole: "driver",
   })
     .populate("reviewerId", "name email profileImage")
-    .sort({ createdAt: -1 });
+    .sort({ createdAt: -1 })
+    .lean();
+
+  const isAdmin =
+    currentUser?.role === USER_ROLES.ADMIN ||
+    currentUser?.role === USER_ROLES.SUPER_ADMIN;
+
+  if (isAdmin) {
+    return reviews;
+  }
+
+  return reviews.map((review: any) => {
+    if (review.rating <= 3) {
+      return {
+        ...review,
+        reviewerId: review.reviewerId
+          ? {
+              ...review.reviewerId,
+              _id: null,
+              name: "Anonymous",
+              profileImage: "",
+              email: "",
+            }
+          : null,
+      };
+    }
+    return review;
+  });
 };
 
 /**
  * Get reviews received by a passenger.
  */
-const getUserReviewsFromDB = async (userId: string) => {
+const getUserReviewsFromDB = async (
+  userId: string,
+  currentUser?: { role?: string },
+) => {
   const user = await User.findById(userId);
   if (!user) {
     throw new ApiError(StatusCodes.NOT_FOUND, "User profile not found");
   }
 
-  return await Review.find({
+  const reviews = await Review.find({
     receiverId: user._id,
     receiverRole: "user",
   })
     .populate("reviewerId", "name email profileImage")
-    .sort({ createdAt: -1 });
+    .sort({ createdAt: -1 })
+    .lean();
+
+  const isAdmin =
+    currentUser?.role === USER_ROLES.ADMIN ||
+    currentUser?.role === USER_ROLES.SUPER_ADMIN;
+
+  if (isAdmin) {
+    return reviews;
+  }
+
+  return reviews.map((review: any) => {
+    if (review.rating <= 3) {
+      return {
+        ...review,
+        reviewerId: review.reviewerId
+          ? {
+              ...review.reviewerId,
+              _id: null,
+              name: "Anonymous",
+              profileImage: "",
+              email: "",
+            }
+          : null,
+        rideSnapshot: review.rideSnapshot
+          ? {
+              ...review.rideSnapshot,
+              driverName: "Anonymous",
+            }
+          : review.rideSnapshot,
+      };
+    }
+    return review;
+  });
 };
 
 /**
@@ -451,6 +518,10 @@ const getMyReviewsFromDB = async (
 
     const matchingUserIds = matchingUsers.map((u) => u._id);
     filterObj.reviewerId = { $in: matchingUserIds };
+    // Anonymous reviews (rating <= 3) should not be revealed by searching passenger real name
+    if (!query.rating) {
+      filterObj.rating = { $gt: 3 };
+    }
   }
 
   const cleanQuery = { ...query };
@@ -473,18 +544,25 @@ const getMyReviewsFromDB = async (
   const data = await queryBuilder.modelQuery;
   const meta = await queryBuilder.countTotal();
 
-  const reviews = data.map((review: any) => ({
-    _id: review._id,
-    passenger: {
-      _id: review.reviewerId?._id || null,
-      name: review.reviewerId?.name || "Unknown Passenger",
-      profileImage: review.reviewerId?.profileImage || "",
-    },
-    rating: review.rating,
-    comment: review.reviewText || "",
-    createdAt: review.createdAt,
-    rideId: review.rideId,
-  }));
+  const reviews = data.map((review: any) => {
+    const isAnonymous = review.rating <= 3;
+    return {
+      _id: review._id,
+      passenger: {
+        _id: isAnonymous ? null : review.reviewerId?._id || null,
+        name: isAnonymous
+          ? "Anonymous"
+          : review.reviewerId?.name || "Unknown Passenger",
+        profileImage: isAnonymous
+          ? ""
+          : review.reviewerId?.profileImage || "",
+      },
+      rating: review.rating,
+      comment: review.reviewText || "",
+      createdAt: review.createdAt,
+      rideId: review.rideId,
+    };
+  });
 
   // Calculate rating stats dynamically
   const ratingStats = await Review.aggregate([
