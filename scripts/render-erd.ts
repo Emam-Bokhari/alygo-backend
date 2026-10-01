@@ -64,7 +64,7 @@ async function renderDrawio(page: Page, drawioPath: string) {
     body {
       margin: 0;
       padding: 0;
-      background-color: #FFFFFF; /* High contrast White background */
+      background-color: ${process.env.ERD_THEME === "dark" ? "#0F172A" : "#FFFFFF"};
       overflow: hidden;
       display: inline-block;
     }
@@ -618,7 +618,13 @@ async function main() {
     process.exit(1);
   }
 
-  const drawioFiles = getDrawioFiles(erdDir);
+  let drawioFiles = getDrawioFiles(erdDir);
+  const targetModule = process.argv[2];
+  if (targetModule) {
+    drawioFiles = drawioFiles.filter((f) =>
+      f.split(path.sep).includes(targetModule),
+    );
+  }
   console.log(`Found ${drawioFiles.length} Draw.io diagram files to render.`);
 
   if (drawioFiles.length === 0) {
