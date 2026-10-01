@@ -19,6 +19,77 @@ function getDrawioFiles(dir: string): string[] {
   return results;
 }
 
+function ensureSvgNamespaces(svgStr: string): string {
+  return svgStr.replace(/<svg\b([^>]*)>/i, (match, attrs) => {
+    let updatedAttrs = attrs;
+    if (!/xmlns\s*=/i.test(updatedAttrs)) {
+      updatedAttrs += ' xmlns="http://www.w3.org/2000/svg"';
+    }
+    if (!/xmlns:xlink\s*=/i.test(updatedAttrs)) {
+      updatedAttrs += ' xmlns:xlink="http://www.w3.org/1999/xlink"';
+    }
+    return `<svg${updatedAttrs}>`;
+  });
+}
+
+function resolveLightDark(svgStr: string, isDark: boolean): string {
+  let result = "";
+  let i = 0;
+  const target = "light-dark(";
+
+  while (i < svgStr.length) {
+    const idx = svgStr.indexOf(target, i);
+    if (idx === -1) {
+      result += svgStr.slice(i);
+      break;
+    }
+
+    result += svgStr.slice(i, idx);
+    const start = idx + target.length;
+    let depth = 1;
+    let commaPos = -1;
+    let j = start;
+
+    while (j < svgStr.length && depth > 0) {
+      const char = svgStr[j];
+      if (char === "(") {
+        depth++;
+      } else if (char === ")") {
+        depth--;
+      } else if (char === "," && depth === 1) {
+        commaPos = j;
+      }
+      j++;
+    }
+
+    if (depth === 0 && commaPos !== -1) {
+      const arg1 = svgStr.slice(start, commaPos).trim();
+      const arg2 = svgStr.slice(commaPos + 1, j - 1).trim();
+      const chosen = isDark ? arg2 : arg1;
+      result += chosen;
+      i = j;
+    } else {
+      result += target;
+      i = start;
+    }
+  }
+
+  return result;
+}
+
+function applyFontFallbacks(svgStr: string): string {
+  const fontStack = "Helvetica, Arial, 'Liberation Sans', sans-serif";
+  let res = svgStr.replace(
+    /font-family:\s*['"]?Helvetica['"]?\s*;/gi,
+    `font-family: ${fontStack};`,
+  );
+  res = res.replace(
+    /font-family:\s*['"]?Arial['"]?\s*;/gi,
+    `font-family: ${fontStack};`,
+  );
+  return res;
+}
+
 async function renderDrawio(page: Page, drawioPath: string) {
   const dir = path.dirname(drawioPath);
   const baseName = path.basename(drawioPath, ".drawio");
@@ -309,8 +380,11 @@ async function renderDrawio(page: Page, drawioPath: string) {
   // Retrieve and calculate bounds, validate diagram structure, and retry if necessary
   let validationResult: any = null;
   let attempt = 0;
-  const maxAttempts = 3;
-  let customPadding = 300;
+  const maxAttempts = 6;
+  const envPadding = process.env.ERD_PADDING
+    ? parseInt(process.env.ERD_PADDING, 10)
+    : 40;
+  let customPadding = isNaN(envPadding) ? 40 : envPadding;
 
   while (attempt < maxAttempts) {
     validationResult = await page.evaluate((paddingVal) => {
@@ -513,9 +587,9 @@ async function renderDrawio(page: Page, drawioPath: string) {
     }
 
     console.warn(
-      `Validation failed on attempt ${attempt + 1}. Visible entities: ${validationResult.visibleEntities}/${validationResult.totalEntities}. Fully contained: ${validationResult.isFullyContained}. Connectors valid: ${validationResult.connectorsValid}. Retrying...`,
+      `Validation failed on attempt ${attempt + 1}. Visible entities: ${validationResult.visibleEntities}/${validationResult.totalEntities}. Fully contained: ${validationResult.isFullyContained}. Connectors valid: ${validationResult.connectorsValid}. Retrying with padding ${customPadding + 20}...`,
     );
-    customPadding += 100;
+    customPadding += 20;
     attempt++;
   }
 
@@ -535,35 +609,36 @@ async function renderDrawio(page: Page, drawioPath: string) {
   };
 
   // 1. Export SVG
-  const svgHtml = await page.evaluate(() => {
+  let svgHtml = await page.evaluate(() => {
     const svg = document.querySelector("div.mxgraph svg");
     return svg ? svg.outerHTML : "";
   });
 
   if (svgHtml) {
+    const isDark = process.env.ERD_THEME === "dark";
+    svgHtml = ensureSvgNamespaces(svgHtml);
+    svgHtml = resolveLightDark(svgHtml, isDark);
+    svgHtml = applyFontFallbacks(svgHtml);
+
     const svgFileContent = `<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n${svgHtml}`;
     fs.writeFileSync(svgPath, svgFileContent, "utf8");
     console.log(`-> Generated SVG: ${svgPath}`);
   }
 
   // Configure high-DPI resolution viewport dynamically based on diagram size
-  // Configure high-DPI resolution viewport dynamically based on diagram size
   let scaleFactor = 4.0;
   if (process.env.ERD_SCALE) {
     scaleFactor = parseFloat(process.env.ERD_SCALE);
-  } else {
-    const totalArea = dimensions.width * dimensions.height;
-    if (totalArea > 8000000) {
-      scaleFactor = 1.5;
-    } else if (totalArea > 4000000) {
-      scaleFactor = 2.0;
-    }
   }
 
   // Ensure scaled viewport dimensions do not exceed Chromium's canvas/viewport stability limit (~30,000 pixels)
   const maxDimension = Math.max(dimensions.width, dimensions.height);
   if (maxDimension * scaleFactor > 30000) {
+    const originalScale = scaleFactor;
     scaleFactor = Math.max(0.5, 30000 / maxDimension);
+    console.warn(
+      `[Scale Warning] Final image dimension (${maxDimension}px * ${originalScale.toFixed(2)}x = ${Math.round(maxDimension * originalScale)}px) exceeds 30,000px limit. Reducing scale from ${originalScale.toFixed(2)}x to ${scaleFactor.toFixed(2)}x.`,
+    );
   }
 
   await page.setViewport({
@@ -572,16 +647,81 @@ async function renderDrawio(page: Page, drawioPath: string) {
     deviceScaleFactor: scaleFactor,
   });
 
+  const finalWidth = Math.round(dimensions.width * scaleFactor);
+  const finalHeight = Math.round(dimensions.height * scaleFactor);
+
   // 2. Export PNG
   try {
-    const buffer = await page.screenshot({
-      type: "png",
-      omitBackground: false, // Keep background color #FFFFFF
-    });
-    await sharp(buffer, { limitInputPixels: false })
-      .withMetadata({ density: 300 })
-      .toFile(pngPath);
-    console.log(`-> Generated PNG (${scaleFactor.toFixed(2)}x): ${pngPath}`);
+    if (finalWidth > 16000 || finalHeight > 16000) {
+      // Capture the page in tiles using page.screenshot({ clip })
+      const maxTileDevicePx = 8000;
+      const tileCssMax = Math.max(
+        100,
+        Math.floor(maxTileDevicePx / scaleFactor),
+      );
+      const tiles: { x: number; y: number; width: number; height: number }[] = [];
+      for (let y = 0; y < dimensions.height; y += tileCssMax) {
+        const h = Math.min(tileCssMax, dimensions.height - y);
+        for (let x = 0; x < dimensions.width; x += tileCssMax) {
+          const w = Math.min(tileCssMax, dimensions.width - x);
+          tiles.push({ x, y, width: w, height: h });
+        }
+      }
+
+      const compositeInputs: { input: Buffer; left: number; top: number }[] =
+        [];
+      for (const tile of tiles) {
+        const tileBuf = await page.screenshot({
+          type: "png",
+          clip: {
+            x: tile.x,
+            y: tile.y,
+            width: tile.width,
+            height: tile.height,
+          },
+          omitBackground: false,
+        });
+        compositeInputs.push({
+          input: Buffer.from(tileBuf),
+          left: Math.round(tile.x * scaleFactor),
+          top: Math.round(tile.y * scaleFactor),
+        });
+      }
+
+      const isDark = process.env.ERD_THEME === "dark";
+      const bgRgb = isDark
+        ? { r: 15, g: 23, b: 42, alpha: 1 }
+        : { r: 255, g: 255, b: 255, alpha: 1 };
+
+      await sharp({
+        create: {
+          width: finalWidth,
+          height: finalHeight,
+          channels: 4,
+          background: bgRgb,
+        },
+      })
+        .composite(compositeInputs)
+        .withMetadata({ density: 300 })
+        .toFile(pngPath);
+    } else {
+      const buffer = await page.screenshot({
+        type: "png",
+        clip: {
+          x: 0,
+          y: 0,
+          width: dimensions.width,
+          height: dimensions.height,
+        },
+        omitBackground: false,
+      });
+      await sharp(Buffer.from(buffer), { limitInputPixels: false })
+        .withMetadata({ density: 300 })
+        .toFile(pngPath);
+    }
+    console.log(
+      `-> Generated PNG (${scaleFactor.toFixed(2)}x, ${finalWidth}x${finalHeight} px): ${pngPath}`,
+    );
   } catch (pngErr: any) {
     console.error(
       `-> Failed to generate PNG for ${baseName}: ${pngErr.message}`,
