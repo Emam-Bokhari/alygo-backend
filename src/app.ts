@@ -4,6 +4,7 @@ import { StatusCodes } from "http-status-codes";
 import { Morgan } from "./shared/morgan";
 import globalErrorHandler from "./app/middlewares/globalErrorHandler";
 import path from "path";
+import fs from "fs";
 import v2Router from "./app/routes/v2";
 import swaggerUi from "swagger-ui-express";
 import yaml from "yamljs";
@@ -62,10 +63,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 
 // swagger docs
-const swaggerDocument = yaml.load(
-  path.join(__dirname, "..", "docs", "swagger", "index.yaml"),
-);
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+const swaggerFilePath = path.join(__dirname, "..", "docs", "swagger", "index.yaml");
+if (fs.existsSync(swaggerFilePath)) {
+  const swaggerDocument = yaml.load(swaggerFilePath);
+  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+}
 
 //router
 app.use("/api/v1", router);
